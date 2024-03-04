@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,minimum-scale=1" />
+        <title>Login</title>
+        <!-- the form awesome library is used to add icons to our form -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" />
+        <!-- include the stylesheet file -->
+        <link href="/stylesheets/style.css" rel="stylesheet" type="text/css" />
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io();
+            socket.emit("message", "hello from the index");
+
+            socket.on("but", (but) => {
+                console.log(but);
+                document.getElementById("game" + but.gameid + "score1").innerHTML = but.score1;
+                document.getElementById("game" + but.gameid + "score2").innerHTML = but.score2;
+            });
+
+            socket.on("fin", (fin) => {
+                location.reload();
+            });
+        </script>
+    </head>
+
+    <body>
+        <div class="login">
+            <h1>Babyfoot</h1>
+            <% if (locals.error) { %>
+            <h2><%= error %></h2>
+            <% } %> <% if (locals.games) { games.forEach(function(game) { %>
+            <p>
+                <a href="/game/<%= game.id %>">Partie en cours sur le babyfoot</a> [<%= game.babyfoot.localisation %>] entre [<%=
+                game.adversaire_1.nom %> : <span id="game<%= game.id %>score1"><%= game.score_1 %></span>] et [<%= game.adversaire_2.nom %>
+                : <span id="game<%= game.id %>score2"><%= game.score_2 %></span>]
+            </p>
+            <% })} %>
+            <form action="/game/start" method="post">
+                <label for="babyfoot">
+                    <i class="fa fa-futbol"></i>
+                </label>
+                <select name="babyfoot" id="babyfoot">
+                    <% babyfoots.forEach(function(babyfoot) { %> <% if(!babyfoot.parties[0]) { %>
+                    <option value="<%= babyfoot.id %>"><%= babyfoot.localisation %></option>
+                    <% } %> <% }) %>
+                </select>
+                <label for="player1">
+                    <i class="fa fa-user"></i>
+                </label>
+                <select name="player1" id="player1">
+                    <% players.forEach(function(player) { %> <% if(!player.partiesAdv1[0] && !player.partiesAdv2[0]) { %>
+                    <option value="<%= player.id %>"><%= player.nom %></option>
+                    <% } %> <% }) %>
+                </select>
+                <label for="player2">
+                    <i class="fa fa-user"></i>
+                </label>
+                <select name="player2" id="player2">
+                    <% players.forEach(function(player) { %> <% if(!player.partiesAdv1[0] && !player.partiesAdv2[0]) { %>
+                    <option value="<%= player.id %>"><%= player.nom %></option>
+                    <% } %> <% }) %>
+                </select>
+                <input type="submit" value="Démarrer la partie !" />
+            </form>
+        </div>
+    </body>
+</html>

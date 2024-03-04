@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,minimum-scale=1" />
+        <title>Admin</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" />
+        <link href="/stylesheets/style.css" rel="stylesheet" type="text/css" />
+    </head>
+
+    <body>
+        <div class="login">
+            <h1>Page d'administration</h1>
+            <% if (locals.error) { %>
+            <h2><%= error %></h2>
+            <% } %>
+            <form action="/babyfoot/create" method="post">
+                <label for="location">
+                    <i class="fas fa-globe"></i>
+                </label>
+                <input type="text" name="location" placeholder="Location" id="location" required />
+                <input type="submit" value="Add babyfoot" />
+            </form>
+            <table>
+                <% users.forEach(function(user) { %> <%- render.userRow(user.id, user.nom, user.mail) %> <% }); %>
+            </table>
+            <table>
+                <% babyfoots.forEach(function(babyfoot) { %> <%- render.babyfootRow(babyfoot.id, babyfoot.localisation) %> <% }); %>
+            </table>
+            <table>
+                <% games.forEach(function(game) { %> <%- render.gameRow(game.id, game.babyfoot.localisation) %> <% }); %>
+            </table>
+
+            <a href="/logout">Logout</a>
+        </div>
+        <script src="../javascripts/main.js"></script>
+    </body>
+</html>

@@ -1,2 +1,3 @@
-# fabtrack_nodejs
-An opensource platform for fablabs
+# FabtrackJS
+
+An opensource platform for fablabs written in Javascript.

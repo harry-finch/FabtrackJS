@@ -1,0 +1,4 @@
+{
+  "name": "render",
+  "main": "./render.js"
+}
