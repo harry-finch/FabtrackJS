@@ -10,7 +10,7 @@ dotenv.config();
 
 // Routes setup
 var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+var staffRouter = require("./routes/staff");
 var adminRouter = require("./routes/admin");
 
 var babyfootRouter = require("./routes/babyfoot");
@@ -40,9 +40,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
-app.use("/game", gameRouter);
+app.use("/staff", staffRouter);
 app.use("/admin", adminRouter);
+
+app.use("/game", gameRouter);
 app.use("/babyfoot", babyfootRouter);
 
 // Catch 404 and forward to error handler

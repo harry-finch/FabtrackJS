@@ -2,41 +2,38 @@ var express = require("express");
 var crypto = require("crypto");
 var router = express.Router();
 
-// const isLoggedIn = require("../middleware/checkSession.js");
-// router.use(isLoggedIn);
-
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
-// Route qui renvoie une liste de tous les utilisateurs.
+// Route returning a list of all staff members
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
-  if (!req.session.loggedin) {
+  if (!req.session.role === "admin") {
     req.session.error = "Unauthorized access!";
     return res.redirect("/");
   }
 
-  const allUsers = await prisma.utilisateurs.findMany({});
-  res.status(200).json(allUsers);
+  const allStaff = await prisma.staff.findMany({});
+  res.status(200).json(allStaff);
 });
 
 // ******************************************************************************
-// Route qui gère la création d'un nouvel utilisateur.
+// Route handling the creation of a new user
 // ******************************************************************************
 
 router.post("/create", async (req, res) => {
   const { username, password, mail } = req.body;
 
   // Hash password
-  var salt = "babyfoot";
+  var salt = process.env.SALT;
   var hash = crypto.pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`base64`);
 
-  const result = await prisma.utilisateurs
+  const result = await prisma.staff
     .create({
       data: {
-        nom: username,
+        name: username,
         pwd: hash,
         mail: mail,
       },
@@ -56,20 +53,20 @@ router.post("/create", async (req, res) => {
 });
 
 // ******************************************************************************
-// Route qui gère la suppression d'un utilisateur (réservé à l'admin).
+// Route handling the deletion of a staff (admin only)
 // ******************************************************************************
 
 router.delete("/delete/:id", async (req, res) => {
-  if (!req.session.admin) {
+  if (!req.session.role === "admin") {
     req.session.error = "Unauthorized access!";
     return res.redirect("/");
   }
 
   const { id } = req.params;
-  const user = await prisma.utilisateurs.delete({
+  const staff = await prisma.staff.delete({
     where: { id: Number(id) },
   });
-  res.json(user);
+  res.json(staff);
 });
 
 module.exports = router;

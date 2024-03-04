@@ -6,8 +6,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
-// Route de la page principale
-// Envoie les joueurs, les babyfoots et les parties en cours
+// Route handling the main page
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
@@ -73,7 +72,7 @@ router.get("/forgot", function (req, res) {
 
 // ******************************************************************************
 // Route handling the generation of a random token to reset the password and
-// sends it via email to the user
+// sends it via email to the user (staff)
 // ******************************************************************************
 
 router.post("/reset", async (req, res) => {
@@ -85,7 +84,7 @@ router.post("/reset", async (req, res) => {
 
   const now = new Date().toISOString();
 
-  const result = await prisma.utilisateurs.update({
+  const result = await prisma.staff.update({
     where: {
       mail: mail,
     },
@@ -101,15 +100,15 @@ router.post("/reset", async (req, res) => {
 
 // ******************************************************************************
 // Route handling the reset password page
-// It takes a token as param and checks which user has it in the database
+// It takes a token as param and checks which staff has it in the database
 // as well as the token validity (10 minutes)
 // ******************************************************************************
 
 router.get("/reset/:token", async (req, res) => {
   const { token } = req.params;
 
-  // Find the user with the corresponding token
-  const result = await prisma.utilisateurs.findFirst({
+  // Find the staff with the corresponding token
+  const result = await prisma.staff.findFirst({
     where: {
       pwdtoken: token,
     },
@@ -138,7 +137,7 @@ router.post("/reset_password", async (req, res) => {
   var salt = process.env.SALT;
   var hash = crypto.pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`base64`);
 
-  const result = await prisma.utilisateurs.update({
+  const result = await prisma.staff.update({
     where: {
       id: Number(id),
     },
@@ -166,8 +165,8 @@ router.post("/auth", async function (req, res) {
     var salt = process.env.SALT;
     var hash = crypto.pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`base64`);
 
-    const user = await prisma.utilisateurs.findUnique({
-      where: { nom: username, pwd: hash },
+    const user = await prisma.staff.findUnique({
+      where: { name: username, pwd: hash },
     });
 
     if (user) {
@@ -192,7 +191,7 @@ router.post("/auth", async function (req, res) {
 });
 
 // ******************************************************************************
-// Route handling user logout
+// Route handling staff logout
 // Redirects to the login page
 // ******************************************************************************
 
