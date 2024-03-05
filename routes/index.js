@@ -2,6 +2,21 @@ var express = require("express");
 var router = express.Router();
 var crypto = require("crypto");
 
+const dotenv = require("dotenv");
+dotenv.config();
+
+// Use https://ethereal.email/ to test
+const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  host: process.env.HOST,
+  port: parseInt(process.env.MAILPORT),
+  secure: process.env.SECURE === "true",
+  auth: {
+    user: process.env.USR,
+    pass: process.env.PASSWD,
+  },
+});
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -80,8 +95,6 @@ router.post("/reset", async (req, res) => {
 
   // Generate a random token
   const buf = crypto.randomBytes(10);
-  console.log("The random data is: " + buf.toString("base64"));
-
   const now = new Date().toISOString();
 
   const result = await prisma.staff.update({
@@ -94,8 +107,18 @@ router.post("/reset", async (req, res) => {
     },
   });
 
-  // TODO: send email with URL
-  res.send("http://localhost:8080/reset/" + buf.toString("base64"));
+  const info = await transporter.sendMail({
+    from: process.env.MAILFROM,
+    to: mail,
+    subject: "FabtrackJS: reset your password",
+    text: process.env.HOSTURL + "/reset/" + buf.toString("base64"),
+    html: '<a href="' + process.env.HOSTURL + "/reset/" + buf.toString("base64") + '">Click here to reset your password</a>',
+  });
+
+  console.log(process.env.HOSTURL + "/reset/" + buf.toString("base64"));
+  req.session.message = "Check your email to reset password";
+
+  res.redirect("login");
 });
 
 // ******************************************************************************

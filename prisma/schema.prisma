@@ -1,48 +1,43 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["relationJoins"]
+    provider        = "prisma-client-js"
+    previewFeatures = ["relationJoins"]
 }
 
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+    provider = "mysql"
+    url      = env("DATABASE_URL")
 }
 
-model Utilisateurs {
-  id                Int @id @default (autoincrement())
-  nom               String @db.VarChar(255) @unique
-  mail              String @db.VarChar(255) @unique
-  pwd               String @db.VarChar(255)
-  role              String @db.VarChar(20) @default ("user")
-  victoires         Int @default (0)
-  pwdtoken          String @db.VarChar(20) @default ("0")
-  timestamp         DateTime @default (now())
-  partiesAdv1       Parties[] @relation("adversaire1")
-  partiesAdv2       Parties[] @relation("adversaire2")
+// Users that will actually log on to the platform
+model Staff {
+    id        Int      @id @default(autoincrement())
+    name      String   @unique @db.VarChar(255)
+    mail      String   @unique @db.VarChar(255)
+    pwd       String   @db.VarChar(255)
+    role      String   @default("user") @db.VarChar(20)
+    pwdtoken  String   @default("0") @db.VarChar(20)
+    timestamp DateTime @default(now())
+    approved  Boolean  @default(false)
 }
 
-model Babyfoot {
-  id                Int @id @default (autoincrement())
-  localisation      String @db.VarChar(255)
-  parties           Parties[]
+// Users and visitors whose activities we want to track
+model Users {
+    id                  Int      @id @default(autoincrement())
+    name                String   @db.VarChar(255)
+    surname             String   @db.VarChar(255)
+    mail                String   @unique @db.VarChar(255)
+    usertype            Usertype @relation(fields: [usertypeId], references: [id])
+    usertypeId          Int
+    accountCreationDate DateTime @default(now())
+    birthYear           Int
+    comment             String   @db.VarChar(255)
+    termsAndConditions  Boolean  @default(false)
+    token               String   @db.VarChar(20)
 }
 
-model Parties {
-  id                Int @id @default (autoincrement())
-  date              DateTime @default (now())
-  babyfoot          Babyfoot @relation(fields: [babyfootId], references: [id])
-  babyfootId        Int
-  adversaire_1      Utilisateurs @relation(name: "adversaire1", fields: [adversaire_1Id], references: [id])
-  adversaire_1Id    Int
-  score_1           Int @default (0)
-  adversaire_2      Utilisateurs @relation(name: "adversaire2", fields: [adversaire_2Id], references: [id])
-  adversaire_2Id    Int
-  score_2           Int @default (0)
-  etat              String @db.VarChar(10) @default ("en cours")
+// Types of users (student, startup, teacher...)
+model Usertype {
+    id    Int     @id @default(autoincrement())
+    name  String  @unique @db.VarChar(255)
+    Users Users[]
 }
