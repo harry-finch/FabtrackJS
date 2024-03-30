@@ -1,38 +1,100 @@
 <!doctype html>
-<html>
+<html lang="en" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,minimum-scale=1" />
-        <title>Admin</title>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" />
-        <link href="/stylesheets/style.css" rel="stylesheet" type="text/css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="" />
+        <meta name="author" content="Stéphane Muller" />
+        <title>Fabtrack administration panel</title>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3" />
+        <link rel="stylesheet" href="../stylesheets/main.css" />
+        <link rel="stylesheet" href="../stylesheets/fontawsome-all.min.css" />
+
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+            crossorigin="anonymous"
+        />
+        <script src="../javascripts/color-mode-toggler.js"></script>
     </head>
 
-    <body>
-        <div class="login">
-            <h1>Page d'administration</h1>
-            <% if (locals.error) { %>
-            <h2><%= error %></h2>
-            <% } %>
-            <form action="/babyfoot/create" method="post">
-                <label for="location">
-                    <i class="fas fa-globe"></i>
-                </label>
-                <input type="text" name="location" placeholder="Location" id="location" required />
-                <input type="submit" value="Add babyfoot" />
-            </form>
-            <table>
-                <% users.forEach(function(user) { %> <%- render.userRow(user.id, user.nom, user.mail) %> <% }); %>
-            </table>
-            <table>
-                <% babyfoots.forEach(function(babyfoot) { %> <%- render.babyfootRow(babyfoot.id, babyfoot.localisation) %> <% }); %>
-            </table>
-            <table>
-                <% games.forEach(function(game) { %> <%- render.gameRow(game.id, game.babyfoot.localisation) %> <% }); %>
-            </table>
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <% include ./includes/light-dark.html %>
 
-            <a href="/logout">Logout</a>
-        </div>
-        <script src="../javascripts/main.js"></script>
+        <main class="w-50 mx-auto">
+            <% include ./includes/header.html %>
+
+            <h4 class="mb-4"><i class="fa fa-screwdriver-wrench"></i>&nbsp;&nbsp;Administration panel</h4>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-solid fa-users-gear fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="./manage-staff" class="btn btn-primary mb-3">Manage staff accounts</a>
+                            <p class="card-text" style="font-size: 0.8em">Delete or deactivate staff accounts, give or take back rights</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-solid fa-users fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="" class="btn btn-primary mb-3">Manage fablab users</a>
+                            <p class="card-text" style="font-size: 0.8em">Delete, deactivate or modify regular user accounts</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-regular fa-flux-capacitor fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="" class="btn btn-primary mb-3">Manage machines</a>
+                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify machines</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-solid fa-chart-line-up fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="" class="btn btn-primary mb-3">Statistics</a>
+                            <p class="card-text" style="font-size: 0.8em">Check your fablab's activity</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-regular fa-clipboard-list fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="" class="btn btn-primary mb-3">View logs</a>
+                            <p class="card-text" style="font-size: 0.8em">Check the entire activity logs</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-regular fa-envelope-open-text fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="" class="btn btn-primary mb-3">Communication</a>
+                            <p class="card-text" style="font-size: 0.8em">Send emails to your community</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script
+            src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+            integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+            crossorigin="anonymous"
+        ></script>
     </body>
 </html>

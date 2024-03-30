@@ -40,8 +40,16 @@ async function main() {
 async function updateUser() {
   const result = await prisma.staff.update({
     where: { id: 1 },
-    data: { approved: true },
+    data: { role: "admin" },
   });
 
   console.log(result);
 }
+
+async function showUsers() {
+  const result = await prisma.staff.findMany();
+  console.log(result);
+}
+
+showUsers();
+// updateUser();

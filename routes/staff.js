@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
-  if (!req.session.role === "admin") {
+  if (req.session.role != "admin") {
     req.session.error = "Unauthorized access!";
     return res.redirect("/");
   }
@@ -53,11 +53,119 @@ router.post("/create", async (req, res) => {
 });
 
 // ******************************************************************************
+// Route handling the enabling of a staff account
+// ******************************************************************************
+
+router.get("/edit/:id", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.error = "Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const { id } = req.params;
+  const user = await prisma.staff.findUnique({
+    where: {
+      id: Number(id),
+    },
+  });
+
+  res.render("staff-edit", { error: req.session.error, message: req.session.message, user: user });
+});
+
+// ******************************************************************************
+// Route handling the enabling of a staff account
+// ******************************************************************************
+
+router.put("/enable/:id", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.error = "Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const { id } = req.params;
+  const result = await prisma.staff.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      approved: true,
+    },
+  });
+  res.status(200).json(result);
+});
+
+// ******************************************************************************
+// Route handling the disabling of a staff account
+// ******************************************************************************
+
+router.put("/disable/:id", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.error = "Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const { id } = req.params;
+  const result = await prisma.staff.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      approved: false,
+    },
+  });
+  res.status(200).json(result);
+});
+
+// ******************************************************************************
+// Route making a staff admin
+// ******************************************************************************
+
+router.put("/promote/:id", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.error = "Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const { id } = req.params;
+  const result = await prisma.staff.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      role: "admin",
+    },
+  });
+  res.status(200).json(result);
+});
+
+// ******************************************************************************
+// Route making a staff a regular user
+// ******************************************************************************
+
+router.put("/demote/:id", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.error = "Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const { id } = req.params;
+  const result = await prisma.staff.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      role: "user",
+    },
+  });
+  res.status(200).json(result);
+});
+
+// ******************************************************************************
 // Route handling the deletion of a staff (admin only)
 // ******************************************************************************
 
 router.delete("/delete/:id", async (req, res) => {
-  if (!req.session.role === "admin") {
+  if (req.session.role != "admin") {
     req.session.error = "Unauthorized access!";
     return res.redirect("/");
   }
@@ -66,7 +174,37 @@ router.delete("/delete/:id", async (req, res) => {
   const staff = await prisma.staff.delete({
     where: { id: Number(id) },
   });
-  res.json(staff);
+  res.status(200).json(result);
+});
+
+// ******************************************************************************
+// Route handling the modification of a staff (admin only)
+// ******************************************************************************
+
+router.post("/update", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.error = "Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const user = req.body;
+  let approval = false;
+  console.log(user);
+
+  if (user.approved == "on") {
+    approval = true;
+  }
+
+  const result = await prisma.staff.update({
+    where: { id: Number(user.id) },
+    data: {
+      name: user.username,
+      mail: user.email,
+      role: user.role,
+      approved: approval,
+    },
+  });
+  res.redirect("/admin/manage-staff");
 });
 
 module.exports = router;

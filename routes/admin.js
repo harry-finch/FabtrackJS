@@ -11,24 +11,20 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
-// Route qui gère l'affichage de la page d'admin.
+// Route handling the main admin page
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
-  const allUsers = await prisma.utilisateurs.findMany({});
-  const allBabyfoots = await prisma.babyfoot.findMany({});
+  res.render("admin", { error: req.session.error, message: req.session.message });
+});
 
-  const currentGames = await prisma.parties.findMany({
-    include: {
-      babyfoot: true,
-    },
-    where: {
-      etat: "en cours",
-    },
-  });
+// ******************************************************************************
+// Route handling the admin page managing staff accounts
+// ******************************************************************************
 
-  // Passing data and rendering functions
-  res.render("admin", { users: allUsers, babyfoots: allBabyfoots, games: currentGames, render: render });
+router.get("/manage-staff", async (req, res) => {
+  const allStaff = await prisma.staff.findMany({});
+  res.render("admin-staff", { error: req.session.error, message: req.session.message, users: allStaff });
 });
 
 module.exports = router;

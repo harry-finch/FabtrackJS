@@ -25,45 +25,14 @@ const prisma = new PrismaClient();
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
+  console.log(req.session.role);
+
   if (req.session.role === "admin") {
     return res.redirect("admin/");
   }
-  if (req.session.loggedin == true) {
-    const games = await prisma.parties.findMany({
-      include: {
-        babyfoot: true,
-        adversaire_1: true,
-        adversaire_2: true,
-      },
-      where: {
-        etat: "en cours",
-      },
-    });
-    const babyfoot = await prisma.babyfoot.findMany({
-      include: {
-        parties: {
-          where: {
-            etat: "en cours",
-          },
-        },
-      },
-    });
-    const players = await prisma.utilisateurs.findMany({
-      include: {
-        partiesAdv1: {
-          where: {
-            etat: "en cours",
-          },
-        },
-        partiesAdv2: {
-          where: {
-            etat: "en cours",
-          },
-        },
-      },
-    });
 
-    return res.render("index", { user: req.session.username, players: players, babyfoots: babyfoot, games: games });
+  if (req.session.loggedin == true) {
+    return res.send("Logged in");
   } else {
     return res.redirect("./login/");
   }
