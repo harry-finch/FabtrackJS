@@ -1,3 +1,7 @@
+// ******************************************************************************
+// This router handles the main admin routes
+// ******************************************************************************
+
 var express = require("express");
 var router = express.Router();
 
@@ -15,7 +19,7 @@ const prisma = new PrismaClient();
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
-  res.render("admin", { error: req.session.error, message: req.session.message });
+  res.render("admin/admin", { error: req.session.error, message: req.session.message });
 });
 
 // ******************************************************************************
@@ -24,7 +28,16 @@ router.get("/", async (req, res) => {
 
 router.get("/manage-staff", async (req, res) => {
   const allStaff = await prisma.staff.findMany({});
-  res.render("admin-staff", { error: req.session.error, message: req.session.message, users: allStaff });
+  res.render("admin/admin-staff", { error: req.session.error, message: req.session.message, users: allStaff });
+});
+
+// ******************************************************************************
+// Route handling the admin page managing user accounts
+// ******************************************************************************
+
+router.get("/manage-users", async (req, res) => {
+  const allUsers = await prisma.staff.findMany({});
+  res.render("admin/admin-users", { error: req.session.error, message: req.session.message, users: allUsers });
 });
 
 module.exports = router;

@@ -12,6 +12,7 @@ dotenv.config();
 var indexRouter = require("./routes/index");
 var adminRouter = require("./routes/admin");
 var staffRouter = require("./routes/staff");
+var fabTrackRouter = require("./routes/fabtrack");
 
 var babyfootRouter = require("./routes/babyfoot");
 var gameRouter = require("./routes/game");
@@ -42,6 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/", indexRouter);
 app.use("/admin", adminRouter);
 app.use("/staff", staffRouter);
+app.use("/fabtrack", fabTrackRouter);
 
 app.use("/game", gameRouter);
 app.use("/babyfoot", babyfootRouter);

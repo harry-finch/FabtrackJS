@@ -1,3 +1,7 @@
+// ******************************************************************************
+// This router handles the administration of staff accounts
+// ******************************************************************************
+
 var express = require("express");
 var crypto = require("crypto");
 var router = express.Router();
@@ -69,7 +73,7 @@ router.get("/edit/:id", async (req, res) => {
     },
   });
 
-  res.render("staff-edit", { error: req.session.error, message: req.session.message, user: user });
+  res.render("admin/staff-edit", { error: req.session.error, message: req.session.message, user: user });
 });
 
 // ******************************************************************************

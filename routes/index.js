@@ -1,3 +1,7 @@
+// ******************************************************************************
+// This router handles login, logout, authentication and password reset
+// ******************************************************************************
+
 var express = require("express");
 var router = express.Router();
 var crypto = require("crypto");
@@ -32,9 +36,9 @@ router.get("/", async (req, res) => {
   }
 
   if (req.session.loggedin == true) {
-    return res.send("Logged in");
+    return res.redirect("fabtrack/");
   } else {
-    return res.redirect("./login/");
+    return res.redirect("login/");
   }
 });
 
@@ -43,15 +47,15 @@ router.get("/", async (req, res) => {
 // ******************************************************************************
 
 router.get("/login", function (req, res) {
-  res.render("login", { error: req.session.error, message: req.session.message });
+  res.render("index/login", { error: req.session.error, message: req.session.message });
 });
 
 router.get("/register", function (req, res) {
-  res.render("register", { error: req.session.error, content: req.session.formcontent });
+  res.render("index/register", { error: req.session.error, content: req.session.formcontent });
 });
 
 router.get("/forgot", function (req, res) {
-  res.render("forgot", { error: req.session.error });
+  res.render("index/forgot", { error: req.session.error });
 });
 
 // ******************************************************************************
@@ -114,7 +118,7 @@ router.get("/reset/:token", async (req, res) => {
     req.session.error = "Token has timed out.";
     res.redirect("/forgot");
   } else {
-    res.render("reset", { user: result });
+    res.render("index/reset", { user: result });
   }
 });
 

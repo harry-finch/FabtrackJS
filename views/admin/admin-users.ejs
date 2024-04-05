@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="" />
+        <meta name="author" content="Stéphane Muller" />
+        <title>Fabtrack administration panel</title>
+
+        <script src="../../javascripts/color-mode-toggler.js"></script>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3" />
+        <link rel="stylesheet" href="../stylesheets/main.css" />
+        <link rel="stylesheet" href="../stylesheets/fontawsome-all.min.css" />
+
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+            crossorigin="anonymous"
+        />
+    </head>
+
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <% include ../includes/light-dark.html %>
+
+        <main class="w-50 mx-auto">
+            <% include ../includes/header.html %>
+
+            <h4 class="mb-4"><i class="fa fa-users-gear"></i>&nbsp;&nbsp;Manage staff accounts</h4>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Email</th>
+                        <th scope="col" class="text-center">Role</th>
+                        <th scope="col" class="text-center">Enabled</th>
+                        <th scope="col" class="text-center">Edit</th>
+                        <th scope="col" class="text-center">Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="table-content">
+                    <% users.forEach(function(user) { %>
+                    <tr>
+                        <th scope="row"><%= user.id %></th>
+                        <td><%= user.name %></td>
+                        <td><a href="mailto:<%= user.mail %>"><%= user.mail %></a></td>
+                        <td class="text-center">
+                            <% if(user.role == "admin") {%>
+                            <a href="#" onclick="makeStaffUser(<%= user.id %>)" title="admin"><i class="fa-solid fa-user-secret"></i></a> <%
+                            } else { %>
+                            <a href="#" onclick="makeStaffAdmin(<%= user.id %>)" title="user"><i class="fa-regular fa-user"></i></a> <% } %>
+                        </td>
+                        <td class="text-center">
+                            <% if(user.approved) {%>
+                            <a href="#" onclick="disableStaff(<%= user.id %>)" style="color: #44aa44"
+                                ><i class="fa-solid fa-user-check"></i
+                            ></a>
+                            <% } else { %>
+                            <a href="#" onclick="enableStaff(<%= user.id %>)" style="color: #aa4444"
+                                ><i class="fa-solid fa-user-xmark"></i
+                            ></a>
+                            <% } %>
+                        </td>
+                        <td class="text-center">
+                            <a href="../staff/edit/<%= user.id %>"><i class="fa-solid fa-user-pen"></i></a>
+                        </td>
+                        <td class="text-center">
+                            <a href="#" onclick="deleteStaff(<%= user.id %>)"><i class="fa-solid fa-trash-can"></i></a>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </main>
+
+        <script src="../javascripts/main.js"></script>
+        <script
+            src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+            integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+            crossorigin="anonymous"
+        ></script>
+    </body>
+</html>
