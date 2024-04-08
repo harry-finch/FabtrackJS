@@ -27,53 +27,41 @@
         <main class="w-50 mx-auto">
             <% include ../includes/header.html %>
 
-            <h4 class="mb-4"><i class="fa fa-users-gear"></i>&nbsp;&nbsp;Manage staff accounts</h4>
+            <h4 class="mb-4"><i class="fa fa-users-gear"></i>&nbsp;&nbsp;Manage types of users (visitors)</h4>
 
-            <table class="table">
+            <table class="mb-5 table">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Email</th>
-                        <th scope="col" class="text-center">Role</th>
-                        <th scope="col" class="text-center">Enabled</th>
-                        <th scope="col" class="text-center">Edit</th>
+                        <th scope="col">Usertype</th>
                         <th scope="col" class="text-center">Delete</th>
                     </tr>
                 </thead>
                 <tbody id="table-content">
-                    <% users.forEach(function(user) { %>
+                    <% usertypes.forEach(function(usertype) { %>
                     <tr>
-                        <th scope="row"><%= user.id %></th>
-                        <td><%= user.name %></td>
-                        <td><a href="mailto:<%= user.mail %>"><%= user.mail %></a></td>
+                        <th scope="row"><%= usertype.id %></th>
+                        <td><%= usertype.name %></td>
                         <td class="text-center">
-                            <% if(user.role == "admin") {%>
-                            <a href="#" onclick="makeStaffUser(<%= user.id %>)" title="admin"><i class="fa-solid fa-user-secret"></i></a> <%
-                            } else { %>
-                            <a href="#" onclick="makeStaffAdmin(<%= user.id %>)" title="user"><i class="fa-regular fa-user"></i></a> <% } %>
-                        </td>
-                        <td class="text-center">
-                            <% if(user.approved) {%>
-                            <a href="#" onclick="disableStaff(<%= user.id %>)" style="color: #44aa44"
-                                ><i class="fa-solid fa-user-check"></i
-                            ></a>
-                            <% } else { %>
-                            <a href="#" onclick="enableStaff(<%= user.id %>)" style="color: #aa4444"
-                                ><i class="fa-solid fa-user-xmark"></i
-                            ></a>
-                            <% } %>
-                        </td>
-                        <td class="text-center">
-                            <a href="../staff/edit/<%= user.id %>"><i class="fa-solid fa-user-pen"></i></a>
-                        </td>
-                        <td class="text-center">
-                            <a href="#" onclick="deleteStaff(<%= user.id %>)"><i class="fa-solid fa-trash-can"></i></a>
+                            <a href="#" onclick="deleteType(<%= usertype.id %>)"><i class="fa-solid fa-trash-can"></i></a>
                         </td>
                     </tr>
                     <% }); %>
                 </tbody>
             </table>
+
+            <h5 class="mb-4"><i class="fa fa-user-plus"></i>&nbsp;&nbsp;Create new usertype</h5>
+
+            <form action="/admin/usertype/create" method="post">
+                <div class="row">
+                    <div class="col-md">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="name" required />
+                    </div>
+                    <div class="col-md">
+                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create usertype</button>
+                    </div>
+                </div>
+            </form>
         </main>
 
         <script src="../javascripts/admin-scripts.js"></script>

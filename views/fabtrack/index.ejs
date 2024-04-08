@@ -28,8 +28,78 @@
             <% include ../includes/header.html %>
 
             <h4 class="mb-4"><i class="fa fa-toggle-on"></i>&nbsp;&nbsp;Register an existing user</h4>
+            <form action="/staff/update" method="post">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="name" name="name" required />
+                            <label for="username">Name</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="surname" name="surname" required />
+                            <label for="username">Surname</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
 
             <h4 class="mb-4"><i class="fa fa-toggle-off"></i>&nbsp;&nbsp;Create a new user</h4>
+            <form action="/staff/update" method="post">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="name" name="name" required />
+                            <label for="username">Name</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="surname" name="surname" required />
+                            <label for="username">Surname</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="birthyear" name="birthyear" />
+                            <label for="birthyear">Birth year</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md">
+                        <div class="form-floating mb-3">
+                            <input type="email" name="email" class="form-control" id="email" required />
+                            <label for="email">Email address</label>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="usertype">
+                                <option selected></option>
+                                <option value="1">Student</option>
+                                <option value="2">Teacher</option>
+                                <option value="3">Professionnal</option>
+                            </select>
+                            <label for="usertype">Type of user</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="comments" style="height: 100px"></textarea>
+                            <label for="comments">Comments</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create user</button>
+                    </div>
+                </div>
+            </form>
         </main>
 
         <script

@@ -52,3 +52,14 @@ async function makeStaffUser(id) {
   });
   location.reload();
 }
+
+async function deleteType(id) {
+  let url = window.location.origin + "/admin/usertype/delete/" + id;
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-type": "application/json",
+    },
+  });
+  location.reload();
+}
