@@ -24,7 +24,11 @@ router.get("/", async (req, res) => {
 // ******************************************************************************
 
 router.get("/manage-staff", async (req, res) => {
-  const allStaff = await prisma.staff.findMany({});
+  const allStaff = await prisma.staff.findMany({
+    orderBy: {
+      id: "desc",
+    },
+  });
   res.render("admin/admin-staff", { error: req.session.error, message: req.session.message, users: allStaff });
 });
 
@@ -33,7 +37,15 @@ router.get("/manage-staff", async (req, res) => {
 // ******************************************************************************
 
 router.get("/manage-users", async (req, res) => {
-  const allUsers = await prisma.staff.findMany({});
+  const allUsers = await prisma.users.findMany({
+    orderBy: {
+      id: "desc",
+    },
+    relationLoadStrategy: "join",
+    include: {
+      usertype: true,
+    },
+  });
   res.render("admin/admin-users", { error: req.session.error, message: req.session.message, users: allUsers });
 });
 

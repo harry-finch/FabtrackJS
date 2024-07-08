@@ -12,10 +12,8 @@ dotenv.config();
 var indexRouter = require("./routes/index");
 var adminRouter = require("./routes/admin");
 var staffRouter = require("./routes/staff");
+var usersRouter = require("./routes/users");
 var fabTrackRouter = require("./routes/fabtrack");
-
-var babyfootRouter = require("./routes/babyfoot");
-var gameRouter = require("./routes/game");
 
 var app = express();
 
@@ -43,10 +41,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/", indexRouter);
 app.use("/admin", adminRouter);
 app.use("/staff", staffRouter);
+app.use("/users", usersRouter);
 app.use("/fabtrack", fabTrackRouter);
-
-app.use("/game", gameRouter);
-app.use("/babyfoot", babyfootRouter);
 
 // Catch 404 and forward to error handler
 app.use(function (req, res, next) {

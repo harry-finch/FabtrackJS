@@ -63,3 +63,16 @@ async function deleteType(id) {
   });
   location.reload();
 }
+
+async function deleteUser(id) {
+  let url = window.location.origin + "/users/delete/" + id;
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-type": "application/json",
+    },
+  });
+  location.reload();
+}
+
+async function sendMailAgain(mail) {}
