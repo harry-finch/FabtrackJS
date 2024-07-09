@@ -13,30 +13,50 @@ const prisma = new PrismaClient();
 
 // ******************************************************************************
 // Route handling the main admin page
+//
+// >>> Rendering route
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
-  res.render("admin/admin", { error: req.session.error, message: req.session.message });
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  res.render("admin/admin", {
+    notification: notification,
+  });
 });
 
 // ******************************************************************************
 // Route handling the admin page managing staff accounts
+//
+// >>> Rendering route
 // ******************************************************************************
 
 router.get("/manage-staff", async (req, res) => {
+  const notification = req.session.notification;
+  req.session.notification = "";
+
   const allStaff = await prisma.staff.findMany({
     orderBy: {
       id: "desc",
     },
   });
-  res.render("admin/admin-staff", { error: req.session.error, message: req.session.message, users: allStaff });
+  res.render("admin/admin-staff", {
+    notification: notification,
+    users: allStaff,
+  });
 });
 
 // ******************************************************************************
 // Route handling the admin page managing user accounts
+//
+// >>> Rendering route
 // ******************************************************************************
 
 router.get("/manage-users", async (req, res) => {
+  const notification = req.session.notification;
+  req.session.notification = "";
+
   const allUsers = await prisma.users.findMany({
     orderBy: {
       id: "desc",
@@ -46,16 +66,27 @@ router.get("/manage-users", async (req, res) => {
       usertype: true,
     },
   });
-  res.render("admin/admin-users", { error: req.session.error, message: req.session.message, users: allUsers });
+  res.render("admin/admin-users", {
+    notification: notification,
+    users: allUsers,
+  });
 });
 
 // ******************************************************************************
 // Route handling the admin page managing user accounts
+//
+// >>> Rendering route
 // ******************************************************************************
 
 router.get("/manage-usertypes", async (req, res) => {
+  const notification = req.session.notification;
+  req.session.notification = "";
+
   const allTypes = await prisma.usertype.findMany({});
-  res.render("admin/admin-usertypes", { error: req.session.error, message: req.session.message, usertypes: allTypes });
+  res.render("admin/admin-usertypes", {
+    notification: notification,
+    usertypes: allTypes,
+  });
 });
 
 // ******************************************************************************

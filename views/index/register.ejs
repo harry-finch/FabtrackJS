@@ -19,16 +19,12 @@
         />
     </head>
 
-    <body class="d-flex align-items-center bg-body-tertiary py-4">
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
         <% include ../includes/light-dark.html %>
         <main class="form-signin w-100 m-auto">
-            <form action="/staff/create" method="post">
+            <form action="/create-account" method="post">
                 <img class="mb-4" src="https://getbootstrap.com/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57" />
                 <h1 class="h3 fw-normal mb-3">Create account</h1>
-
-                <% if (locals.error) { %>
-                <div class="alert alert-warning" role="alert"><%= error %></div>
-                <% } %>
 
                 <div class="alert alert-warning" id="warning" style="display: none" role="alert"></div>
 
@@ -36,6 +32,7 @@
                     <input type="text" class="form-control" id="username" name="username" placeholder="Username" required />
                     <label for="username">Username</label>
                 </div>
+
                 <div class="form-floating">
                     <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="Password" required />
                     <label for="password_verif">Password</label>
@@ -47,24 +44,15 @@
 
                 <div class="form-floating">
                     <input type="email" class="form-control" id="mail" name="mail" placeholder="your@email.com" required />
-                    <label for="email">Email</label>
+                    <label for="mail">Email</label>
                 </div>
 
                 <button class="btn btn-primary w-100 py-2" type="submit">Register</button>
-                <p class="mt-2 text-center"><small><a href="../login">I already have an account</a></small</p>
+                <p class="mt-2 text-center"><small><a href="../login">I already have an account</a></small></p>
                 <p class="text-body-secondary mb-3 mt-5">&copy; Stéphane Muller 2024</p>
             </form>
         </main>
-        <script>
-        document.querySelector('form')
-          .addEventListener('submit', (event) => {
-            if (document.getElementById('password').value != document.getElementById('password_verif').value){
-              event.preventDefault();
-              document.getElementById('warning').innerHTML = "Passwords do not match!";
-              document.getElementById('warning').style.display = "block";
-            }
-          });
-        </script>
+
         <script
             src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
             integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
@@ -75,5 +63,20 @@
             integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
             crossorigin="anonymous"
         ></script>
+
+        <% include ../includes/notifications.html %>
+
+        <script>
+        document.querySelector('form')
+          .addEventListener('submit', (event) => {
+            if (document.getElementById('password').value != document.getElementById('password_verif').value){
+              event.preventDefault();
+              document
+                .getElementsByClassName("toast-body")[0]
+                .innerHTML = "Error: Passwords do not match!";
+              showNotification();
+            }
+          });
+        </script>
     </body>
 </html>

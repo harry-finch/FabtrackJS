@@ -30,30 +30,31 @@ router.get("/", async (req, res) => {
 // ******************************************************************************
 
 router.post("/create", async (req, res) => {
-  const { name, surname, mail, usertypeId, birthYear, comment } = req.body;
+  const user = req.body;
 
   const result = await prisma.users
     .create({
       data: {
-        name: name,
-        surname: surname,
-        mail: mail,
-        usertypeId: usertypeId,
-        birthYear: birthYear,
-        comment: comment,
+        name: user.name,
+        surname: user.surname,
+        mail: user.mail,
+        usertypeId: user.usertypeId,
+        birthYear: user.birthYear,
+        comment: user.comment,
       },
     })
     .catch(async (e) => {
       console.log(e);
 
       if (e.code === "P2002") {
-        req.session.error = "User already exists";
+        req.session.notification = "Error: User already exists";
         res.redirect("../");
       }
       await prisma.$disconnect();
     });
 
-  req.session.message = "User needs to agree to the terms and conditions before he's able to use the lab.";
+  req.session.notification =
+    "Message: User needs to agree to the terms and conditions before he's able to use the lab.";
   res.redirect("../");
 });
 
@@ -83,7 +84,7 @@ router.post("/update", async (req, res) => {
   var prevPage = req.originalUrl;
   console.log(user);
 
-  const result = await prisma.staff.update({
+  const result = await prisma.users.update({
     where: { id: Number(user.id) },
     data: {
       name: user.username,
@@ -92,7 +93,26 @@ router.post("/update", async (req, res) => {
       approved: approval,
     },
   });
+  req.session.notification = "Success: User profile updated!";
   res.redirect(`${prevPage}`);
+});
+
+// ******************************************************************************
+// Route handling the user signing the agreement
+// ******************************************************************************
+
+router.put("/agreement/:token", async (req, res) => {
+  const { token } = req.params;
+
+  const result = await prisma.users.update({
+    where: { token: token },
+    data: {
+      termsAndConditions: true,
+    },
+  });
+  req.session.notification =
+    "Thank you for agreeing to our terms and conditions";
+  res.redirect("../");
 });
 
 module.exports = router;

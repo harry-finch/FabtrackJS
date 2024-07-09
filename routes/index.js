@@ -9,7 +9,7 @@ var crypto = require("crypto");
 const dotenv = require("dotenv");
 dotenv.config();
 
-// Use https://ethereal.email/ to test
+// Update mail options in .env file
 const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   host: process.env.HOST,
@@ -44,18 +44,71 @@ router.get("/", async (req, res) => {
 
 // ******************************************************************************
 // Routes handling login, registration and password reset
+//
+// >>> Rendering routes
 // ******************************************************************************
 
 router.get("/login", function (req, res) {
-  res.render("index/login", { error: req.session.error, message: req.session.message });
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  res.render("index/login", {
+    notification: notification,
+  });
 });
 
 router.get("/register", function (req, res) {
-  res.render("index/register", { error: req.session.error, content: req.session.formcontent });
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  res.render("index/register", {
+    notification: notification,
+    content: req.session.formcontent,
+  });
 });
 
 router.get("/forgot", function (req, res) {
-  res.render("index/forgot", { error: req.session.error });
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  res.render("index/forgot", { notification: notification });
+});
+
+// ******************************************************************************
+// Route handling the creation of a new staff
+// ******************************************************************************
+
+router.post("/create-account", async (req, res) => {
+  const { username, password, mail } = req.body;
+
+  // Hash password
+  var salt = process.env.SALT;
+  var hash = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
+    .toString(`base64`);
+
+  const result = await prisma.staff
+    .create({
+      data: {
+        name: username,
+        pwd: hash,
+        mail: mail,
+      },
+    })
+    .catch(async (e) => {
+      console.log(e);
+
+      if (e.code === "P2002") {
+        await prisma.$disconnect();
+
+        req.session.notification = "Error: User already exists";
+        res.redirect("/register");
+      } else {
+        req.session.notification =
+          "Warning: Your account needs to be approved by an administrator before you can log in.";
+        res.redirect("/login");
+      }
+    });
 });
 
 // ******************************************************************************
@@ -85,11 +138,16 @@ router.post("/reset", async (req, res) => {
     to: mail,
     subject: "FabtrackJS: reset your password",
     text: process.env.HOSTURL + "/reset/" + buf.toString("base64"),
-    html: '<a href="' + process.env.HOSTURL + "/reset/" + buf.toString("base64") + '">Click here to reset your password</a>',
+    html:
+      '<a href="' +
+      process.env.HOSTURL +
+      "/reset/" +
+      buf.toString("base64") +
+      '">Click here to reset your password</a>',
   });
 
   console.log(process.env.HOSTURL + "/reset/" + buf.toString("base64"));
-  req.session.message = "Check your email to reset password";
+  req.session.notification = "Warning: Check your email to reset password";
 
   res.redirect("login");
 });
@@ -115,7 +173,7 @@ router.get("/reset/:token", async (req, res) => {
 
   // Check if token is still valid (10 minutes)
   if (now - tokenCreation > 600000) {
-    req.session.error = "Token has timed out.";
+    req.session.notification = "Error: Token has timed out.";
     res.redirect("/forgot");
   } else {
     res.render("index/reset", { user: result });
@@ -131,7 +189,9 @@ router.post("/reset_password", async (req, res) => {
 
   // Hash password and update it
   var salt = process.env.SALT;
-  var hash = crypto.pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`base64`);
+  var hash = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
+    .toString(`base64`);
 
   const result = await prisma.staff.update({
     where: {
@@ -159,7 +219,9 @@ router.post("/auth", async function (req, res) {
   if (username && password) {
     // Hash the password to check it against the hash in the database
     var salt = process.env.SALT;
-    var hash = crypto.pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`base64`);
+    var hash = crypto
+      .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
+      .toString(`base64`);
 
     const user = await prisma.staff.findUnique({
       where: { name: username, pwd: hash },
@@ -177,11 +239,11 @@ router.post("/auth", async function (req, res) {
 
       res.redirect("/");
     } else {
-      req.session.error = "Wrong user/password";
+      req.session.notification = "Error: Wrong user/password";
       res.redirect("/");
     }
   } else {
-    req.session.error = "At least one field is empty.";
+    req.session.notification = "Error: At least one field is empty.";
     res.redirect("/login");
   }
 });

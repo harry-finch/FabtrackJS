@@ -19,18 +19,12 @@
         />
     </head>
 
-    <body class="d-flex align-items-center bg-body-tertiary py-4">
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
         <% include ../includes/light-dark.html %>
         <main class="form-signin w-100 m-auto">
             <form action="/reset_password" method="post">
                 <img class="mb-4" src="https://getbootstrap.com/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57" />
                 <h1 class="h3 fw-normal mb-3">Reset password for <%= user.nom %></h1>
-
-                <% if (locals.error) { %>
-                <div class="alert alert-warning" role="alert"><%= error %></div>
-                <% } %>
-
-                <div class="alert alert-warning" id="warning" style="display: none" role="alert"></div>
 
                 <div class="form-floating">
                     <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="Password" required />
@@ -66,5 +60,7 @@
             integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
             crossorigin="anonymous"
         ></script>
+
+        <% include ../includes/notifications.html %>
     </body>
 </html>

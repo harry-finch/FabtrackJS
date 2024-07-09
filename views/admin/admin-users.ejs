@@ -32,11 +32,11 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Type</th>
-                        <th scope="col" class="text-center">Agreement</th>
+                        <th onclick="sortTable(0)" scope="col">#</th>
+                        <th onclick="sortTable(1)" scope="col">Username</th>
+                        <th onclick="sortTable(2)" scope="col">Email</th>
+                        <th onclick="sortTable(3)" scope="col">Type</th>
+                        <th onclick="sortTable(4)" scope="col" class="text-center">Agreement</th>
                         <th scope="col" class="text-center">Edit</th>
                         <th scope="col" class="text-center">Delete</th>
                     </tr>
@@ -44,7 +44,7 @@
                 <tbody id="table-content">
                     <% users.forEach(function(user) { %>
                     <tr>
-                        <th scope="row"><%= user.id %></th>
+                        <td scope="row"><%= user.id %></th>
                         <td><%= user.name %> <%= user.surname %></td>
                         <td><a href="mailto:<%= user.mail %>"><%= user.mail %></a></td>
                         <td><%= user.usertype.name %></td>
@@ -70,6 +70,7 @@
         </main>
 
         <script src="../javascripts/admin-scripts.js"></script>
+        <script src="../javascripts/table-sorting.js"></script>
         <script
             src=" https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
             integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
@@ -80,5 +81,8 @@
             integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
             crossorigin="anonymous"
         ></script>
+
+        <% include ../includes/notifications.html %>
+
     </body>
 </html>
