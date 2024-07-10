@@ -17,12 +17,42 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
   if (req.session.role != "admin") {
-    req.session.error = "Unauthorized access!";
+    req.session.notification = "Error: Unauthorized access!";
     return res.redirect("/");
   }
 
   const allUsers = await prisma.users.findMany({});
   res.status(200).json(allUsers);
+});
+
+// ******************************************************************************
+// Route handling the admin page managing user accounts
+//
+// >>> Rendering route
+// ******************************************************************************
+
+router.get("/manage", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.notification = "Error: Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  const allUsers = await prisma.users.findMany({
+    orderBy: {
+      id: "desc",
+    },
+    relationLoadStrategy: "join",
+    include: {
+      usertype: true,
+    },
+  });
+  res.render("admin/manage-users", {
+    notification: notification,
+    users: allUsers,
+  });
 });
 
 // ******************************************************************************
@@ -64,7 +94,7 @@ router.post("/create", async (req, res) => {
 
 router.delete("/delete/:id", async (req, res) => {
   if (req.session.role != "admin") {
-    req.session.error = "Unauthorized access!";
+    req.session.notification = "Error: Unauthorized access!";
     return res.redirect("/");
   }
 
@@ -95,24 +125,6 @@ router.post("/update", async (req, res) => {
   });
   req.session.notification = "Success: User profile updated!";
   res.redirect(`${prevPage}`);
-});
-
-// ******************************************************************************
-// Route handling the user signing the agreement
-// ******************************************************************************
-
-router.put("/agreement/:token", async (req, res) => {
-  const { token } = req.params;
-
-  const result = await prisma.users.update({
-    where: { token: token },
-    data: {
-      termsAndConditions: true,
-    },
-  });
-  req.session.notification =
-    "Thank you for agreeing to our terms and conditions";
-  res.redirect("../");
 });
 
 module.exports = router;

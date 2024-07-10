@@ -1,21 +1,19 @@
-function isNumber(innerHTML) {
-  const numberRegex = /^[0-9]+$/; // Matches numbers with optional decimal
-  return numberRegex.test(innerHTML.trim()); // Trim whitespace before testing
-}
-
 function sortTable(n) {
   var table,
     rows,
     switching,
     i,
     x,
+    xTransformed,
     y,
+    yTransformed,
     shouldSwitch,
     dir,
     switchcount = 0;
 
   table = document.querySelector("table");
   switching = true;
+  const regex = new RegExp("^[0-9]+$");
 
   // Set the sorting direction to ascending:
   dir = "asc";
@@ -32,32 +30,27 @@ function sortTable(n) {
       shouldSwitch = false;
 
       // Get the two elements you want to compare, one from current row and one from the next:
-      x = rows[i].getElementsByTagName("TD")[n];
-      y = rows[i + 1].getElementsByTagName("TD")[n];
+      x = rows[i].getElementsByTagName("TD")[n].innerHTML.trim();
+      y = rows[i + 1].getElementsByTagName("TD")[n].innerHTML.trim();
+
+      // Test if we're dealing with numbers or words
+      if (regex.test(x)) {
+        xTransformed = parseInt(x);
+        yTransformed = parseInt(y);
+      } else {
+        xTransformed = x.toLowerCase();
+        yTransformed = y.toLowerCase();
+      }
 
       // Check if the two rows should switch place, based on the direction, asc or desc:
       if (dir == "asc") {
-        if (
-          isNumber(x.innerHTML) &&
-          Number(x.innerHTML) > Number(y.innerHTML)
-        ) {
-          shouldSwitch = true;
-          break;
-        }
-        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+        if (xTransformed > yTransformed) {
           // If so, mark as a switch and break the loop:
           shouldSwitch = true;
           break;
         }
       } else if (dir == "desc") {
-        if (
-          isNumber(x.innerHTML) &&
-          Number(x.innerHTML) < Number(y.innerHTML)
-        ) {
-          shouldSwitch = true;
-          break;
-        }
-        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+        if (xTransformed < yTransformed) {
           // If so, mark as a switch and break the loop:
           shouldSwitch = true;
           break;

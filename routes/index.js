@@ -25,12 +25,10 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
-// Route handling the main page
+// Route handling the root page depending if you're logged in or not
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
-  console.log(req.session.role);
-
   if (req.session.role === "admin") {
     return res.redirect("admin/");
   }
@@ -75,7 +73,7 @@ router.get("/forgot", function (req, res) {
 });
 
 // ******************************************************************************
-// Route handling the creation of a new staff
+// Route handling the creation of a new staff from the registration page
 // ******************************************************************************
 
 router.post("/create-account", async (req, res) => {
@@ -106,6 +104,20 @@ router.post("/create-account", async (req, res) => {
       } else {
         req.session.notification =
           "Warning: Your account needs to be approved by an administrator before you can log in.";
+
+        const info = await transporter.sendMail({
+          from: process.env.MAILFROM,
+          to: process.env.ADMIN,
+          subject: "FabtrackJS: new staff account created",
+          text:
+            "User " +
+            username +
+            " (" +
+            mail +
+            ") " +
+            " has registered an account on Fabtrack.",
+        });
+
         res.redirect("/login");
       }
     });
@@ -154,6 +166,7 @@ router.post("/reset", async (req, res) => {
 
 // ******************************************************************************
 // Route handling the reset password page
+//
 // It takes a token as param and checks which staff has it in the database
 // as well as the token validity (10 minutes)
 // ******************************************************************************
@@ -206,6 +219,7 @@ router.post("/reset_password", async (req, res) => {
 
 // ******************************************************************************
 // Route handling the authentication process
+//
 // It takes a username, a password and the "rememberMe" checkbox value
 // Redirects to the index page or the login if not successful
 // ******************************************************************************
@@ -250,6 +264,7 @@ router.post("/auth", async function (req, res) {
 
 // ******************************************************************************
 // Route handling staff logout
+//
 // Redirects to the login page
 // ******************************************************************************
 
@@ -265,6 +280,24 @@ router.get("/logout", function (req, res, next) {
       res.redirect("/");
     });
   });
+});
+
+// ******************************************************************************
+// Route handling the user signing the agreement
+// ******************************************************************************
+
+router.put("/agreement/:token", async (req, res) => {
+  const { token } = req.params;
+
+  const result = await prisma.users.update({
+    where: { token: token },
+    data: {
+      termsAndConditions: true,
+    },
+  });
+  req.session.notification =
+    "Thank you for agreeing to our terms and conditions";
+  res.redirect("../");
 });
 
 module.exports = router;

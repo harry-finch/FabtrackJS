@@ -3,7 +3,6 @@
 // ******************************************************************************
 
 var express = require("express");
-var crypto = require("crypto");
 var router = express.Router();
 
 const isAdmin = require("../middleware/checkAdmin.js");
@@ -19,6 +18,27 @@ const prisma = new PrismaClient();
 router.get("/", async (req, res) => {
   const allStaff = await prisma.staff.findMany({});
   res.status(200).json(allStaff);
+});
+
+// ******************************************************************************
+// Route handling the admin page managing staff accounts
+//
+// >>> Rendering route
+// ******************************************************************************
+
+router.get("/manage", async (req, res) => {
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  const allStaff = await prisma.staff.findMany({
+    orderBy: {
+      id: "desc",
+    },
+  });
+  res.render("admin/manage-staff", {
+    notification: notification,
+    users: allStaff,
+  });
 });
 
 // ******************************************************************************
@@ -38,7 +58,7 @@ router.get("/edit/:id", async (req, res) => {
     },
   });
 
-  res.render("admin/staff-edit", {
+  res.render("admin/edit-staff", {
     notification: notification,
     user: user,
   });

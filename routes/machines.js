@@ -21,9 +21,13 @@ router.get("/", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
 
-  res.render("admin/main", {
+  res.render("admin/manage-machines", {
     notification: notification,
   });
+});
+
+router.get("/test", async (req, res) => {
+  res.send("test");
 });
 
 module.exports = router;
