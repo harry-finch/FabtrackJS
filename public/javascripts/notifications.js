@@ -19,8 +19,8 @@ function showNotification() {
       break;
 
     case "Success":
-      toastLiveMessage.classList.remove("text-bg-success");
-      toastLiveMessage.classList.add("text-bg-danger");
+      toastLiveMessage.classList.remove("text-bg-secondary");
+      toastLiveMessage.classList.add("text-bg-success");
       toastBootstrap.show();
       break;
   }

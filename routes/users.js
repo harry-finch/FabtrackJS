@@ -11,6 +11,8 @@ router.use(isLoggedIn);
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const logger = require("../utilities/simpleLogger.js");
+
 // ******************************************************************************
 // Route returning a list of all users
 // ******************************************************************************
@@ -49,6 +51,7 @@ router.get("/manage", async (req, res) => {
       usertype: true,
     },
   });
+
   res.render("admin/manage-users", {
     notification: notification,
     users: allUsers,
@@ -83,8 +86,16 @@ router.post("/create", async (req, res) => {
       await prisma.$disconnect();
     });
 
+  logger.logThat(
+    "User " +
+      user.name +
+      " " +
+      user.surname +
+      " created by " +
+      req.session.username,
+  );
   req.session.notification =
-    "Message: User needs to agree to the terms and conditions before he's able to use the lab.";
+    "Warning: User needs to agree to the terms and conditions before he can access the lab.";
   res.redirect("../");
 });
 
@@ -102,6 +113,17 @@ router.delete("/delete/:id", async (req, res) => {
   const user = await prisma.users.delete({
     where: { id: Number(id) },
   });
+
+  logger.logThat(
+    "User " +
+      user.name +
+      " " +
+      user.surname +
+      " created by " +
+      req.session.username,
+  );
+  req.session.notification =
+    "Success: User " + user.name + " " + user.surname + " has been deleted";
   res.status(200).json(user);
 });
 
@@ -112,7 +134,6 @@ router.delete("/delete/:id", async (req, res) => {
 router.post("/update", async (req, res) => {
   const user = req.body;
   var prevPage = req.originalUrl;
-  console.log(user);
 
   const result = await prisma.users.update({
     where: { id: Number(user.id) },
@@ -123,6 +144,15 @@ router.post("/update", async (req, res) => {
       approved: approval,
     },
   });
+
+  logger.logThat(
+    "User " +
+      user.name +
+      " " +
+      user.surname +
+      " updated by " +
+      req.session.username,
+  );
   req.session.notification = "Success: User profile updated!";
   res.redirect(`${prevPage}`);
 });

@@ -11,6 +11,8 @@ router.use(isAdmin);
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const logger = require("../utilities/simpleLogger.js");
+
 // ******************************************************************************
 // Route returning a list of all staff members
 // ******************************************************************************
@@ -78,6 +80,9 @@ router.put("/enable/:id", async (req, res) => {
       approved: true,
     },
   });
+
+  logger.logThat("User " + result.name + " enabled by " + req.session.username);
+  req.session.notification = "Success: User is now enabled";
   res.status(200).json(result);
 });
 
@@ -95,6 +100,11 @@ router.put("/disable/:id", async (req, res) => {
       approved: false,
     },
   });
+
+  logger.logThat(
+    "User " + result.name + " disabled by " + req.session.username,
+  );
+  req.session.notification = "Success: User is now disabled";
   res.status(200).json(result);
 });
 
@@ -112,6 +122,11 @@ router.put("/promote/:id", async (req, res) => {
       role: "admin",
     },
   });
+
+  logger.logThat(
+    "User " + result.name + " made admin by " + req.session.username,
+  );
+  req.session.notification = "Success: User is now admin";
   res.status(200).json(result);
 });
 
@@ -129,6 +144,11 @@ router.put("/demote/:id", async (req, res) => {
       role: "user",
     },
   });
+
+  logger.logThat(
+    "User " + result.name + " made simple user by " + req.session.username,
+  );
+  req.session.notification = "Success: User is now just a user again";
   res.status(200).json(result);
 });
 
@@ -138,9 +158,14 @@ router.put("/demote/:id", async (req, res) => {
 
 router.delete("/delete/:id", async (req, res) => {
   const { id } = req.params;
-  const staff = await prisma.staff.delete({
+  const result = await prisma.staff.delete({
     where: { id: Number(id) },
   });
+
+  logger.logThat(
+    "User " + result.name + " has been deleted by " + req.session.username,
+  );
+  req.session.notification = "Success: User has been deleted";
   res.status(200).json(result);
 });
 
@@ -166,7 +191,12 @@ router.post("/update", async (req, res) => {
       approved: approval,
     },
   });
-  res.redirect("/admin/manage-staff");
+
+  logger.logThat(
+    "User " + result.name + " has been updated by " + req.session.username,
+  );
+  req.session.notification = "Success: User has been updated";
+  res.redirect("/admin/staff/manage");
 });
 
 module.exports = router;

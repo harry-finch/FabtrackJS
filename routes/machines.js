@@ -9,7 +9,9 @@ const isAdmin = require("../middleware/checkAdmin.js");
 router.use(isAdmin);
 
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ["query", "info", "warn", "error"],
+});
 
 // ******************************************************************************
 // Route handling the main admin page

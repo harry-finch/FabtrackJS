@@ -1,5 +1,5 @@
 async function deleteStaff(id) {
-  let url = window.location.origin + "/staff/delete/" + id;
+  let url = window.location.origin + "/admin/staff/delete/" + id;
   const response = await fetch(url, {
     method: "DELETE",
     headers: {
@@ -7,10 +7,11 @@ async function deleteStaff(id) {
     },
   });
   location.reload();
+  showNotification();
 }
 
 async function enableStaff(id) {
-  let url = window.location.origin + "/staff/enable/" + id;
+  let url = window.location.origin + "/admin/staff/enable/" + id;
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -18,10 +19,11 @@ async function enableStaff(id) {
     },
   });
   location.reload();
+  showNotification();
 }
 
 async function disableStaff(id) {
-  let url = window.location.origin + "/staff/disable/" + id;
+  let url = window.location.origin + "/admin/staff/disable/" + id;
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -29,10 +31,11 @@ async function disableStaff(id) {
     },
   });
   location.reload();
+  showNotification();
 }
 
 async function makeStaffAdmin(id) {
-  let url = window.location.origin + "/staff/promote/" + id;
+  let url = window.location.origin + "/admin/staff/promote/" + id;
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -40,10 +43,11 @@ async function makeStaffAdmin(id) {
     },
   });
   location.reload();
+  showNotification();
 }
 
 async function makeStaffUser(id) {
-  let url = window.location.origin + "/staff/demote/" + id;
+  let url = window.location.origin + "/admin/staff/demote/" + id;
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -51,10 +55,11 @@ async function makeStaffUser(id) {
     },
   });
   location.reload();
+  showNotification();
 }
 
 async function deleteType(id) {
-  let url = window.location.origin + "/admin/usertype/delete/" + id;
+  let url = window.location.origin + "/admin/usertypes/delete/" + id;
   const response = await fetch(url, {
     method: "DELETE",
     headers: {
@@ -62,6 +67,7 @@ async function deleteType(id) {
     },
   });
   location.reload();
+  showNotification();
 }
 
 async function deleteUser(id) {
@@ -73,6 +79,7 @@ async function deleteUser(id) {
     },
   });
   location.reload();
+  showNotification();
 }
 
 async function sendMailAgain(mail) {}

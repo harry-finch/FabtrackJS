@@ -47,12 +47,14 @@ function sortTable(n) {
         if (xTransformed > yTransformed) {
           // If so, mark as a switch and break the loop:
           shouldSwitch = true;
+          // console.log(xTransformed + " > " + yTransformed);
           break;
         }
       } else if (dir == "desc") {
         if (xTransformed < yTransformed) {
           // If so, mark as a switch and break the loop:
           shouldSwitch = true;
+          // console.log(xTransformed + " < " + yTransformed);
           break;
         }
       }

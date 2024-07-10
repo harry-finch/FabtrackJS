@@ -9,14 +9,19 @@ const isLoggedIn = require("../middleware/checkSession.js");
 router.use(isLoggedIn);
 
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ["query", "info", "warn", "error"],
+});
 
 // ******************************************************************************
 // Route handling the main admin page
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
-  res.render("fabtrack/index", { error: req.session.error, message: req.session.message });
+  res.render("fabtrack/index", {
+    error: req.session.error,
+    message: req.session.message,
+  });
 });
 
 module.exports = router;

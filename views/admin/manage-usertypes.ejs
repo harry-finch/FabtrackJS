@@ -29,7 +29,7 @@
                 <tbody id="table-content">
                     <% usertypes.forEach(function(usertype) { %>
                     <tr>
-                        <th scope="row"><%= usertype.id %></th>
+                        <td scope="row"><%= usertype.id %></td>
                         <td><%= usertype.name %></td>
                         <td class="text-center">
                             <a href="#" onclick="deleteType(<%= usertype.id %>)"><i class="fa-solid fa-trash-can"></i></a>
@@ -41,7 +41,7 @@
 
             <h5 class="mb-4"><i class="fa fa-user-plus"></i>&nbsp;&nbsp;Create new usertype</h5>
 
-            <form action="/admin/usertype/create" method="post">
+            <form action="/admin/usertypes/create" method="post">
                 <div class="row">
                     <div class="col-md">
                         <input type="text" class="form-control" id="name" name="name" placeholder="name" required />

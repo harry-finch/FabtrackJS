@@ -158,7 +158,7 @@ router.post("/reset", async (req, res) => {
       '">Click here to reset your password</a>',
   });
 
-  console.log(process.env.HOSTURL + "/reset/" + buf.toString("base64"));
+  // console.log(process.env.HOSTURL + "/reset/" + buf.toString("base64"));
   req.session.notification = "Warning: Check your email to reset password";
 
   res.redirect("login");

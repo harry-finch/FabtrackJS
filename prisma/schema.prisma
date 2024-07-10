@@ -8,6 +8,13 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+// Logs table for every important database access
+model Logs {
+    id          Int       @id @default(autoincrement())
+    timestamp   DateTime  @default(now())
+    description String    @db.VarChar(255)
+}
+
 // Users that will actually log on to the platform
 model Staff {
     id        Int      @id @default(autoincrement())

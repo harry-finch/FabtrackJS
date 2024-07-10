@@ -18,7 +18,7 @@
 
             <h4 class="mb-4"><i class="fa fa-user-pen"></i>&nbsp;&nbsp;Edit staff account</h4>
 
-            <form action="/staff/update" method="post">
+            <form action="admin/staff/update" method="post">
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="username" name="username" value="<%= user.name %>" required />
                     <label for="username">Username</label>
@@ -45,7 +45,7 @@
 
                 <input type='hidden' id="id" name='id' value='<%= user.id %>' />
                 <button class="btn btn-primary w-100 py-2 mb-2" type="submit">Update account</button>
-                <button class="btn btn-secondary w-100 py-2" onclick="window.location.href = '/admin/manage-staff'">Cancel</button>
+                <button class="btn btn-secondary w-100 py-2" onclick="window.location.href = 'admin/manage-staff'">Cancel</button>
             </form>
         </main>
 
