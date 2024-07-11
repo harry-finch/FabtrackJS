@@ -22,6 +22,7 @@ const logger = require("../utilities/simpleLogger.js");
 router.get("/manage", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
+  req.session.lastPage = "/admin/usertypes/manage";
 
   const allTypes = await prisma.usertype.findMany({});
   res.render("admin/manage-usertypes", {
@@ -34,7 +35,7 @@ router.get("/manage", async (req, res) => {
 // Route handling the deletion of a usertype
 // ******************************************************************************
 
-router.delete("/delete/:id", async (req, res) => {
+router.get("/delete/:id", async (req, res) => {
   const { id } = req.params;
   const result = await prisma.usertype.delete({
     where: { id: Number(id) },
@@ -43,9 +44,9 @@ router.delete("/delete/:id", async (req, res) => {
   logger.logThat(
     "Usertype " + result.name + " deleted by " + req.session.username,
   );
-  req.session.notification = "Success: Usertype" + result.name + "deleted";
+  req.session.notification = "Success: Usertype " + result.name + " deleted";
 
-  res.status(200).json(result);
+  res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
@@ -59,7 +60,7 @@ router.post("/create", async (req, res) => {
   });
 
   logger.logThat("Usertype " + name + " created by " + req.session.username);
-  req.session.notification = "Success: Usertype" + name + "created";
+  req.session.notification = "Success: Usertype " + name + " created";
 
   res.redirect("/admin/usertypes/manage");
 });

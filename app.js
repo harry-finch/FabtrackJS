@@ -10,6 +10,7 @@ dotenv.config();
 
 // Routes setup
 var indexRouter = require("./routes/index");
+var apiRouter = require("./routes/api");
 var adminRouter = require("./routes/admin");
 var staffRouter = require("./routes/staff");
 var usersRouter = require("./routes/users");
@@ -41,6 +42,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/", indexRouter);
+app.use("/api", apiRouter);
 app.use("/admin", adminRouter);
 app.use("/admin/staff", staffRouter);
 app.use("/users", usersRouter);

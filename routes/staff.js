@@ -14,16 +14,7 @@ const prisma = new PrismaClient();
 const logger = require("../utilities/simpleLogger.js");
 
 // ******************************************************************************
-// Route returning a list of all staff members
-// ******************************************************************************
-
-router.get("/", async (req, res) => {
-  const allStaff = await prisma.staff.findMany({});
-  res.status(200).json(allStaff);
-});
-
-// ******************************************************************************
-// Route handling the admin page managing staff accounts
+// Route handling the admin page managing staff accounts (admin only)
 //
 // >>> Rendering route
 // ******************************************************************************
@@ -31,6 +22,7 @@ router.get("/", async (req, res) => {
 router.get("/manage", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
+  req.session.lastPage = "/admin/staff/manage";
 
   const allStaff = await prisma.staff.findMany({
     orderBy: {
@@ -44,7 +36,7 @@ router.get("/manage", async (req, res) => {
 });
 
 // ******************************************************************************
-// Route handling the enabling of a staff account
+// Route handling the admin page to edit a staff account (admin only)
 //
 // >>> Rendering route
 // ******************************************************************************
@@ -67,10 +59,10 @@ router.get("/edit/:id", async (req, res) => {
 });
 
 // ******************************************************************************
-// Route handling the enabling of a staff account
+// Route handling the enabling of a staff account (admin only)
 // ******************************************************************************
 
-router.put("/enable/:id", async (req, res) => {
+router.get("/enable/:id", async (req, res) => {
   const { id } = req.params;
   const result = await prisma.staff.update({
     where: {
@@ -83,14 +75,14 @@ router.put("/enable/:id", async (req, res) => {
 
   logger.logThat("User " + result.name + " enabled by " + req.session.username);
   req.session.notification = "Success: User is now enabled";
-  res.status(200).json(result);
+  res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
-// Route handling the disabling of a staff account
+// Route handling the disabling of a staff account (admin only)
 // ******************************************************************************
 
-router.put("/disable/:id", async (req, res) => {
+router.get("/disable/:id", async (req, res) => {
   const { id } = req.params;
   const result = await prisma.staff.update({
     where: {
@@ -105,14 +97,14 @@ router.put("/disable/:id", async (req, res) => {
     "User " + result.name + " disabled by " + req.session.username,
   );
   req.session.notification = "Success: User is now disabled";
-  res.status(200).json(result);
+  res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
-// Route making a staff admin
+// Route making a staff admin (admin only)
 // ******************************************************************************
 
-router.put("/promote/:id", async (req, res) => {
+router.get("/promote/:id", async (req, res) => {
   const { id } = req.params;
   const result = await prisma.staff.update({
     where: {
@@ -127,14 +119,14 @@ router.put("/promote/:id", async (req, res) => {
     "User " + result.name + " made admin by " + req.session.username,
   );
   req.session.notification = "Success: User is now admin";
-  res.status(200).json(result);
+  res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
-// Route making a staff a regular user
+// Route making a staff a regular user (admin only)
 // ******************************************************************************
 
-router.put("/demote/:id", async (req, res) => {
+router.get("/demote/:id", async (req, res) => {
   const { id } = req.params;
   const result = await prisma.staff.update({
     where: {
@@ -149,14 +141,14 @@ router.put("/demote/:id", async (req, res) => {
     "User " + result.name + " made simple user by " + req.session.username,
   );
   req.session.notification = "Success: User is now just a user again";
-  res.status(200).json(result);
+  res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
 // Route handling the deletion of a staff (admin only)
 // ******************************************************************************
 
-router.delete("/delete/:id", async (req, res) => {
+router.get("/delete/:id", async (req, res) => {
   const { id } = req.params;
   const result = await prisma.staff.delete({
     where: { id: Number(id) },
@@ -166,7 +158,7 @@ router.delete("/delete/:id", async (req, res) => {
     "User " + result.name + " has been deleted by " + req.session.username,
   );
   req.session.notification = "Success: User has been deleted";
-  res.status(200).json(result);
+  res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
@@ -176,7 +168,9 @@ router.delete("/delete/:id", async (req, res) => {
 router.post("/update", async (req, res) => {
   const user = req.body;
   let approval = false;
-  console.log(user);
+
+  var prevPage = req;
+  console.log(prevPage);
 
   if (user.approved == "on") {
     approval = true;

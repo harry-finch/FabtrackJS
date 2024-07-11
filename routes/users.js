@@ -14,20 +14,6 @@ const prisma = new PrismaClient();
 const logger = require("../utilities/simpleLogger.js");
 
 // ******************************************************************************
-// Route returning a list of all users
-// ******************************************************************************
-
-router.get("/", async (req, res) => {
-  if (req.session.role != "admin") {
-    req.session.notification = "Error: Unauthorized access!";
-    return res.redirect("/");
-  }
-
-  const allUsers = await prisma.users.findMany({});
-  res.status(200).json(allUsers);
-});
-
-// ******************************************************************************
 // Route handling the admin page managing user accounts
 //
 // >>> Rendering route
@@ -39,6 +25,7 @@ router.get("/manage", async (req, res) => {
     return res.redirect("/");
   }
 
+  req.session.lastPage = "/admin/staff/usertypes";
   const notification = req.session.notification;
   req.session.notification = "";
 
@@ -124,7 +111,7 @@ router.delete("/delete/:id", async (req, res) => {
   );
   req.session.notification =
     "Success: User " + user.name + " " + user.surname + " has been deleted";
-  res.status(200).json(user);
+  res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
@@ -133,7 +120,6 @@ router.delete("/delete/:id", async (req, res) => {
 
 router.post("/update", async (req, res) => {
   const user = req.body;
-  var prevPage = req.originalUrl;
 
   const result = await prisma.users.update({
     where: { id: Number(user.id) },
@@ -154,7 +140,7 @@ router.post("/update", async (req, res) => {
       req.session.username,
   );
   req.session.notification = "Success: User profile updated!";
-  res.redirect(`${prevPage}`);
+  res.redirect(req.session.lastPage);
 });
 
 module.exports = router;

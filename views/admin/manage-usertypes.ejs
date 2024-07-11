@@ -32,7 +32,7 @@
                         <td scope="row"><%= usertype.id %></td>
                         <td><%= usertype.name %></td>
                         <td class="text-center">
-                            <a href="#" onclick="deleteType(<%= usertype.id %>)"><i class="fa-solid fa-trash-can"></i></a>
+                            <a href="admin/usertypes/delete/<%= usertype.id %>"><i class="fa-solid fa-trash-can"></i></a>
                         </td>
                     </tr>
                     <% }); %>
@@ -52,8 +52,6 @@
                 </div>
             </form>
         </main>
-
-        <script src="../javascripts/admin-scripts.js"></script>
 
         <% include ../includes/footer.html %>
     </body>
