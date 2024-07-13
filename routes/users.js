@@ -13,6 +13,8 @@ const prisma = new PrismaClient();
 
 const logger = require("../utilities/simpleLogger.js");
 
+const randomString = require("randomized-string");
+
 // ******************************************************************************
 // Route handling the admin page managing user accounts
 //
@@ -25,7 +27,7 @@ router.get("/manage", async (req, res) => {
     return res.redirect("/");
   }
 
-  req.session.lastPage = "/admin/staff/usertypes";
+  req.session.lastPage = "/users/manage";
   const notification = req.session.notification;
   req.session.notification = "";
 
@@ -51,16 +53,18 @@ router.get("/manage", async (req, res) => {
 
 router.post("/create", async (req, res) => {
   const user = req.body;
+  const token = randomString.generate();
 
   const result = await prisma.users
     .create({
       data: {
-        name: user.name,
-        surname: user.surname,
-        mail: user.mail,
-        usertypeId: user.usertypeId,
-        birthYear: user.birthYear,
-        comment: user.comment,
+        name: user.newname,
+        surname: user.newsurname,
+        mail: user.newemail,
+        usertypeId: Number(user.newusertype),
+        birthYear: Number(user.newbirthyear),
+        comment: user.newcomments,
+        token: token,
       },
     })
     .catch(async (e) => {
@@ -81,16 +85,17 @@ router.post("/create", async (req, res) => {
       " created by " +
       req.session.username,
   );
+
   req.session.notification =
     "Warning: User needs to agree to the terms and conditions before he can access the lab.";
-  res.redirect("../");
+  res.redirect("/fabtrack");
 });
 
 // ******************************************************************************
 // Route handling the deletion of a user (admin only)
 // ******************************************************************************
 
-router.delete("/delete/:id", async (req, res) => {
+router.get("/delete/:id", async (req, res) => {
   if (req.session.role != "admin") {
     req.session.notification = "Error: Unauthorized access!";
     return res.redirect("/");
@@ -106,7 +111,7 @@ router.delete("/delete/:id", async (req, res) => {
       user.name +
       " " +
       user.surname +
-      " created by " +
+      " deleted by " +
       req.session.username,
   );
   req.session.notification =

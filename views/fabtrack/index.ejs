@@ -8,6 +8,9 @@
         <title>Fabtrack administration panel</title>
 
         <% include ../includes/pagehead.html %>
+
+        <script src="javascripts/autocomplete.js"></script>
+        <link rel="stylesheet" href="stylesheets/autocomplete.css" />
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
@@ -16,80 +19,201 @@
         <main class="w-50 mx-auto">
             <% include ../includes/header.html %>
 
-            <h4 class="mb-4"><i class="fa fa-toggle-on"></i>&nbsp;&nbsp;Register an existing user</h4>
-            <form action="/staff/update" method="post">
-                <div class="row">
-                    <div class="col-6">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="name" name="name" required />
-                            <label for="username">Name</label>
+            <!-- Registering form -->
+            <div id="register">
+                <h4 class="mb-4"><a class="jsButton" onclick="showNew()"><i class="fa fa-toggle-on"></i></a>&nbsp;&nbsp;Register an existing user</h4>
+                <form action="/staff/update" method="post">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-floating mb-3 d-grid d-flex">
+                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="Name" autocomplete="off" required />
+                                <label for="name">Name</label>
+                                <a id="urlprofil" href="">
+                                    <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="surname" name="surname" required />
-                            <label for="username">Surname</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="projecttype">
+                                    <option selected></option>
+                                    <option value="1">Student</option>
+                                    <option value="2">Teacher</option>
+                                    <option value="3">Professionnal</option>
+                                </select>
+                                <label for="projecttype">Type of project</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="machine">
+                                    <option selected></option>
+                                    <option value="1">Student</option>
+                                    <option value="2">Teacher</option>
+                                    <option value="3">Professionnal</option>
+                                </select>
+                                <label for="machine">Machine</label>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-floating mb-3 d-grid d-flex">
+                                <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" placeholder="Documentation" required />
+                                <label for="name">Link to project documentation</label>
+                                <a id="urlprofil" href="">
+                                    <span class="formbutton input-group-text"><i class="fa-solid fa-book-circle-arrow-right fa-lg"></i></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control" id="additional-info" style="height: 100px"></textarea>
+                                <label for="additional-info">Comments</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-            <h4 class="mb-4"><i class="fa fa-toggle-off"></i>&nbsp;&nbsp;Create a new user</h4>
-            <form action="/staff/update" method="post">
-                <div class="row">
-                    <div class="col-4">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="name" name="name" required />
-                            <label for="username">Name</label>
+            <!-- New user creation form -->
+            <div id="newuser">
+                <h4 class="mb-4"><a class="jsButton" onclick="showRegister()"><i class="fa fa-toggle-off"></i></a>&nbsp;&nbsp;Create a new user</h4>
+                <form action="/users/create" method="post">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="newname" name="newname" placeholder="Name" required />
+                                <label for="newname">Name</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="newsurname" name="newsurname" placeholder="Surname" required />
+                                <label for="newsurname">Surname</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="newbirthyear" name="newbirthyear" placeholder="Birthyear" />
+                                <label for="newbirthyear">Birth year</label>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-4">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="surname" name="surname" required />
-                            <label for="username">Surname</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input type="email" name="newemail" class="form-control" id="newemail" placeholder="Email" required />
+                                <label for="newemail">Email address</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="newusertype" name="newusertype">
+                                    <option selected></option>
+                                    <% usertypes.forEach(function(usertype) { %>
+                                    <option value="<%= usertype.id %>"><%= usertype.name %></option>
+                                    <% }); %>
+                                </select>
+                                <label for="newusertype">Type of user</label>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-4">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="birthyear" name="birthyear" />
-                            <label for="birthyear">Birth year</label>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control" id="newcomments" name="newcomments" style="height: 100px"></textarea>
+                                <label for="newcomments">Comments</label>
+                            </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create user</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lab activity table -->
+
+
+
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+              Launch static backdrop modal
+            </button>
+
+            <!-- Modal (popup lightbox) -->
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    ...
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Understood</button>
+                  </div>
                 </div>
-                <div class="row">
-                    <div class="col-md">
-                        <div class="form-floating mb-3">
-                            <input type="email" name="email" class="form-control" id="email" required />
-                            <label for="email">Email address</label>
-                        </div>
-                    </div>
-                    <div class="col-md">
-                        <div class="form-floating mb-3">
-                            <select class="form-select" id="usertype">
-                                <option selected></option>
-                                <option value="1">Student</option>
-                                <option value="2">Teacher</option>
-                                <option value="3">Professionnal</option>
-                            </select>
-                            <label for="usertype">Type of user</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="form-floating mb-3">
-                            <textarea class="form-control" id="comments" style="height: 100px"></textarea>
-                            <label for="comments">Comments</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create user</button>
-                    </div>
-                </div>
-            </form>
+              </div>
+            </div>
+
         </main>
+
+        <script>
+          function showNew() {
+            document.getElementById("newuser").style.display = "block";
+            document.getElementById("register").style.display = "none";
+          }
+
+          function showRegister() {
+            document.getElementById("newuser").style.display = "none";
+            document.getElementById("register").style.display = "block";
+        }
+
+        var input = document.getElementById('name');
+        var names = [ <% users.forEach(function(user) { %>
+                      { label: '<%= user.name %> <%= user.surname %>', value: '<%= user.id %>' },
+                    <% }); %> ];
+        var allowedChars = new RegExp(/^[a-zA-Z\s]+$/)
+
+        autocomplete({
+            input: input,
+            minLength: 1,
+            emptyMsg: 'No names found',
+            fetch: function (text, callback) {
+                            text = text.toLowerCase().trim();
+                            callback(names.filter(function (candidate) { return candidate.label.toLowerCase().indexOf(text) !== -1; }));
+                        },
+            render: function (item, value) {
+                            var itemElement = document.createElement("div");
+                            if (allowedChars.test(value)) {
+                                var regex = new RegExp(value, 'gi');
+                                itemElement.innerHTML = item.label.replace(regex, function (match) { return `<strong>${match}</strong>`; });
+                            } else {
+                                itemElement.textContent = item.label;
+                            }
+                            return itemElement;
+                        },
+            onSelect: function(item) {
+                input.value = item.label;
+            }
+        });
+        </script>
 
         <% include ../includes/footer.html %>
     </body>

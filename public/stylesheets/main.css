@@ -87,3 +87,35 @@ table th {
 .bd-mode-toggle .dropdown-menu .active .bi {
     display: block !important;
 }
+
+#newuser {
+    display: none;
+}
+
+#register {
+    display: block;
+}
+
+.jsButton {
+    cursor: pointer;
+}
+
+.formbutton {
+    padding: 0.375rem 1.2rem;
+    width: 58px;
+    border-radius: 0px 0.375rem 0.375rem 0px;
+}
+
+.form-floating a {
+    text-decoration: none;
+    display: flex;
+}
+
+.input-group-text {
+    margin-left: -1px;
+    z-index: -10;
+}
+
+.input-group-icon {
+    border-radius: 0.375rem 0px 0px 0.375rem;
+}

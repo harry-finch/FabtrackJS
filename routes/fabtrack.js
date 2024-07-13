@@ -9,18 +9,31 @@ const isLoggedIn = require("../middleware/checkSession.js");
 router.use(isLoggedIn);
 
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient({
-  log: ["query", "info", "warn", "error"],
-});
+const prisma = new PrismaClient();
 
 // ******************************************************************************
 // Route handling the main admin page
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  req.session.lastPage = "/fabtrack";
+
+  const allUsers = await prisma.users.findMany({
+    relationLoadStrategy: "join",
+    include: {
+      usertype: true,
+    },
+  });
+
+  const allTypes = await prisma.usertype.findMany({});
+
   res.render("fabtrack/index", {
-    error: req.session.error,
-    message: req.session.message,
+    notification: notification,
+    users: allUsers,
+    usertypes: allTypes,
   });
 });
 
