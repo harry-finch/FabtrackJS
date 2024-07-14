@@ -31,6 +31,7 @@ router.get("/manage", async (req, res) => {
   });
   res.render("admin/manage-staff", {
     notification: notification,
+    role: req.session.role,
     users: allStaff,
   });
 });
@@ -54,6 +55,7 @@ router.get("/edit/:id", async (req, res) => {
 
   res.render("admin/edit-staff", {
     notification: notification,
+    role: req.session.role,
     user: user,
   });
 });

@@ -27,6 +27,7 @@ router.get("/manage", async (req, res) => {
   const allTypes = await prisma.usertype.findMany({});
   res.render("admin/manage-usertypes", {
     notification: notification,
+    role: req.session.role,
     usertypes: allTypes,
   });
 });

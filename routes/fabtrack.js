@@ -32,6 +32,7 @@ router.get("/", async (req, res) => {
 
   res.render("fabtrack/index", {
     notification: notification,
+    role: req.session.role,
     users: allUsers,
     usertypes: allTypes,
   });

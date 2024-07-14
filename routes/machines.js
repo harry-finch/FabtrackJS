@@ -25,6 +25,7 @@ router.get("/", async (req, res) => {
 
   res.render("admin/manage-machines", {
     notification: notification,
+    role: req.session.role,
   });
 });
 

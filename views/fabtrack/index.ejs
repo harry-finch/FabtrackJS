@@ -22,13 +22,13 @@
             <!-- Registering form -->
             <div id="register">
                 <h4 class="mb-4"><a class="jsButton" onclick="showNew()"><i class="fa fa-toggle-on"></i></a>&nbsp;&nbsp;Register an existing user</h4>
-                <form action="/staff/update" method="post">
+                <form action="/history/create" method="post">
                     <div class="row">
                         <div class="col-12">
                             <div class="form-floating mb-3 d-grid d-flex">
-                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="Name" autocomplete="off" required />
+                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="Name" autocomplete="off" data-userindex="0" required />
                                 <label for="name">Name</label>
-                                <a id="urlprofil" href="">
+                                <a id="urlprofile" href="">
                                     <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
                                 </a>
                             </div>
@@ -63,7 +63,7 @@
                             <div class="form-floating mb-3 d-grid d-flex">
                                 <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" placeholder="Documentation" required />
                                 <label for="name">Link to project documentation</label>
-                                <a id="urlprofil" href="">
+                                <a id="urldocumentation" href="">
                                     <span class="formbutton input-group-text"><i class="fa-solid fa-book-circle-arrow-right fa-lg"></i></span>
                                 </a>
                             </div>
@@ -175,15 +175,19 @@
         </main>
 
         <script>
-          function showNew() {
-            document.getElementById("newuser").style.display = "block";
-            document.getElementById("register").style.display = "none";
-          }
-
-          function showRegister() {
-            document.getElementById("newuser").style.display = "none";
-            document.getElementById("register").style.display = "block";
+        // Switching between forms
+        function showNew() {
+          document.getElementById("newuser").style.display = "block";
+          document.getElementById("register").style.display = "none";
         }
+
+        function showRegister() {
+          document.getElementById("newuser").style.display = "none";
+          document.getElementById("register").style.display = "block";
+      }
+
+        // User search autocomplete
+        // Creating an array with all the names and their corresponding user ids
 
         var input = document.getElementById('name');
         var names = [ <% users.forEach(function(user) { %>
@@ -210,7 +214,13 @@
                             return itemElement;
                         },
             onSelect: function(item) {
+                // When clicking, entering or tabbing on the selected name
+                // set the value of the field and the user index field
+                // as well as set the link to edit the user profile
+
                 input.value = item.label;
+                input.dataset.userindex = item.value;
+                document.getElementById('urlprofile').href = "/users/edit/" + item.value;
             }
         });
         </script>

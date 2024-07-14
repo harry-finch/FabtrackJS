@@ -43,6 +43,7 @@ router.get("/manage", async (req, res) => {
 
   res.render("admin/manage-users", {
     notification: notification,
+    role: req.session.role,
     users: allUsers,
   });
 });
@@ -120,19 +121,50 @@ router.get("/delete/:id", async (req, res) => {
 });
 
 // ******************************************************************************
+// Route handling the modification page
+//
+// >>> Rendering route
+// ******************************************************************************
+
+router.get("/edit/:id", async (req, res) => {
+  const notification = req.session.notification;
+  req.session.notification = "";
+
+  const { id } = req.params;
+
+  const user = await prisma.users.findUnique({
+    where: {
+      id: Number(id),
+    },
+  });
+
+  const allTypes = await prisma.usertype.findMany({});
+
+  res.render("fabtrack/edit-user", {
+    notification: notification,
+    role: req.session.role,
+    user: user,
+    usertypes: allTypes,
+  });
+});
+
+// ******************************************************************************
 // Route handling the modification of a user
 // ******************************************************************************
 
-router.post("/update", async (req, res) => {
+router.post("/update/:id", async (req, res) => {
   const user = req.body;
+  const { id } = req.params;
 
   const result = await prisma.users.update({
-    where: { id: Number(user.id) },
+    where: { id: Number(id) },
     data: {
-      name: user.username,
+      name: user.name,
+      surname: user.surname,
       mail: user.email,
-      role: user.role,
-      approved: approval,
+      usertypeId: Number(user.usertype),
+      birthYear: Number(user.birthyear),
+      comment: user.comments,
     },
   });
 

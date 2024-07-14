@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="" />
+        <meta name="author" content="Stéphane Muller" />
+        <title>Fabtrack administration panel</title>
+
+        <% include ../includes/pagehead.html %>
+
+        <script src="javascripts/autocomplete.js"></script>
+        <link rel="stylesheet" href="stylesheets/autocomplete.css" />
+    </head>
+
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <% include ../includes/light-dark.html %>
+
+        <main class="w-50 mx-auto">
+            <% include ../includes/header.html %>
+
+            <h4 class="mb-4"><i class="fa fa-user-pen"></i>&nbsp;&nbsp;Edit user profile</h4>
+            <form action="/users/update/<%= user.id %>" method="post">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required />
+                            <label for="name">Name</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="surname" name="surname" value="<%= user.surname %>" required />
+                            <label for="surname">Surname</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="birthyear" name="birthyear" value="<%= user.birthYear %>" />
+                            <label for="birthyear">Birth year</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-floating mb-3">
+                            <input type="email" name="email" class="form-control" id="email" value="<%= user.mail %>" required /><%= user.email %>
+                            <label for="email">Email address</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="usertype" name="usertype">
+                                <% usertypes.forEach(function(usertype) { %>
+                                <option value="<%= usertype.id %>" <% if (usertype.id == user.usertype) { %> selected <% } %>><%= usertype.name %></option>
+                                <% }); %>
+                            </select>
+                            <label for="usertype">Type of user</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="comments" name="comments" style="height: 100px"><%= user.comment %></textarea>
+                            <label for="comments">Comments</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Update user profile</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <a class="btn btn-secondary w-100 mb-2 py-2" onclick="history.back();">Cancel</a>
+                    </div>
+                </div>
+
+            </form>
+        </main>
+
+        <% include ../includes/footer.html %>
+    </body>
+</html>

@@ -23,6 +23,7 @@ router.get("/", async (req, res) => {
 
   res.render("admin/main", {
     notification: notification,
+    role: req.session.role,
   });
 });
 

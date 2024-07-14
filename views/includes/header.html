@@ -135,10 +135,18 @@
         </button>
         <ul class="dropdown-menu">
             <li>
-                <a class="dropdown-item" href="/"
+                <a class="dropdown-item" href="/fabtrack"
                     ><i class="fa-solid fa-house"></i>&nbsp;&nbsp;Home</a
                 >
             </li>
+            <% if(role == "admin") {%>
+            <li>
+                <a class="dropdown-item" href="/admin"
+                    ><i class="fa-solid fa-gear"></i>&nbsp;&nbsp;Administration
+                    panel</a
+                >
+            </li>
+            <% } %>
             <li>
                 <a class="dropdown-item" href="logout"
                     ><i class="fa-solid fa-right-from-bracket"></i
