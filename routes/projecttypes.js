@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 const logger = require("../utilities/simpleLogger.js");
 
 // ******************************************************************************
-// Route handling the admin page managing user types (student, teacher...)
+// Route handling the admin page managing project types (university project, personal project...)
 //
 // >>> Rendering route
 // ******************************************************************************
@@ -22,65 +22,67 @@ const logger = require("../utilities/simpleLogger.js");
 router.get("/manage", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
-  req.session.lastPage = "/admin/usertypes/manage";
+  req.session.lastPage = "/admin/projecttypes/manage";
 
-  const allTypes = await prisma.usertype.findMany({});
-  res.render("admin/manage-usertypes", {
+  const allTypes = await prisma.projecttype.findMany({});
+
+  res.render("admin/manage-projecttypes", {
     notification: notification,
     role: req.session.role,
-    usertypes: allTypes,
+    projecttypes: allTypes,
   });
 });
 
 // ******************************************************************************
-// Route handling the deletion of a usertype
+// Route handling the deletion of a projecttype
 // ******************************************************************************
 
 router.get("/delete/:id", async (req, res) => {
   const { id } = req.params;
-  const result = await prisma.usertype.delete({
+  const result = await prisma.projecttype.delete({
     where: { id: Number(id) },
   });
 
   logger.logThat(
-    "Usertype " + result.name + " deleted by " + req.session.username,
+    "Projecttype " + result.name + " deleted by " + req.session.username,
   );
-  req.session.notification = "Success: Usertype " + result.name + " deleted";
+  req.session.notification =
+    "Success: Project type " + result.name + " deleted";
 
   res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
-// Route handling the creation of a usertype
+// Route handling the creation of a project type
 // ******************************************************************************
 
 router.post("/create", async (req, res) => {
   const { name } = req.body;
-  const usertype = await prisma.usertype.create({
+  const projecttype = await prisma.projecttype.create({
     data: { name: name },
   });
 
-  logger.logThat("Usertype " + name + " created by " + req.session.username);
-  req.session.notification = "Success: Usertype " + name + " created";
+  logger.logThat("Projecttype " + name + " created by " + req.session.username);
+  req.session.notification = "Success: Project type " + name + " created";
 
-  res.redirect("/admin/usertypes/manage");
+  res.redirect("/admin/projecttypes/manage");
 });
 
 // ******************************************************************************
-// Route handling the update of a usertype
+// Route handling the update of a project type
 // ******************************************************************************
 
 router.post("/update", async (req, res) => {
-  const { usertypeid, name } = req.body;
-  const usertype = await prisma.usertype.update({
-    where: { id: Number(usertypeid) },
+  const { projecttypeid, name } = req.body;
+  const projecttype = await prisma.projecttype.update({
+    where: { id: Number(projecttypeid) },
     data: { name: name },
   });
 
-  logger.logThat("Usertype " + name + " update by " + req.session.username);
-  req.session.notification = "Success: Usertype " + name + " updated";
+  logger.logThat("Project type " + name + " update by " + req.session.username);
+  req.session.notification = "Success: Project type " + name + " updated";
 
-  res.redirect("/admin/usertypes/manage");
+  res.redirect("/admin/projecttypes/manage");
 });
 
 module.exports = router;

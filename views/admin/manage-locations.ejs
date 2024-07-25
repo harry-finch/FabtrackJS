@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="" />
+        <meta name="author" content="Stéphane Muller" />
+        <title>Fabtrack administration panel</title>
+
+        <% include ../includes/pagehead.html %>
+    </head>
+
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <% include ../includes/light-dark.html %>
+
+        <main class="w-50 mx-auto">
+            <% include ../includes/header.html %>
+
+            <h4 class="mb-4"><i class="fa-solid fa-location-dot"></i>&nbsp;&nbsp;Manage locations</h4>
+
+            <p><i>Hover over each location to read the description</i></p>
+
+            <table class="mb-5 table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)" scope="col">#</th>
+                        <th onclick="sortTable(1)" scope="col">Location</th>
+                        <th scole="col" class="text-center">Edit</th>
+                        <th scope="col" class="text-center">Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="table-content">
+                    <% locations.forEach(function(location) { %>
+                    <tr>
+                        <td scope="row"><%= location.id %></td>
+                        <td><span   data-bs-toggle="tooltip" data-bs-placement="right"
+                                    data-bs-custom-class="custom-tooltip"
+                                    data-bs-title="<%= location.description %>"><%= location.name %></span></td>
+                        <td class="text-center">
+                            <a href="#" id="edit-<%= location.id %>"
+                                        data-id="<%= location.id %>"
+                                        data-name="<%= location.name %>"
+                                        data-description="<%= location.description %>">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <a href="admin/locations/delete/<%= location.id %>"><i class="fa-solid fa-trash-can"></i></a>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+
+            <h5 class="mb-4"><i class="fa-solid fa-location-dot"></i>&nbsp;&nbsp;Create new location</h5>
+
+            <form action="/admin/locations/create" method="post">
+                <div class="row">
+                    <input type='hidden' id="locationid" name='locationid' value='' />
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Name" required />
+                            <label for="name">Name</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="description" name="description" style="height: 100px"></textarea>
+                            <label for="description">Description</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create new location</button>
+                    </div>
+                </div>
+            </form>
+        </main>
+
+        <script>
+          const elements = document.querySelectorAll('[id^="edit-"]');
+          elements.forEach(function(element){
+            element.addEventListener("click", editItem);
+          })
+
+          function editItem() {
+            event.preventDefault();
+
+            document.querySelector("h5.mb-4").innerHTML = "<i class='fa-solid fa-location-dot'></i>&nbsp;&nbsp;Update location";
+            document.querySelector("form").action = "/admin/locations/update";
+            document.getElementById("locationid").value = this.dataset.id;
+            document.getElementById("name").value = this.dataset.name;
+            document.querySelector("textarea").value = this.dataset.description;
+            document.querySelector("button.btn-primary").innerHTML = "Update location";
+
+            return false;
+          }
+        </script>
+
+        <% include ../includes/footer.html %>
+    </body>
+</html>

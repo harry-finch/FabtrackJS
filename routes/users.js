@@ -31,7 +31,7 @@ router.get("/manage", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
 
-  const allUsers = await prisma.users.findMany({
+  const allUsers = await prisma.user.findMany({
     orderBy: {
       id: "desc",
     },
@@ -56,8 +56,8 @@ router.post("/create", async (req, res) => {
   const user = req.body;
   const token = randomString.generate();
 
-  const result = await prisma.users
-    .create({
+  try {
+    const result = await prisma.user.create({
       data: {
         name: user.newname,
         surname: user.newsurname,
@@ -67,29 +67,30 @@ router.post("/create", async (req, res) => {
         comment: user.newcomments,
         token: token,
       },
-    })
-    .catch(async (e) => {
-      console.log(e);
-
-      if (e.code === "P2002") {
-        req.session.notification = "Error: User already exists";
-        res.redirect("../");
-      }
-      await prisma.$disconnect();
     });
 
-  logger.logThat(
-    "User " +
-      user.name +
-      " " +
-      user.surname +
-      " created by " +
-      req.session.username,
-  );
+    logger.logThat(
+      "User " +
+        result.name +
+        " " +
+        result.surname +
+        " created by " +
+        req.session.username,
+    );
 
-  req.session.notification =
-    "Warning: User needs to agree to the terms and conditions before he can access the lab.";
-  res.redirect("/fabtrack");
+    req.session.notification =
+      "Warning: User needs to agree to the terms and conditions before he can access the lab.";
+    res.redirect("/fabtrack");
+    await prisma.$disconnect();
+  } catch (e) {
+    console.log(e);
+    if (e.code === "P2002") {
+      req.session.notification = "Error: User already exists";
+      res.redirect("/");
+    } else {
+      // Handle other errors (optional)
+    }
+  }
 });
 
 // ******************************************************************************
@@ -103,7 +104,7 @@ router.get("/delete/:id", async (req, res) => {
   }
 
   const { id } = req.params;
-  const user = await prisma.users.delete({
+  const user = await prisma.user.delete({
     where: { id: Number(id) },
   });
 
@@ -132,7 +133,7 @@ router.get("/edit/:id", async (req, res) => {
 
   const { id } = req.params;
 
-  const user = await prisma.users.findUnique({
+  const user = await prisma.user.findUnique({
     where: {
       id: Number(id),
     },
@@ -156,7 +157,7 @@ router.post("/update/:id", async (req, res) => {
   const user = req.body;
   const { id } = req.params;
 
-  const result = await prisma.users.update({
+  const result = await prisma.user.update({
     where: { id: Number(id) },
     data: {
       name: user.name,

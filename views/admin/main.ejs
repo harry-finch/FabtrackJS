@@ -18,25 +18,65 @@
 
             <h4 class="mb-4"><i class="fa fa-screwdriver-wrench"></i>&nbsp;&nbsp;Administration panel</h4>
 
-            <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
                 <div class="col">
                     <div class="card h-100 text-center">
                         <i class="fa-solid fa-users-gear fs-1 mt-2 text-center"></i>
                         <div class="card-body">
-                            <a href="admin/staff/manage" class="btn btn-primary mb-3">Manage staff accounts</a>
+                            <a href="admin/staff/manage" class="btn btn-danger mb-3">Manage staff accounts</a>
                             <p class="card-text" style="font-size: 0.8em">Delete or deactivate staff accounts, give or take back rights</p>
                         </div>
                     </div>
                 </div>
                 <div class="col">
+                    <div class="card h-100 text-center text-bg-secondary">
+                        <i class="fa-solid fa-square-sliders fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="admin/staff/manage" class="btn btn-danger mb-3">Manage platform settings</a>
+                            <p class="card-text" style="font-size: 0.8em">Manage general settings for the platform</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+                <div class="col">
                     <div class="card h-100 text-center">
                         <i class="fa-solid fa-users fs-1 mt-2 text-center"></i>
                         <div class="card-body">
-                            <a href="users/manage" class="btn btn-primary mb-3">Manage fablab users</a>
+                            <a href="users/manage" class="btn btn-warning mb-3">Manage fablab users</a>
                             <p class="card-text" style="font-size: 0.8em">Delete, deactivate or modify regular user accounts</p>
                         </div>
                     </div>
                 </div>
+                <div class="col">
+                    <div class="card h-100 text-center text-bg-secondary">
+                        <i class="fa-regular fa-flux-capacitor fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="admin/machines/manage" class="btn btn-warning mb-3">Manage machines</a>
+                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify machines</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-solid fa-lock-keyhole fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="admin/access/manage" class="btn btn-warning mb-3">Manage access levels</a>
+                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify access levels</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center text-bg-secondary">
+                        <i class="fa-solid fa-clipboard-list fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="admin/history/view" class="btn btn-warning mb-3">View history</a>
+                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify history entries</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
                 <div class="col">
                     <div class="card h-100 text-center">
                         <i class="fa-solid fa-user-alien fs-1 mt-2 text-center"></i>
@@ -57,37 +97,57 @@
                 </div>
                 <div class="col">
                     <div class="card h-100 text-center">
-                        <i class="fa-regular fa-flux-capacitor fs-1 mt-2 text-center"></i>
+                        <i class="fa-solid fa-flux-capacitor fs-1 mt-2 text-center"></i>
                         <div class="card-body">
-                            <a href="" class="btn btn-primary mb-3">Manage machines</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify machines</p>
+                            <a href="admin/machines/manage-types" class="btn btn-primary mb-3">Manage machine types</a>
+                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify machine types</p>
                         </div>
                     </div>
                 </div>
                 <div class="col">
                     <div class="card h-100 text-center">
+                        <i class="fa-solid fa-location-dot fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="admin/locations/manage" class="btn btn-primary mb-3">Manage locations</a>
+                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify locations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+                <div class="col">
+                    <div class="card h-100 text-center text-bg-secondary">
                         <i class="fa-solid fa-chart-line-up fs-1 mt-2 text-center"></i>
                         <div class="card-body">
-                            <a href="" class="btn btn-primary mb-3">Statistics</a>
+                            <a href="" class="btn btn-success mb-3">Statistics</a>
                             <p class="card-text" style="font-size: 0.8em">Check your fablab's activity</p>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-regular fa-clipboard-list fs-1 mt-2 text-center"></i>
+                    <div class="card h-100 text-center text-bg-secondary">
+                        <i class="fa-regular fa-envelope-open-text fs-1 mt-2 text-center"></i>
                         <div class="card-body">
-                            <a href="" class="btn btn-primary mb-3">View logs</a>
-                            <p class="card-text" style="font-size: 0.8em">Check the entire activity logs</p>
+                            <a href="" class="btn btn-success mb-3">Communication</a>
+                            <p class="card-text" style="font-size: 0.8em">Send emails to your community</p>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-regular fa-envelope-open-text fs-1 mt-2 text-center"></i>
+                    <div class="card h-100 text-center text-bg-secondary">
+                        <i class="fa-regular fa-hammer fs-1 mt-2 text-center"></i>
                         <div class="card-body">
-                            <a href="" class="btn btn-primary mb-3">Communication</a>
-                            <p class="card-text" style="font-size: 0.8em">Send emails to your community</p>
+                            <a href="" class="btn btn-success mb-3">Workshops</a>
+                            <p class="card-text" style="font-size: 0.8em">Create and delete workshops</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 text-center text-bg-secondary">
+                        <i class="fa-regular fa-clipboard-list fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="" class="btn btn-success mb-3">View logs</a>
+                            <p class="card-text" style="font-size: 0.8em">Check the entire activity logs</p>
                         </div>
                     </div>
                 </div>

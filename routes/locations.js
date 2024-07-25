@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 const logger = require("../utilities/simpleLogger.js");
 
 // ******************************************************************************
-// Route handling the admin page managing user types (student, teacher...)
+// Route handling the admin page managing locations
 //
 // >>> Rendering route
 // ******************************************************************************
@@ -22,65 +22,66 @@ const logger = require("../utilities/simpleLogger.js");
 router.get("/manage", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
-  req.session.lastPage = "/admin/usertypes/manage";
+  req.session.lastPage = "/admin/locations/manage";
 
-  const allTypes = await prisma.usertype.findMany({});
-  res.render("admin/manage-usertypes", {
+  const locations = await prisma.location.findMany({});
+
+  res.render("admin/manage-locations", {
     notification: notification,
     role: req.session.role,
-    usertypes: allTypes,
+    locations: locations,
   });
 });
 
 // ******************************************************************************
-// Route handling the deletion of a usertype
+// Route handling the deletion of a location
 // ******************************************************************************
 
 router.get("/delete/:id", async (req, res) => {
   const { id } = req.params;
-  const result = await prisma.usertype.delete({
+  const result = await prisma.location.delete({
     where: { id: Number(id) },
   });
 
   logger.logThat(
-    "Usertype " + result.name + " deleted by " + req.session.username,
+    "Location " + result.name + " deleted by " + req.session.username,
   );
-  req.session.notification = "Success: Usertype " + result.name + " deleted";
+  req.session.notification = "Success: Location " + result.name + " deleted";
 
   res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
-// Route handling the creation of a usertype
+// Route handling the creation of a location
 // ******************************************************************************
 
 router.post("/create", async (req, res) => {
-  const { name } = req.body;
-  const usertype = await prisma.usertype.create({
-    data: { name: name },
+  const { name, description } = req.body;
+  const location = await prisma.location.create({
+    data: { name: name, description: description },
   });
 
-  logger.logThat("Usertype " + name + " created by " + req.session.username);
-  req.session.notification = "Success: Usertype " + name + " created";
+  logger.logThat("Location " + name + " created by " + req.session.username);
+  req.session.notification = "Success: Location " + name + " created";
 
-  res.redirect("/admin/usertypes/manage");
+  res.redirect("/admin/locations/manage");
 });
 
 // ******************************************************************************
-// Route handling the update of a usertype
+// Route handling the update of an location
 // ******************************************************************************
 
 router.post("/update", async (req, res) => {
-  const { usertypeid, name } = req.body;
-  const usertype = await prisma.usertype.update({
-    where: { id: Number(usertypeid) },
-    data: { name: name },
+  const { locationid, name, description } = req.body;
+  const access = await prisma.location.update({
+    where: { id: Number(locationid) },
+    data: { name: name, description: description },
   });
 
-  logger.logThat("Usertype " + name + " update by " + req.session.username);
-  req.session.notification = "Success: Usertype " + name + " updated";
+  logger.logThat("Location " + name + " update by " + req.session.username);
+  req.session.notification = "Success: Location " + name + " updated";
 
-  res.redirect("/admin/usertypes/manage");
+  res.redirect("/admin/locations/manage");
 });
 
 module.exports = router;

@@ -9,7 +9,7 @@ datasource db {
 }
 
 // Logs table for every important database access
-model Logs {
+model Log {
     id          Int       @id @default(autoincrement())
     timestamp   DateTime  @default(now())
     description String    @db.VarChar(255)
@@ -28,7 +28,7 @@ model Staff {
 }
 
 // Users and visitors whose activities we want to track
-model Users {
+model User {
     id                  Int      @id @default(autoincrement())
     name                String   @db.VarChar(255)
     surname             String   @db.VarChar(255)
@@ -40,11 +40,78 @@ model Users {
     comment             String   @db.VarChar(255)
     termsAndConditions  Boolean  @default(false)
     token               String   @db.VarChar(20)
+    projects            Userproject[]
 }
 
 // Types of users (student, startup, teacher...)
 model Usertype {
-    id    Int     @id @default(autoincrement())
-    name  String  @unique @db.VarChar(255)
-    Users Users[]
+    id        Int           @id @default(autoincrement())
+    name      String        @unique @db.VarChar(255)
+    users     User[]
+}
+
+model Project {
+    id              Int           @id @default(autoincrement())
+    url             String        @unique @db.VarChar(255)
+    projecttype     Projecttype   @relation(fields: [projecttypeId], references: [id])
+    projecttypeId   Int
+    users           Userproject[]
+}
+
+model Projecttype {
+    id        Int           @id @default(autoincrement())
+    name      String        @unique @db.VarChar(255)
+    projects  Project[]
+}
+
+// Table linking users and projects (many to many)
+model Userproject {
+    id          Int           @id @default(autoincrement())
+    userId      Int
+    projectId   Int
+
+    user        User          @relation(fields: [userId], references: [id])
+    project     Project       @relation(fields: [projectId], references: [id])
+
+    @@unique([userId, projectId])
+}
+
+// Machines in the lab (make and model, documentation...)
+model Machine {
+    id                Int           @id @default(autoincrement())
+    machinetype       Machinetype   @relation(fields: [machinetypeId], references: [id])
+    machinetypeId     Int
+    make              String        @db.VarChar(255)
+    model             String        @db.VarChar(255)
+    serialnum         String        @db.VarChar(255)
+    location          Location      @relation(fields: [locationId], references: [id])
+    locationId        Int
+    internalReference Int
+    picture           String        @db.VarChar(255)
+    documentation     String        @db.VarChar(255)
+    access            Access        @relation(fields: [accessId], references: [id])
+    accessId          Int
+}
+
+// Type of machine (3D printer, laser cutter...)
+model Machinetype {
+    id            Int           @id @default(autoincrement())
+    name          String        @unique @db.VarChar(255)
+    machines      Machine[]
+}
+
+// Location, room, drawer...
+model Location {
+    id            Int           @id @default(autoincrement())
+    name          String        @unique @db.VarChar(255)
+    description   String        @db.VarChar(255)
+    machines      Machine[]
+}
+
+// Requires the presence of a fabmanager, free...
+model Access {
+    id            Int           @id @default(autoincrement())
+    name          String        @db.VarChar(255)
+    description   String        @db.VarChar(255)
+    machines      Machine[]
 }

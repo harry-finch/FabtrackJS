@@ -35,31 +35,18 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-4">
                             <div class="form-floating mb-3">
                                 <select class="form-select" id="projecttype">
                                     <option selected></option>
-                                    <option value="1">Student</option>
-                                    <option value="2">Teacher</option>
-                                    <option value="3">Professionnal</option>
+                                    <% projecttypes.forEach(function(projecttype) { %>
+                                    <option value="<%= projecttype.id %>"><%= projecttype.name %></option>
+                                    <% }); %>
                                 </select>
                                 <label for="projecttype">Type of project</label>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="form-floating mb-3">
-                                <select class="form-select" id="machine">
-                                    <option selected></option>
-                                    <option value="1">Student</option>
-                                    <option value="2">Teacher</option>
-                                    <option value="3">Professionnal</option>
-                                </select>
-                                <label for="machine">Machine</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
+                        <div class="col-8">
                             <div class="form-floating mb-3 d-grid d-flex">
                                 <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" placeholder="Documentation" required />
                                 <label for="name">Link to project documentation</label>
@@ -72,7 +59,7 @@
                     <div class="row">
                         <div class="col">
                             <div class="form-floating mb-3">
-                                <textarea class="form-control" id="additional-info" style="height: 100px"></textarea>
+                                <textarea class="form-control" id="additional-info" name="additional-info" style="height: 100px"></textarea>
                                 <label for="additional-info">Comments</label>
                             </div>
                         </div>
@@ -83,6 +70,34 @@
                         </div>
                     </div>
                 </form>
+
+                <!-- Lab activity table -->
+
+
+
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    Launch static backdrop modal
+                </button>
+
+                <!-- Modal (popup lightbox) -->
+                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                        ...
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Understood</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
             </div>
 
             <!-- New user creation form -->
@@ -143,35 +158,6 @@
                     </div>
                 </form>
             </div>
-
-            <!-- Lab activity table -->
-
-
-
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-              Launch static backdrop modal
-            </button>
-
-            <!-- Modal (popup lightbox) -->
-            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    ...
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Understood</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
         </main>
 
         <script>

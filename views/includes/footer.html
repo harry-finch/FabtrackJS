@@ -12,6 +12,15 @@
     crossorigin="anonymous"
 ></script>
 
+<script>
+    const tooltipTriggerList = document.querySelectorAll(
+        '[data-bs-toggle="tooltip"]',
+    );
+    const tooltipList = [...tooltipTriggerList].map(
+        (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
+    );
+</script>
+
 <div class="toast-container position-fixed bottom-0 end-1 p-3">
     <div
         id="liveToastMessage"

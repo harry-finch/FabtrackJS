@@ -16,47 +16,47 @@
         <main class="w-50 mx-auto">
             <% include ../includes/header.html %>
 
-            <h4 class="mb-4"><i class="fa fa-users-gear"></i>&nbsp;&nbsp;Manage types of users (visitors)</h4>
+            <h4 class="mb-4"><i class="fa-solid fa-flux-capacitor"></i>&nbsp;&nbsp;Manage types of machines</h4>
 
             <table class="mb-5 table">
                 <thead>
                     <tr>
                         <th onclick="sortTable(0)" scope="col">#</th>
-                        <th onclick="sortTable(1)" scope="col">Usertype</th>
+                        <th onclick="sortTable(1)" scope="col">Machine type</th>
                         <th scole="col" class="text-center">Edit</th>
                         <th scope="col" class="text-center">Delete</th>
                     </tr>
                 </thead>
                 <tbody id="table-content">
-                    <% usertypes.forEach(function(usertype) { %>
+                    <% machinetypes.forEach(function(machinetype) { %>
                     <tr>
-                        <td scope="row"><%= usertype.id %></td>
-                        <td><%= usertype.name %></td>
+                        <td scope="row"><%= machinetype.id %></td>
+                        <td><%= machinetype.name %></td>
                         <td class="text-center">
-                            <a href="#" id="edit-<%= usertype.id %>"
-                                        data-id="<%= usertype.id %>"
-                                        data-name="<%= usertype.name %>">
-                                <i class="fa-solid fa-user-pen"></i>
+                            <a href="#" id="edit-<%= machinetype.id %>"
+                                        data-id="<%= machinetype.id %>"
+                                        data-name="<%= machinetype.name %>">
+                                <i class="fa-solid fa-pen-to-square"></i>
                             </a>
                         </td>
                         <td class="text-center">
-                            <a href="admin/usertypes/delete/<%= usertype.id %>"><i class="fa-solid fa-trash-can"></i></a>
+                            <a href="admin/machines/delete-type/<%= machinetype.id %>"><i class="fa-solid fa-trash-can"></i></a>
                         </td>
                     </tr>
                     <% }); %>
                 </tbody>
             </table>
 
-            <h5 class="mb-4"><i class="fa fa-user-plus"></i>&nbsp;&nbsp;Create new usertype</h5>
+            <h5 class="mb-4"><i class="fa-solid fa-flux-capacitor"></i>&nbsp;&nbsp;Create new machine type</h5>
 
-            <form action="/admin/usertypes/create" method="post">
+            <form action="/admin/machines/create-type" method="post">
                 <div class="row">
-                    <input type='hidden' id="usertypeid" name='usertypeid' value='' />
+                    <input type='hidden' id="machinetypeid" name='machinetypeid' value='' />
                     <div class="col-md">
                         <input type="text" class="form-control" id="name" name="name" placeholder="Type name" required />
                     </div>
                     <div class="col-md">
-                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create usertype</button>
+                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create machine type</button>
                     </div>
                 </div>
             </form>
@@ -71,11 +71,11 @@
           function editItem() {
             event.preventDefault();
 
-            document.querySelector("h5.mb-4").innerHTML = "<i class='fa fa-user-plus'></i>&nbsp;&nbsp;Update usertype";
-            document.querySelector("form").action = "/admin/usertypes/update";
-            document.getElementById("usertypeid").value = this.dataset.id;
+            document.querySelector("h5.mb-4").innerHTML = "<i class='fa-solid fa-flux-capacitor'></i>&nbsp;&nbsp;Update machine type";
+            document.querySelector("form").action = "/admin/machines/update-type";
+            document.getElementById("machinetypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
-            document.querySelector("button.btn-primary").innerHTML = "Update usertype";
+            document.querySelector("button.btn-primary").innerHTML = "Update machine type";
 
             return false;
           }

@@ -41,7 +41,7 @@ router.get("/list/all-users", async (req, res) => {
     return res.redirect("/");
   }
 
-  const allUsers = await prisma.users.findMany({});
+  const allUsers = await prisma.user.findMany({});
   res.status(200).json(allUsers);
 });
 

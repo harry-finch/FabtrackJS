@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 const logger = require("../utilities/simpleLogger.js");
 
 // ******************************************************************************
-// Route handling the admin page managing user types (student, teacher...)
+// Route handling the admin page managing access levels
 //
 // >>> Rendering route
 // ******************************************************************************
@@ -22,65 +22,69 @@ const logger = require("../utilities/simpleLogger.js");
 router.get("/manage", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
-  req.session.lastPage = "/admin/usertypes/manage";
+  req.session.lastPage = "/admin/access/manage";
 
-  const allTypes = await prisma.usertype.findMany({});
-  res.render("admin/manage-usertypes", {
+  const access = await prisma.access.findMany({});
+
+  res.render("admin/manage-access", {
     notification: notification,
     role: req.session.role,
-    usertypes: allTypes,
+    access: access,
   });
 });
 
 // ******************************************************************************
-// Route handling the deletion of a usertype
+// Route handling the deletion of a access
 // ******************************************************************************
 
 router.get("/delete/:id", async (req, res) => {
   const { id } = req.params;
-  const result = await prisma.usertype.delete({
+  const result = await prisma.access.delete({
     where: { id: Number(id) },
   });
 
   logger.logThat(
-    "Usertype " + result.name + " deleted by " + req.session.username,
+    "Access level " + result.name + " deleted by " + req.session.username,
   );
-  req.session.notification = "Success: Usertype " + result.name + " deleted";
+  req.session.notification =
+    "Success: Access level " + result.name + " deleted";
 
   res.redirect(req.session.lastPage);
 });
 
 // ******************************************************************************
-// Route handling the creation of a usertype
+// Route handling the creation of an access level
 // ******************************************************************************
 
 router.post("/create", async (req, res) => {
-  const { name } = req.body;
-  const usertype = await prisma.usertype.create({
-    data: { name: name },
+  const { name, description } = req.body;
+  const access = await prisma.access.create({
+    data: { name: name, description: description },
   });
 
-  logger.logThat("Usertype " + name + " created by " + req.session.username);
-  req.session.notification = "Success: Usertype " + name + " created";
+  logger.logThat(
+    "Access level " + name + " created by " + req.session.username,
+  );
+  req.session.notification = "Success: Access level " + name + " created";
 
-  res.redirect("/admin/usertypes/manage");
+  res.redirect("/admin/access/manage");
 });
 
 // ******************************************************************************
-// Route handling the update of a usertype
+// Route handling the update of an access level
 // ******************************************************************************
 
 router.post("/update", async (req, res) => {
-  const { usertypeid, name } = req.body;
-  const usertype = await prisma.usertype.update({
-    where: { id: Number(usertypeid) },
-    data: { name: name },
+  const { accessid, name, description } = req.body;
+  const access = await prisma.access.update({
+    where: { id: Number(accessid) },
+    data: { name: name, description: description },
   });
 
-  logger.logThat("Usertype " + name + " update by " + req.session.username);
-  req.session.notification = "Success: Usertype " + name + " updated";
+  logger.logThat("Access level " + name + " update by " + req.session.username);
+  req.session.notification = "Success: Access level " + name + " updated";
 
-  res.redirect("/admin/usertypes/manage");
+  res.redirect("/admin/access/manage");
 });
 
 module.exports = router;

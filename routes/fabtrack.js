@@ -21,20 +21,22 @@ router.get("/", async (req, res) => {
 
   req.session.lastPage = "/fabtrack";
 
-  const allUsers = await prisma.users.findMany({
+  const allUsers = await prisma.user.findMany({
     relationLoadStrategy: "join",
     include: {
       usertype: true,
     },
   });
 
-  const allTypes = await prisma.usertype.findMany({});
+  const userTypes = await prisma.usertype.findMany({});
+  const projectTypes = await prisma.projecttype.findMany({});
 
   res.render("fabtrack/index", {
     notification: notification,
     role: req.session.role,
     users: allUsers,
-    usertypes: allTypes,
+    usertypes: userTypes,
+    projecttypes: projectTypes,
   });
 });
 

@@ -5,7 +5,7 @@ const prisma = new PrismaClient({
 
 module.exports = {
   logThat: async function (message) {
-    const result = await prisma.logs.create({
+    const result = await prisma.log.create({
       data: {
         description: message,
       },
