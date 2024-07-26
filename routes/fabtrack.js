@@ -8,11 +8,13 @@ var router = express.Router();
 const isLoggedIn = require("../middleware/checkSession.js");
 router.use(isLoggedIn);
 
+const moment = require("moment");
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
-// Route handling the main admin page
+// Route handling the main fabtrack page
 // ******************************************************************************
 
 router.get("/", async (req, res) => {
@@ -25,11 +27,27 @@ router.get("/", async (req, res) => {
     relationLoadStrategy: "join",
     include: {
       usertype: true,
+      projects: true,
     },
   });
 
   const userTypes = await prisma.usertype.findMany({});
   const projectTypes = await prisma.projecttype.findMany({});
+  const projects = await prisma.project.findMany({});
+  const userprojects = await prisma.userproject.findMany({});
+  var history = await prisma.history.findMany({
+    where: {
+      departure: null,
+    },
+    relationLoadStrategy: "join",
+    include: {
+      user: true,
+    },
+  });
+
+  history.forEach(function (entry) {
+    entry.arrival = moment(entry.arrival).calendar();
+  });
 
   res.render("fabtrack/index", {
     notification: notification,
@@ -37,6 +55,9 @@ router.get("/", async (req, res) => {
     users: allUsers,
     usertypes: userTypes,
     projecttypes: projectTypes,
+    projects: projects,
+    userprojects: userprojects,
+    history: history,
   });
 });
 

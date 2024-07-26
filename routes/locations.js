@@ -57,6 +57,7 @@ router.get("/delete/:id", async (req, res) => {
 
 router.post("/create", async (req, res) => {
   const { name, description } = req.body;
+
   const location = await prisma.location.create({
     data: { name: name, description: description },
   });
@@ -73,7 +74,8 @@ router.post("/create", async (req, res) => {
 
 router.post("/update", async (req, res) => {
   const { locationid, name, description } = req.body;
-  const access = await prisma.location.update({
+
+  const location = await prisma.location.update({
     where: { id: Number(locationid) },
     data: { name: name, description: description },
   });

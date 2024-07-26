@@ -26,7 +26,8 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="form-floating mb-3 d-grid d-flex">
-                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="Name" autocomplete="off" data-userindex="0" required />
+                                <input type='hidden' id="userid" name='userid' value='null' />
+                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="Name" autocomplete="off" required />
                                 <label for="name">Name</label>
                                 <a id="urlprofile" href="">
                                     <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
@@ -35,9 +36,20 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-8">
+                            <div class="form-floating mb-3 d-grid d-flex">
+                                <input type='hidden' id="projectid" name='projectid' value='null' />
+                                <input type='hidden' id="userprojectid" name='userprojectid' value='null' />
+                                <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" autocomplete="off" placeholder="Documentation" required />
+                                <label for="name">Link to project documentation</label>
+                                <a id="urldocumentation" href="">
+                                    <span class="formbutton input-group-text"><i class="fa-solid fa-book-circle-arrow-right fa-lg"></i></span>
+                                </a>
+                            </div>
+                        </div>
                         <div class="col-4">
                             <div class="form-floating mb-3">
-                                <select class="form-select" id="projecttype">
+                                <select class="form-select" id="projecttype" name="projecttype">
                                     <option selected></option>
                                     <% projecttypes.forEach(function(projecttype) { %>
                                     <option value="<%= projecttype.id %>"><%= projecttype.name %></option>
@@ -46,21 +58,12 @@
                                 <label for="projecttype">Type of project</label>
                             </div>
                         </div>
-                        <div class="col-8">
-                            <div class="form-floating mb-3 d-grid d-flex">
-                                <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" placeholder="Documentation" required />
-                                <label for="name">Link to project documentation</label>
-                                <a id="urldocumentation" href="">
-                                    <span class="formbutton input-group-text"><i class="fa-solid fa-book-circle-arrow-right fa-lg"></i></span>
-                                </a>
-                            </div>
-                        </div>
                     </div>
                     <div class="row">
                         <div class="col">
                             <div class="form-floating mb-3">
-                                <textarea class="form-control" id="additional-info" name="additional-info" style="height: 100px"></textarea>
-                                <label for="additional-info">Comments</label>
+                                <textarea class="form-control" id="comments" name="comments" style="height: 100px"></textarea>
+                                <label for="comments">Comments</label>
                             </div>
                         </div>
                     </div>
@@ -73,12 +76,47 @@
 
                 <!-- Lab activity table -->
 
+                <% if( Object.entries(history).length ) { %>
+                <div>
+                    <hr class="mt-4 mb-4">
 
+                    <h4 class="mt-4 mb-4"><i class="fa fa-users"></i>&nbsp;&nbsp;<%- Object.entries(history).length %> people currently present in the lab</h4>
 
-                <!-- Button trigger modal -->
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(1)" scope="col">Arrival</th>
+                                <th onclick="sortTable(2)" scope="col">User</th>
+                                <th scope="col" class="text-center">Warning</th>
+                                <th scope="col" class="text-center">Activity</th>
+                                <th scope="col" class="text-center">Exit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-content">
+                            <% history.forEach(function(entry) { %>
+                            <tr>
+                                <td scope="row"><%= entry.arrival %></td>
+                                <td><a href="/users/edit/<%= entry.userId %>"><%= entry.user.name %> <%= entry.user.surname %></a></td>
+                                <td class="text-center">
+                                    <i class="fa-solid fa-circle-check" style="color: #44aa44"></i>
+                                </td>
+                                <td class="text-center">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop"><i class="fa-solid fa-square-plus"></i></a>
+                                </td>
+                                <td class="text-center">
+                                    <a href="history/exit/<%= entry.id %>"><i class="fa-solid fa-person-running"></i></a>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } %>
+
+                <!-- Button trigger modal
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     Launch static backdrop modal
-                </button>
+                </button> -->
 
                 <!-- Modal (popup lightbox) -->
                 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -98,6 +136,7 @@
                     </div>
                     </div>
                 </div>
+
             </div>
 
             <!-- New user creation form -->
@@ -175,27 +214,27 @@
         // User search autocomplete
         // Creating an array with all the names and their corresponding user ids
 
-        var input = document.getElementById('name');
+        var nameInput = document.getElementById('name');
         var names = [ <% users.forEach(function(user) { %>
-                      { label: '<%= user.name %> <%= user.surname %>', value: '<%= user.id %>' },
+                      { fullname: '<%= user.name %> <%= user.surname %>', id: '<%= user.id %>', projects: '<%- JSON.stringify(user.projects) %>' },
                     <% }); %> ];
         var allowedChars = new RegExp(/^[a-zA-Z\s]+$/)
 
         autocomplete({
-            input: input,
+            input: nameInput,
             minLength: 1,
             emptyMsg: 'No names found',
             fetch: function (text, callback) {
                             text = text.toLowerCase().trim();
-                            callback(names.filter(function (candidate) { return candidate.label.toLowerCase().indexOf(text) !== -1; }));
+                            callback(names.filter(function (candidate) { return candidate.fullname.toLowerCase().indexOf(text) !== -1; }));
                         },
             render: function (item, value) {
                             var itemElement = document.createElement("div");
                             if (allowedChars.test(value)) {
                                 var regex = new RegExp(value, 'gi');
-                                itemElement.innerHTML = item.label.replace(regex, function (match) { return `<strong>${match}</strong>`; });
+                                itemElement.innerHTML = item.fullname.replace(regex, function (match) { return `<strong>${match}</strong>`; });
                             } else {
-                                itemElement.textContent = item.label;
+                                itemElement.textContent = item.fullname;
                             }
                             return itemElement;
                         },
@@ -204,9 +243,54 @@
                 // set the value of the field and the user index field
                 // as well as set the link to edit the user profile
 
-                input.value = item.label;
-                input.dataset.userindex = item.value;
-                document.getElementById('urlprofile').href = "/users/edit/" + item.value;
+                nameInput.value = item.fullname;
+                document.getElementById('userid').value = item.id;
+                document.getElementById('urlprofile').href = "/users/edit/" + item.id;
+                console.log(item.projects);
+            }
+        });
+
+        // Documentation search autcomplete
+
+        var docInput = document.getElementById('documentation');
+        var projects = [ <% projects.forEach(function(project) { %>
+                      { id: '<%= project.id %>', url: '<%= project.url %>', type: '<%= project.projecttypeId %>' },
+                    <% }); %> ];
+        var userprojects = [ <% userprojects.forEach(function(userproject) { %>
+                      { id: '<%= userproject.id %>', userid: '<%= userproject.userId %>', projectid: '<%= userproject.projectId %>' },
+                    <% }); %> ];
+
+        new autocomplete({
+            input: docInput,
+            showOnFocus: true,
+            emptyMsg: 'No documentation found, type new URL to create project',
+            fetch: function (text, callback) {
+                            text = text.toLowerCase().trim();
+                            callback(projects.filter(function (candidate) { return candidate.url.toLowerCase().indexOf(text) !== -1; }));
+                        },
+            render: function (item, value) {
+                            var itemElement = document.createElement("div");
+                            if (allowedChars.test(value)) {
+                                var regex = new RegExp(value, 'gi');
+                                itemElement.innerHTML = item.url.replace(regex, function (match) { return `<strong>${match}</strong>`; });
+                            } else {
+                                itemElement.textContent = item.url;
+                            }
+                            return itemElement;
+                        },
+            onSelect: function(item) {
+                // When clicking, entering or tabbing on the selected documentation
+                // set the value of the field and the documentation index field
+                // as well as set the link to documentation and the project type
+                // and finally, also set the userproject combination
+
+                docInput.value = item.url;
+                document.getElementById('projectid').value = item.id;
+                document.getElementById('urldocumentation').href = item.url;
+                document.getElementById('projecttype').selectedIndex = item.type;
+
+                const foundElem = userprojects.find(elem => elem.userid === document.getElementById('userid').value && elem.projectid === item.id);
+                document.getElementById('userprojectid').value = foundElem ? foundElem.id : "null";
             }
         });
         </script>

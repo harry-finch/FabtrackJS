@@ -20,6 +20,7 @@ var machinesRouter = require("./routes/machines");
 var locationsRouter = require("./routes/locations");
 var accessRouter = require("./routes/accesslevels");
 var fabTrackRouter = require("./routes/fabtrack");
+var historyRouter = require("./routes/history");
 
 var app = express();
 
@@ -55,6 +56,7 @@ app.use("/admin/machines", machinesRouter);
 app.use("/admin/locations", locationsRouter);
 app.use("/admin/access", accessRouter);
 app.use("/fabtrack", fabTrackRouter);
+app.use("/history", historyRouter);
 
 // Catch 404 and forward to error handler
 app.use(function (req, res, next) {

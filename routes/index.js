@@ -85,42 +85,41 @@ router.post("/create-account", async (req, res) => {
     .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
     .toString(`base64`);
 
-  const result = await prisma.staff
-    .create({
+  try {
+    const result = await prisma.staff.create({
       data: {
         name: username,
         pwd: hash,
         mail: mail,
       },
-    })
-    .catch(async (e) => {
-      console.log(e);
-
-      if (e.code === "P2002") {
-        await prisma.$disconnect();
-
-        req.session.notification = "Error: User already exists";
-        res.redirect("/register");
-      } else {
-        req.session.notification =
-          "Warning: Your account needs to be approved by an administrator before you can log in.";
-
-        const info = await transporter.sendMail({
-          from: process.env.MAILFROM,
-          to: process.env.ADMIN,
-          subject: "FabtrackJS: new staff account created",
-          text:
-            "User " +
-            username +
-            " (" +
-            mail +
-            ") " +
-            " has registered an account on Fabtrack.",
-        });
-
-        res.redirect("/login");
-      }
     });
+
+    req.session.notification =
+      "Warning: Your account needs to be approved by an administrator before you can log in.";
+
+    const info = await transporter.sendMail({
+      from: process.env.MAILFROM,
+      to: process.env.ADMIN,
+      subject: "FabtrackJS: new staff account created",
+      text:
+        "User " +
+        username +
+        " (" +
+        mail +
+        ") " +
+        " has registered an account on Fabtrack.",
+    });
+
+    res.redirect("/login");
+  } catch (e) {
+    console.log(e);
+    if (e.code === "P2002") {
+      req.session.notification = "Error: User already exists";
+      res.redirect("/");
+    } else {
+      // Handle other errors (optional)
+    }
+  }
 });
 
 // ******************************************************************************

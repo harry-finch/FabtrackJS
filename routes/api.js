@@ -45,4 +45,32 @@ router.get("/list/all-users", async (req, res) => {
   res.status(200).json(allUsers);
 });
 
+// ******************************************************************************
+// Route returning a list of all history entries
+// ******************************************************************************
+
+router.get("/list/all-history", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.notification = "Error: Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const allHistory = await prisma.history.findMany({});
+  res.status(200).json(allHistory);
+});
+
+// ******************************************************************************
+// Route returning a list of all projects
+// ******************************************************************************
+
+router.get("/list/all-projects", async (req, res) => {
+  if (req.session.role != "admin") {
+    req.session.notification = "Error: Unauthorized access!";
+    return res.redirect("/");
+  }
+
+  const allProjects = await prisma.project.findMany({});
+  res.status(200).json(allProjects);
+});
+
 module.exports = router;

@@ -13,7 +13,9 @@ async function main() {
 
   // Hash password
   var salt = process.env.SALT;
-  var hash = crypto.pbkdf2Sync(password, salt, 1000, 64, `sha512`).toString(`base64`);
+  var hash = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
+    .toString(`base64`);
 
   const result = await prisma.staff
     .create({
@@ -21,6 +23,7 @@ async function main() {
         name: username,
         pwd: hash,
         mail: mail,
+        role: "admin",
         approved: true,
       },
     })
@@ -51,5 +54,6 @@ async function showUsers() {
   console.log(result);
 }
 
+main();
 showUsers();
 // updateUser();

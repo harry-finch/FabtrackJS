@@ -33,14 +33,19 @@ model User {
     name                String   @db.VarChar(255)
     surname             String   @db.VarChar(255)
     mail                String   @unique @db.VarChar(255)
-    usertype            Usertype @relation(fields: [usertypeId], references: [id])
     usertypeId          Int
     accountCreationDate DateTime @default(now())
-    birthYear           Int
-    comment             String   @db.VarChar(255)
+    birthYear           Int?
+    comment             String?  @db.VarChar(255)
     termsAndConditions  Boolean  @default(false)
     token               String   @db.VarChar(20)
+
+    usertype            Usertype @relation(fields: [usertypeId], references: [id])
     projects            Userproject[]
+    history             History[]
+    warning             Warning[]
+
+    @@unique([name, surname])
 }
 
 // Types of users (student, startup, teacher...)
@@ -53,8 +58,9 @@ model Usertype {
 model Project {
     id              Int           @id @default(autoincrement())
     url             String        @unique @db.VarChar(255)
-    projecttype     Projecttype   @relation(fields: [projecttypeId], references: [id])
     projecttypeId   Int
+
+    projecttype     Projecttype   @relation(fields: [projecttypeId], references: [id])
     users           Userproject[]
 }
 
@@ -72,6 +78,7 @@ model Userproject {
 
     user        User          @relation(fields: [userId], references: [id])
     project     Project       @relation(fields: [projectId], references: [id])
+    history     History[]
 
     @@unique([userId, projectId])
 }
@@ -79,18 +86,19 @@ model Userproject {
 // Machines in the lab (make and model, documentation...)
 model Machine {
     id                Int           @id @default(autoincrement())
-    machinetype       Machinetype   @relation(fields: [machinetypeId], references: [id])
     machinetypeId     Int
     make              String        @db.VarChar(255)
     model             String        @db.VarChar(255)
     serialnum         String        @db.VarChar(255)
-    location          Location      @relation(fields: [locationId], references: [id])
     locationId        Int
-    internalReference Int
-    picture           String        @db.VarChar(255)
-    documentation     String        @db.VarChar(255)
-    access            Access        @relation(fields: [accessId], references: [id])
+    internalReference Int?
+    picture           String?       @db.VarChar(255)
+    documentation     String?       @db.VarChar(255)
     accessId          Int
+
+    machinetype       Machinetype   @relation(fields: [machinetypeId], references: [id])
+    location          Location      @relation(fields: [locationId], references: [id])
+    access            Access        @relation(fields: [accessId], references: [id])
 }
 
 // Type of machine (3D printer, laser cutter...)
@@ -104,7 +112,7 @@ model Machinetype {
 model Location {
     id            Int           @id @default(autoincrement())
     name          String        @unique @db.VarChar(255)
-    description   String        @db.VarChar(255)
+    description   String?       @db.VarChar(255)
     machines      Machine[]
 }
 
@@ -114,4 +122,34 @@ model Access {
     name          String        @db.VarChar(255)
     description   String        @db.VarChar(255)
     machines      Machine[]
+}
+
+model History {
+    id              Int           @id @default(autoincrement())
+    arrival         DateTime      @default(now())
+    departure       DateTime?
+    userId          Int
+    userprojectId   Int           @default(0)
+    comments        String        @db.VarChar(255)
+
+    user            User          @relation(fields: [userId], references: [id])
+    userproject     Userproject   @relation(fields: [userprojectId], references: [id])
+}
+
+model Warning {
+    id              Int           @id @default(autoincrement())
+    userId          Int
+    warningtypeId   Int
+    comments        String        @db.VarChar(255)
+
+    user            User          @relation(fields: [userId], references: [id])
+    warningtype     Warningtype   @relation(fields: [warningtypeId], references: [id])
+}
+
+model Warningtype {
+    id              Int           @id @default(autoincrement())
+    name            String        @db.VarChar(255)
+    icon            String        @db.VarChar(255)
+
+    warning         Warning[]
 }
