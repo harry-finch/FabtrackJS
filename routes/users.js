@@ -140,12 +140,22 @@ router.get("/edit/:id", async (req, res) => {
   });
 
   const allTypes = await prisma.usertype.findMany({});
+  const warnings = await prisma.warning.findMany({
+    where: { userId: Number(id), active: true },
+    relationLoadStrategy: "join",
+    include: {
+      warningtype: true,
+    },
+  });
+  const warningtypes = await prisma.warningtype.findMany({});
 
   res.render("fabtrack/edit-user", {
     notification: notification,
     role: req.session.role,
     user: user,
     usertypes: allTypes,
+    warnings: warnings,
+    warningtypes: warningtypes,
   });
 });
 

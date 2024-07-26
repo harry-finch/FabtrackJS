@@ -45,9 +45,15 @@ router.get("/", async (req, res) => {
     },
   });
 
-  history.forEach(function (entry) {
+  history.forEach(async (entry) => {
     entry.arrival = moment(entry.arrival).calendar();
+    entry.warnings = await prisma.warning.findMany({
+      where: { userId: entry.userId },
+      include: { warningtype: true },
+    });
   });
+
+  console.log(history);
 
   res.render("fabtrack/index", {
     notification: notification,

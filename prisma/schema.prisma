@@ -140,6 +140,7 @@ model Warning {
     id              Int           @id @default(autoincrement())
     userId          Int
     warningtypeId   Int
+    active          Boolean       @default(true)
     comments        String        @db.VarChar(255)
 
     user            User          @relation(fields: [userId], references: [id])

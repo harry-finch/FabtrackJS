@@ -18,9 +18,11 @@ var usertypesRouter = require("./routes/usertypes");
 var projecttypesRouter = require("./routes/projecttypes");
 var machinesRouter = require("./routes/machines");
 var locationsRouter = require("./routes/locations");
+var warningtypesRouter = require("./routes/warningtypes");
 var accessRouter = require("./routes/accesslevels");
 var fabTrackRouter = require("./routes/fabtrack");
 var historyRouter = require("./routes/history");
+var warningsRouter = require("./routes/warnings");
 
 var app = express();
 
@@ -54,9 +56,11 @@ app.use("/admin/usertypes", usertypesRouter);
 app.use("/admin/projecttypes", projecttypesRouter);
 app.use("/admin/machines", machinesRouter);
 app.use("/admin/locations", locationsRouter);
+app.use("/admin/warningtypes", warningtypesRouter);
 app.use("/admin/access", accessRouter);
 app.use("/fabtrack", fabTrackRouter);
 app.use("/history", historyRouter);
+app.use("/warning", warningsRouter);
 
 // Catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -21,7 +21,9 @@
 
             <!-- Registering form -->
             <div id="register">
-                <h4 class="mb-4"><a class="jsButton" onclick="showNew()"><i class="fa fa-toggle-on"></i></a>&nbsp;&nbsp;Register an existing user</h4>
+                <h4 class="mb-4">
+                    <a class="jsButton" onclick="showNew()"><i class="fa fa-toggle-on"></i></a>&nbsp;&nbsp;Register an existing user
+                </h4>
                 <form action="/history/create" method="post">
                     <div class="row">
                         <div class="col-12">
@@ -74,13 +76,15 @@
                     </div>
                 </form>
 
-                <!-- Lab activity table -->
+                <!-- Lab activity table (only shown if people are actually in the lab) -->
 
                 <% if( Object.entries(history).length ) { %>
                 <div>
                     <hr class="mt-4 mb-4">
 
-                    <h4 class="mt-4 mb-4"><i class="fa fa-users"></i>&nbsp;&nbsp;<%- Object.entries(history).length %> people currently present in the lab</h4>
+                    <h4 class="mt-4 mb-4">
+                        <i class="fa fa-users"></i>&nbsp;&nbsp;<%- Object.entries(history).length %> people currently present in the lab
+                    </h4>
 
                     <table class="table">
                         <thead>
@@ -98,6 +102,7 @@
                                 <td scope="row"><%= entry.arrival %></td>
                                 <td><a href="/users/edit/<%= entry.userId %>"><%= entry.user.name %> <%= entry.user.surname %></a></td>
                                 <td class="text-center">
+                                    <%= entry.warnings %>
                                     <i class="fa-solid fa-circle-check" style="color: #44aa44"></i>
                                 </td>
                                 <td class="text-center">
@@ -113,12 +118,7 @@
                 </div>
                 <% } %>
 
-                <!-- Button trigger modal
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                    Launch static backdrop modal
-                </button> -->
-
-                <!-- Modal (popup lightbox) -->
+                <!-- Modal to add activities/machines/payment to a user history -->
                 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -200,7 +200,7 @@
         </main>
 
         <script>
-        // Switching between forms
+        // Switching between registering and user creation forms
         function showNew() {
           document.getElementById("newuser").style.display = "block";
           document.getElementById("register").style.display = "none";

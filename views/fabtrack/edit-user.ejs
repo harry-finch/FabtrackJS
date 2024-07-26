@@ -8,9 +8,6 @@
         <title>Fabtrack administration panel</title>
 
         <% include ../includes/pagehead.html %>
-
-        <script src="javascripts/autocomplete.js"></script>
-        <link rel="stylesheet" href="stylesheets/autocomplete.css" />
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
@@ -77,8 +74,67 @@
                         <a class="btn btn-secondary w-100 mb-2 py-2" onclick="history.back();">Cancel</a>
                     </div>
                 </div>
-
             </form>
+
+            <hr class="mt-4 mb-4">
+
+            <h4 class="mb-4"><i class="fa-solid fa-triangle-exclamation"></i>&nbsp;&nbsp;Pending warnings</h4>
+
+            <table class="mb-5 table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Warning type</th>
+                        <th scope="col">Comments</th>
+                        <th scope="col" class="text-center">Deactivate</th>
+                    </tr>
+                </thead>
+                <tbody id="table-content">
+                    <% warnings.forEach(function(warning) { %>
+                    <tr>
+                        <td scope="row"><%= warning.id %></td>
+                        <td><%= warning.warningtype.name %></td>
+                        <td><%= warning.comments %></td>
+                        <td class="text-center">
+                            <a href="warnings/deactivate/<%= warning.id %>"><i class="fa-solid fa-circle-check"></i></a>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+
+            <h4 class="mt-4 mb-4">
+                <i class="fa fa-triangle-exclamation"></i>&nbsp;&nbsp;Add a warning
+            </h4>
+            <form action="/warning/create" method="post">
+                <div class="row">
+                    <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="warningtype" name="warningtype">
+                                <% warningtypes.forEach(function(warningtype) { %>
+                                <option value="<%= warningtype.id %>"><%= warningtype.name %></option>
+                                <% }); %>
+                            </select>
+                            <label for="warningtype">Type of warning</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="comments" name="comments" style="height: 100px"></textarea>
+                            <label for="comments">Comments</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Add a warning</button>
+                    </div>
+                </div>
+            </form>
+
         </main>
 
         <% include ../includes/footer.html %>
