@@ -102,8 +102,17 @@
                                 <td scope="row"><%= entry.arrival %></td>
                                 <td><a href="/users/edit/<%= entry.userId %>"><%= entry.user.name %> <%= entry.user.surname %></a></td>
                                 <td class="text-center">
-                                    <%= entry.warnings %>
-                                    <i class="fa-solid fa-circle-check" style="color: #44aa44"></i>
+                                    <% if (entry.warnings.length > 0) { %>
+                                        <% entry.warnings.forEach(function(warning) { %>
+                                        <span   data-bs-toggle="tooltip" data-bs-placement="right"
+                                                    data-bs-custom-class="custom-tooltip"
+                                                    data-bs-title="<%= warning.comments %>"><%- warning.warningtype.icon %></span>
+                                        <% }); %>
+                                    <% } else { %>
+                                    <span   data-bs-toggle="tooltip" data-bs-placement="right"
+                                                data-bs-custom-class="custom-tooltip"
+                                                data-bs-title="All clear"><i class="fa-solid fa-circle-check" style="color: #44aa44"></i></span>
+                                    <% } %>
                                 </td>
                                 <td class="text-center">
                                     <a href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop"><i class="fa-solid fa-square-plus"></i></a>

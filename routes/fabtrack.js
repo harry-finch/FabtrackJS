@@ -35,6 +35,7 @@ router.get("/", async (req, res) => {
   const projectTypes = await prisma.projecttype.findMany({});
   const projects = await prisma.project.findMany({});
   const userprojects = await prisma.userproject.findMany({});
+
   var history = await prisma.history.findMany({
     where: {
       departure: null,
@@ -45,15 +46,32 @@ router.get("/", async (req, res) => {
     },
   });
 
-  history.forEach(async (entry) => {
-    entry.arrival = moment(entry.arrival).calendar();
-    entry.warnings = await prisma.warning.findMany({
-      where: { userId: entry.userId },
-      include: { warningtype: true },
-    });
+  // 1. Extract User IDs
+  const userIdsInLab = history.map((entry) => entry.userId);
+
+  // 2. Fetch Warnings for Users in Lab (Optimized)
+  const warnings = await prisma.warning.findMany({
+    where: {
+      userId: { in: userIdsInLab },
+      active: true, // Filter for active warnings only
+    },
+    include: { warningtype: true },
   });
 
-  console.log(history);
+  // 3. Create a Map for Efficient Lookup
+  const warningsByUser = new Map();
+  warnings.forEach((warning) => {
+    if (!warningsByUser.has(warning.userId)) {
+      warningsByUser.set(warning.userId, []);
+    }
+    warningsByUser.get(warning.userId).push(warning);
+  });
+
+  // 4. Populate Warnings in History Entries
+  history.forEach((entry) => {
+    entry.arrival = moment(entry.arrival).calendar();
+    entry.warnings = warningsByUser.get(entry.userId) || [];
+  });
 
   res.render("fabtrack/index", {
     notification: notification,

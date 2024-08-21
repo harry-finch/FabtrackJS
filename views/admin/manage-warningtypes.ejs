@@ -23,6 +23,7 @@
                     <tr>
                         <th onclick="sortTable(0)" scope="col">#</th>
                         <th onclick="sortTable(1)" scope="col">Warning type</th>
+                        <th scole="col" class="text-center">Icon</th>
                         <th scole="col" class="text-center">Edit</th>
                         <th scope="col" class="text-center">Delete</th>
                     </tr>
@@ -32,11 +33,12 @@
                     <tr>
                         <td scope="row"><%= warningtype.id %></td>
                         <td><%= warningtype.name %></td>
+                        <td class="text-center"><%- warningtype.icon %></td>
                         <td class="text-center">
                             <a href="#" id="edit-<%= warningtype.id %>"
                                         data-id="<%= warningtype.id %>"
                                         data-name="<%= warningtype.name %>"
-                                        data-description="<%= warningtype.icon %>">
+                                        data-description='<%= warningtype.icon %>'>
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </a>
                         </td>
@@ -86,10 +88,13 @@
             event.preventDefault();
 
             document.querySelector("h5.mb-4").innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i>&nbsp;&nbsp;Update warning type";
-            document.querySelector("form").action = "/admin/locations/update";
+            document.querySelector("form").action = "/admin/warningtypes/update";
             document.getElementById("warningtypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
-            document.querySelector("textarea").value = this.dataset.icon;
+
+            const decodedIcon = this.dataset.description.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            document.querySelector("textarea").value = decodedIcon;
+
             document.querySelector("button.btn-primary").innerHTML = "Update warning type";
 
             return false;

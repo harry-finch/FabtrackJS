@@ -79,7 +79,7 @@ router.post("/update", async (req, res) => {
   const { warningtypeid, name, icon } = req.body;
 
   const warningtype = await prisma.warningtype.update({
-    where: { id: Number(locationid) },
+    where: { id: Number(warningtypeid) },
     data: { name: name, icon: icon },
   });
 
