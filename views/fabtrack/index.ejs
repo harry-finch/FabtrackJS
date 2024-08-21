@@ -259,17 +259,42 @@
             }
         });
 
-        // Documentation search autcomplete
+        // Project documentation search autcomplete
 
         var docInput = document.getElementById('documentation');
         var projects = [ <% projects.forEach(function(project) { %>
-                      { id: '<%= project.id %>', url: '<%= project.url %>', type: '<%= project.projecttypeId %>' },
+                      { id: '<%= project.id %>', url: '<%= project.url %>', type: '<%= project.projecttypeId %>', group: "all" },
                     <% }); %> ];
         var userprojects = [ <% userprojects.forEach(function(userproject) { %>
                       { id: '<%= userproject.id %>', userid: '<%= userproject.userId %>', projectid: '<%= userproject.projectId %>' },
                     <% }); %> ];
 
-        new autocomplete({
+        nameInput.addEventListener("change", () => {
+          const userId = document.getElementById('userid').value;
+
+          // Update the 'group' property of projects based on user association
+          projects.forEach(project => {
+            const isUserAssociated = userprojects.some(up =>
+              up.userid === userId && up.projectid === project.id
+            );
+
+            project.group = isUserAssociated ? 'current user projects' : 'all other projects';
+          });
+
+          // Sort projects, placing 'user' projects first
+            projects.sort((a, b) => {
+              if (a.group === 'current user projects' && b.group !== 'current user projects') return -1; // a comes before b
+              if (a.group !== 'current user projects' && b.group === 'current user projects') return 1;  // b comes before a
+              return 0; // Maintain original order if both have the same group
+            });
+
+          console.log(projects);
+
+          // Manually update the autocomplete data
+          docAutocomplete.data = projects;
+        });
+
+        const docAutocomplete = new autocomplete({
             input: docInput,
             showOnFocus: true,
             emptyMsg: 'No documentation found, type new URL to create project',

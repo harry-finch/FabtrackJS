@@ -25,17 +25,25 @@ router.post("/create", async (req, res) => {
     comments,
   } = req.body;
 
-  if (projectid == "null") {
-    // if project does not exist in the db, create the project
+  const alreadyHere = await prisma.history.findMany({
+    where: {
+      userId: Number(userid),
+      departure: null,
+    },
+  });
 
-    const project = await prisma.project.create({
-      data: {
-        url: documentation,
-        projecttypeId: Number(projecttype),
-      },
-    });
-    projectid = project.id;
-  } else {
+  if (alreadyHere.length == 0) {
+    if (projectid == "null") {
+      // if project does not exist in the db, create the project
+
+      const project = await prisma.project.create({
+        data: {
+          url: documentation,
+          projecttypeId: Number(projecttype),
+        },
+      });
+      projectid = project.id;
+    }
     // at this point the project already exists, but we have to check if the project is already associated with user
     // and if not, create the combination
 
@@ -49,18 +57,20 @@ router.post("/create", async (req, res) => {
 
       userprojectid = userproject.id;
     }
+
+    // now we have all the information we need to create the history entry
+    const history = await prisma.history.create({
+      data: {
+        userId: Number(userid),
+        userprojectId: Number(userprojectid),
+        comments: comments,
+      },
+    });
+
+    req.session.notification = "Success: User is now in the lab!";
+  } else {
+    req.session.notification = "Error: User is already in the lab!";
   }
-
-  // now we have all the information we need to create the history entry
-  const history = await prisma.history.create({
-    data: {
-      userId: Number(userid),
-      userprojectId: Number(userprojectid),
-      comments: comments,
-    },
-  });
-
-  req.session.notification = "Success: User is now in the lab!";
   res.redirect("/fabtrack");
 });
 

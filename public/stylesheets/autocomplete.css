@@ -24,7 +24,8 @@
 }
 
 .autocomplete .group {
-    background: #eee;
+    background: #ccc;
+    font-size: 0.8em;
 }
 
 .autocomplete > div:hover:not(.group),
