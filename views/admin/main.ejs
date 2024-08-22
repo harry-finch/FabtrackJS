@@ -39,6 +39,17 @@
                 </div>
             </div>
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+                <% if( workspaces ) { %>
+                <div class="col">
+                    <div class="card h-100 text-center">
+                        <i class="fa-solid fa-building fs-1 mt-2 text-center"></i>
+                        <div class="card-body">
+                            <a href="admin/workspaces/manage" class="btn btn-warning mb-3">Manage fablab workspaces</a>
+                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify workspaces</p>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
                 <div class="col">
                     <div class="card h-100 text-center">
                         <i class="fa-solid fa-users fs-1 mt-2 text-center"></i>

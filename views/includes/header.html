@@ -139,7 +139,31 @@
                     ><i class="fa-solid fa-house"></i>&nbsp;&nbsp;Home</a
                 >
             </li>
-            <% if(role == "admin") {%>
+            <% if ( Object.entries(availableWorkspaces).length > 0 ) { %>
+            <li>
+                <a class="dropdown-item" href="#"
+                    ><i class="fa-solid fa-building"></i
+                    >&nbsp;&nbsp;Workspace&nbsp;&nbsp;></a
+                >
+                <ul class="dropdown-menu dropdown-submenu">
+                    <% availableWorkspaces.forEach(function(workspace){ %>
+                    <li>
+                        <a
+                            class="dropdown-item workspace-link"
+                            data-workspaceid="<%= workspace.id %>"
+                            href="#"
+                        >
+                            <%= workspace.name %> <% if (workspace.id ==
+                            selectedWorkspace.id) { %> &nbsp;&nbsp;<i
+                                class="fa-solid fa-circle-check"
+                            ></i>
+                            <% } %>
+                        </a>
+                    </li>
+                    <% }) %>
+                </ul>
+            </li>
+            <% } %> <% if(role == "admin") {%>
             <li>
                 <a class="dropdown-item" href="/admin"
                     ><i class="fa-solid fa-gear"></i>&nbsp;&nbsp;Administration
@@ -156,6 +180,39 @@
         </ul>
     </div>
 </div>
+
+<script>
+    const workspaceLinks = document.getElementsByClassName("workspace-link");
+
+    // Iterate through the workspace links and attach event listeners
+    Array.from(workspaceLinks).forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent default link behavior
+
+            const selectedWorkspaceId = link.dataset.workspaceid;
+            console.log(selectedWorkspaceId);
+
+            fetch("/fabtrack/switchworkspace", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ workspaceId: selectedWorkspaceId }),
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    // Optionally, reload the page or update specific parts of the UI
+                    location.reload();
+                })
+                .catch((error) => {
+                    console.error("Error switching workspace:", error);
+                    // Handle the error gracefully
+                });
+        });
+    });
+</script>
 
 <h2 class="mb-1 text-center">FabtrackJS</h2>
 <h5 class="lead fs-6 mb-5 text-center">Track your fablab's activity</h5>

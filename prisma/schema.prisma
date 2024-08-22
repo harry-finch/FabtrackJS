@@ -17,33 +17,33 @@ model Log {
 
 // Users that will actually log on to the platform
 model Staff {
-    id        Int      @id @default(autoincrement())
-    name      String   @unique @db.VarChar(255)
-    mail      String   @unique @db.VarChar(255)
-    pwd       String   @db.VarChar(255)
-    role      String   @default("user") @db.VarChar(20)
-    pwdtoken  String   @default("0") @db.VarChar(20)
-    timestamp DateTime @default(now())
-    approved  Boolean  @default(false)
+    id            Int       @id @default(autoincrement())
+    name          String    @unique @db.VarChar(255)
+    mail          String    @unique @db.VarChar(255)
+    pwd           String    @db.VarChar(255)
+    role          String    @default("user") @db.VarChar(20)
+    pwdtoken      String    @default("0") @db.VarChar(20)
+    timestamp     DateTime  @default(now())
+    approved      Boolean   @default(false)
 }
 
 // Users and visitors whose activities we want to track
 model User {
-    id                  Int      @id @default(autoincrement())
-    name                String   @db.VarChar(255)
-    surname             String   @db.VarChar(255)
-    mail                String   @unique @db.VarChar(255)
-    usertypeId          Int
-    accountCreationDate DateTime @default(now())
-    birthYear           Int?
-    comment             String?  @db.VarChar(255)
-    termsAndConditions  Boolean  @default(false)
-    token               String   @db.VarChar(20)
+    id                    Int      @id @default(autoincrement())
+    name                  String   @db.VarChar(255)
+    surname               String   @db.VarChar(255)
+    mail                  String   @unique @db.VarChar(255)
+    usertypeId            Int
+    accountCreationDate   DateTime @default(now())
+    birthYear             Int?
+    comment               String?  @db.VarChar(255)
+    termsAndConditions    Boolean  @default(false)
+    token                 String   @db.VarChar(20)
 
-    usertype            Usertype @relation(fields: [usertypeId], references: [id])
-    projects            Userproject[]
-    history             History[]
-    warning             Warning[]
+    usertype              Usertype @relation(fields: [usertypeId], references: [id])
+    projects              Userproject[]
+    history               History[]
+    warning               Warning[]
 
     @@unique([name, surname])
 }
@@ -56,12 +56,14 @@ model Usertype {
 }
 
 model Project {
-    id              Int           @id @default(autoincrement())
-    url             String        @unique @db.VarChar(255)
-    projecttypeId   Int
+    id                    Int           @id @default(autoincrement())
+    url                   String        @unique @db.VarChar(255)
+    projecttypeId         Int
+    projectCreationDate   DateTime      @default(now())
+    active                Boolean       @default(true)
 
-    projecttype     Projecttype   @relation(fields: [projecttypeId], references: [id])
-    users           Userproject[]
+    projecttype           Projecttype   @relation(fields: [projecttypeId], references: [id])
+    users                 Userproject[]
 }
 
 model Projecttype {
@@ -124,18 +126,6 @@ model Access {
     machines      Machine[]
 }
 
-model History {
-    id              Int           @id @default(autoincrement())
-    arrival         DateTime      @default(now())
-    departure       DateTime?
-    userId          Int
-    userprojectId   Int           @default(0)
-    comments        String        @db.VarChar(255)
-
-    user            User          @relation(fields: [userId], references: [id])
-    userproject     Userproject   @relation(fields: [userprojectId], references: [id])
-}
-
 model Warning {
     id              Int           @id @default(autoincrement())
     userId          Int
@@ -153,4 +143,26 @@ model Warningtype {
     icon            String        @db.VarChar(255)
 
     warning         Warning[]
+}
+
+model History {
+    id              Int           @id @default(autoincrement())
+    arrival         DateTime      @default(now())
+    departure       DateTime?
+    userId          Int
+    userprojectId   Int           @default(0)
+    comments        String        @db.VarChar(255)
+    workspaceId     Int?          // Optional key to another workspace
+
+    user            User          @relation(fields: [userId], references: [id])
+    userproject     Userproject   @relation(fields: [userprojectId], references: [id])
+    workspace       Workspace?    @relation(fields: [workspaceId], references: [id])
+}
+
+model Workspace {
+    id                Int      @id @default(autoincrement())
+    name              String   @unique @db.VarChar(255)
+    location          String?  @db.VarChar(255) // Optional address or location details
+
+    historyEntries    History[]
 }

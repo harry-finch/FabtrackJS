@@ -23,6 +23,7 @@ var accessRouter = require("./routes/accesslevels");
 var fabTrackRouter = require("./routes/fabtrack");
 var historyRouter = require("./routes/history");
 var warningsRouter = require("./routes/warnings");
+var workspacesRouter = require("./routes/workspaces");
 
 var app = express();
 
@@ -44,11 +45,41 @@ app.use(
     cookie: { maxAge: parseInt(process.env.SESSION_DURATION) },
   }),
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+async function workspaceSwitcher(req, res, next) {
+  try {
+    // Fetch available workspaces from the database
+    const availableWorkspaces = await prisma.Workspace.findMany();
+
+    // Check if a workspace is already selected in the session
+    if (!req.session.selectedWorkspace && availableWorkspaces.length > 0) {
+      // If not, set the first workspace as the default
+      req.session.selectedWorkspace = availableWorkspaces[0];
+    }
+
+    // Make the selected workspace and available workspaces accessible in templates
+    res.locals.selectedWorkspace = req.session.selectedWorkspace;
+    res.locals.availableWorkspaces = availableWorkspaces;
+
+    next();
+  } catch (error) {
+    console.error("Error fetching Workspaces:", error);
+    // Handle the error gracefully (e.g., set an error flag in the session, render an error page)
+    next(error); // Pass the error to the next error handling middleware
+  }
+}
 
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
+
+app.use(workspaceSwitcher);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use("/admin", adminRouter);
 app.use("/admin/staff", staffRouter);
 app.use("/users", usersRouter);
@@ -61,6 +92,7 @@ app.use("/admin/access", accessRouter);
 app.use("/fabtrack", fabTrackRouter);
 app.use("/history", historyRouter);
 app.use("/warning", warningsRouter);
+app.use("/admin/workspaces", workspacesRouter);
 
 // Catch 404 and forward to error handler
 app.use(function (req, res, next) {

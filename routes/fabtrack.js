@@ -10,6 +10,9 @@ router.use(isLoggedIn);
 
 const moment = require("moment");
 
+const dotenv = require("dotenv");
+dotenv.config();
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -20,7 +23,6 @@ const prisma = new PrismaClient();
 router.get("/", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
-
   req.session.lastPage = "/fabtrack";
 
   const allUsers = await prisma.user.findMany({
@@ -33,7 +35,9 @@ router.get("/", async (req, res) => {
 
   const userTypes = await prisma.usertype.findMany({});
   const projectTypes = await prisma.projecttype.findMany({});
-  const projects = await prisma.project.findMany({});
+  const projects = await prisma.project.findMany({
+    where: { active: true },
+  });
   const userprojects = await prisma.userproject.findMany({});
 
   var history = await prisma.history.findMany({
@@ -46,6 +50,7 @@ router.get("/", async (req, res) => {
     },
   });
 
+  // Find all warnings associated with the users in the lab
   // 1. Extract User IDs
   const userIdsInLab = history.map((entry) => entry.userId);
 
@@ -67,11 +72,40 @@ router.get("/", async (req, res) => {
     warningsByUser.get(warning.userId).push(warning);
   });
 
-  // 4. Populate Warnings in History Entries
-  history.forEach((entry) => {
+  // 4. Populate Warnings in History Entries and handle the arrival time
+  for (const entry of history) {
+    const parsedDate = moment(entry.arrival);
+    const today = moment();
+
+    // If the user has been in the lab but not logged out on a previous day
+    if (parsedDate.isBefore(today, "day")) {
+      parsedDate.set({ hour: 18, minute: 30 });
+      const isoString = parsedDate.toISOString();
+
+      try {
+        // Update the departure time in the database
+        await prisma.history.update({
+          where: {
+            id: entry.id,
+          },
+          data: {
+            departure: isoString,
+          },
+        });
+      } catch (error) {
+        console.error("Error updating history entry:", error);
+      }
+
+      // Remove the entry from the 'history' array in memory
+      const index = history.indexOf(entry);
+      if (index > -1) {
+        history.splice(index, 1);
+      }
+    }
+
     entry.arrival = moment(entry.arrival).calendar();
     entry.warnings = warningsByUser.get(entry.userId) || [];
-  });
+  }
 
   res.render("fabtrack/index", {
     notification: notification,
@@ -83,6 +117,19 @@ router.get("/", async (req, res) => {
     userprojects: userprojects,
     history: history,
   });
+});
+
+router.post("/switchworkspace", (req, res) => {
+  const newWorkspaceId = Number(req.body.workspaceId);
+
+  req.session.selectedWorkspace = res.locals.availableWorkspaces.find(
+    (workspace) => workspace.id === newWorkspaceId,
+  );
+
+  req.session.notification =
+    "Success: Workspace switched to " + req.session.selectedWorkspace.name;
+
+  res.sendStatus(200); // Send a success status
 });
 
 module.exports = router;

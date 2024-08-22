@@ -91,7 +91,7 @@
                             <tr>
                                 <th onclick="sortTable(1)" scope="col">Arrival</th>
                                 <th onclick="sortTable(2)" scope="col">User</th>
-                                <th scope="col" class="text-center">Warning</th>
+                                <th scope="col" class="text-center">Warnings</th>
                                 <th scope="col" class="text-center">Activity</th>
                                 <th scope="col" class="text-center">Exit</th>
                             </tr>
@@ -102,7 +102,7 @@
                                 <td scope="row"><%= entry.arrival %></td>
                                 <td><a href="/users/edit/<%= entry.userId %>"><%= entry.user.name %> <%= entry.user.surname %></a></td>
                                 <td class="text-center">
-                                    <% if (entry.warnings.length > 0) { %>
+                                    <% if ( Object.entries(entry.warnings).length ) { %>
                                         <% entry.warnings.forEach(function(warning) { %>
                                         <span   data-bs-toggle="tooltip" data-bs-placement="right"
                                                     data-bs-custom-class="custom-tooltip"
