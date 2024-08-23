@@ -8,6 +8,8 @@ var router = express.Router();
 const isLoggedIn = require("../middleware/checkSession.js");
 router.use(isLoggedIn);
 
+const moment = require("moment");
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -139,6 +141,34 @@ router.get("/edit/:id", async (req, res) => {
     },
   });
 
+  var userHistory = await prisma.history.findMany({
+    where: {
+      userId: Number(id),
+      departure: { not: null },
+    },
+    relationLoadStrategy: "join",
+    include: {
+      workspace: true,
+      userproject: true,
+    },
+    orderBy: {
+      arrival: "desc",
+    },
+  });
+
+  for (const entry of userHistory) {
+    entry.arrival = moment(entry.arrival).format("llll");
+    entry.departure = moment(entry.departure).format("LT");
+
+    try {
+      entry.project = await prisma.project.findUnique({
+        where: { id: entry.userproject.projectId },
+      });
+    } catch (error) {
+      console.error("Error fetching user projects:", error);
+    }
+  }
+
   const allTypes = await prisma.usertype.findMany({});
   const warnings = await prisma.warning.findMany({
     where: { userId: Number(id), active: true },
@@ -149,6 +179,10 @@ router.get("/edit/:id", async (req, res) => {
   });
   const warningtypes = await prisma.warningtype.findMany({});
 
+  warnings.forEach(function (warning) {
+    warning.createdAt = moment(warning.createdAt).format("llll");
+  });
+
   res.render("fabtrack/edit-user", {
     notification: notification,
     role: req.session.role,
@@ -156,6 +190,7 @@ router.get("/edit/:id", async (req, res) => {
     usertypes: allTypes,
     warnings: warnings,
     warningtypes: warningtypes,
+    history: userHistory,
   });
 });
 

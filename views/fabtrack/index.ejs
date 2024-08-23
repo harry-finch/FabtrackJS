@@ -83,7 +83,7 @@
                     <hr class="mt-4 mb-4">
 
                     <h4 class="mt-4 mb-4">
-                        <i class="fa fa-users"></i>&nbsp;&nbsp;<%- Object.entries(history).length %> people currently present in the lab
+                        <i class="fa fa-users"></i>&nbsp;&nbsp;<%- Object.entries(history).length %> people currently present in <%= selectedWorkspace.name %>
                     </h4>
 
                     <table class="table">
@@ -111,7 +111,7 @@
                                     <% } else { %>
                                     <span   data-bs-toggle="tooltip" data-bs-placement="right"
                                                 data-bs-custom-class="custom-tooltip"
-                                                data-bs-title="All clear"><i class="fa-solid fa-circle-check" style="color: #44aa44"></i></span>
+                                                data-bs-title="All clear">-</span>
                                     <% } %>
                                 </td>
                                 <td class="text-center">
@@ -206,7 +206,8 @@
                     </div>
                 </form>
             </div>
-        </main>
+
+            <% include ../includes/footer.html %>
 
         <script>
         // Switching between registering and user creation forms
@@ -329,6 +330,5 @@
         });
         </script>
 
-        <% include ../includes/footer.html %>
     </body>
 </html>

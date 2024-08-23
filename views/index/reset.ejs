@@ -31,7 +31,9 @@
                 <button class="btn btn-primary w-100 py-2" type="submit">Reset</button>
                 <p class="text-body-secondary mb-3 mt-5">&copy; Stéphane Muller 2024</p>
             </form>
-        </main>
+
+            <% include ../includes/footer.html %>
+
         <script>
             document.querySelector("form").addEventListener("submit", (event) => {
                 if (document.getElementById("password").value != document.getElementById("password_verif").value) {
@@ -42,6 +44,5 @@
             });
         </script>
 
-        <% include ../includes/footer.html %>
     </body>
 </html>

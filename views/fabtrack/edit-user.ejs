@@ -49,7 +49,7 @@
                         <div class="form-floating mb-3">
                             <select class="form-select" id="usertype" name="usertype">
                                 <% usertypes.forEach(function(usertype) { %>
-                                <option value="<%= usertype.id %>" <% if (usertype.id == user.usertype) { %> selected <% } %>><%= usertype.name %></option>
+                                <option value="<%= usertype.id %>" <% if (usertype.id == user.usertypeId) { %> selected <% } %>><%= usertype.name %></option>
                                 <% }); %>
                             </select>
                             <label for="usertype">Type of user</label>
@@ -78,66 +78,124 @@
 
             <hr class="mt-4 mb-4">
 
-            <% if (warnings.length > 0) { %>
-            <h4 class="mb-4"><i class="fa-solid fa-siren-on"></i>&nbsp;&nbsp;Pending warnings</h4>
+            <div class="accordion mb-4" id="accordionExample">
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    <b><i class="fa fa-triangle-exclamation"></i>&nbsp;&nbsp;Warnings</b>
+                  </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                  <div class="accordion-body">
+                      <% if (warnings.length > 0) { %>
+                      <h5 class="mb-4"><i class="fa-solid fa-siren-on"></i>&nbsp;&nbsp;Pending</h5>
 
-            <table class="mb-5 table">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Warning type</th>
-                        <th scope="col">Comments</th>
-                        <th scope="col" class="text-center">Deactivate</th>
-                    </tr>
-                </thead>
-                <tbody id="table-content">
-                    <% warnings.forEach(function(warning) { %>
-                    <tr>
-                        <td scope="row"><%= warning.id %></td>
-                        <td><%= warning.warningtype.name %></td>
-                        <td><%= warning.comments %></td>
-                        <td class="text-center">
-                            <a href="warning/deactivate/<%= warning.id %>"><i class="fa-solid fa-circle-check"></i></a>
-                        </td>
-                    </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-            <% } %>
+                      <table class="mb-5 table">
+                          <thead>
+                              <tr>
+                                  <th scope="col">#</th>
+                                  <th scope="col">Warning type</th>
+                                  <th scope="col">Created</th>
+                                  <th scope="col">Comments</th>
+                                  <th scope="col" class="text-center">Resolve</th>
+                              </tr>
+                          </thead>
+                          <tbody id="table-content">
+                              <% warnings.forEach(function(warning) { %>
+                              <tr>
+                                  <td scope="row"><%= warning.id %></td>
+                                  <td><%= warning.warningtype.name %></td>
+                                  <td><%= warning.createdAt %></td>
+                                  <td><%= warning.comments %></td>
+                                  <td class="text-center">
+                                      <a href="warning/deactivate/<%= warning.id %>"><i class="fa-solid fa-circle-xmark"></i></a>
+                                  </td>
+                              </tr>
+                              <% }); %>
+                          </tbody>
+                      </table>
+                      <% } %>
 
-            <h4 class="mt-4 mb-4">
-                <i class="fa fa-triangle-exclamation"></i>&nbsp;&nbsp;Add a warning
-            </h4>
-            <form action="/warning/create" method="post">
-                <div class="row">
-                    <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
-                    <div class="col-12">
-                        <div class="form-floating mb-3">
-                            <select class="form-select" id="warningtype" name="warningtype">
-                                <% warningtypes.forEach(function(warningtype) { %>
-                                <option value="<%= warningtype.id %>"><%= warningtype.name %></option>
+                      <h5 class="mt-4 mb-4">
+                          <i class="fa fa-triangle-exclamation"></i>&nbsp;&nbsp;Add a warning
+                      </h5>
+                      <form action="/warning/create" method="post">
+                          <div class="row">
+                              <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
+                              <div class="col-12">
+                                  <div class="form-floating mb-3">
+                                      <select class="form-select" id="warningtype" name="warningtype">
+                                          <% warningtypes.forEach(function(warningtype) { %>
+                                          <option value="<%= warningtype.id %>"><%= warningtype.name %></option>
+                                          <% }); %>
+                                      </select>
+                                      <label for="warningtype">Type of warning</label>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="row">
+                              <div class="col-12">
+                                  <div class="form-floating mb-3">
+                                      <textarea class="form-control" id="comments" name="comments" style="height: 100px"></textarea>
+                                      <label for="comments">Comments</label>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="row">
+                              <div class="col-12">
+                                  <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Add a warning</button>
+                              </div>
+                          </div>
+                      </form>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                      <b><i class="fa fa-clipboard-list"></i>&nbsp;&nbsp;History</b>
+                    </button>
+                  </h2>
+                  <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Arrival</th>
+                                    <th scope="col" class="text-center">Departure</th>
+                                    <% if (selectedWorkspace) { %>
+                                    <th scope="col" class="text-center">Workspace</th>
+                                    <% } %>
+                                    <th scope="col" class="text-center">Project</th>
+                                    <th scope="col" class="text-center">Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-content">
+                                <% history.forEach(function(entry) { %>
+                                <tr>
+                                    <td scope="row"><%= entry.arrival %></td>
+                                    <td scope="row" class="text-center"><%= entry.departure %></td>
+                                    <% if (selectedWorkspace) { %>
+                                    <td scope="row" class="text-center"><% if(entry.workspace){ %><%= entry.workspace.name %><% } else { %>-<% } %></td>
+                                    <% } %>
+                                    <td scope="row" class="text-center"><a href="<%= entry.project.url %>"><i class="fa-solid fa-book"></i></a></td>
+                                    <td class="text-center">
+                                        <% if ( entry.comments ) { %>
+                                            <span   data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        data-bs-custom-class="custom-tooltip"
+                                                        data-bs-title="<%= entry.comments %>"><i class="fa-solid fa-comment-lines"></i></span>
+                                        <% } else { %>
+                                        <i class="fa-regular fa-comment" style="color: grey"></i>
+                                        <% } %>
+                                    </td>
+                                </tr>
                                 <% }); %>
-                            </select>
-                            <label for="warningtype">Type of warning</label>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
+                  </div>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="form-floating mb-3">
-                            <textarea class="form-control" id="comments" name="comments" style="height: 100px"></textarea>
-                            <label for="comments">Comments</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Add a warning</button>
-                    </div>
-                </div>
-            </form>
-
-        </main>
+            </div>
 
         <% include ../includes/footer.html %>
     </body>

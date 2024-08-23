@@ -131,6 +131,7 @@ model Warning {
     userId          Int
     warningtypeId   Int
     active          Boolean       @default(true)
+    createdAt       DateTime      @default(now())
     comments        String        @db.VarChar(255)
 
     user            User          @relation(fields: [userId], references: [id])
@@ -152,7 +153,7 @@ model History {
     userId          Int
     userprojectId   Int           @default(0)
     comments        String        @db.VarChar(255)
-    workspaceId     Int?          // Optional key to another workspace
+    workspaceId     Int?          // Optional
 
     user            User          @relation(fields: [userId], references: [id])
     userproject     Userproject   @relation(fields: [userprojectId], references: [id])

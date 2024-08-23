@@ -64,6 +64,9 @@ router.post("/create", async (req, res) => {
         userId: Number(userid),
         userprojectId: Number(userprojectid),
         comments: comments,
+        workspaceId: req.session.selectedWorkspace
+          ? req.session.selectedWorkspace.id
+          : null,
       },
     });
 

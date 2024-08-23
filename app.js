@@ -52,7 +52,7 @@ const prisma = new PrismaClient();
 async function workspaceSwitcher(req, res, next) {
   try {
     // Fetch available workspaces from the database
-    const availableWorkspaces = await prisma.Workspace.findMany();
+    const availableWorkspaces = await prisma.workspace.findMany();
 
     // Check if a workspace is already selected in the session
     if (!req.session.selectedWorkspace && availableWorkspaces.length > 0) {

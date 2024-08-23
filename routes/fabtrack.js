@@ -43,6 +43,9 @@ router.get("/", async (req, res) => {
   var history = await prisma.history.findMany({
     where: {
       departure: null,
+      workspaceId: req.session.selectedWorkspace
+        ? req.session.selectedWorkspace.id
+        : null,
     },
     relationLoadStrategy: "join",
     include: {
