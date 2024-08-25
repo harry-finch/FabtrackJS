@@ -59,6 +59,16 @@ router.get("/list/all-history", async (req, res) => {
   res.status(200).json(allHistory);
 });
 
+router.get("/list/users-inlab", async (req, res) => {
+  const history = await prisma.history.findMany({
+    where: {
+      departure: null,
+    },
+  });
+
+  res.status(200).json(history);
+});
+
 // ******************************************************************************
 // Route returning a list of all projects
 // ******************************************************************************

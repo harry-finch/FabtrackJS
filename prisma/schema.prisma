@@ -85,47 +85,6 @@ model Userproject {
     @@unique([userId, projectId])
 }
 
-// Machines in the lab (make and model, documentation...)
-model Machine {
-    id                Int           @id @default(autoincrement())
-    machinetypeId     Int
-    make              String        @db.VarChar(255)
-    model             String        @db.VarChar(255)
-    serialnum         String        @db.VarChar(255)
-    locationId        Int
-    internalReference Int?
-    picture           String?       @db.VarChar(255)
-    documentation     String?       @db.VarChar(255)
-    accessId          Int
-
-    machinetype       Machinetype   @relation(fields: [machinetypeId], references: [id])
-    location          Location      @relation(fields: [locationId], references: [id])
-    access            Access        @relation(fields: [accessId], references: [id])
-}
-
-// Type of machine (3D printer, laser cutter...)
-model Machinetype {
-    id            Int           @id @default(autoincrement())
-    name          String        @unique @db.VarChar(255)
-    machines      Machine[]
-}
-
-// Location, room, drawer...
-model Location {
-    id            Int           @id @default(autoincrement())
-    name          String        @unique @db.VarChar(255)
-    description   String?       @db.VarChar(255)
-    machines      Machine[]
-}
-
-// Requires the presence of a fabmanager, free...
-model Access {
-    id            Int           @id @default(autoincrement())
-    name          String        @db.VarChar(255)
-    description   String        @db.VarChar(255)
-    machines      Machine[]
-}
-
 model Warning {
     id              Int           @id @default(autoincrement())
     userId          Int
@@ -166,4 +125,77 @@ model Workspace {
     location          String?  @db.VarChar(255) // Optional address or location details
 
     historyEntries    History[]
+}
+
+model Activity {
+    id                Int             @id @default(autoincrement())
+    createdAt         DateTime        @default(now())
+    historyId         Int
+    machineId         Int?
+    equipmentId       Int?
+
+    consummableId     Int?
+    quantity          Int?
+
+    machine           Machine?        @relation(fields: [machineId], references: [id])
+    equipment         Equipment?      @relation(fields: [equipmentId], references: [id])
+    consummable       Consummable?    @relation(fields: [consummableId], references: [id])
+}
+
+// Machines in the lab (make and model, documentation...)
+model Machine {
+    id                Int           @id @default(autoincrement())
+    name              String?       @db.VarChar(255)
+    // machinetypeId     Int
+    // make              String        @db.VarChar(255)
+    // model             String        @db.VarChar(255)
+    // serialnum         String        @db.VarChar(255)
+    // locationId        Int
+    // internalReference Int?
+    // picture           String?       @db.VarChar(255)
+    // documentation     String?       @db.VarChar(255)
+    // accessId          Int
+
+    // machinetype       Machinetype   @relation(fields: [machinetypeId], references: [id])
+    // location          Location      @relation(fields: [locationId], references: [id])
+    // access            Access        @relation(fields: [accessId], references: [id])
+    activity          Activity[]
+}
+
+// Type of machine (3D printer, laser cutter...)
+model Machinetype {
+    id            Int           @id @default(autoincrement())
+    name          String        @unique @db.VarChar(255)
+    // machines      Machine[]
+}
+
+model Equipment {
+    id            Int           @id @default(autoincrement())
+    name          String        @unique @db.VarChar(255)
+
+    activity          Activity[]
+}
+
+model Consummable {
+    id            Int           @id @default(autoincrement())
+    name          String        @unique @db.VarChar(255)
+
+    activity          Activity[]
+}
+
+// Location, room, drawer...
+model Location {
+    id            Int           @id @default(autoincrement())
+    name          String        @unique @db.VarChar(255)
+    description   String?       @db.VarChar(255)
+
+    // machines      Machine[]
+}
+
+// Requires the presence of a fabmanager, free...
+model Access {
+    id            Int           @id @default(autoincrement())
+    name          String        @db.VarChar(255)
+    description   String        @db.VarChar(255)
+    // machines      Machine[]
 }

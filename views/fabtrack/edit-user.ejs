@@ -16,7 +16,9 @@
         <main class="w-50 mx-auto">
             <% include ../includes/header.html %>
 
-            <h4 class="mb-4"><i class="fa fa-user-pen"></i>&nbsp;&nbsp;Edit user profile</h4>
+            <h4 class="mb-4">
+                <i class="fa fa-user-pen"></i>&nbsp;&nbsp;Edit user profile <span class="fs-6 opacity-25">(account created on <%= user.accountCreationDate %>)</span>
+            </h4>
             <form action="/users/update/<%= user.id %>" method="post">
                 <div class="row">
                     <div class="col-4">
@@ -88,7 +90,7 @@
                 <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                   <div class="accordion-body">
                       <% if (warnings.length > 0) { %>
-                      <h5 class="mb-4"><i class="fa-solid fa-siren-on"></i>&nbsp;&nbsp;Pending</h5>
+                      <h5 class="mb-4"><i class="fa-solid fa-clock"></i>&nbsp;&nbsp;Pending</h5>
 
                       <table class="mb-5 table">
                           <thead>
@@ -151,12 +153,12 @@
                 </div>
               </div>
               <div class="accordion-item">
-                  <h2 class="accordion-header">
+                    <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                      <b><i class="fa fa-clipboard-list"></i>&nbsp;&nbsp;History</b>
+                        <b><i class="fa fa-clipboard-list"></i>&nbsp;&nbsp;History</b>
                     </button>
-                  </h2>
-                  <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                     <div class="accordion-body">
                         <table class="table">
                             <thead>
@@ -174,7 +176,7 @@
                                 <% history.forEach(function(entry) { %>
                                 <tr>
                                     <td scope="row"><%= entry.arrival %></td>
-                                    <td scope="row" class="text-center"><%= entry.departure %></td>
+                                    <td scope="row" class="text-center"><% if (entry.departure != 'Invalid date') { %><%= entry.departure %><% } else { %>-<% } %></td>
                                     <% if (selectedWorkspace) { %>
                                     <td scope="row" class="text-center"><% if(entry.workspace){ %><%= entry.workspace.name %><% } else { %>-<% } %></td>
                                     <% } %>
@@ -194,6 +196,87 @@
                         </table>
                     </div>
                   </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        <b><i class="fa fa-books"></i>&nbsp;&nbsp;Projects</b>
+                      </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                      <div class="accordion-body">
+                          <% if (userprojects.length > 0) { %>
+
+                          <table class="mb-5 table">
+                              <thead>
+                                  <tr>
+                                      <th scope="col">#</th>
+                                      <th scope="col">Project start</th>
+                                      <th scope="col">Last activity</th>
+                                      <th scope="col">Type</th>
+                                      <th scope="col" class="text-center">Link</th>
+                                      <th scope="col" class="text-center">State</th>
+                                  </tr>
+                              </thead>
+                              <tbody id="table-content">
+                                  <% userprojects.forEach(function(project) { %>
+                                  <tr <% if (!project.active) { %>class="opacity-25"<% } %>>
+                                      <td scope="row"><%= project.id %></td>
+                                      <td><%= project.projectCreationDate %></td>
+                                      <td>
+                                          <%
+                                          const lastEntry = history.find(entry => entry.userproject.projectId === project.id);
+                                          %>
+                                          <%= lastEntry.arrival %>
+                                      </td>
+                                      <td>
+                                          <%
+                                          const projectType = projecttypes.find(type => type.id === project.projecttypeId);
+                                          const projectTypeName = projectType ? projectType.name : 'Unknown Project Type';
+                                          %>
+                                          <%= projectTypeName %>
+                                      </td>
+                                      <td scope="row" class="text-center">
+                                          <a href="<%= project.url %>"><i class="fa-solid fa-book"></i></a>
+                                      </td>
+                                      <td scope="row" class="text-center">
+                                          <% if (project.active) { %>
+                                          <a href="history/project/archive/<%= project.id %>"><i class="fa-solid fa-hourglass-start"></i></a>
+                                          <% } else { %>
+                                          <a href="history/project/unarchive/<%= project.id %>"><i class="fa-solid fa-hourglass-end"></i></a>
+                                          <% } %>
+                                      </td>
+                                  </tr>
+                                  <% }); %>
+                              </tbody>
+                          </table>
+                          <% } %>
+                      </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                        <b><i class="fa fa-ball-pile"></i>&nbsp;&nbsp;Consumption</b>
+                      </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                      <div class="accordion-body">
+                        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                      </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                        <b><i class="fa fa-circle-heart"></i>&nbsp;&nbsp;Interests</b>
+                      </button>
+                    </h2>
+                    <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                      <div class="accordion-body">
+                        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                      </div>
+                    </div>
                 </div>
             </div>
 

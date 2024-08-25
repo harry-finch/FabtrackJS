@@ -92,6 +92,7 @@
                                 <th onclick="sortTable(1)" scope="col">Arrival</th>
                                 <th onclick="sortTable(2)" scope="col">User</th>
                                 <th scope="col" class="text-center">Warnings</th>
+                                <th scope="col" class="text-center">Comments</th>
                                 <th scope="col" class="text-center">Activity</th>
                                 <th scope="col" class="text-center">Exit</th>
                             </tr>
@@ -104,9 +105,16 @@
                                 <td class="text-center">
                                     <% if ( Object.entries(entry.warnings).length ) { %>
                                         <% entry.warnings.forEach(function(warning) { %>
-                                        <span   data-bs-toggle="tooltip" data-bs-placement="right"
+                                        <a href="#" data-bs-toggle="modal"
+                                                    data-bs-target="#warningDeactivator"
+                                                    data-bs-warningid="<%= warning.id %>"
+                                                    data-bs-warningcomments="<%= warning.comments %>"
+                                                    data-bs-warninguser="<%= entry.user.name %> <%= entry.user.surname %>">
+                                            <span   data-bs-toggle="tooltip"
+                                                    data-bs-placement="right"
                                                     data-bs-custom-class="custom-tooltip"
                                                     data-bs-title="<%= warning.comments %>"><%- warning.warningtype.icon %></span>
+                                        </a>
                                         <% }); %>
                                     <% } else { %>
                                     <span   data-bs-toggle="tooltip" data-bs-placement="right"
@@ -115,7 +123,21 @@
                                     <% } %>
                                 </td>
                                 <td class="text-center">
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop"><i class="fa-solid fa-square-plus"></i></a>
+                                    <% if ( entry.comments ) { %>
+                                        <span   data-bs-toggle="tooltip" data-bs-placement="top"
+                                                    data-bs-custom-class="custom-tooltip"
+                                                    data-bs-title="<%= entry.comments %>"><i class="fa-solid fa-comment-lines"></i></span>
+                                    <% } else { %>
+                                    <i class="fa-regular fa-comment" style="color: grey"></i>
+                                    <% } %>
+                                </td>
+                                <td class="text-center">
+                                    <a href="#" data-bs-toggle="modal"
+                                                data-bs-target="#activityManager"
+                                                data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                                data-bs-historyid="<%= entry.id %>">
+                                        <i class="fa-solid fa-square-plus"></i>
+                                    </a>
                                 </td>
                                 <td class="text-center">
                                     <a href="history/exit/<%= entry.id %>"><i class="fa-solid fa-person-running"></i></a>
@@ -127,20 +149,96 @@
                 </div>
                 <% } %>
 
+                <!-- Modal to deactivate warnings -->
+                <div class="modal fade" id="warningDeactivator" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Are you sure you want to resolve the following warning?</p>
+                        <code class="ms-3"></code>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <a href="" class="btn btn-primary">Resolve warning</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Modal to add activities/machines/payment to a user history -->
-                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
+                <div class="modal fade" id="activityManager" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Activity manager</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                        ...
+                            <form>
+                                <input type='hidden' id="historyid" name='historyid' value='null' />
+                                <div class="row">
+                                    <div class="col-1 pt-3">
+                                        Use
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="form-floating mb-3">
+                                            <select class="form-select" id="newusertype" name="newusertype">
+                                                <option selected></option>
+                                                <% usertypes.forEach(function(usertype) { %>
+                                                <option value="<%= usertype.id %>"><%= usertype.name %></option>
+                                                <% }); %>
+                                            </select>
+                                            <label for="newusertype">Machine</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-1 pt-3">
+                                        Borrow
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="form-floating mb-3">
+                                            <select class="form-select" id="newusertype" name="newusertype">
+                                                <option selected></option>
+                                                <% usertypes.forEach(function(usertype) { %>
+                                                <option value="<%= usertype.id %>"><%= usertype.name %></option>
+                                                <% }); %>
+                                            </select>
+                                            <label for="newusertype">Equipment</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-1 pt-3">
+                                        Get
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="form-floating mb-3">
+                                            <select class="form-select" id="newusertype" name="newusertype">
+                                                <option selected></option>
+                                                <% usertypes.forEach(function(usertype) { %>
+                                                <option value="<%= usertype.id %>"><%= usertype.name %></option>
+                                                <% }); %>
+                                            </select>
+                                            <label for="newusertype">Consummable</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="form-floating mb-3">
+                                            <input type="number" class="form-control input-group-icon" id="quantity" name="quantity" />
+                                            <label for="quantity">Quantity</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                         <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Understood</button>
+                        <button type="button" class="btn btn-primary">Save activity</button>
                         </div>
                     </div>
                     </div>
@@ -260,7 +358,7 @@
             }
         });
 
-        // Project documentation search autcomplete
+        // Project documentation search autocomplete
 
         var docInput = document.getElementById('documentation');
         var projects = [ <% projects.forEach(function(project) { %>
@@ -328,6 +426,45 @@
                 document.getElementById('userprojectid').value = foundElem ? foundElem.id : "null";
             }
         });
+
+        const activityManager = document.getElementById('activityManager')
+        if (activityManager) {
+          activityManager.addEventListener('show.bs.modal', event => {
+            // Button that triggered the modal
+            const button = event.relatedTarget
+            // Extract info from data-bs-* attributes
+            const historyid = button.getAttribute('data-bs-historyid')
+            const user = button.getAttribute('data-bs-user')
+
+            // Update the modal's content.
+            const modalTitle = activityManager.querySelector('.modal-title')
+            const modalBodyInput = activityManager.querySelector('.modal-body input')
+
+            modalTitle.innerHTML = `<i class="fa-solid fa-puzzle-piece"></i> New activity for ${user}`
+            modalBodyInput.value = historyid
+          })
+        }
+
+        const warningDeactivator = document.getElementById('warningDeactivator')
+        if (warningDeactivator) {
+          warningDeactivator.addEventListener('show.bs.modal', event => {
+            // Button that triggered the modal
+            const button = event.relatedTarget
+            // Extract info from data-bs-* attributes
+            const warningid = button.getAttribute('data-bs-warningid')
+            const warninguser = button.getAttribute('data-bs-warninguser')
+            const warningcomments = button.getAttribute('data-bs-warningcomments')
+
+            // Update the modal's content.
+            const modalTitle = warningDeactivator.querySelector('.modal-title')
+            const modalCode = warningDeactivator.querySelector('.modal-body code')
+            const modalLink = warningDeactivator.querySelector('.modal-footer a')
+
+            modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Warning for ${warninguser}</h5>`
+            modalCode.innerHTML = warningcomments
+            modalLink.href = "warning/deactivate/" + warningid
+          })
+        }
         </script>
 
     </body>

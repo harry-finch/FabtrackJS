@@ -75,10 +75,15 @@ router.get("/", async (req, res) => {
     warningsByUser.get(warning.userId).push(warning);
   });
 
+  var oldRecords = false;
+
   // 4. Populate Warnings in History Entries and handle the arrival time
   for (const entry of history) {
     const parsedDate = moment(entry.arrival);
     const today = moment();
+
+    entry.arrival = moment(entry.arrival).calendar();
+    entry.warnings = warningsByUser.get(entry.userId) || [];
 
     // If the user has been in the lab but not logged out on a previous day
     if (parsedDate.isBefore(today, "day")) {
@@ -99,16 +104,13 @@ router.get("/", async (req, res) => {
         console.error("Error updating history entry:", error);
       }
 
-      // Remove the entry from the 'history' array in memory
-      const index = history.indexOf(entry);
-      if (index > -1) {
-        history.splice(index, 1);
-      }
+      // 5. If there are old records, then all records are old
+      oldRecords = true;
     }
-
-    entry.arrival = moment(entry.arrival).calendar();
-    entry.warnings = warningsByUser.get(entry.userId) || [];
   }
+
+  // 6. Empty complete object
+  if (oldRecords) history = [];
 
   res.render("fabtrack/index", {
     notification: notification,

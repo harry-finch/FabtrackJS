@@ -1,5 +1,5 @@
 // ******************************************************************************
-// This router handles the front end routes
+// This router handles the history routes
 // ******************************************************************************
 
 var express = require("express");
@@ -12,7 +12,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
-// Route handling the main admin page
+// Route handling the creation of a history entry
 // ******************************************************************************
 
 router.post("/create", async (req, res) => {
@@ -92,6 +92,30 @@ router.get("/exit/:id", async (req, res) => {
 
   req.session.notification = "Success: User has left the lab!";
   res.redirect("/fabtrack");
+});
+
+router.get("/project/unarchive/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const project = await prisma.project.update({
+    where: { id: Number(id) },
+    data: { active: true },
+  });
+
+  req.session.notification = "Success: Project unarchived!";
+  res.redirect(req.session.lastPage);
+});
+
+router.get("/project/archive/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const project = await prisma.project.update({
+    where: { id: Number(id) },
+    data: { active: false },
+  });
+
+  req.session.notification = "Success: Project archived!";
+  res.redirect(req.session.lastPage);
 });
 
 module.exports = router;

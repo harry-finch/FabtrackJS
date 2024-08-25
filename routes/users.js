@@ -134,17 +134,26 @@ router.get("/edit/:id", async (req, res) => {
   req.session.notification = "";
 
   const { id } = req.params;
+  req.session.lastPage = "/users/edit/" + id;
 
+  // Get user info
   const user = await prisma.user.findUnique({
     where: {
       id: Number(id),
     },
+    relationLoadStrategy: "join",
+    include: {
+      projects: true,
+    },
   });
 
+  user.accountCreationDate = moment(user.accountCreationDate).format("L");
+
+  // Get user's complete history
   var userHistory = await prisma.history.findMany({
     where: {
       userId: Number(id),
-      departure: { not: null },
+      // departure: { not: null },
     },
     relationLoadStrategy: "join",
     include: {
@@ -156,10 +165,14 @@ router.get("/edit/:id", async (req, res) => {
     },
   });
 
-  for (const entry of userHistory) {
-    entry.arrival = moment(entry.arrival).format("llll");
-    entry.departure = moment(entry.departure).format("LT");
+  var userprojects = [];
 
+  // Reformat dates to be more readable
+  for (const entry of userHistory) {
+    entry.arrival = moment(entry.arrival).format("L HH:mm");
+    entry.departure = moment(entry.departure).format("HH:mm");
+
+    // Get project details for each history entry (to have the URL)
     try {
       entry.project = await prisma.project.findUnique({
         where: { id: entry.userproject.projectId },
@@ -167,9 +180,21 @@ router.get("/edit/:id", async (req, res) => {
     } catch (error) {
       console.error("Error fetching user projects:", error);
     }
+
+    entry.project.projectCreationDate = moment(
+      entry.project.projectCreationDate,
+    ).format("L HH:mm");
+
+    // Extract projects only for the projects table
+    userprojects.push(entry.project);
   }
 
-  const allTypes = await prisma.usertype.findMany({});
+  // Remove duplicate projects
+  userprojects = Array.from(new Set(userprojects.map(JSON.stringify))).map(
+    JSON.parse,
+  );
+
+  // Get user warnings
   const warnings = await prisma.warning.findMany({
     where: { userId: Number(id), active: true },
     relationLoadStrategy: "join",
@@ -177,11 +202,16 @@ router.get("/edit/:id", async (req, res) => {
       warningtype: true,
     },
   });
-  const warningtypes = await prisma.warningtype.findMany({});
 
+  // Reformat warning creation date into something more readable
   warnings.forEach(function (warning) {
-    warning.createdAt = moment(warning.createdAt).format("llll");
+    warning.createdAt = moment(warning.createdAt).format("L HH:mm");
   });
+
+  // Get types for menus
+  const allTypes = await prisma.usertype.findMany({});
+  const warningtypes = await prisma.warningtype.findMany({});
+  const projectTypes = await prisma.projecttype.findMany();
 
   res.render("fabtrack/edit-user", {
     notification: notification,
@@ -191,6 +221,8 @@ router.get("/edit/:id", async (req, res) => {
     warnings: warnings,
     warningtypes: warningtypes,
     history: userHistory,
+    projecttypes: projectTypes,
+    userprojects: userprojects,
   });
 });
 
