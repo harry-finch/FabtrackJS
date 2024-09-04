@@ -80,6 +80,72 @@
 
             <hr class="mt-4 mb-4">
 
+            <h4 class="mb-4">
+                <i class="fa fa-user-ninja"></i>&nbsp;&nbsp;User stats
+            </h4>
+
+            <div class="row">
+                <div class="col-3">
+                    User balance:
+                </div>
+                <div class="col-9">
+                    <%= user.balance %> €
+                    <% if(role == "admin") { %>
+                    <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
+                                data-bs-target="#addMoney"
+                        <span   data-bs-toggle="tooltip"
+                                data-bs-placement="right"
+                                data-bs-custom-class="custom-tooltip"
+                                data-bs-title="Add money to user account"><i class="fa-solid fa-money-bill-wave" style="color: #009600"></i></span>
+                    </a>
+
+                    <!-- Modal to clear balance -->
+                    <div class="modal fade" id="addMoney" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form action="/history/credit" method="post">
+                                <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fa-solid fa-money-bill-wave"></i> Credit account</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>How much do you want to credit this user's account?</p>
+                                    <div class="form-floating mb-3">
+                                        <input type="number" name="money" class="form-control" id="money" />
+                                        <label for="money">Credit</label>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Add money</button>
+                                </div>
+                            </form>
+                        </div>
+                      </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    Number of visits to the lab:
+                </div>
+                <div class="col-9">
+                    <%- history.length %>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    Number of projects:
+                </div>
+                <div class="col-9">
+                    <%- userprojects.length %>
+                </div>
+            </div>
+
+            <hr class="mt-4 mb-4">
+
             <div class="accordion mb-4" id="accordionExample">
               <div class="accordion-item">
                 <h2 class="accordion-header">

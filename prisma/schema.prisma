@@ -36,6 +36,7 @@ model User {
     usertypeId            Int
     accountCreationDate   DateTime @default(now())
     birthYear             Int?
+    balance               Float    @default(0.0)
     comment               String?  @db.VarChar(255)
     termsAndConditions    Boolean  @default(false)
     token                 String   @db.VarChar(20)
@@ -125,6 +126,7 @@ model Workspace {
     location          String?  @db.VarChar(255) // Optional address or location details
 
     historyEntries    History[]
+    categories        Category[]
 }
 
 model Activity {
@@ -134,12 +136,20 @@ model Activity {
     machineId         Int?
     equipmentId       Int?
 
-    consummableId     Int?
+    consumableId     Int?
     quantity          Int?
 
     machine           Machine?        @relation(fields: [machineId], references: [id])
     equipment         Equipment?      @relation(fields: [equipmentId], references: [id])
-    consummable       Consummable?    @relation(fields: [consummableId], references: [id])
+    consummable       Consumable?     @relation(fields: [consumableId], references: [id])
+}
+
+model Category {
+    id                Int             @id @default(autoincrement())
+    name              String          @unique @db.VarChar(255)
+    workspaceId       Int
+
+    workspace         Workspace?      @relation(fields: [workspaceId], references: [id])
 }
 
 // Machines in the lab (make and model, documentation...)
@@ -176,9 +186,17 @@ model Equipment {
     activity          Activity[]
 }
 
-model Consummable {
+model Consumable {
     id            Int           @id @default(autoincrement())
     name          String        @unique @db.VarChar(255)
+    // categoryId    Int
+    cost          Float
+    // url      String        @db.VarChar(255)
+    // stock         Int
+    // photo         String        @db.VarChar(255)
+    // locationId    Int
+    // accessId      Int
+
 
     activity          Activity[]
 }

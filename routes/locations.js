@@ -1,5 +1,5 @@
 // ******************************************************************************
-// This router handles the main admin routes
+// This router handles the routes for managing locations
 // ******************************************************************************
 
 var express = require("express");

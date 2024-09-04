@@ -39,6 +39,7 @@ router.get("/", async (req, res) => {
     where: { active: true },
   });
   const userprojects = await prisma.userproject.findMany({});
+  const consumables = await prisma.consumable.findMany();
 
   var history = await prisma.history.findMany({
     where: {
@@ -121,6 +122,7 @@ router.get("/", async (req, res) => {
     projects: projects,
     userprojects: userprojects,
     history: history,
+    consumables: consumables,
   });
 });
 

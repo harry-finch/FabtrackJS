@@ -5,15 +5,14 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 async function main() {
-  const result = await prisma.userproject.create({
-    data: {
-      id: 1,
-      userId: 1,
-      projectId: 1,
+  await prisma.user.updateMany({
+    where: {
+      // Optional filtering conditions, leave empty to delete all records
     },
+    data: { balance: 0.0 },
   });
 
-  console.log(result);
+  // console.log(result);
 }
 
 async function showHistory() {
@@ -22,4 +21,4 @@ async function showHistory() {
 }
 
 main();
-showHistory();
+// showHistory();

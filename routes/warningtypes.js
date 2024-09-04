@@ -22,7 +22,7 @@ const logger = require("../utilities/simpleLogger.js");
 router.get("/manage", async (req, res) => {
   const notification = req.session.notification;
   req.session.notification = "";
-  req.session.lastPage = "/admin/warnings/manage";
+  req.session.lastPage = "/admin/warningtypes/manage";
 
   const warningtypes = await prisma.warningtype.findMany({});
 

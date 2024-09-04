@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="Stéphane Muller" />
+    <title>Fabtrack administration panel</title>
+
+    <% include ../includes/pagehead.html %>
+  </head>
+
+  <body class="d-flex justify-content-center bg-body-tertiary py-4">
+    <% include ../includes/light-dark.html %>
+
+    <main class="w-50 mx-auto">
+      <% include ../includes/header.html %>
+
+      <h4 class="mb-4">
+        <i class="fa-solid fa-layer-group"></i>&nbsp;&nbsp;Manage Categories
+      </h4>
+
+      <table class="mb-5 table">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)" scope="col">#</th>
+            <th onclick="sortTable(1)" scope="col">Category Name</th>
+            <th onclick="sortTable(2)" scope="col">Workspace</th>
+            <th scole="col" class="text-center">Edit</th>
+            <th scope="col" class="text-center">Delete</th>
+          </tr>
+        </thead>
+        <tbody id="table-content">
+          <% categories.forEach(function(category) { %>
+          <tr>
+            <td scope="row"><%= category.id %></td>
+            <td><%= category.name %></td>
+            <td>
+              <% if (category.workspace) { %>
+                <%= category.workspace.name %>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+            <td class="text-center">
+              <a
+                href="#"
+                id="edit-<%= category.id %>"
+                data-id="<%= category.id %>"
+                data-name="<%= category.name %>"
+                data-workspace-id="<%= category.workspaceId %>"
+              >
+                <i class="fa-solid fa-pen-to-square"></i>
+              </a>
+            </td>
+            <td class="text-center">
+              <a href="admin/categories/delete/<%= category.id %>"
+                ><i class="fa-solid fa-trash-can"></i></a
+              >
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      <h5 class="mb-4">
+        <i class="fa-solid fa-layer-group"></i>&nbsp;&nbsp;Create New Category
+      </h5>
+
+      <form action="/admin/categories/create" method="post">
+        <div class="row">
+          <input type="hidden" id="categoryid" name="categoryid" value="" />
+          <div class="col-8">
+            <div class="form-floating mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                placeholder="Name"
+                required
+              />
+              <label for="name">Name</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-floating mb-3">
+              <select class="form-select" id="workspaceId" name="workspaceId">
+                <option value="">None</option>
+                <% workspaces.forEach(function(workspace) { %>
+                  <option value="<%= workspace.id %>"><%= workspace.name %></option>
+                <% }); %>
+              </select>
+              <label for="workspaceId">Workspace</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">
+              Create New Category
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <% include ../includes/footer.html %>
+
+      <script>
+        const elements = document.querySelectorAll('[id^="edit-"]');
+        elements.forEach(function (element) {
+          element.addEventListener("click", editItem);
+        });
+
+        function editItem() {
+          event.preventDefault();
+
+          document.querySelector("h5.mb-4").innerHTML =
+            "<i class='fa-solid fa-layer-group'></i>&nbsp;&nbsp;Update Category";
+          document.querySelector("form").action = "/admin/categories/update";
+          document.getElementById("categoryid").value = this.dataset.id;
+          document.getElementById("name").value = this.dataset.name;
+          document.getElementById("workspaceId").value = this.dataset.workspaceId || ''; // Handle potential null workspaceId
+          document.querySelector("button.btn-primary").innerHTML =
+            "Update Category";
+
+          return false;
+        }
+      </script>
+  </body>
+</html>

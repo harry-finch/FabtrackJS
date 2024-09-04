@@ -105,10 +105,12 @@
                                 <td class="text-center">
                                     <% if ( Object.entries(entry.warnings).length ) { %>
                                         <% entry.warnings.forEach(function(warning) { %>
-                                        <a href="#" data-bs-toggle="modal"
+                                        <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
                                                     data-bs-target="#warningDeactivator"
                                                     data-bs-warningid="<%= warning.id %>"
+                                                    data-bs-warningtype="<%= warning.warningtype.id %>"
                                                     data-bs-warningcomments="<%= warning.comments %>"
+                                                    data-bs-userid="<%= entry.user.id %>"
                                                     data-bs-warninguser="<%= entry.user.name %> <%= entry.user.surname %>">
                                             <span   data-bs-toggle="tooltip"
                                                     data-bs-placement="right"
@@ -116,7 +118,20 @@
                                                     data-bs-title="<%= warning.comments %>"><%- warning.warningtype.icon %></span>
                                         </a>
                                         <% }); %>
-                                    <% } else { %>
+                                    <% } %>
+                                    <% if (entry.user.balance != 0) { %>
+                                        <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
+                                                    data-bs-target="#clearBalance"
+                                                    data-bs-balance="<%= entry.user.balance %>"
+                                                    data-bs-userid="<%= entry.user.id %>"
+                                                    data-bs-username="<%= entry.user.name %> <%= entry.user.surname %>">
+                                            <span   data-bs-toggle="tooltip"
+                                                    data-bs-placement="right"
+                                                    data-bs-custom-class="custom-tooltip"
+                                                    data-bs-title="<%= entry.user.balance %> €"><i class="fa-solid fa-money-bill-wave" style="color: #009600"></i></span>
+                                        </a>
+                                    <% } %>
+                                    <% if ( !Object.entries(entry.warnings).length && !(entry.user.balance != 0) ) { %>
                                     <span   data-bs-toggle="tooltip" data-bs-placement="right"
                                                 data-bs-custom-class="custom-tooltip"
                                                 data-bs-title="All clear">-</span>
@@ -135,6 +150,7 @@
                                     <a href="#" data-bs-toggle="modal"
                                                 data-bs-target="#activityManager"
                                                 data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                                data-bs-userid="<%= entry.user.id %>"
                                                 data-bs-historyid="<%= entry.id %>">
                                         <i class="fa-solid fa-square-plus"></i>
                                     </a>
@@ -148,6 +164,26 @@
                     </table>
                 </div>
                 <% } %>
+
+                <!-- Modal to clear balance -->
+                <div class="modal fade" id="clearBalance" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title"><i class="fa-solid fa-money-bill-wave"></i> Pay off debt</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Are you sure you want to clear that user's debt?</p>
+                        <code class="ms-3"></code>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <a href="" class="btn btn-primary">Clear debt</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- Modal to deactivate warnings -->
                 <div class="modal fade" id="warningDeactivator" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -178,8 +214,10 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form>
-                                <input type='hidden' id="historyid" name='historyid' value='null' />
+                            <form action="/history/activity" method="post">
+                                <input type='hidden' id="activityhistoryid" name='activityhistoryid' value='null' />
+                                <input type='hidden' id="activityuserid" name='activityuserid' value='null' />
+                                <input type='hidden' id="cost" name='cost' value='null' />
                                 <div class="row">
                                     <div class="col-1 pt-3">
                                         Use
@@ -218,13 +256,13 @@
                                     </div>
                                     <div class="col-8">
                                         <div class="form-floating mb-3">
-                                            <select class="form-select" id="newusertype" name="newusertype">
+                                            <select class="form-select" id="consumable" name="consumable">
                                                 <option selected></option>
-                                                <% usertypes.forEach(function(usertype) { %>
-                                                <option value="<%= usertype.id %>"><%= usertype.name %></option>
-                                                <% }); %>
+                                                <% consumables.forEach(function(consumable) { %>
+                                                <option value="<%= consumable.id %>" data-cost="<%= consumable.cost %>"><%= consumable.name %></option>
+                                                <% }) %>
                                             </select>
-                                            <label for="newusertype">Consummable</label>
+                                            <label for="consumable">Consumable</label>
                                         </div>
                                     </div>
                                     <div class="col-3">
@@ -234,12 +272,13 @@
                                         </div>
                                     </div>
                                 </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save activity</button>
-                        </div>
+
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save activity</button>
+                            </div>
+                        </form>
                     </div>
                     </div>
                 </div>
@@ -434,14 +473,17 @@
             const button = event.relatedTarget
             // Extract info from data-bs-* attributes
             const historyid = button.getAttribute('data-bs-historyid')
+            const userid = button.getAttribute('data-bs-userid')
             const user = button.getAttribute('data-bs-user')
 
             // Update the modal's content.
             const modalTitle = activityManager.querySelector('.modal-title')
-            const modalBodyInput = activityManager.querySelector('.modal-body input')
+            const historyInput = document.getElementById('activityhistoryid')
+            const userInput = document.getElementById('activityuserid')
 
             modalTitle.innerHTML = `<i class="fa-solid fa-puzzle-piece"></i> New activity for ${user}`
-            modalBodyInput.value = historyid
+            historyInput.value = historyid
+            userInput.value = userid
           })
         }
 
@@ -454,6 +496,7 @@
             const warningid = button.getAttribute('data-bs-warningid')
             const warninguser = button.getAttribute('data-bs-warninguser')
             const warningcomments = button.getAttribute('data-bs-warningcomments')
+            const warningtype = button.getAttribute('data-bs-warningtype')
 
             // Update the modal's content.
             const modalTitle = warningDeactivator.querySelector('.modal-title')
@@ -465,6 +508,38 @@
             modalLink.href = "warning/deactivate/" + warningid
           })
         }
+
+        const clearBalance = document.getElementById('clearBalance')
+        if (clearBalance) {
+          clearBalance.addEventListener('show.bs.modal', event => {
+            // Button that triggered the modal
+            const button = event.relatedTarget
+            // Extract info from data-bs-* attributes
+            const username = button.getAttribute('data-bs-username')
+            const userid = button.getAttribute('data-bs-userid')
+            const balance = button.getAttribute('data-bs-balance')
+
+            // Update the modal's content.
+            const modalTitle = clearBalance.querySelector('.modal-title')
+            const modalCode = clearBalance.querySelector('.modal-body code')
+            const modalLink = clearBalance.querySelector('.modal-footer a')
+
+            modalTitle.innerHTML = `<i class="fa-solid fa-money-bill-wave"></i> Clear debt for ${username}</h5>`
+            modalCode.innerHTML = "User balance is " + balance + " €"
+            modalLink.href = "/history/cleardebt/" + userid
+          })
+        }
+
+        // Add an event listener to the dropdown to capture the selected cost
+          const consumableSelect = document.getElementById('consumable');
+          consumableSelect.addEventListener('change', () => {
+            const selectedOption = consumableSelect.options[consumableSelect.selectedIndex];
+            const selectedCost = selectedOption.dataset.cost;
+
+            // Store the selected cost in a hidden input field within your form
+            const costInput = document.getElementById('cost'); // Assuming you have a hidden input with id="cost"
+            costInput.value = selectedCost;
+          });
         </script>
 
     </body>

@@ -118,4 +118,56 @@ router.get("/project/archive/:id", async (req, res) => {
   res.redirect(req.session.lastPage);
 });
 
+router.post("/activity", async (req, res) => {
+  const historyid = req.body.activityhistoryid;
+  const userid = req.body.activityuserid;
+  const consumableid = req.body.consumable;
+  const quantity = req.body.quantity;
+
+  const consumable = await prisma.consumable.findUnique({
+    where: { id: Number(consumableid) },
+  });
+  const totalPrice = Number(consumable.cost) * Number(quantity);
+
+  const user = await prisma.user.update({
+    where: { id: Number(userid) },
+    data: { balance: { decrement: totalPrice } },
+  });
+
+  const activity = await prisma.activity.create({
+    data: {
+      historyId: Number(historyid),
+      consumableId: Number(consumableid),
+      quantity: Number(quantity),
+    },
+  });
+
+  req.session.notification = "Success: Activity added to user account!";
+  res.redirect(req.session.lastPage);
+});
+
+router.get("/cleardebt/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const user = await prisma.user.update({
+    where: { id: Number(id) },
+    data: { balance: 0.0 },
+  });
+
+  req.session.notification = "Success: Debt paid!";
+  res.redirect(req.session.lastPage);
+});
+
+router.post("/credit", async (req, res) => {
+  const { userid, money } = req.body;
+
+  const user = await prisma.user.update({
+    where: { id: Number(userid) },
+    data: { balance: { increment: Number(money) } },
+  });
+
+  req.session.notification = "Success: Account credited!";
+  res.redirect(req.session.lastPage);
+});
+
 module.exports = router;

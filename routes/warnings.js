@@ -52,7 +52,7 @@ router.post("/create", async (req, res) => {
   );
   req.session.notification = "Success: Warning created";
 
-  res.redirect(req.session.lastPage);
+  res.redirect("/fabtrack");
 });
 
 module.exports = router;

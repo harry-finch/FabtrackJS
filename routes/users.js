@@ -196,7 +196,10 @@ router.get("/edit/:id", async (req, res) => {
 
   // Get user warnings
   const warnings = await prisma.warning.findMany({
-    where: { userId: Number(id), active: true },
+    where: {
+      userId: Number(id),
+      // active: true
+    },
     relationLoadStrategy: "join",
     include: {
       warningtype: true,

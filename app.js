@@ -24,6 +24,8 @@ var fabTrackRouter = require("./routes/fabtrack");
 var historyRouter = require("./routes/history");
 var warningsRouter = require("./routes/warnings");
 var workspacesRouter = require("./routes/workspaces");
+var consumablesRouter = require("./routes/consumables");
+var categoriesRouter = require("./routes/categories");
 
 var app = express();
 
@@ -93,6 +95,8 @@ app.use("/fabtrack", fabTrackRouter);
 app.use("/history", historyRouter);
 app.use("/warning", warningsRouter);
 app.use("/admin/workspaces", workspacesRouter);
+app.use("/admin/consumables", consumablesRouter);
+app.use("/admin/categories", categoriesRouter);
 
 // Catch 404 and forward to error handler
 app.use(function (req, res, next) {
