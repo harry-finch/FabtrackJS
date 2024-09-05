@@ -8,6 +8,7 @@
     <title>Fabtrack - History</title>
 
     <% include ../includes/pagehead.html %>
+    <script src="javascripts/pagination.js"></script>
   </head>
 
   <body class="d-flex justify-content-center bg-body-tertiary py-4">
@@ -20,59 +21,33 @@
         <i class="fa-solid fa-clock-rotate-left"></i>&nbsp;&nbsp;History
       </h4>
 
-      <table class="mb-5 table">
+      <table class="mb-3 table" id="historyTable">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Arrival</th>
-            <th scope="col">Departure</th>
-            <th scope="col">User</th>
-            <th scope="col">Workspace</th>
-            <th scope="col">Comments</th>
+            <th scope="col" class="text-center">#</th>
+            <th scope="col" class="text-center">Arrival</th>
+            <th scope="col" class="text-center">Departure</th>
+            <th scope="col" class="text-center">User</th>
+            <th scope="col" class="text-center">Workspace</th>
+            <th scope="col" class="text-center">Comments</th>
             <th scole="col" class="text-center">Edit</th>
             <th scope="col" class="text-center">Delete</th>
           </tr>
         </thead>
         <tbody id="table-content">
+          <% let tableData = [] %>
           <% for (const entry of history) { %>
           <% if (entry.workspaceId != selectedWorkspace.id) { continue; } %>
-          <tr>
-            <td scope="row"><%= entry.id %></td>
-            <td><%= entry.arrival %></td>
-            <td><%= entry.departure || '-' %></td>
-            <td><a href="/users/edit/<%= entry.userId %>"><%= entry.user.name %> <%= entry.user.surname %></a></td>
-            <td>
-              <% if (entry.workspace) { %>
-                <%= entry.workspace.name %>
-              <% } else { %>
-                -
-              <% } %>
-            </td>
-            <td class="text-center">
-                <% if ( entry.comments ) { %>
-                    <span   data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-custom-class="custom-tooltip"
-                                data-bs-title="<%= entry.comments %>"><i class="fa-solid fa-comment-lines"></i></span>
-                <% } else { %>
-                <i class="fa-regular fa-comment" style="color: grey"></i>
-                <% } %>
-            </td>
-            <td class="text-center">
-              <a
-                href="#"
-                id="edit-<%= entry.id %>"
-                data-id="<%= entry.id %>"
-                // ... Add other data attributes for editing as needed
-              >
-                <i class="fa-solid fa-pen-to-square"></i>
-              </a>
-            </td>
-            <td class="text-center">
-              <a href="history/delete/<%= entry.id %>"
-                ><i class="fa-solid fa-trash-can"></i></a
-              >
-            </td>
-          </tr>
+          <% tableData.push( {
+            col1: entry.id,
+            col2: entry.arrival,
+            col3: entry.departure,
+            col4: '<a href="/users/edit/' + entry.userId +'">' + entry.user.name + ' ' + entry.user.surname + '</a>',
+            col5: entry.workspace?entry.workspace.name:"-",
+            col6: entry.comments?'<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="' + entry.comments + '"><i class="fa-solid fa-comment-lines"></i></span>':'<i class="fa-regular fa-comment" style="color: grey"></i>',
+            col7: '<a href="history/edit/' + entry.id + '"><i class="fa-solid fa-pen-to-square"></i></a>',
+            col8: '<a href="history/delete/' + entry.id + '"><i class="fa-solid fa-trash-can"></i></a>'
+          }) %>
           <% } %>
         </tbody>
       </table>
@@ -80,7 +55,8 @@
       <% include ../includes/footer.html %>
 
       <script>
-        // ... (Add JavaScript for edit functionality if needed, similar to previous examples)
+        // Call the pagination function after the table is rendered
+        addPagination('historyTable', <%- JSON.stringify(tableData) %>);
       </script>
   </body>
 </html>

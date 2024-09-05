@@ -8,6 +8,7 @@
         <title>Fabtrack administration panel</title>
 
         <% include ../includes/pagehead.html %>
+        <script src="javascripts/pagination.js"></script>
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
@@ -91,8 +92,9 @@
                 <div class="col-9">
                     <%= user.balance %> €
                     <% if(role == "admin") { %>
+                    &nbsp;&nbsp;>>&nbsp;&nbsp;
                     <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
-                                data-bs-target="#addMoney"
+                                data-bs-target="#addMoney">
                         <span   data-bs-toggle="tooltip"
                                 data-bs-placement="right"
                                 data-bs-custom-class="custom-tooltip"
@@ -226,38 +228,29 @@
                     </h2>
                     <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                     <div class="accordion-body">
-                        <table class="table">
+                        <table class="table" id="historyTable">
                             <thead>
                                 <tr>
-                                    <th scope="col">Arrival</th>
+                                    <th scope="col" class="text-center">#</th>
+                                    <th scope="col" class="text-center">Arrival</th>
                                     <th scope="col" class="text-center">Departure</th>
-                                    <% if (selectedWorkspace) { %>
                                     <th scope="col" class="text-center">Workspace</th>
-                                    <% } %>
                                     <th scope="col" class="text-center">Project</th>
                                     <th scope="col" class="text-center">Comments</th>
                                 </tr>
                             </thead>
                             <tbody id="table-content">
-                                <% history.forEach(function(entry) { %>
-                                <tr>
-                                    <td scope="row"><%= entry.arrival %></td>
-                                    <td scope="row" class="text-center"><% if (entry.departure != 'Invalid date') { %><%= entry.departure %><% } else { %>-<% } %></td>
-                                    <% if (selectedWorkspace) { %>
-                                    <td scope="row" class="text-center"><% if(entry.workspace){ %><%= entry.workspace.name %><% } else { %>-<% } %></td>
-                                    <% } %>
-                                    <td scope="row" class="text-center"><a href="<%= entry.project.url %>"><i class="fa-solid fa-book"></i></a></td>
-                                    <td class="text-center">
-                                        <% if ( entry.comments ) { %>
-                                            <span   data-bs-toggle="tooltip" data-bs-placement="top"
-                                                        data-bs-custom-class="custom-tooltip"
-                                                        data-bs-title="<%= entry.comments %>"><i class="fa-solid fa-comment-lines"></i></span>
-                                        <% } else { %>
-                                        <i class="fa-regular fa-comment" style="color: grey"></i>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                                <% }); %>
+                                <% let tableData = [] %>
+                                <% for (const entry of history) { %>
+                                <% tableData.push( {
+                                  col0: entry.id,
+                                  col1: entry.arrival,
+                                  col2: entry.departure,
+                                  col3: entry.workspace?entry.workspace.name:"-",
+                                  col4: '<a href="' + entry.project.url + '"><i class="fa-solid fa-book"></i></a>',
+                                  col5: entry.comments?'<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="' + entry.comments + '"><i class="fa-solid fa-comment-lines"></i></span>':'<i class="fa-regular fa-comment" style="color: grey"></i>',
+                                }) %>
+                                <% } %>
                             </tbody>
                         </table>
                     </div>
@@ -347,5 +340,9 @@
             </div>
 
         <% include ../includes/footer.html %>
+        <script>
+          // Call the pagination function after the table is rendered
+          addPagination('historyTable', <%- JSON.stringify(tableData) %>);
+        </script>
     </body>
 </html>

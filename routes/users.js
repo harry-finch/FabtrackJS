@@ -170,7 +170,9 @@ router.get("/edit/:id", async (req, res) => {
   // Reformat dates to be more readable
   for (const entry of userHistory) {
     entry.arrival = moment(entry.arrival).format("L HH:mm");
-    entry.departure = moment(entry.departure).format("HH:mm");
+    entry.departure = entry.departure
+      ? moment(entry.departure).format("HH:mm")
+      : "-";
 
     // Get project details for each history entry (to have the URL)
     try {
