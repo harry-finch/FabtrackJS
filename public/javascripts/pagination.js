@@ -12,13 +12,24 @@ function addPagination(tableId, data, itemsPerPage = 10) {
     const endIndex = startIndex + itemsPerPage;
     const pageData = data.slice(startIndex, endIndex);
 
+    // Get classes from headers to replicate style for whole columns
+    let headerClassList = [];
+    const headerCells = document.querySelectorAll("#" + tableId + " th");
+    headerCells.forEach((cell) => {
+      headerClassList.push(cell.classList);
+    });
+
     pageData.forEach((item) => {
       const row = tableBody.insertRow();
 
+      let i = 0;
       for (var col in item) {
         const newCell = row.insertCell();
         newCell.innerHTML = item[col];
-        newCell.classList.add("text-center");
+        headerClassList[i].value
+          ? newCell.classList.add(headerClassList[i].value)
+          : console.log("no class");
+        i++;
       }
     });
 
@@ -31,6 +42,7 @@ function addPagination(tableId, data, itemsPerPage = 10) {
         "Show more (" + (data.length - endIndex).toString() + ")";
     }
 
+    // Load tooltips if any
     loadTooltips();
   }
 

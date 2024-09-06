@@ -231,8 +231,7 @@
                         <table class="table" id="historyTable">
                             <thead>
                                 <tr>
-                                    <th scope="col" class="text-center">#</th>
-                                    <th scope="col" class="text-center">Arrival</th>
+                                    <th scope="col">Arrival</th>
                                     <th scope="col" class="text-center">Departure</th>
                                     <th scope="col" class="text-center">Workspace</th>
                                     <th scope="col" class="text-center">Project</th>
@@ -243,7 +242,6 @@
                                 <% let tableData = [] %>
                                 <% for (const entry of history) { %>
                                 <% tableData.push( {
-                                  col0: entry.id,
                                   col1: entry.arrival,
                                   col2: entry.departure,
                                   col3: entry.workspace?entry.workspace.name:"-",
