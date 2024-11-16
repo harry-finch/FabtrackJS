@@ -21,11 +21,11 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th onclick="sortTable(0)" scope="col">#</th>
-                        <th onclick="sortTable(1)" scope="col">User name</th>
-                        <th onclick="sortTable(2)" scope="col">Email</th>
-                        <th onclick="sortTable(3)" scope="col">Type</th>
-                        <th onclick="sortTable(4)" scope="col" class="text-center">Agreement</th>
+                        <th data-sort="0" scope="col">#</th>
+                        <th data-sort="1" scope="col">User name</th>
+                        <th data-sort="2" scope="col">Email</th>
+                        <th data-sort="3" scope="col">Type</th>
+                        <th data-sort="4" scope="col" class="text-center">Agreement</th>
                         <th scope="col" class="text-center">Edit</th>
                         <th scope="col" class="text-center">Delete</th>
                     </tr>
@@ -35,13 +35,13 @@
                     <tr>
                         <td scope="row"><%= user.id %></th>
                         <td><%= user.name %> <%= user.surname %></td>
-                        <td><a href="mailto:<%= user.mail %>"><%= user.mail %></a></td>
+                        <td><a href="mailto:<%= user.email %>"><%= user.email %></a></td>
                         <td><%= user.usertype.name %></td>
                         <td class="text-center">
-                            <% if(user.termsAndConditions) {%>
+                            <% if(user.termsAccepted) {%>
                             <i class="fa-solid fa-user-check" style="color: #44aa44"></i>
                             <% } else { %>
-                            <a href="#" onclick="sendMailAgain(<%= user.id %>)" style="color: #aa4444"
+                            <a href="/users/resend/<%= user.id %>" style="color: #aa4444"
                                 ><i class="fa-solid fa-rotate-right"></i
                             ></a>
                             <% } %>

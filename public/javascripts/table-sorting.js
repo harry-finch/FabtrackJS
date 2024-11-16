@@ -76,3 +76,10 @@ function sortTable(n) {
     }
   }
 }
+
+document.querySelectorAll("th[data-sort]").forEach((th) => {
+  th.addEventListener("click", () => {
+    const columnIndex = th.getAttribute("data-sort");
+    sortTable(parseInt(columnIndex));
+  });
+});

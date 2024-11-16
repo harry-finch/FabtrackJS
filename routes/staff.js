@@ -182,7 +182,7 @@ router.post("/update", async (req, res) => {
     where: { id: Number(user.id) },
     data: {
       name: user.username,
-      mail: user.email,
+      email: user.email,
       role: user.role,
       approved: approval,
     },

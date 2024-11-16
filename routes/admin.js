@@ -1,80 +1,66 @@
-// ******************************************************************************
-// This router handles the main admin routes
-// ******************************************************************************
-
-var express = require("express");
-var router = express.Router();
-
-const isAdmin = require("../middleware/checkAdmin.js");
-router.use(isAdmin);
-
+const express = require("express");
 const moment = require("moment");
-
 const dotenv = require("dotenv");
-dotenv.config();
 
 const { PrismaClient } = require("@prisma/client");
+
+const isAdmin = require("../middleware/checkAdmin.js");
+const clearNotification = require("../middleware/clearNotification.js");
+const asyncHandler = require("../middleware/asyncHandler.js");
+
+dotenv.config();
 const prisma = new PrismaClient();
+const router = express.Router();
 
-// ******************************************************************************
-// Route handling the main admin page
-//
-// >>> Rendering route
-// ******************************************************************************
+// Admin access check middleware
+router.use(isAdmin);
 
-router.get("/", async (req, res) => {
-  const notification = req.session.notification;
-  var workspaces = true;
+// Helper functions for date formatting
+function formatDateTime(date) {
+  return moment(date).format("L HH:mm");
+}
 
-  req.session.notification = "";
+function formatTime(time) {
+  return time ? moment(time).format("HH:mm") : "-";
+}
 
-  res.render("admin/main", {
-    notification: notification,
-    role: req.session.role,
-    workspaces: workspaces,
-  });
-});
+// Route: Admin main page
+router.get(
+  "/",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    res.render("admin/main", { workspaces: true });
+  }),
+);
 
-// ******************************************************************************
-// Route handling the view history page
-// ******************************************************************************
-
-router.get("/view-history", async (req, res) => {
-  const notification = req.session.notification;
-  req.session.notification = "";
-  req.session.lastPage = "/admin/view-history";
-
-  try {
-    const history = await prisma.history.findMany({
-      orderBy: {
-        arrival: "desc", // Sort by arrival in descending order (newest first)
-      },
-      include: {
-        user: true, // Include user details
-        userproject: {
-          include: { project: true }, // Include project details within userproject
+// Route: View history page
+router.get(
+  "/view-history",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    try {
+      const history = await prisma.history.findMany({
+        orderBy: { arrival: "desc" },
+        include: {
+          user: true,
+          userproject: { include: { project: true } },
+          workspace: true,
         },
-        workspace: true, // Include workspace details
-      },
-    });
+      });
 
-    for (const entry of history) {
-      entry.arrival = moment(entry.arrival).format("L HH:mm");
-      entry.departure = entry.departure
-        ? moment(entry.departure).format("HH:mm")
-        : "-";
+      history.forEach((entry) => {
+        entry.arrival = formatDateTime(entry.arrival);
+        entry.departure = formatTime(entry.departure);
+      });
+
+      res.render("admin/view-history", { history });
+    } catch (error) {
+      console.error("Error fetching history data:", error);
+      res
+        .status(500)
+        .render("error", { errorMessage: "Unable to retrieve history data." });
     }
-
-    res.render("admin/view-history", {
-      history: history,
-      notification: notification,
-      role: req.session.role,
-    });
-  } catch (error) {
-    console.error("Error fetching history data:", error);
-    // Handle the error appropriately (e.g., render an error page)
-    res.status(500).send("Internal Server Error");
-  }
-});
+  }),
+);
 
 module.exports = router;

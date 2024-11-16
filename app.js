@@ -1,37 +1,56 @@
-var createError = require("http-errors");
-var express = require("express");
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-
+const logger = require("morgan");
 const dotenv = require("dotenv");
+const createError = require("http-errors");
+const helmet = require("helmet");
+const { PrismaClient } = require("@prisma/client");
+const fs = require("fs");
+
 dotenv.config();
 
-// Routes setup
-var indexRouter = require("./routes/index");
-var apiRouter = require("./routes/api");
-var adminRouter = require("./routes/admin");
-var staffRouter = require("./routes/staff");
-var usersRouter = require("./routes/users");
-var usertypesRouter = require("./routes/usertypes");
-var projecttypesRouter = require("./routes/projecttypes");
-var machinesRouter = require("./routes/machines");
-var locationsRouter = require("./routes/locations");
-var warningtypesRouter = require("./routes/warningtypes");
-var accessRouter = require("./routes/accesslevels");
-var fabTrackRouter = require("./routes/fabtrack");
-var historyRouter = require("./routes/history");
-var warningsRouter = require("./routes/warnings");
-var workspacesRouter = require("./routes/workspaces");
-var consumablesRouter = require("./routes/consumables");
-var categoriesRouter = require("./routes/categories");
+const app = express();
+const prisma = new PrismaClient();
 
-var app = express();
+// ******************************************************************************
+// Middleware Setup
+// ******************************************************************************
 
-// View engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
+// Add security headers with helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        // Allow scripts from specific trusted sources
+        "script-src": [
+          "'self'", // Allow scripts from the same origin
+          "https://cdnjs.cloudflare.com", // Example: CDNJS
+          "https://cdn.jsdelivr.net", // Example: jsDelivr
+        ],
+        // Allow styles from specific trusted sources
+        "style-src": [
+          "'self'", // Allow inline styles from the same origin
+          "'unsafe-inline'", // Allow inline styles (use sparingly)
+          "https://fonts.googleapis.com", // Example: Google Fonts
+          "https://cdnjs.cloudflare.com", // Example: CDNJS
+          "https://cdn.jsdelivr.net",
+        ],
+        // Allow fonts from specific trusted sources
+        "font-src": [
+          "'self'",
+          "https://fonts.gstatic.com", // Example: Google Fonts
+        ],
+        // Allow images from all sources (adjust as needed)
+        "img-src": ["'self'", "data:", "https:"],
+        // Allow connections to APIs or WebSocket services (adjust as needed)
+        "connect-src": ["'self'", "https://api.example.com"], // Example: API
+      },
+    },
+  }),
+);
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -42,70 +61,110 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
     secret: process.env.SECRET,
-    resave: true,
+    resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: parseInt(process.env.SESSION_DURATION) },
+    cookie: {
+      httpOnly: true,
+      maxAge: parseInt(process.env.SESSION_DURATION),
+    },
   }),
 );
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+// Add session data to response locals for easier access in templates
+app.use((req, res, next) => {
+  res.locals.role = req.session.role;
+  res.locals.username = req.session.username;
+  next();
+});
 
+// Workspace middleware
 async function workspaceSwitcher(req, res, next) {
   try {
-    // Fetch available workspaces from the database
-    const availableWorkspaces = await prisma.workspace.findMany();
-
-    // Check if a workspace is already selected in the session
-    if (!req.session.selectedWorkspace && availableWorkspaces.length > 0) {
-      // If not, set the first workspace as the default
-      req.session.selectedWorkspace = availableWorkspaces[0];
+    if (!req.session.availableWorkspaces) {
+      // Fetch workspaces only if not already cached
+      req.session.availableWorkspaces = await prisma.workspace.findMany();
     }
 
-    // Make the selected workspace and available workspaces accessible in templates
+    // Set a default workspace if none is selected
+    if (!req.session.selectedWorkspace && req.session.availableWorkspaces.length > 0) {
+      req.session.selectedWorkspace = req.session.availableWorkspaces[0];
+    }
+
+    res.locals.availableWorkspaces = req.session.availableWorkspaces;
     res.locals.selectedWorkspace = req.session.selectedWorkspace;
-    res.locals.availableWorkspaces = availableWorkspaces;
 
     next();
   } catch (error) {
     console.error("Error fetching Workspaces:", error);
-    // Handle the error gracefully (e.g., set an error flag in the session, render an error page)
-    next(error); // Pass the error to the next error handling middleware
+    next(error);
   }
 }
 
-app.use("/", indexRouter);
-app.use("/api", apiRouter);
-
 app.use(workspaceSwitcher);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Load types, categories and such in cache to avoid repeated db queries
+async function loadCache(req, res, next) {
+  try {
+    if (!req.session.usertypes) {
+      req.session.usertypes = await prisma.usertype.findMany();
+      req.session.projecttypes = await prisma.projecttype.findMany();
+      req.session.warningtypes = await prisma.warningtype.findMany();
+      req.session.categories = await prisma.category.findMany();
+      req.session.locations = await prisma.location.findMany();
+      req.session.access = await prisma.access.findMany();
+    }
 
-app.use("/admin", adminRouter);
-app.use("/admin/staff", staffRouter);
-app.use("/users", usersRouter);
-app.use("/admin/usertypes", usertypesRouter);
-app.use("/admin/projecttypes", projecttypesRouter);
-app.use("/admin/machines", machinesRouter);
-app.use("/admin/locations", locationsRouter);
-app.use("/admin/warningtypes", warningtypesRouter);
-app.use("/admin/access", accessRouter);
-app.use("/fabtrack", fabTrackRouter);
-app.use("/history", historyRouter);
-app.use("/warning", warningsRouter);
-app.use("/admin/workspaces", workspacesRouter);
-app.use("/admin/consumables", consumablesRouter);
-app.use("/admin/categories", categoriesRouter);
+    res.locals.usertypes = req.session.usertypes;
+    res.locals.projecttypes = req.session.projecttypes;
+    res.locals.warningtypes = req.session.warningtypes;
+    res.locals.categories = req.session.categories;
+    res.locals.locations = req.session.locations;
+    res.locals.access = req.session.access;
 
-// Catch 404 and forward to error handler
-app.use(function (req, res, next) {
+    next();
+  } catch (error) {
+    console.error("Error fetching Workspaces:", error);
+    next(error);
+  }
+}
+
+app.use(loadCache);
+
+// ******************************************************************************
+// View Engine Setup
+// ******************************************************************************
+
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+// ******************************************************************************
+// Dynamic Route Loading
+// ******************************************************************************
+
+const routesDir = path.join(__dirname, "routes");
+
+fs.readdirSync(routesDir).forEach((file) => {
+  const routePath = `/${file.replace(".js", "")}`;
+  const router = require(path.join(routesDir, file));
+  app.use(routePath === "/index" ? "/" : routePath, router);
+});
+
+// ******************************************************************************
+// Error Handling
+// ******************************************************************************
+
+// Catch 404 errors
+app.use((req, res, next) => {
   next(createError(404));
 });
 
-// Error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
+// General error handler
+app.use((err, req, res, next) => {
+  // Log error stack in production
+  if (req.app.get("env") === "production") {
+    console.error(err.stack);
+  }
+
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
@@ -113,5 +172,9 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
+
+// ******************************************************************************
+// Export App
+// ******************************************************************************
 
 module.exports = app;

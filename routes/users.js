@@ -1,266 +1,225 @@
-// ******************************************************************************
-// This router handles the administration of user accounts
-// ******************************************************************************
-
-var express = require("express");
-var router = express.Router();
-
-const isLoggedIn = require("../middleware/checkSession.js");
-router.use(isLoggedIn);
-
+const express = require("express");
 const moment = require("moment");
-
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-
 const logger = require("../utilities/simpleLogger.js");
+const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer");
 
-const randomString = require("randomized-string");
+const asyncHandler = require("../middleware/asyncHandler.js");
+const isLoggedIn = require("../middleware/checkSession.js");
+const isAdmin = require("../middleware/checkAdmin.js");
+const clearNotification = require("../middleware/clearNotification.js");
+const { isNull } = require("util");
 
-// ******************************************************************************
-// Route handling the admin page managing user accounts
-//
-// >>> Rendering route
-// ******************************************************************************
+const prisma = new PrismaClient();
+const router = express.Router();
 
-router.get("/manage", async (req, res) => {
-  if (req.session.role != "admin") {
-    req.session.notification = "Error: Unauthorized access!";
-    return res.redirect("/");
-  }
+router.use(isLoggedIn); // Ensure user is logged in
 
-  req.session.lastPage = "/users/manage";
-  const notification = req.session.notification;
-  req.session.notification = "";
-
-  const allUsers = await prisma.user.findMany({
-    orderBy: {
-      id: "desc",
-    },
-    relationLoadStrategy: "join",
-    include: {
-      usertype: true,
-    },
-  });
-
-  res.render("admin/manage-users", {
-    notification: notification,
-    role: req.session.role,
-    users: allUsers,
-  });
+// Nodemailer config
+const transporter = nodemailer.createTransport({
+  host: process.env.HOST,
+  port: Number(process.env.PORT),
+  auth: {
+    user: process.env.USR,
+    pass: process.env.PASSWD,
+  },
 });
 
-// ******************************************************************************
-// Route handling the creation of a new user
-// ******************************************************************************
+// Helper Functions
+function formatDateTime(date) {
+  return moment(date).format("L HH:mm");
+}
 
-router.post("/create", async (req, res) => {
-  const user = req.body;
-  const token = randomString.generate();
+function removeDuplicates(array) {
+  return Array.from(new Set(array.map(JSON.stringify))).map(JSON.parse);
+}
 
-  try {
-    const result = await prisma.user.create({
+// Route: Manage ALL User Accounts (Admin Only)
+router.get(
+  "/manage",
+  isAdmin, // Ensure user has admin role
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    req.session.lastPage = "/users/manage";
+
+    const users = await prisma.user.findMany({
+      orderBy: { id: "desc" },
+      include: { usertype: true },
+    });
+
+    res.render("admin/manage-users", { users });
+  }),
+);
+
+// Route: Create a New User
+router.post(
+  "/create",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { newname, newsurname, newemail, newusertype, newbirthyear, newcomments } = req.body;
+
+    const token = uuidv4();
+
+    try {
+      const user = await prisma.user.create({
+        data: {
+          name: newname,
+          surname: newsurname,
+          email: newemail,
+          usertypeId: Number(newusertype),
+          birthYear: Number(newbirthyear),
+          comment: newcomments,
+          token: token,
+        },
+      });
+
+      logger.logThat(`User ${user.name} ${user.surname} created by ${req.session.username}`);
+
+      // Send notification email to admin
+      const notif = await transporter.sendMail({
+        from: process.env.MAILFROM,
+        to: process.env.ADMIN,
+        subject: "Fablab registration: please agree to our terms and conditions",
+        text: `<a href="${process.env.HOSTURL}/agreement/${token}">I agree to the terms and conditions!</a>`,
+      });
+
+      // DEBUG: Etherreal link to email
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
+
+      req.session.notification = "Warning: User needs to agree to the terms and conditions before accessing the lab.";
+
+      res.redirect("/users/manage");
+    } catch (e) {
+      console.error("Error creating user:", e);
+      req.session.notification =
+        e.code === "P2002" ? "Error: User already exists" : "Error: Unable to create user. Please try again.";
+      res.redirect("/users/manage");
+    }
+  }),
+);
+
+// Route: Delete a User (Admin Only)
+router.get(
+  "/delete/:id",
+  isAdmin,
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const user = await prisma.user.delete({
+      where: { id: Number(id) },
+    });
+
+    logger.logThat(`User ${user.name} ${user.surname} deleted by ${req.session.username}`);
+
+    req.session.notification = `Success: User ${user.name} ${user.surname} has been deleted.`;
+    res.redirect(req.session.lastPage);
+  }),
+);
+
+// Route: Edit User Page
+router.get(
+  "/edit/:id",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    req.session.lastPage = `/users/edit/${id}`;
+
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      include: { projects: true, usertype: true },
+    });
+
+    const history = await prisma.history.findMany({
+      where: { userId: Number(id) },
+      include: { workspace: true, userproject: { include: { project: true } } },
+      orderBy: { arrival: "desc" },
+    });
+
+    const warnings = await prisma.warning.findMany({
+      where: { userId: Number(id) },
+      include: { warningtype: true },
+    });
+
+    // Format dates
+    user.createdAt = formatDateTime(user.createdAt);
+    history.forEach((entry) => {
+      entry.arrival = formatDateTime(entry.arrival);
+      entry.departure = entry.departure ? formatDateTime(entry.departure) : "-";
+    });
+    warnings.forEach((warning) => {
+      warning.createdAt = formatDateTime(warning.createdAt);
+    });
+
+    // Remove duplicate projects from history
+    if (history.userproject ?? null) {
+      const userprojects = removeDuplicates(history.map((entry) => entry.userproject.project));
+    } else {
+      userprojects = {};
+    }
+
+    res.render("fabtrack/edit-user", {
+      user,
+      history,
+      warnings,
+      userprojects,
+    });
+  }),
+);
+
+// Route: Update User Profile
+router.post(
+  "/update/:id",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { name, surname, email, usertype, birthyear, comments } = req.body;
+
+    await prisma.user.update({
+      where: { id: Number(id) },
       data: {
-        name: user.newname,
-        surname: user.newsurname,
-        mail: user.newemail,
-        usertypeId: Number(user.newusertype),
-        birthYear: Number(user.newbirthyear),
-        comment: user.newcomments,
-        token: token,
+        name,
+        surname,
+        email,
+        usertypeId: Number(usertype),
+        birthYear: Number(birthyear),
+        comment: comments,
       },
     });
 
-    logger.logThat(
-      "User " +
-        result.name +
-        " " +
-        result.surname +
-        " created by " +
-        req.session.username,
-    );
+    logger.logThat(`User ${name} ${surname} updated by ${req.session.username}`);
 
-    req.session.notification =
-      "Warning: User needs to agree to the terms and conditions before he can access the lab.";
-    res.redirect("/fabtrack");
-    await prisma.$disconnect();
-  } catch (e) {
-    console.log(e);
-    if (e.code === "P2002") {
-      req.session.notification = "Error: User already exists";
-      res.redirect("/");
-    } else {
-      // Handle other errors (optional)
-    }
-  }
-});
+    req.session.notification = "Success: User profile updated!";
+    res.redirect(req.session.lastPage);
+  }),
+);
 
-// ******************************************************************************
-// Route handling the deletion of a user (admin only)
-// ******************************************************************************
+router.get(
+  "/resend/:id",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
-router.get("/delete/:id", async (req, res) => {
-  if (req.session.role != "admin") {
-    req.session.notification = "Error: Unauthorized access!";
-    return res.redirect("/");
-  }
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+    });
 
-  const { id } = req.params;
-  const user = await prisma.user.delete({
-    where: { id: Number(id) },
-  });
+    // Send notification email to admin
+    const notif = await transporter.sendMail({
+      from: process.env.MAILFROM,
+      to: process.env.ADMIN,
+      subject: "Fablab registration: please agree to our terms and conditions",
+      html: `<a href="${process.env.HOSTURL}/agreement/${user.token}">I agree to the terms and conditions!</a>`,
+    });
 
-  logger.logThat(
-    "User " +
-      user.name +
-      " " +
-      user.surname +
-      " deleted by " +
-      req.session.username,
-  );
-  req.session.notification =
-    "Success: User " + user.name + " " + user.surname + " has been deleted";
-  res.redirect(req.session.lastPage);
-});
+    // DEBUG: Etherreal link to email
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
+    console.log("Last page is: %s", req.session.lastPage);
 
-// ******************************************************************************
-// Route handling the modification page
-//
-// >>> Rendering route
-// ******************************************************************************
-
-router.get("/edit/:id", async (req, res) => {
-  const notification = req.session.notification;
-  req.session.notification = "";
-
-  const { id } = req.params;
-  req.session.lastPage = "/users/edit/" + id;
-
-  // Get user info
-  const user = await prisma.user.findUnique({
-    where: {
-      id: Number(id),
-    },
-    relationLoadStrategy: "join",
-    include: {
-      projects: true,
-    },
-  });
-
-  user.accountCreationDate = moment(user.accountCreationDate).format("L");
-
-  // Get user's complete history
-  var userHistory = await prisma.history.findMany({
-    where: {
-      userId: Number(id),
-      // departure: { not: null },
-    },
-    relationLoadStrategy: "join",
-    include: {
-      workspace: true,
-      userproject: true,
-    },
-    orderBy: {
-      arrival: "desc",
-    },
-  });
-
-  var userprojects = [];
-
-  // Reformat dates to be more readable
-  for (const entry of userHistory) {
-    entry.arrival = moment(entry.arrival).format("L HH:mm");
-    entry.departure = entry.departure
-      ? moment(entry.departure).format("HH:mm")
-      : "-";
-
-    // Get project details for each history entry (to have the URL)
-    try {
-      entry.project = await prisma.project.findUnique({
-        where: { id: entry.userproject.projectId },
-      });
-    } catch (error) {
-      console.error("Error fetching user projects:", error);
-    }
-
-    entry.project.projectCreationDate = moment(
-      entry.project.projectCreationDate,
-    ).format("L HH:mm");
-
-    // Extract projects only for the projects table
-    userprojects.push(entry.project);
-  }
-
-  // Remove duplicate projects
-  userprojects = Array.from(new Set(userprojects.map(JSON.stringify))).map(
-    JSON.parse,
-  );
-
-  // Get user warnings
-  const warnings = await prisma.warning.findMany({
-    where: {
-      userId: Number(id),
-      // active: true
-    },
-    relationLoadStrategy: "join",
-    include: {
-      warningtype: true,
-    },
-  });
-
-  // Reformat warning creation date into something more readable
-  warnings.forEach(function (warning) {
-    warning.createdAt = moment(warning.createdAt).format("L HH:mm");
-  });
-
-  // Get types for menus
-  const allTypes = await prisma.usertype.findMany({});
-  const warningtypes = await prisma.warningtype.findMany({});
-  const projectTypes = await prisma.projecttype.findMany();
-
-  res.render("fabtrack/edit-user", {
-    notification: notification,
-    role: req.session.role,
-    user: user,
-    usertypes: allTypes,
-    warnings: warnings,
-    warningtypes: warningtypes,
-    history: userHistory,
-    projecttypes: projectTypes,
-    userprojects: userprojects,
-  });
-});
-
-// ******************************************************************************
-// Route handling the modification of a user
-// ******************************************************************************
-
-router.post("/update/:id", async (req, res) => {
-  const user = req.body;
-  const { id } = req.params;
-
-  const result = await prisma.user.update({
-    where: { id: Number(id) },
-    data: {
-      name: user.name,
-      surname: user.surname,
-      mail: user.email,
-      usertypeId: Number(user.usertype),
-      birthYear: Number(user.birthyear),
-      comment: user.comments,
-    },
-  });
-
-  logger.logThat(
-    "User " +
-      user.name +
-      " " +
-      user.surname +
-      " updated by " +
-      req.session.username,
-  );
-  req.session.notification = "Success: User profile updated!";
-  res.redirect(req.session.lastPage);
-});
+    req.session.notification = `Success: User ${user.name} ${user.surname} has been notified.`;
+    res.redirect(req.session.lastPage);
+  }),
+);
 
 module.exports = router;

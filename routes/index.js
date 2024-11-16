@@ -1,302 +1,220 @@
-// ******************************************************************************
-// This router handles login, logout, authentication and password reset
-// ******************************************************************************
-
-var express = require("express");
-var router = express.Router();
-var crypto = require("crypto");
-
+const express = require("express");
+const bcrypt = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
+const nodemailer = require("nodemailer");
+const { PrismaClient } = require("@prisma/client");
 const dotenv = require("dotenv");
+
+const isAuthenticated = require("../middleware/checkSession.js");
+const clearNotification = require("../middleware/clearNotification.js");
+const asyncHandler = require("../middleware/asyncHandler.js");
+
 dotenv.config();
 
-// Update mail options in .env file
-const nodemailer = require("nodemailer");
+const prisma = new PrismaClient();
+const router = express.Router();
+
+// Nodemailer config
 const transporter = nodemailer.createTransport({
   host: process.env.HOST,
-  port: parseInt(process.env.MAILPORT),
-  secure: process.env.SECURE === "true",
+  port: Number(process.env.PORT),
   auth: {
     user: process.env.USR,
     pass: process.env.PASSWD,
   },
 });
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const saltRounds = 10;
 
-// ******************************************************************************
-// Route handling the root page depending if you're logged in or not
-// ******************************************************************************
-
-router.get("/", async (req, res) => {
-  if (req.session.role === "admin") {
-    return res.redirect("admin/");
-  }
-
-  if (req.session.loggedin == true) {
-    return res.redirect("fabtrack/");
-  } else {
-    return res.redirect("login/");
-  }
+// Root route with authentication check
+router.get("/", isAuthenticated, (req, res) => {
+  req.session.role === "admin"
+    ? res.redirect("/admin/")
+    : res.redirect("/fabtrack/");
 });
 
-// ******************************************************************************
-// Routes handling login, registration and password reset
-//
-// >>> Rendering routes
-// ******************************************************************************
+// Login and registration routes
+router.get("/login", clearNotification, (req, res) =>
+  res.render("index/login"),
+);
+router.get("/register", clearNotification, (req, res) =>
+  res.render("index/register"),
+);
 
-router.get("/login", function (req, res) {
-  const notification = req.session.notification;
-  req.session.notification = "";
+// Account creation route
+router.post(
+  "/create-account",
+  asyncHandler(async (req, res) => {
+    const { username, password, mail } = req.body;
 
-  res.render("index/login", {
-    notification: notification,
-  });
+    // Hash the password with bcrypt
+    const hash = await bcrypt.hash(password, saltRounds);
+
+    try {
+      await prisma.staff.create({
+        data: {
+          name: username,
+          pwd: hash,
+          email: mail,
+        },
+      });
+
+      // Notify user about admin approval requirement
+      req.session.notification =
+        "Warning: Your account needs to be approved by an administrator before you can log in.";
+
+      // Send notification email to admin
+      const notif = await transporter.sendMail({
+        from: process.env.MAILFROM,
+        to: process.env.ADMIN,
+        subject: "FabtrackJS: new staff account created",
+        text: `User ${username} (${email}) has registered an account on Fabtrack.`,
+      });
+
+      // DEBUG: Etherreal link to email
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
+
+      res.redirect("/login");
+    } catch (e) {
+      console.error("Error creating account:", e);
+      if (e.code === "P2002") {
+        req.session.notification = "Error: User already exists";
+        res.redirect("/");
+      } else {
+        req.session.notification =
+          "Error: Unexpected database error. Unable to create account. Please try again.";
+        res.redirect("/register");
+      }
+    }
+  }),
+);
+
+// Password forgotten page
+router.get("/forgot", clearNotification, function (req, res) {
+  res.render("index/forgot");
 });
 
-router.get("/register", function (req, res) {
-  const notification = req.session.notification;
-  req.session.notification = "";
+// Password reset route
+router.post(
+  "/reset",
+  asyncHandler(async (req, res) => {
+    const { mail } = req.body;
+    const token = uuidv4();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-  res.render("index/register", {
-    notification: notification,
-    content: req.session.formcontent,
-  });
-});
-
-router.get("/forgot", function (req, res) {
-  const notification = req.session.notification;
-  req.session.notification = "";
-
-  res.render("index/forgot", { notification: notification });
-});
-
-// ******************************************************************************
-// Route handling the creation of a new staff from the registration page
-// ******************************************************************************
-
-router.post("/create-account", async (req, res) => {
-  const { username, password, mail } = req.body;
-
-  // Hash password
-  var salt = process.env.SALT;
-  var hash = crypto
-    .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
-    .toString(`base64`);
-
-  try {
-    const result = await prisma.staff.create({
-      data: {
-        name: username,
-        pwd: hash,
-        mail: mail,
-      },
+    // Update password reset token in the database
+    await prisma.staff.update({
+      where: { email: mail },
+      data: { pwdToken: token, tokenExpiry: expiresAt },
     });
+
+    const notif = await transporter.sendMail({
+      from: process.env.MAILFROM,
+      to: mail,
+      subject: "Password Reset",
+      html: `<a href="${process.env.HOSTURL}/reset/${token}">Reset Password</a>`,
+    });
+
+    // DEBUG: Etherreal link to email
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
 
     req.session.notification =
-      "Warning: Your account needs to be approved by an administrator before you can log in.";
-
-    const info = await transporter.sendMail({
-      from: process.env.MAILFROM,
-      to: process.env.ADMIN,
-      subject: "FabtrackJS: new staff account created",
-      text:
-        "User " +
-        username +
-        " (" +
-        mail +
-        ") " +
-        " has registered an account on Fabtrack.",
-    });
-
+      "Success: Check your email to reset your password.";
     res.redirect("/login");
-  } catch (e) {
-    console.log(e);
-    if (e.code === "P2002") {
-      req.session.notification = "Error: User already exists";
-      res.redirect("/");
-    } else {
-      // Handle other errors (optional)
-    }
-  }
-});
+  }),
+);
 
-// ******************************************************************************
-// Route handling the generation of a random token to reset the password and
-// sends it via email to the user (staff)
-// ******************************************************************************
-
-router.post("/reset", async (req, res) => {
-  const { mail } = req.body;
-
-  // Generate a random token
-  const buf = crypto.randomBytes(10);
-  const now = new Date().toISOString();
-
-  const result = await prisma.staff.update({
-    where: {
-      mail: mail,
-    },
-    data: {
-      pwdtoken: buf.toString("base64"),
-      timestamp: now,
-    },
-  });
-
-  const info = await transporter.sendMail({
-    from: process.env.MAILFROM,
-    to: mail,
-    subject: "FabtrackJS: reset your password",
-    text: process.env.HOSTURL + "/reset/" + buf.toString("base64"),
-    html:
-      '<a href="' +
-      process.env.HOSTURL +
-      "/reset/" +
-      buf.toString("base64") +
-      '">Click here to reset your password</a>',
-  });
-
-  // console.log(process.env.HOSTURL + "/reset/" + buf.toString("base64"));
-  req.session.notification = "Warning: Check your email to reset password";
-
-  res.redirect("login");
-});
-
-// ******************************************************************************
-// Route handling the reset password page
-//
-// It takes a token as param and checks which staff has it in the database
-// as well as the token validity (10 minutes)
-// ******************************************************************************
-
-router.get("/reset/:token", async (req, res) => {
-  const { token } = req.params;
-
-  // Find the staff with the corresponding token
-  const result = await prisma.staff.findFirst({
-    where: {
-      pwdtoken: token,
-    },
-  });
-
-  const now = Date.now();
-  const tokenCreation = Date.parse(result.timestamp);
-
-  // Check if token is still valid (10 minutes)
-  if (now - tokenCreation > 600000) {
-    req.session.notification = "Error: Token has timed out.";
-    res.redirect("/forgot");
-  } else {
-    res.render("index/reset", { user: result });
-  }
-});
-
-// ******************************************************************************
-// Route handling saving the new password in the database
-// ******************************************************************************
-
-router.post("/reset_password", async (req, res) => {
-  const { password, id } = req.body;
-
-  // Hash password and update it
-  var salt = process.env.SALT;
-  var hash = crypto
-    .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
-    .toString(`base64`);
-
-  const result = await prisma.staff.update({
-    where: {
-      id: Number(id),
-    },
-    data: {
-      pwd: hash,
-    },
-  });
-  res.redirect("/login");
-});
-
-// ******************************************************************************
-// Route handling the authentication process
-//
-// It takes a username, a password and the "rememberMe" checkbox value
-// Redirects to the index page or the login if not successful
-// ******************************************************************************
-
-router.post("/auth", async function (req, res) {
-  let username = req.body.username;
-  let password = req.body.password;
-  let rememberMe = req.body.rememberMe;
-
-  // Ensure the input fields exists and are not empty
-  if (username && password) {
-    // Hash the password to check it against the hash in the database
-    var salt = process.env.SALT;
-    var hash = crypto
-      .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
-      .toString(`base64`);
-
-    const user = await prisma.staff.findUnique({
-      where: { name: username, pwd: hash },
+// Password reset page
+router.get(
+  "/reset/:token",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { token } = req.params;
+    const user = await prisma.staff.findFirst({
+      where: { pwdToken: token, tokenExpiry: { gte: new Date() } },
     });
 
-    if (user) {
+    user ? res.render("index/reset", { user }) : res.redirect("/forgot");
+  }),
+);
+
+// Reset password in the database
+router.post(
+  "/reset_password",
+  asyncHandler(async (req, res) => {
+    const { password, id } = req.body;
+
+    // Hash the new password with bcrypt
+    const hash = await bcrypt.hash(password, saltRounds);
+
+    // Update the password in the database and clear the reset token
+    try {
+      await prisma.staff.update({
+        where: { id: Number(id) },
+        data: {
+          password: hash,
+          pwdToken: null, // Clear the token to prevent reuse
+          tokenExpiry: null, // Clear token expiration if stored
+        },
+      });
+
+      req.session.notification = "Success: Password reset successfully.";
+      res.redirect("/login");
+    } catch (e) {
+      console.error("Error resetting password:", e);
+      req.session.notification =
+        "Error: Unable to reset password. Please try again.";
+      res.redirect("/reset/" + id);
+    }
+  }),
+);
+
+// Authentication route
+router.post(
+  "/auth",
+  asyncHandler(async (req, res) => {
+    const { username, password } = req.body;
+    const user = await prisma.staff.findUnique({ where: { name: username } });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
       req.session.loggedin = true;
-      req.session.username = username;
       req.session.role = user.role;
-
-      if (rememberMe) {
-        var hour = 3600000;
-        req.session.cookie.maxAge = 30 * 24 * hour; // Remember session for 30 days
-      }
-
+      req.session.username = user.name;
       res.redirect("/");
     } else {
-      req.session.notification = "Error: Wrong user/password";
-      res.redirect("/");
+      req.session.notification = "Error: Incorrect username or password.";
+      res.redirect("/login");
     }
-  } else {
-    req.session.notification = "Error: At least one field is empty.";
-    res.redirect("/login");
-  }
+  }),
+);
+
+// Logout route
+router.get("/logout", (req, res) => {
+  req.session.destroy(() => res.redirect("/login"));
 });
 
-// ******************************************************************************
-// Route handling staff logout
-//
-// Redirects to the login page
-// ******************************************************************************
+// User agreement
+router.get(
+  "/agreement/:token",
+  asyncHandler(async (req, res) => {
+    const { token } = req.params;
 
-router.get("/logout", function (req, res, next) {
-  req.session.username = null;
-  req.session.save(function (err) {
-    if (err) next(err);
+    try {
+      const result = await prisma.user.update({
+        where: { token },
+        data: { termsAccepted: true },
+      });
 
-    // Regenerate the session, which is good practice to help
-    // guard against forms of session fixation
-    req.session.regenerate(function (err) {
-      if (err) next(err);
-      res.redirect("/");
-    });
-  });
-});
-
-// ******************************************************************************
-// Route handling the user signing the agreement
-// ******************************************************************************
-
-router.put("/agreement/:token", async (req, res) => {
-  const { token } = req.params;
-
-  const result = await prisma.users.update({
-    where: { token: token },
-    data: {
-      termsAndConditions: true,
-    },
-  });
-  req.session.notification =
-    "Thank you for agreeing to our terms and conditions";
-  res.redirect("../");
-});
+      req.session.notification =
+        "Success: Thank you for agreeing to our terms and conditions";
+      res.redirect("../");
+    } catch (e) {
+      console.error("Error updating agreement:", e);
+      req.session.notification =
+        "Error: Unable to update agreement status. Please try again.";
+      res.redirect("../");
+    }
+  }),
+);
 
 module.exports = router;

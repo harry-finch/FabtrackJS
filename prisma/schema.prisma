@@ -1,219 +1,227 @@
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["relationJoins"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-// Logs table for every important database access
+// Enum for ResourceType in Activity polymorphic association
+enum ResourceType {
+  MACHINE
+  EQUIPMENT
+  CONSUMABLE
+}
+
+// Audit logging for every important action in the system
 model Log {
-    id          Int       @id @default(autoincrement())
-    timestamp   DateTime  @default(now())
-    description String    @db.VarChar(255)
+  id          Int      @id @default(autoincrement())
+  timestamp   DateTime @default(now())
+  description String   @db.VarChar(255)
+  userId      Int? // Optional link to the responsible user
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
-// Users that will actually log on to the platform
+// Staff who can log into the platform
 model Staff {
-    id            Int       @id @default(autoincrement())
-    name          String    @unique @db.VarChar(255)
-    mail          String    @unique @db.VarChar(255)
-    pwd           String    @db.VarChar(255)
-    role          String    @default("user") @db.VarChar(20)
-    pwdtoken      String    @default("0") @db.VarChar(20)
-    timestamp     DateTime  @default(now())
-    approved      Boolean   @default(false)
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(255)
+  email       String    @unique @db.VarChar(255)
+  password    String    @db.VarChar(255)
+  role        String    @default("user") @db.VarChar(20)
+  pwdToken    String?   @db.VarChar(40)
+  tokenExpiry DateTime?
+  createdAt   DateTime  @default(now())
+  approved    Boolean   @default(false)
 }
 
 // Users and visitors whose activities we want to track
 model User {
-    id                    Int      @id @default(autoincrement())
-    name                  String   @db.VarChar(255)
-    surname               String   @db.VarChar(255)
-    mail                  String   @unique @db.VarChar(255)
-    usertypeId            Int
-    accountCreationDate   DateTime @default(now())
-    birthYear             Int?
-    balance               Float    @default(0.0)
-    comment               String?  @db.VarChar(255)
-    termsAndConditions    Boolean  @default(false)
-    token                 String   @db.VarChar(20)
+  id            Int       @id @default(autoincrement())
+  name          String    @db.VarChar(255)
+  surname       String    @db.VarChar(255)
+  email         String    @unique @db.VarChar(255)
+  usertypeId    Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime?
+  birthYear     Int?
+  comment       String?   @db.VarChar(255)
+  balance       Decimal   @default(0.0)
+  termsAccepted Boolean   @default(false)
+  token         String    @unique @db.VarChar(40)
+  deletedAt     DateTime? // Soft delete for archival
 
-    usertype              Usertype @relation(fields: [usertypeId], references: [id])
-    projects              Userproject[]
-    history               History[]
-    warning               Warning[]
-
-    @@unique([name, surname])
+  usertype Usertype      @relation(fields: [usertypeId], references: [id])
+  projects UserProject[]
+  history  History[]
+  warnings Warning[]
+  Log      Log[]
 }
 
-// Types of users (student, startup, teacher...)
+// Types of users (e.g., student, startup, teacher...)
 model Usertype {
-    id        Int           @id @default(autoincrement())
-    name      String        @unique @db.VarChar(255)
-    users     User[]
+  id    Int    @id @default(autoincrement())
+  name  String @unique @db.VarChar(255)
+  users User[]
 }
 
+// Project information
 model Project {
-    id                    Int           @id @default(autoincrement())
-    url                   String        @unique @db.VarChar(255)
-    projecttypeId         Int
-    projectCreationDate   DateTime      @default(now())
-    active                Boolean       @default(true)
+  id            Int      @id @default(autoincrement())
+  url           String   @unique @db.VarChar(255)
+  projecttypeId Int
+  createdAt     DateTime @default(now())
+  active        Boolean  @default(true)
 
-    projecttype           Projecttype   @relation(fields: [projecttypeId], references: [id])
-    users                 Userproject[]
+  projecttype Projecttype   @relation(fields: [projecttypeId], references: [id])
+  users       UserProject[]
 }
 
+// Types of projects (e.g., research, personal, commercial...)
 model Projecttype {
-    id        Int           @id @default(autoincrement())
-    name      String        @unique @db.VarChar(255)
-    projects  Project[]
+  id       Int       @id @default(autoincrement())
+  name     String    @unique @db.VarChar(255)
+  projects Project[]
 }
 
-// Table linking users and projects (many to many)
-model Userproject {
-    id          Int           @id @default(autoincrement())
-    userId      Int
-    projectId   Int
+// Many-to-many relationship between users and projects
+model UserProject {
+  id        Int @id @default(autoincrement())
+  userId    Int
+  projectId Int
 
-    user        User          @relation(fields: [userId], references: [id])
-    project     Project       @relation(fields: [projectId], references: [id])
-    history     History[]
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  history History[]
 
-    @@unique([userId, projectId])
+  @@unique([userId, projectId])
 }
 
+// Warnings issued to users
 model Warning {
-    id              Int           @id @default(autoincrement())
-    userId          Int
-    warningtypeId   Int
-    active          Boolean       @default(true)
-    createdAt       DateTime      @default(now())
-    comments        String        @db.VarChar(255)
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  warningtypeId Int
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  comments      String?  @db.VarChar(255)
 
-    user            User          @relation(fields: [userId], references: [id])
-    warningtype     Warningtype   @relation(fields: [warningtypeId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+  warningtype Warningtype @relation(fields: [warningtypeId], references: [id])
 }
 
+// Types of warnings (e.g., safety violation, overdue balance...)
 model Warningtype {
-    id              Int           @id @default(autoincrement())
-    name            String        @db.VarChar(255)
-    icon            String        @db.VarChar(255)
+  id   Int     @id @default(autoincrement())
+  name String  @unique @db.VarChar(255)
+  icon String? @db.VarChar(255)
 
-    warning         Warning[]
+  warnings Warning[]
 }
 
+// History of user visits to the fablab
 model History {
-    id              Int           @id @default(autoincrement())
-    arrival         DateTime      @default(now())
-    departure       DateTime?
-    userId          Int
-    userprojectId   Int           @default(0)
-    comments        String        @db.VarChar(255)
-    workspaceId     Int?          // Optional
+  id            Int       @id @default(autoincrement())
+  arrival       DateTime  @default(now())
+  departure     DateTime?
+  userId        Int
+  userprojectId Int?
+  comments      String?   @db.VarChar(255)
+  workspaceId   Int?
 
-    user            User          @relation(fields: [userId], references: [id])
-    userproject     Userproject   @relation(fields: [userprojectId], references: [id])
-    workspace       Workspace?    @relation(fields: [workspaceId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  userproject UserProject? @relation(fields: [userprojectId], references: [id])
+  workspace   Workspace?   @relation(fields: [workspaceId], references: [id])
 }
 
+// Workspaces within the fablab (e.g., 3D printing room, laser cutting room)
 model Workspace {
-    id                Int      @id @default(autoincrement())
-    name              String   @unique @db.VarChar(255)
-    location          String?  @db.VarChar(255) // Optional address or location details
+  id       Int     @id @default(autoincrement())
+  name     String  @unique @db.VarChar(255)
+  location String? @db.VarChar(255)
 
-    historyEntries    History[]
-    categories        Category[]
+  historyEntries History[]
+  categories     Category[]
 }
 
+// Tracks usage of Machines, Equipment, or Consumables within a specific activity
 model Activity {
-    id                Int             @id @default(autoincrement())
-    createdAt         DateTime        @default(now())
-    historyId         Int
-    machineId         Int?
-    equipmentId       Int?
+  id           Int          @id @default(autoincrement())
+  createdAt    DateTime     @default(now())
+  resourceId   Int // ID of the resource (Machine, Equipment, or Consumable)
+  resourceType ResourceType // Type of the resource
+  quantity     Int? // Only used for Consumables
 
-    consumableId     Int?
-    quantity          Int?
-
-    machine           Machine?        @relation(fields: [machineId], references: [id])
-    equipment         Equipment?      @relation(fields: [equipmentId], references: [id])
-    consummable       Consumable?     @relation(fields: [consumableId], references: [id])
+  machine    Machine?    @relation(fields: [resourceId], references: [id], map: "FK_Activity_Machine")
+  equipment  Equipment?  @relation(fields: [resourceId], references: [id], map: "FK_Activity_Equipment")
+  consumable Consumable? @relation(fields: [resourceId], references: [id], map: "FK_Activity_Consumable")
 }
 
+// Categories within a workspace (e.g., electronics, woodworking)
 model Category {
-    id                Int             @id @default(autoincrement())
-    name              String          @unique @db.VarChar(255)
-    workspaceId       Int
+  id          Int    @id @default(autoincrement())
+  name        String @unique @db.VarChar(255)
+  workspaceId Int
 
-    workspace         Workspace?      @relation(fields: [workspaceId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
 }
 
-// Machines in the lab (make and model, documentation...)
+// Machines in the fablab (e.g., specific 3D printers, laser cutters)
 model Machine {
-    id                Int           @id @default(autoincrement())
-    name              String?       @db.VarChar(255)
-    // machinetypeId     Int
-    // make              String        @db.VarChar(255)
-    // model             String        @db.VarChar(255)
-    // serialnum         String        @db.VarChar(255)
-    // locationId        Int
-    // internalReference Int?
-    // picture           String?       @db.VarChar(255)
-    // documentation     String?       @db.VarChar(255)
-    // accessId          Int
+  id              Int       @id @default(autoincrement())
+  name            String    @db.VarChar(255)
+  serialNumber    String?   @unique @db.VarChar(255)
+  locationId      Int?
+  purchaseDate    DateTime?
+  lastMaintenance DateTime?
+  warrantyExpiry  DateTime?
+  documentation   String?   @db.VarChar(255)
 
-    // machinetype       Machinetype   @relation(fields: [machinetypeId], references: [id])
-    // location          Location      @relation(fields: [locationId], references: [id])
-    // access            Access        @relation(fields: [accessId], references: [id])
-    activity          Activity[]
+  location   Location?  @relation(fields: [locationId], references: [id])
+  activities Activity[]
 }
 
-// Type of machine (3D printer, laser cutter...)
-model Machinetype {
-    id            Int           @id @default(autoincrement())
-    name          String        @unique @db.VarChar(255)
-    // machines      Machine[]
-}
-
+// Equipment (e.g., hand tools, safety gear)
 model Equipment {
-    id            Int           @id @default(autoincrement())
-    name          String        @unique @db.VarChar(255)
-
-    activity          Activity[]
+  id         Int        @id @default(autoincrement())
+  name       String     @unique @db.VarChar(255)
+  activities Activity[]
 }
 
+// Consumable status enum to track stock status
+enum ConsumableStatus {
+  AVAILABLE
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
+// Consumables that need inventory tracking (e.g., filament, screws)
 model Consumable {
-    id            Int           @id @default(autoincrement())
-    name          String        @unique @db.VarChar(255)
-    // categoryId    Int
-    cost          Float
-    // url      String        @db.VarChar(255)
-    // stock         Int
-    // photo         String        @db.VarChar(255)
-    // locationId    Int
-    // accessId      Int
+  id               Int              @id @default(autoincrement())
+  name             String           @unique @db.VarChar(255)
+  cost             Decimal
+  stock            Int              @default(0)
+  reorderThreshold Int              @default(10)
+  status           ConsumableStatus @default(AVAILABLE)
 
-
-    activity          Activity[]
+  activities Activity[]
 }
 
-// Location, room, drawer...
+// Different locations for assets within the lab (e.g., rooms, drawers)
 model Location {
-    id            Int           @id @default(autoincrement())
-    name          String        @unique @db.VarChar(255)
-    description   String?       @db.VarChar(255)
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(255)
+  description String? @db.VarChar(255)
 
-    // machines      Machine[]
+  machines Machine[]
 }
 
-// Requires the presence of a fabmanager, free...
+// Access requirements for specific machines (e.g., authorization level)
 model Access {
-    id            Int           @id @default(autoincrement())
-    name          String        @db.VarChar(255)
-    description   String        @db.VarChar(255)
-    // machines      Machine[]
+  id          Int    @id @default(autoincrement())
+  name        String @db.VarChar(255)
+  description String @db.VarChar(255)
 }

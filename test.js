@@ -1,24 +1,25 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const nodemailer = require("nodemailer");
 
-const dotenv = require("dotenv");
-dotenv.config();
+const transporter = nodemailer.createTransport({
+  host: "smtp.ethereal.email",
+  port: 587,
+  auth: {
+    user: "marvin2@ethereal.email",
+    pass: "kysANaqstPPffkkxSn",
+  },
+});
 
-async function main() {
-  await prisma.user.updateMany({
-    where: {
-      // Optional filtering conditions, leave empty to delete all records
-    },
-    data: { balance: 0.0 },
+const sendTestEmail = async () => {
+  const info = await transporter.sendMail({
+    from: '"Marvin Nitzsche" <marvin2@ethereal.email>',
+    to: "muller.stephane@gmail.com",
+    subject: "Hello from Ethereal!",
+    text: "This is a test email.",
+    html: "<b>This is a test email.</b>",
   });
 
-  // console.log(result);
-}
+  console.log("Message sent: %s", info.messageId);
+  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+};
 
-async function showHistory() {
-  const result = await prisma.history.findMany();
-  console.log(result);
-}
-
-main();
-// showHistory();
+sendTestEmail();

@@ -21,18 +21,7 @@
     crossorigin="anonymous"
 ></script>
 
-<script>
-  function loadTooltips(){
-    const tooltipTriggerList = document.querySelectorAll(
-        '[data-bs-toggle="tooltip"]',
-    );
-    const tooltipList = [...tooltipTriggerList].map(
-        (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
-    );
-  }
-
-  loadTooltips();
-</script>
+<script src="javascripts/load-tooltips.js"></script>
 
 <div class="toast-container position-fixed bottom-0 end-1 p-3">
     <div

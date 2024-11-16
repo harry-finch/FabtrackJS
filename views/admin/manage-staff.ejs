@@ -35,7 +35,7 @@
                     <tr>
                         <td scope="row"><%= user.id %></td>
                         <td><%= user.name %></td>
-                        <td><a href="mailto:<%= user.mail %>"><%= user.mail %></a></td>
+                        <td><a href="mailto:<%= user.email %>"><%= user.email %></a></td>
                         <td class="text-center">
                             <% if(user.role == "admin") {%>
                             <a href="admin/staff/demote/<%= user.id %>" title="admin"><i class="fa-solid fa-user-secret"></i></a> <%

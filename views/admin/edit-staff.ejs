@@ -24,7 +24,7 @@
                     <label for="username">Username</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="email" name="email" value="<%= user.mail %>" required />
+                    <input type="text" class="form-control" id="email" name="email" value="<%= user.email %>" required />
                     <label for="email">Email</label>
                 </div>
 
@@ -45,7 +45,7 @@
 
                 <input type='hidden' id="id" name='id' value='<%= user.id %>' />
                 <button class="btn btn-primary w-100 py-2 mb-2" type="submit">Update account</button>
-                <button class="btn btn-secondary w-100 py-2" onclick="window.location.href = 'admin/manage-staff'">Cancel</button>
+                <button class="btn btn-secondary w-100 py-2" onclick="window.location.href = 'admin/staff/manage'">Cancel</button>
             </form>
 
             <% include ../includes/footer.html %>
