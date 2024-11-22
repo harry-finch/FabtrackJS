@@ -245,7 +245,7 @@
                                   col1: entry.arrival,
                                   col2: entry.departure,
                                   col3: entry.workspace?entry.workspace.name:"-",
-                                  col4: '<a href="' + entry.project.url + '"><i class="fa-solid fa-book"></i></a>',
+                                  col4: '<a href="' + entry.userproject.project.url + '"><i class="fa-solid fa-book"></i></a>',
                                   col5: entry.comments?'<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="' + entry.comments + '"><i class="fa-solid fa-comment-lines"></i></span>':'<i class="fa-regular fa-comment" style="color: grey"></i>',
                                 }) %>
                                 <% } %>

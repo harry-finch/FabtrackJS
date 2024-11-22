@@ -13,13 +13,14 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 
 router.use(isLoggedIn);
 
-// Route handling the main fabtrack page
+// ******************************************************************************
+// Route to the main page
+// ******************************************************************************
+
 router.get(
   "/",
   clearNotification,
   asyncHandler(async (req, res) => {
-    const notification = req.session.notification;
-    req.session.notification = "";
     req.session.lastPage = "/fabtrack";
 
     const allUsers = await prisma.user.findMany({
@@ -30,10 +31,6 @@ router.get(
       },
     });
 
-    const projects = await prisma.project.findMany({
-      where: { active: true },
-    });
-    const userprojects = await prisma.userproject.findMany({});
     const consumables = await prisma.consumable.findMany();
 
     var history = await prisma.history.findMany({
@@ -76,7 +73,7 @@ router.get(
       const parsedDate = moment(entry.arrival);
       const today = moment();
 
-      entry.arrival = moment(entry.arrival).calendar();
+      entry.arrival = moment(entry.arrival).format("HH:mm");
       entry.warnings = warningsByUser.get(entry.userId) || [];
 
       // If the user has been in the lab but not logged out on a previous day
@@ -108,19 +105,20 @@ router.get(
 
     res.render("fabtrack/index", {
       users: allUsers,
-      projects: projects,
-      userprojects: userprojects,
       history: history,
       consumables: consumables,
     });
   }),
 );
 
+// ******************************************************************************
+// Route to switch workspace (if used)
+// ******************************************************************************
+
 router.post("/switchworkspace", (req, res) => {
   const newWorkspaceId = Number(req.body.workspaceId);
 
   req.session.selectedWorkspace = req.session.availableWorkspaces.find((workspace) => workspace.id === newWorkspaceId);
-
   req.session.notification = "Success: Workspace switched to " + req.session.selectedWorkspace.name;
 
   res.sendStatus(200); // Send a success status

@@ -1,10 +1,7 @@
-// ******************************************************************************
-// This router handles the history routes
-// ******************************************************************************
-
 var express = require("express");
 var router = express.Router();
 
+const asyncHandler = require("../middleware/asyncHandler.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 router.use(isLoggedIn);
 
@@ -12,162 +9,198 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
-// Route handling the creation of a history entry
+// Route to create a history entry (arrival)
 // ******************************************************************************
 
-router.post("/create", async (req, res) => {
-  var {
-    userid,
-    projecttype,
-    projectid,
-    userprojectid,
-    documentation,
-    comments,
-  } = req.body;
+router.post(
+  "/create",
+  asyncHandler(async (req, res) => {
+    var { userid, projecttype, projectid, userprojectid, documentation, comments } = req.body;
 
-  const alreadyHere = await prisma.history.findMany({
-    where: {
-      userId: Number(userid),
-      departure: null,
-    },
-  });
-
-  if (alreadyHere.length == 0) {
-    if (projectid == "null") {
-      // if project does not exist in the db, create the project
-
-      const project = await prisma.project.create({
-        data: {
-          url: documentation,
-          projecttypeId: Number(projecttype),
-        },
-      });
-      projectid = project.id;
-    }
-    // at this point the project already exists, but we have to check if the project is already associated with user
-    // and if not, create the combination
-
-    if (userprojectid == "null") {
-      const userproject = await prisma.userproject.create({
-        data: {
-          userId: Number(userid),
-          projectId: Number(projectid),
-        },
-      });
-
-      userprojectid = userproject.id;
-    }
-
-    // now we have all the information we need to create the history entry
-    const history = await prisma.history.create({
-      data: {
+    // Checking if the user is already here to avoid conflicts
+    const alreadyHere = await prisma.history.findMany({
+      where: {
         userId: Number(userid),
-        userprojectId: Number(userprojectid),
-        comments: comments,
-        workspaceId: req.session.selectedWorkspace
-          ? req.session.selectedWorkspace.id
-          : null,
+        departure: null,
       },
     });
 
-    req.session.notification = "Success: User is now in the lab!";
-  } else {
-    req.session.notification = "Error: User is already in the lab!";
-  }
-  res.redirect("/fabtrack");
-});
+    if (alreadyHere.length == 0) {
+      if (projectid == "null") {
+        // if project does not exist in the db, create the project
+        const project = await prisma.project.create({
+          data: {
+            url: documentation,
+            projecttypeId: Number(projecttype),
+          },
+        });
+        projectid = project.id;
+      }
 
-router.get("/exit/:id", async (req, res) => {
-  const { id } = req.params;
-  const now = new Date().toISOString();
+      // at this point the project already exists, but we have to check if the project is already associated with user
+      // and if not, create the combination
+      if (userprojectid == "null") {
+        const userproject = await prisma.userProject.create({
+          data: {
+            userId: Number(userid),
+            projectId: Number(projectid),
+          },
+        });
 
-  const history = await prisma.history.update({
-    where: {
-      id: Number(id),
-    },
-    data: {
-      departure: now,
-    },
-  });
+        userprojectid = userproject.id;
+      }
 
-  req.session.notification = "Success: User has left the lab!";
-  res.redirect("/fabtrack");
-});
+      // now we have all the information we need to create the history entry
+      const history = await prisma.history.create({
+        data: {
+          userId: Number(userid),
+          userprojectId: Number(userprojectid),
+          comments: comments,
+          workspaceId: req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null,
+        },
+      });
 
-router.get("/project/unarchive/:id", async (req, res) => {
-  const { id } = req.params;
+      req.session.notification = "Success: User is now in the lab!";
+    } else {
+      req.session.notification = "Error: User is already in the lab!";
+    }
+    res.redirect("/fabtrack");
+  }),
+);
 
-  const project = await prisma.project.update({
-    where: { id: Number(id) },
-    data: { active: true },
-  });
+// ******************************************************************************
+// Route to close a history entry (departure)
+// ******************************************************************************
 
-  req.session.notification = "Success: Project unarchived!";
-  res.redirect(req.session.lastPage);
-});
+router.get(
+  "/exit/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const now = new Date().toISOString();
 
-router.get("/project/archive/:id", async (req, res) => {
-  const { id } = req.params;
+    const history = await prisma.history.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        departure: now,
+      },
+    });
 
-  const project = await prisma.project.update({
-    where: { id: Number(id) },
-    data: { active: false },
-  });
+    req.session.notification = "Success: User has left the lab!";
+    res.redirect("/fabtrack");
+  }),
+);
 
-  req.session.notification = "Success: Project archived!";
-  res.redirect(req.session.lastPage);
-});
+// ******************************************************************************
+// Route to unarchive a project
+// ******************************************************************************
 
-router.post("/activity", async (req, res) => {
-  const historyid = req.body.activityhistoryid;
-  const userid = req.body.activityuserid;
-  const consumableid = req.body.consumable;
-  const quantity = req.body.quantity;
+router.get(
+  "/project/unarchive/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
-  const consumable = await prisma.consumable.findUnique({
-    where: { id: Number(consumableid) },
-  });
-  const totalPrice = Number(consumable.cost) * Number(quantity);
+    const project = await prisma.project.update({
+      where: { id: Number(id) },
+      data: { active: true },
+    });
 
-  const user = await prisma.user.update({
-    where: { id: Number(userid) },
-    data: { balance: { decrement: totalPrice } },
-  });
+    req.session.notification = "Success: Project unarchived!";
+    res.redirect(req.session.lastPage);
+  }),
+);
 
-  const activity = await prisma.activity.create({
-    data: {
-      historyId: Number(historyid),
-      consumableId: Number(consumableid),
-      quantity: Number(quantity),
-    },
-  });
+// ******************************************************************************
+// Route to archive a project
+// ******************************************************************************
 
-  req.session.notification = "Success: Activity added to user account!";
-  res.redirect(req.session.lastPage);
-});
+router.get(
+  "/project/archive/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
-router.get("/cleardebt/:id", async (req, res) => {
-  const { id } = req.params;
+    const project = await prisma.project.update({
+      where: { id: Number(id) },
+      data: { active: false },
+    });
 
-  const user = await prisma.user.update({
-    where: { id: Number(id) },
-    data: { balance: 0.0 },
-  });
+    req.session.notification = "Success: Project archived!";
+    res.redirect(req.session.lastPage);
+  }),
+);
 
-  req.session.notification = "Success: Debt paid!";
-  res.redirect(req.session.lastPage);
-});
+// ******************************************************************************
+// Route to add an activity associated with a history entry
+// ******************************************************************************
 
-router.post("/credit", async (req, res) => {
-  const { userid, money } = req.body;
+router.post(
+  "/activity",
+  asyncHandler(async (req, res) => {
+    const historyid = req.body.activityhistoryid;
+    const userid = req.body.activityuserid;
+    const consumableid = req.body.consumable;
+    const quantity = req.body.quantity;
 
-  const user = await prisma.user.update({
-    where: { id: Number(userid) },
-    data: { balance: { increment: Number(money) } },
-  });
+    const consumable = await prisma.consumable.findUnique({
+      where: { id: Number(consumableid) },
+    });
+    const totalPrice = Number(consumable.cost) * Number(quantity);
 
-  req.session.notification = "Success: Account credited!";
-  res.redirect(req.session.lastPage);
-});
+    const user = await prisma.user.update({
+      where: { id: Number(userid) },
+      data: { balance: { decrement: totalPrice } },
+    });
+
+    const activity = await prisma.activity.create({
+      data: {
+        historyId: Number(historyid),
+        consumableId: Number(consumableid),
+        quantity: Number(quantity),
+      },
+    });
+
+    req.session.notification = "Success: Activity added to user account!";
+    res.redirect(req.session.lastPage);
+  }),
+);
+
+// ******************************************************************************
+// Route to clear a user's debt
+// ******************************************************************************
+
+router.get(
+  "/cleardebt/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const user = await prisma.user.update({
+      where: { id: Number(id) },
+      data: { balance: 0.0 },
+    });
+
+    req.session.notification = "Success: Debt paid!";
+    res.redirect(req.session.lastPage);
+  }),
+);
+
+// ******************************************************************************
+// Route to credit a user's account
+// ******************************************************************************
+
+router.post(
+  "/credit",
+  asyncHandler(async (req, res) => {
+    const { userid, money } = req.body;
+
+    const user = await prisma.user.update({
+      where: { id: Number(userid) },
+      data: { balance: { increment: Number(money) } },
+    });
+
+    req.session.notification = "Success: Account credited!";
+    res.redirect(req.session.lastPage);
+  }),
+);
 
 module.exports = router;

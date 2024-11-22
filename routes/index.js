@@ -26,22 +26,26 @@ const transporter = nodemailer.createTransport({
 
 const saltRounds = 10;
 
-// Root route with authentication check
+// ******************************************************************************
+// Root route to check authentication
+// ******************************************************************************
+
 router.get("/", isAuthenticated, (req, res) => {
-  req.session.role === "admin"
-    ? res.redirect("/admin/")
-    : res.redirect("/fabtrack/");
+  req.session.role === "admin" ? res.redirect("/admin/") : res.redirect("/fabtrack/");
 });
 
+// ******************************************************************************
 // Login and registration routes
-router.get("/login", clearNotification, (req, res) =>
-  res.render("index/login"),
-);
-router.get("/register", clearNotification, (req, res) =>
-  res.render("index/register"),
-);
+// ******************************************************************************
 
-// Account creation route
+router.get("/login", clearNotification, (req, res) => res.render("index/login"));
+
+router.get("/register", clearNotification, (req, res) => res.render("index/register"));
+
+// ******************************************************************************
+// Account creation for staff members
+// ******************************************************************************
+
 router.post(
   "/create-account",
   asyncHandler(async (req, res) => {
@@ -60,8 +64,7 @@ router.post(
       });
 
       // Notify user about admin approval requirement
-      req.session.notification =
-        "Warning: Your account needs to be approved by an administrator before you can log in.";
+      req.session.notification = "Warning: Your account needs to be approved by an administrator before you can log in.";
 
       // Send notification email to admin
       const notif = await transporter.sendMail({
@@ -81,20 +84,25 @@ router.post(
         req.session.notification = "Error: User already exists";
         res.redirect("/");
       } else {
-        req.session.notification =
-          "Error: Unexpected database error. Unable to create account. Please try again.";
+        req.session.notification = "Error: Unexpected database error. Unable to create account. Please try again.";
         res.redirect("/register");
       }
     }
   }),
 );
 
-// Password forgotten page
+// ******************************************************************************
+// Route to the form requesting a password reset
+// ******************************************************************************
+
 router.get("/forgot", clearNotification, function (req, res) {
   res.render("index/forgot");
 });
 
-// Password reset route
+// ******************************************************************************
+// Route sending the email with the link to reset the password
+// ******************************************************************************
+
 router.post(
   "/reset",
   asyncHandler(async (req, res) => {
@@ -118,13 +126,15 @@ router.post(
     // DEBUG: Etherreal link to email
     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
 
-    req.session.notification =
-      "Success: Check your email to reset your password.";
+    req.session.notification = "Success: Check your email to reset your password.";
     res.redirect("/login");
   }),
 );
 
-// Password reset page
+// ******************************************************************************
+// Reset form for staff to reset their password
+// ******************************************************************************
+
 router.get(
   "/reset/:token",
   clearNotification,
@@ -138,7 +148,10 @@ router.get(
   }),
 );
 
-// Reset password in the database
+// ******************************************************************************
+// Route resetting the staff password in the database
+// ******************************************************************************
+
 router.post(
   "/reset_password",
   asyncHandler(async (req, res) => {
@@ -162,14 +175,16 @@ router.post(
       res.redirect("/login");
     } catch (e) {
       console.error("Error resetting password:", e);
-      req.session.notification =
-        "Error: Unable to reset password. Please try again.";
+      req.session.notification = "Error: Unable to reset password. Please try again.";
       res.redirect("/reset/" + id);
     }
   }),
 );
 
+// ******************************************************************************
 // Authentication route
+// ******************************************************************************
+
 router.post(
   "/auth",
   asyncHandler(async (req, res) => {
@@ -188,12 +203,18 @@ router.post(
   }),
 );
 
+// ******************************************************************************
 // Logout route
+// ******************************************************************************
+
 router.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
 });
 
-// User agreement
+// ******************************************************************************
+// Route for users to validate the agreement to the terms
+// ******************************************************************************
+
 router.get(
   "/agreement/:token",
   asyncHandler(async (req, res) => {
@@ -205,13 +226,11 @@ router.get(
         data: { termsAccepted: true },
       });
 
-      req.session.notification =
-        "Success: Thank you for agreeing to our terms and conditions";
+      req.session.notification = "Success: Thank you for agreeing to our terms and conditions";
       res.redirect("../");
     } catch (e) {
       console.error("Error updating agreement:", e);
-      req.session.notification =
-        "Error: Unable to update agreement status. Please try again.";
+      req.session.notification = "Error: Unable to update agreement status. Please try again.";
       res.redirect("../");
     }
   }),

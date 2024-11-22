@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="Stéphane Muller">
+  <title>Fabtrack - Manage Machines</title>
+
+  <% include ../includes/pagehead.html %>
+</head>
+
+<body class="d-flex justify-content-center bg-body-tertiary py-4">
+  <% include ../includes/light-dark.html %>
+
+  <main class="w-50 mx-auto">
+    <% include ../includes/header.html %>
+
+    <h4 class="mb-4">
+      <i class="fas fa-cogs"></i>&nbsp;&nbsp;Manage Machines
+    </h4>
+
+    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createMachineModal">
+      <i class="fas fa-plus"></i> Create New Machine
+    </button>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Type</th>
+          <th scope="col">Documentation</th>
+          <th scope="col" class="text-center">Edit</th>
+          <th scope="col" class="text-center">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% machines.forEach(function(machine) { %>
+        <tr>
+          <th scope="row"><%= machine.id %></th>
+          <td><%= machine.name || '-' %></td>
+          <td><%= machine.machinetype.name %></td>
+          <td>
+            <% if (machine.documentation) { %>
+              <a href="<%= machine.documentation %>" target="_blank">
+                <i class="fas fa-file-alt"></i>
+              </a>
+            <% } else { %>
+                -
+            <% } %>
+          </td>
+          <td class="text-center">
+            <a href="/admin/machines/edit/<%= machine.id %>">
+              <i class="fas fa-edit"></i>
+            </a>
+          </td>
+          <td class="text-center">
+            <a href="/admin/machines/delete/<%= machine.id %>">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <div class="modal fade" id="createMachineModal" tabindex="-1" aria-labelledby="createMachineModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="createMachineModalLabel">Create New Machine</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="/admin/machines/create" method="post">
+              <div class="row">
+                <div class="col-8">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <input type="text" class="form-control" id="machineName" name="name">
+                    <label for="machineName" class="form-label">Name (optional):</label>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <select class="form-select" id="machineTypeId" name="machinetypeId" required>
+                      <option value="" selected disabled>Select a type</option>
+                      <% machinetypes.forEach(function(machinetype) { %>
+                        <option value="<%= machinetype.id %>"><%= machinetype.name %></option>
+                      <% }); %>
+                    </select>
+                    <label for="machineTypeId" class="form-label">Type:</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <input type="text" class="form-control" id="machineMake" name="make" required>
+                    <label for="machineMake" class="form-label">Make:</label>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <input type="text" class="form-control" id="machineModel" name="model" required>
+                    <label for="machineModel" class="form-label">Model:</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-floating mb-3">
+                  <input type="file" class="form-control" id="fileInput" name="file">
+                  <label for="fileInput">Picture</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <input type="text" class="form-control" id="machineSerialNum" name="serialnum" required>
+                    <label for="machineSerialNum" class="form-label">Serial Number:</label>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <input type="number" class="form-control" id="machineInternalReference" name="internalReference">
+                    <label for="machineInternalReference" class="form-label">Internal Reference (optional):</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <select class="form-select" id="machineLocationId" name="locationId" required>
+                      <option value="" selected disabled>Select a location</option>
+                      <% locations.forEach(function(location) { %>
+                        <option value="<%= location.id %>"><%= location.name %></option>
+                      <% }); %>
+                    </select>
+                    <label for="machineLocationId" class="form-label">Location:</label>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <select class="form-select" id="machineAccessId" name="accessId" required>
+                      <option value="" selected disabled>Select access level</option>
+                      <% console.log(access) %>
+                      <% access.forEach(function(accesslevel) { %>
+                        <option value="<%= accesslevel.id %>"><%= accesslevel.name %></option>
+                      <% }); %>
+                    </select>
+                    <label for="machineAccessId" class="form-label">Access:</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <div class="form-floating mb-3 d-grid d-flex">
+                    <input type="text" class="form-control" id="machineDocumentation" name="documentation">
+                    <label for="machineDocumentation" class="form-label">Documentation URL (optional):</label>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn w-100 btn-primary">Create Machine</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% include ../includes/footer.html %>
+
+</body>
+</html>

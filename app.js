@@ -108,6 +108,7 @@ async function loadCache(req, res, next) {
     if (!req.session.usertypes) {
       req.session.usertypes = await prisma.usertype.findMany();
       req.session.projecttypes = await prisma.projecttype.findMany();
+      req.session.machinetypes = await prisma.machineType.findMany();
       req.session.warningtypes = await prisma.warningtype.findMany();
       req.session.categories = await prisma.category.findMany();
       req.session.locations = await prisma.location.findMany();
@@ -116,6 +117,7 @@ async function loadCache(req, res, next) {
 
     res.locals.usertypes = req.session.usertypes;
     res.locals.projecttypes = req.session.projecttypes;
+    res.locals.machinetypes = req.session.machinetypes;
     res.locals.warningtypes = req.session.warningtypes;
     res.locals.categories = req.session.categories;
     res.locals.locations = req.session.locations;
@@ -141,13 +143,35 @@ app.set("view engine", "ejs");
 // Dynamic Route Loading
 // ******************************************************************************
 
-const routesDir = path.join(__dirname, "routes");
+/**
+ * Recursively load all route files in the directory.
+ * @param {String} dirPath - The base directory for routes.
+ * @param {String} baseRoute - The base route path for the directory.
+ */
 
-fs.readdirSync(routesDir).forEach((file) => {
-  const routePath = `/${file.replace(".js", "")}`;
-  const router = require(path.join(routesDir, file));
-  app.use(routePath === "/index" ? "/" : routePath, router);
-});
+function loadRoutes(dirPath, baseRoute = "") {
+  fs.readdirSync(dirPath).forEach((file) => {
+    const fullPath = path.join(dirPath, file);
+    const stat = fs.statSync(fullPath);
+
+    if (stat.isDirectory()) {
+      // Recurse into subdirectory
+      const subRoute = `${baseRoute}/${file}`;
+      loadRoutes(fullPath, subRoute);
+    } else if (file.endsWith(".js")) {
+      // Load route file and mount it
+      const routePath = `${baseRoute}/${file.replace(".js", "")}`.replace(/\/index$/, "/");
+      const router = require(fullPath);
+
+      console.log(`Registering route: ${routePath}`);
+      app.use(routePath, router);
+    }
+  });
+}
+
+// Load routes starting from the "routes" directory
+const routesDir = path.join(__dirname, "routes");
+loadRoutes(routesDir);
 
 // ******************************************************************************
 // Error Handling

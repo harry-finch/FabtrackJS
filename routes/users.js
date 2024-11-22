@@ -6,9 +6,9 @@ const { v4: uuidv4 } = require("uuid");
 const nodemailer = require("nodemailer");
 
 const asyncHandler = require("../middleware/asyncHandler.js");
+const clearNotification = require("../middleware/clearNotification.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
-const clearNotification = require("../middleware/clearNotification.js");
 const { isNull } = require("util");
 
 const prisma = new PrismaClient();
@@ -35,7 +35,10 @@ function removeDuplicates(array) {
   return Array.from(new Set(array.map(JSON.stringify))).map(JSON.parse);
 }
 
-// Route: Manage ALL User Accounts (Admin Only)
+// ******************************************************************************
+// Route to manage ALL user accounts (Admin Only)
+// ******************************************************************************
+
 router.get(
   "/manage",
   isAdmin, // Ensure user has admin role
@@ -52,7 +55,10 @@ router.get(
   }),
 );
 
-// Route: Create a New User
+// ******************************************************************************
+// Route creating a new user
+// ******************************************************************************
+
 router.post(
   "/create",
   clearNotification,
@@ -76,7 +82,7 @@ router.post(
 
       logger.logThat(`User ${user.name} ${user.surname} created by ${req.session.username}`);
 
-      // Send notification email to admin
+      // Send notification email to user
       const notif = await transporter.sendMail({
         from: process.env.MAILFROM,
         to: process.env.ADMIN,
@@ -99,7 +105,10 @@ router.post(
   }),
 );
 
-// Route: Delete a User (Admin Only)
+// ******************************************************************************
+// Route to delete a user (Admin Only)
+// ******************************************************************************
+
 router.get(
   "/delete/:id",
   isAdmin,
@@ -118,7 +127,10 @@ router.get(
   }),
 );
 
-// Route: Edit User Page
+// ******************************************************************************
+// Route to edit a user profile
+// ******************************************************************************
+
 router.get(
   "/edit/:id",
   clearNotification,
@@ -153,7 +165,7 @@ router.get(
     });
 
     // Remove duplicate projects from history
-    if (history.userproject ?? null) {
+    if (history.userProject ?? null) {
       const userprojects = removeDuplicates(history.map((entry) => entry.userproject.project));
     } else {
       userprojects = {};
@@ -168,7 +180,10 @@ router.get(
   }),
 );
 
-// Route: Update User Profile
+// ******************************************************************************
+// Route to update a user in the database
+// ******************************************************************************
+
 router.post(
   "/update/:id",
   clearNotification,
@@ -194,6 +209,10 @@ router.post(
     res.redirect(req.session.lastPage);
   }),
 );
+
+// ******************************************************************************
+// Route to send a new email to the user (for the agreement of the terms)
+// ******************************************************************************
 
 router.get(
   "/resend/:id",

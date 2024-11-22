@@ -171,17 +171,32 @@ model Category {
 
 // Machines in the fablab (e.g., specific 3D printers, laser cutters)
 model Machine {
-  id              Int       @id @default(autoincrement())
-  name            String    @db.VarChar(255)
-  serialNumber    String?   @unique @db.VarChar(255)
-  locationId      Int?
-  purchaseDate    DateTime?
-  lastMaintenance DateTime?
-  warrantyExpiry  DateTime?
-  documentation   String?   @db.VarChar(255)
+  id                Int       @id @default(autoincrement())
+  name              String    @db.VarChar(255)
+  machinetypeId     Int
+  make              String    @db.VarChar(255)
+  model             String    @db.VarChar(255)
+  serialNumber      String?   @unique @db.VarChar(255)
+  internalReference Int?
+  locationId        Int?
+  purchaseDate      DateTime?
+  lastMaintenance   DateTime?
+  warrantyExpiry    DateTime?
+  picture           String?   @db.VarChar(255)
+  documentation     String?   @db.VarChar(255)
+  accessId          Int
 
-  location   Location?  @relation(fields: [locationId], references: [id])
-  activities Activity[]
+  location    Location?   @relation(fields: [locationId], references: [id])
+  machinetype MachineType @relation(fields: [machinetypeId], references: [id])
+  access      Access      @relation(fields: [accessId], references: [id])
+  activities  Activity[]
+}
+
+model MachineType {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+
+  Machine Machine[]
 }
 
 // Equipment (e.g., hand tools, safety gear)
@@ -221,7 +236,8 @@ model Location {
 
 // Access requirements for specific machines (e.g., authorization level)
 model Access {
-  id          Int    @id @default(autoincrement())
-  name        String @db.VarChar(255)
-  description String @db.VarChar(255)
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  description String    @db.VarChar(255)
+  Machine     Machine[]
 }

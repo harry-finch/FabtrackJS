@@ -33,15 +33,17 @@ async function main() {
   const users = [];
   for (let i = 0; i < 10; i++) {
     const randomType = Math.floor(Math.random() * 3) + 1; // 1 to 3
+
+    const name = faker.person.firstName();
+    const surname = faker.person.lastName();
+
     users.push({
-      name: faker.person.firstName(),
-      surname: faker.person.lastName(),
-      email: faker.internet.email(),
+      name: name,
+      surname: surname,
+      email: name + surname + "@gmail.com",
       usertypeId: randomType,
-      birthYear: faker.date
-        .birthdate({ min: 1950, max: 2003, mode: "year" })
-        .getFullYear(),
-      balance: faker.finance.amount(0, 1000, 2),
+      birthYear: faker.date.birthdate({ min: 1950, max: 2003, mode: "year" }).getFullYear(),
+      balance: faker.finance.amount(-20, 50, 2),
       termsAccepted: faker.datatype.boolean(),
       token: faker.string.alphanumeric(20),
     });

@@ -136,3 +136,19 @@ table th {
 .dropdown-menu > li:hover > .dropdown-submenu {
     display: block;
 }
+
+.form-floating input[type="file"] ~ label {
+    top: 0.5rem;
+    left: 0.75rem;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.form-floating input[type="file"]:focus ~ label,
+.form-floating input[type="file"]:valid ~ label {
+    top: -0.75rem;
+    left: 0.75rem;
+    font-size: 1rem;
+    color: #dee2e6a6;
+}

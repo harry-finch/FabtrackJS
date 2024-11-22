@@ -4,9 +4,9 @@ const dotenv = require("dotenv");
 
 const { PrismaClient } = require("@prisma/client");
 
-const isAdmin = require("../middleware/checkAdmin.js");
-const clearNotification = require("../middleware/clearNotification.js");
-const asyncHandler = require("../middleware/asyncHandler.js");
+const isAdmin = require("../../middleware/checkAdmin.js");
+const clearNotification = require("../../middleware/clearNotification.js");
+const asyncHandler = require("../../middleware/asyncHandler.js");
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -24,16 +24,18 @@ function formatTime(time) {
   return time ? moment(time).format("HH:mm") : "-";
 }
 
-// Route: Admin main page
-router.get(
-  "/",
-  clearNotification,
-  asyncHandler(async (req, res) => {
-    res.render("admin/main", { workspaces: true });
-  }),
-);
+// ******************************************************************************
+// Route to the administration panel (Admin Only)
+// ******************************************************************************
 
-// Route: View history page
+router.get("/", clearNotification, (req, res) => {
+  res.render("admin/main", { workspaces: true });
+});
+
+// ******************************************************************************
+// Route to view entire fablab history (Admin Only)
+// ******************************************************************************
+
 router.get(
   "/view-history",
   clearNotification,
@@ -56,9 +58,7 @@ router.get(
       res.render("admin/view-history", { history });
     } catch (error) {
       console.error("Error fetching history data:", error);
-      res
-        .status(500)
-        .render("error", { errorMessage: "Unable to retrieve history data." });
+      res.status(500).render("error", { errorMessage: "Unable to retrieve history data." });
     }
   }),
 );
