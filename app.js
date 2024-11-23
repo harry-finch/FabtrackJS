@@ -9,6 +9,9 @@ const helmet = require("helmet");
 const { PrismaClient } = require("@prisma/client");
 const fs = require("fs");
 
+const loadPlugins = require("./core/pluginLoader");
+loadPlugins();
+
 dotenv.config();
 
 const app = express();

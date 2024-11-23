@@ -143,7 +143,6 @@
                   <div class="form-floating mb-3 d-grid d-flex">
                     <select class="form-select" id="machineAccessId" name="accessId" required>
                       <option value="" selected disabled>Select access level</option>
-                      <% console.log(access) %>
                       <% access.forEach(function(accesslevel) { %>
                         <option value="<%= accesslevel.id %>"><%= accesslevel.name %></option>
                       <% }); %>

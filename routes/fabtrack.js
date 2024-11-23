@@ -11,6 +11,8 @@ const isLoggedIn = require("../middleware/checkSession.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 
+const hookManager = require("../core/HookManager");
+
 router.use(isLoggedIn);
 
 // ******************************************************************************
@@ -102,6 +104,10 @@ router.get(
 
     // 6. Empty complete object
     if (oldRecords) history = [];
+
+    // Hook for plugins to add fields to the register form
+    const registerForm = hookManager.triggerHook("registerForm");
+    console.log(registerForm + " >> in the route");
 
     res.render("fabtrack/index", {
       users: allUsers,
