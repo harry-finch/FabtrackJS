@@ -1,15 +1,17 @@
 # FabtrackJS
 
-FabtrackJS is an opensource platform for tracking user activity, projects and inventory in fablabs written in NodeJS.
+FabtrackJS is an open source platform for tracking user activity, projects and inventory in fablabs written in NodeJS.
 
 It's designed to be easy to use and not too much fuss.
 
 ## Table of Contents
 
 - [Background](#background)
-- [Install](#install)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
 - [Usage](#usage)
-  - [Generator](#generator)
+- [Features](#features)
 - [Maintainers](#maintainers)
 - [Contributing](#contributing)
 - [License](#license)
@@ -20,74 +22,154 @@ Initially I wrote the project in PHP/MySQL for the fablab at [Sorbonne Universit
 
 I decided to develop it in NodeJS/Express because I needed to start from scratch to make it more modular, with cleaner code and comments. And because I find Javascript more pleasant to work with.
 
-## Install
+## Prerequisites
 
-This project uses [node](http://nodejs.org) and numerous [npm](https://npmjs.com) libraries, so go check them out if you don't have them locally installed. You'll also need access to a [MySQL](http://mysql.org) server.
+Before installing FabtrackJS, make sure you have the following:
 
-Clone this repository on your server.
+- [Node.js](https://nodejs.org/) (v14 or higher)
+- [npm](https://www.npmjs.com/) (usually comes with Node.js)
+- [MySQL](https://www.mysql.com/) server (v5.7 or higher)
+- Git
 
-```sh
-$ git clone
-```
+## Installation
 
-Go to the root of the folder and run the installer. You'll be prompted for your configuration,
-
-```sh
-$ node install.js
-```
-
-Install Prisma
+1. Clone this repository:
 
 ```sh
-$ git clone
+$ git clone https://github.com/yourusername/fabtrackjs.git
+$ cd fabtrackjs
 ```
 
-Create the MySQL database with Prisma.
+2. Install dependencies:
+
+```sh
+$ npm install
+```
+
+3. Set up environment variables by creating a `.env` file in the root directory:
+
+```sh
+# Database connection
+DATABASE_URL="mysql://username:password@localhost:3306/fabtrack"
+
+# Session configuration
+SECRET="your-secret-key-here"
+SESSION_DURATION=86400000  # 24 hours in milliseconds
+
+# Server configuration
+PORT=8080
+```
+
+4. Initialize the database with Prisma:
+
+```sh
+# Install Prisma CLI globally if you haven't already
+$ npm install -g prisma
+
+# Generate Prisma client
+$ npx prisma generate
+
+# Create and migrate the database
+$ npx prisma migrate dev --name init
+```
+
+5. Seed the database with initial data:
+
+```sh
+$ npx prisma db seed
+```
+
+## Configuration
+
+FabtrackJS can be configured through the `.env` file. Here are some important configuration options:
+
+- `DATABASE_URL`: Your MySQL connection string
+- `SECRET`: Secret key for session encryption
+- `SESSION_DURATION`: Session duration in milliseconds
+- `PORT`: The port on which the application will run
 
 ## Usage
 
-This is only a documentation package. You can print out [spec.md](spec.md) to your console:
+To start the application in development mode:
 
 ```sh
-$ standard-readme-spec
-# Prints out the standard-readme spec
+$ npm run dev
 ```
 
-### Generator
+For production:
 
-To use the generator, look at [generator-standard-readme](https://github.com/RichardLitt/generator-standard-readme). There is a global executable to run the generator in that package, aliased as `standard-readme`.
-
-## Badge
-
-If your README is compliant with Standard-Readme and you're on GitHub, it would be great if you could add the badge. This allows people to link back to this Spec, and helps adoption of the README. The badge is **not required**.
-
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-
-To add in Markdown format, use this code:
-
-```
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+```sh
+$ npm start
 ```
 
-## Example Readmes
+The application will be available at `http://localhost:8080` (or the port you specified).
 
-To see how the specification has been applied, see the [example-readmes](example-readmes/).
+## Features
+
+- User management and tracking
+- Project tracking
+- Machine and equipment inventory
+- Workspace management
+- Activity logging
+- Plugin system for extensibility
+- Real-time notifications with Socket.io
+
+## Development
+
+### Plugin System
+
+FabtrackJS includes a plugin system that allows you to extend functionality:
+
+1. Create a new file in the `plugins/` directory
+2. Export an object with a `register` method that accepts the hookManager
+3. Add your custom hooks
+
+Example plugin:
+
+```js
+module.exports = {
+  name: "My Custom Plugin",
+  version: "1.0.0",
+  register: function(hookManager) {
+    hookManager.addHook("customEvent", async (data) => {
+      // Your custom logic here
+      return processedData;
+    });
+  }
+};
+```
+
+### Adding Hooks
+
+You can create custom hooks in the `hooks/` directory:
+
+```js
+module.exports = () => {
+  hookManager.addHook("eventName", (data) => {
+    // Process data
+    return result;
+  });
+};
+```
+
+## Troubleshooting
+
+### Common Issues
+
+- **Database Connection Errors**: Verify your MySQL server is running and the credentials in `.env` are correct.
+- **Missing Dependencies**: Run `npm install` to ensure all dependencies are installed.
+- **Port Already in Use**: Change the PORT in your `.env` file if 8080 is already in use.
 
 ## Maintainers
 
-[@RichardLitt](https://github.com/RichardLitt).
+[@YourGitHubUsername](https://github.com/yourusername)
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/RichardLitt/standard-readme/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/yourusername/fabtrackjs/issues/new) or submit PRs.
 
-Standard Readme follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
-
-### Contributors
-
-This project exists thanks to all the people who contribute.
-<a href="https://github.com/RichardLitt/standard-readme/graphs/contributors"><img src="https://opencollective.com/standard-readme/contributors.svg?width=890&button=false" /></a>
+This project follows the [Contributor Covenant](http://contributor-covenant.org/version/2.0/0/) Code of Conduct.
 
 ## License
 
-[MIT](LICENSE) © Richard Littauer
+[MIT](LICENSE) © Your Name
