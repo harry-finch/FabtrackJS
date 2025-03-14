@@ -74,7 +74,7 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <a class="btn btn-secondary w-100 mb-2 py-2" onclick="history.back();">Cancel</a>
+                        <a id="cancel" class="btn btn-secondary w-100 mb-2 py-2">Cancel</a>
                     </div>
                 </div>
             </form>
@@ -338,6 +338,7 @@
             </div>
 
         <% include ../includes/footer.html %>
+        <script src="javascripts/main.js"></script>
         <script>
           // Call the pagination function after the table is rendered
           addPagination('historyTable', <%- JSON.stringify(tableData) %>);

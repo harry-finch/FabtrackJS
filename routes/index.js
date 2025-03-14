@@ -30,8 +30,10 @@ const saltRounds = 10;
 // Root route to check authentication
 // ******************************************************************************
 
-router.get("/", isAuthenticated, (req, res) => {
-  req.session.role === "admin" ? res.redirect("/admin/") : res.redirect("/fabtrack/");
+router.get("/", (req, res) => {
+  if (req.session.loggedin) {
+    req.session.role === "admin" ? res.redirect("/admin/") : res.redirect("/fabtrack/");
+  } else res.redirect("/login");
 });
 
 // ******************************************************************************
@@ -49,7 +51,12 @@ router.get("/register", clearNotification, (req, res) => res.render("index/regis
 router.post(
   "/create-account",
   asyncHandler(async (req, res) => {
-    const { username, password, mail } = req.body;
+    const { username, password, mail, honeypot } = req.body;
+
+    // Check if a bot might have registered
+    if (honeypot) {
+      return res.status(400).send("Bot detected");
+    }
 
     // Hash the password with bcrypt
     const hash = await bcrypt.hash(password, saltRounds);
@@ -71,7 +78,7 @@ router.post(
         from: process.env.MAILFROM,
         to: process.env.ADMIN,
         subject: "FabtrackJS: new staff account created",
-        text: `User ${username} (${email}) has registered an account on Fabtrack.`,
+        text: `User ${username} (${mail}) has registered an account on Fabtrack.`,
       });
 
       // DEBUG: Etherreal link to email

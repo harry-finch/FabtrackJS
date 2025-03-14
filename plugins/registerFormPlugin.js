@@ -1,12 +1,14 @@
 module.exports = {
-  name: "Register Form Plugin",
+  name: "Plugin UE",
   version: "1.0.0",
-  description: "Adds a field to the main register form",
+  description: "Adds UE support",
   register(hookManager) {
-    hookManager.addHook("registerForm", () => {
-      const value = "registerForm plugin";
-      console.log(value);
-      return value;
+    hookManager.addHook("registerForm", async () => {
+      const { PrismaClient } = require("@prisma/client");
+      const prisma = new PrismaClient();
+
+      // const value = await prisma.access.findMany();
+      return 1;
     });
   },
 };

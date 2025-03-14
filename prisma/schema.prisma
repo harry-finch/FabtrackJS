@@ -8,13 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enum for ResourceType in Activity polymorphic association
-enum ResourceType {
-  MACHINE
-  EQUIPMENT
-  CONSUMABLE
-}
-
 // Audit logging for every important action in the system
 model Log {
   id          Int      @id @default(autoincrement())
@@ -147,17 +140,20 @@ model Workspace {
   categories     Category[]
 }
 
+// Enum for ResourceType in Activity polymorphic association
+enum ResourceType {
+  MACHINE
+  EQUIPMENT
+  CONSUMABLE
+}
+
 // Tracks usage of Machines, Equipment, or Consumables within a specific activity
 model Activity {
   id           Int          @id @default(autoincrement())
   createdAt    DateTime     @default(now())
   resourceId   Int // ID of the resource (Machine, Equipment, or Consumable)
-  resourceType ResourceType // Type of the resource
+  resourceType ResourceType // Type of the resource (MACHINE, EQUIPMENT, CONSUMABLE)
   quantity     Int? // Only used for Consumables
-
-  machine    Machine?    @relation(fields: [resourceId], references: [id], map: "FK_Activity_Machine")
-  equipment  Equipment?  @relation(fields: [resourceId], references: [id], map: "FK_Activity_Equipment")
-  consumable Consumable? @relation(fields: [resourceId], references: [id], map: "FK_Activity_Consumable")
 }
 
 // Categories within a workspace (e.g., electronics, woodworking)
@@ -189,7 +185,6 @@ model Machine {
   location    Location?   @relation(fields: [locationId], references: [id])
   machinetype MachineType @relation(fields: [machinetypeId], references: [id])
   access      Access      @relation(fields: [accessId], references: [id])
-  activities  Activity[]
 }
 
 model MachineType {
@@ -201,9 +196,8 @@ model MachineType {
 
 // Equipment (e.g., hand tools, safety gear)
 model Equipment {
-  id         Int        @id @default(autoincrement())
-  name       String     @unique @db.VarChar(255)
-  activities Activity[]
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(255)
 }
 
 // Consumable status enum to track stock status
@@ -221,8 +215,6 @@ model Consumable {
   stock            Int              @default(0)
   reorderThreshold Int              @default(10)
   status           ConsumableStatus @default(AVAILABLE)
-
-  activities Activity[]
 }
 
 // Different locations for assets within the lab (e.g., rooms, drawers)

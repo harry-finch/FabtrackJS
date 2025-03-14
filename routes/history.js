@@ -5,7 +5,7 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 router.use(isLoggedIn);
 
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient, ResourceType } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // ******************************************************************************
@@ -152,10 +152,11 @@ router.post(
       data: { balance: { decrement: totalPrice } },
     });
 
+    // *** TODO: add equipment and machine support ***
     const activity = await prisma.activity.create({
       data: {
-        historyId: Number(historyid),
-        consumableId: Number(consumableid),
+        resourceId: Number(consumableid),
+        resourceType: ResourceType.CONSUMABLE,
         quantity: Number(quantity),
       },
     });

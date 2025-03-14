@@ -106,13 +106,13 @@ router.get(
     if (oldRecords) history = [];
 
     // Hook for plugins to add fields to the register form
-    const registerForm = hookManager.triggerHook("registerForm");
-    console.log(registerForm + " >> in the route");
+    const additionalFields = await hookManager.triggerAsyncHook("registerForm");
 
     res.render("fabtrack/index", {
       users: allUsers,
-      history: history,
-      consumables: consumables,
+      history,
+      consumables,
+      additionalFields,
     });
   }),
 );
