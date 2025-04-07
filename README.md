@@ -160,16 +160,10 @@ module.exports = () => {
 - **Missing Dependencies**: Run `npm install` to ensure all dependencies are installed.
 - **Port Already in Use**: Change the PORT in your `.env` file if 8080 is already in use.
 
-## Maintainers
-
-[@YourGitHubUsername](https://github.com/yourusername)
-
 ## Contributing
-
-Feel free to dive in! [Open an issue](https://github.com/yourusername/fabtrackjs/issues/new) or submit PRs.
 
 This project follows the [Contributor Covenant](http://contributor-covenant.org/version/2.0/0/) Code of Conduct.
 
 ## License
 
-[MIT](LICENSE) © Your Name
+[MIT](LICENSE) © Stéphane Muller
