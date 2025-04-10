@@ -98,8 +98,8 @@ async function workspaceSwitcher(req, res, next) {
 
     next();
   } catch (error) {
-    console.error("Error fetching Workspaces:", error);
-    next(error);
+    console.error("Error in workspace switcher middleware:", error);
+    next(new ApiError(500, "Failed to load workspace information"));
   }
 }
 
@@ -128,8 +128,8 @@ async function loadCache(req, res, next) {
 
     next();
   } catch (error) {
-    console.error("Error fetching Workspaces:", error);
-    next(error);
+    console.error("Error loading reference data cache:", error);
+    next(new ApiError(500, "Failed to load application reference data"));
   }
 }
 
@@ -180,24 +180,47 @@ loadRoutes(routesDir);
 // Error Handling
 // ******************************************************************************
 
+// Custom error for API errors
+class ApiError extends Error {
+  constructor(statusCode, message) {
+    super(message);
+    this.statusCode = statusCode;
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 // Catch 404 errors
 app.use((req, res, next) => {
-  next(createError(404));
+  next(new ApiError(404, `Not Found: ${req.originalUrl}`));
 });
 
 // General error handler
 app.use((err, req, res, next) => {
-  // Log error stack in production
-  if (req.app.get("env") === "production") {
+  const statusCode = err.statusCode || err.status || 500;
+  const errorDetail = {
+    message: err.message || 'Internal Server Error',
+    status: statusCode,
+    stack: req.app.get('env') === 'development' ? err.stack : undefined,
+    path: req.originalUrl,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Log error details in any environment but more verbose in production
+  console.error(`[${errorDetail.timestamp}] ${statusCode} - ${errorDetail.message}`);
+  if (req.app.get('env') === 'production' && statusCode >= 500) {
     console.error(err.stack);
   }
 
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // Render the error page
-  res.status(err.status || 500);
-  res.render("error");
+  // Respond appropriately based on request type (API/web)
+  if (req.xhr || req.headers.accept === 'application/json') {
+    res.status(statusCode).json({ error: errorDetail });
+  } else {
+    res.status(statusCode);
+    res.locals.error = req.app.get('env') === 'development' ? errorDetail : { message: errorDetail.message, status: statusCode };
+    res.locals.message = errorDetail.message;
+    res.render('error');
+  }
 });
 
 // ******************************************************************************
