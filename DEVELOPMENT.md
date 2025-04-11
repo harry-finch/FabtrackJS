@@ -16,7 +16,7 @@ Welcome to the FabtrackJS development guide! This document will help you underst
 
 ## Project Overview
 
-FabtrackJS is an open-source platform designed to track user activity, projects, and inventory in fablabs (fabrication laboratories). Built with NodeJS and Express, it provides a modular system for monitoring and managing a fablab's resources, users, and activities.
+FabtrackJS is an open-source platform designed to track user activity, projects, and inventory in fablabs. Built with NodeJS and Express, it provides a modular system for monitoring and managing a fablab's resources, users, and activities.
 
 ### Key Features
 
@@ -233,7 +233,7 @@ app.use((err, req, res, next) => {
     path: req.originalUrl,
     timestamp: new Date().toISOString()
   };
-  
+
   // Log error details in any environment but more verbose in production
   console.error(`[${errorDetail.timestamp}] ${statusCode} - ${errorDetail.message}`);
   if (req.app.get('env') === 'production' && statusCode >= 500) {
@@ -277,7 +277,7 @@ class HookManager {
   // Call all callbacks registered for a hook
   async callHook(name, data) {
     if (!this.hooks[name]) return data;
-    
+
     let result = data;
     for (const callback of this.hooks[name]) {
       result = await callback(result);
@@ -298,7 +298,7 @@ Plugins are JavaScript modules that export a registration function:
 module.exports = {
   name: "Example Plugin",
   version: "1.0.0",
-  
+
   register: function(hookManager) {
     // Register hooks for this plugin
     hookManager.addHook("beforeUserCreate", async (userData) => {
@@ -306,7 +306,7 @@ module.exports = {
       console.log("Processing user before creation:", userData);
       return userData;
     });
-    
+
     hookManager.addHook("afterUserLogin", async (user) => {
       // Do something after a user logs in
       console.log("User logged in:", user.name);
@@ -335,11 +335,11 @@ module.exports = {
    ```
    # Database connection
    DATABASE_URL="mysql://username:password@localhost:3306/fabtrack"
-   
+
    # Session configuration
    SECRET="your-secret-key-here"
    SESSION_DURATION=86400000  # 24 hours in milliseconds
-   
+
    # Server configuration
    PORT=8080
    ```
@@ -393,7 +393,7 @@ Add JSDoc comments to functions and classes:
 ```FabtrackJS/exampleDoc.js#L1-15
 /**
  * Process a user registration.
- * 
+ *
  * @param {Object} userData - The user data from the registration form
  * @param {string} userData.name - User's full name
  * @param {string} userData.email - User's email address
@@ -444,9 +444,10 @@ refactor: Improve error handling middleware
 
 ## Next Steps for Project Improvement
 
-1. Add automated testing
-2. Implement TypeScript for better type safety
-3. Update Express to the latest version
-4. Improve error handling and logging
-5. Add comprehensive API documentation
-6. Create a UI component library for consistent design
+1. Finish inventory management
+2. Add automated testing
+3. Implement TypeScript for better type safety
+4. Update Express to the latest version
+5. Improve error handling and logging
+6. Add comprehensive API documentation
+7. Create a UI component library for consistent design

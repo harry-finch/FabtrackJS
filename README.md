@@ -108,13 +108,17 @@ The application will be available at `http://localhost:8080` (or the port you sp
 
 - User management and tracking
 - Project tracking
-- Machine and equipment inventory
+- Machine and equipment inventory (work in progress)
 - Workspace management
 - Activity logging
 - Plugin system for extensibility
 - Real-time notifications with Socket.io
 
-## Development
+## Development and Contributing
+
+This project follows the [Contributor Covenant](http://contributor-covenant.org/version/2.0/0/) Code of Conduct.
+
+You can find a detailed guide on how to contribute to FabtrackJS [Development Guide](DEVELOPMENT.md).
 
 ### Plugin System
 
@@ -159,10 +163,6 @@ module.exports = () => {
 - **Database Connection Errors**: Verify your MySQL server is running and the credentials in `.env` are correct.
 - **Missing Dependencies**: Run `npm install` to ensure all dependencies are installed.
 - **Port Already in Use**: Change the PORT in your `.env` file if 8080 is already in use.
-
-## Contributing
-
-This project follows the [Contributor Covenant](http://contributor-covenant.org/version/2.0/0/) Code of Conduct.
 
 ## License
 
