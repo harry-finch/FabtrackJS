@@ -64,14 +64,16 @@ model Usertype {
 
 // Project information
 model Project {
-  id            Int      @id @default(autoincrement())
-  url           String   @unique @db.VarChar(255)
-  projecttypeId Int
-  createdAt     DateTime @default(now())
-  active        Boolean  @default(true)
+  id             Int           @id @default(autoincrement())
+  url            String        @unique @db.VarChar(255)
+  projecttypeId  Int
+  teachingUnitId Int?
+  createdAt      DateTime      @default(now())
+  active         Boolean       @default(true)
 
-  projecttype Projecttype   @relation(fields: [projecttypeId], references: [id])
-  users       UserProject[]
+  projecttype    Projecttype   @relation(fields: [projecttypeId], references: [id])
+  teachingUnit   TeachingUnit? @relation(fields: [teachingUnitId], references: [id], onDelete: SetNull)
+  users          UserProject[]
 }
 
 // Types of projects (e.g., research, personal, commercial...)
@@ -79,6 +81,20 @@ model Projecttype {
   id       Int       @id @default(autoincrement())
   name     String    @unique @db.VarChar(255)
   projects Project[]
+}
+
+// Teaching Units (UE) for academic projects and billing (e.g. Sorbonne Université)
+model TeachingUnit {
+  id               Int       @id @default(autoincrement())
+  code             String    @unique @db.VarChar(50)
+  name             String    @db.VarChar(255)
+  department       String?   @db.VarChar(255)
+  responsibleEmail String?   @db.VarChar(255)
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+
+  historyEntries   History[]
+  projects         Project[]
 }
 
 // Many-to-many relationship between users and projects
@@ -118,18 +134,20 @@ model Warningtype {
 
 // History of user visits to the fablab
 model History {
-  id            Int       @id @default(autoincrement())
-  arrival       DateTime  @default(now())
-  departure     DateTime?
-  userId        Int
-  userprojectId Int?
-  comments      String?   @db.VarChar(255)
-  workspaceId   Int?
+  id             Int           @id @default(autoincrement())
+  arrival        DateTime      @default(now())
+  departure      DateTime?
+  userId         Int
+  userprojectId  Int?
+  teachingUnitId Int?
+  comments       String?       @db.VarChar(255)
+  workspaceId    Int?
 
-  user        User         @relation(fields: [userId], references: [id])
-  userproject UserProject? @relation(fields: [userprojectId], references: [id])
-  workspace   Workspace?   @relation(fields: [workspaceId], references: [id])
-  activities  Activity[]
+  user           User          @relation(fields: [userId], references: [id])
+  userproject    UserProject?  @relation(fields: [userprojectId], references: [id])
+  teachingUnit   TeachingUnit? @relation(fields: [teachingUnitId], references: [id], onDelete: SetNull)
+  workspace      Workspace?    @relation(fields: [workspaceId], references: [id])
+  activities     Activity[]
 }
 
 // Workspaces within the fablab (e.g., 3D printing room, laser cutting room)

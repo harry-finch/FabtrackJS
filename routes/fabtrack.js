@@ -112,14 +112,20 @@ router.get(
     // 6. Empty complete object
     if (oldRecords) history = [];
 
-    // Hook for plugins to add fields to the register form
-    const additionalFields = await hookManager.triggerAsyncHook("registerForm");
+    // Hook for plugins to provide teaching units
+    let teachingUnits = [];
+    const isPluginUeEnabled = hookManager.isPluginEnabled("ue");
+    if (isPluginUeEnabled) {
+      const ueResults = await hookManager.triggerAsyncHook("fabtrack:teachingUnits");
+      teachingUnits = ueResults.flat().filter(Boolean);
+    }
 
     res.render("fabtrack/index", {
       users: allUsers,
       history,
       consumables,
-      additionalFields,
+      teachingUnits,
+      isPluginUeEnabled,
     });
   }),
 );

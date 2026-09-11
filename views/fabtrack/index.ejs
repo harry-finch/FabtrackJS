@@ -61,6 +61,26 @@
                             </div>
                         </div>
                     </div>
+
+                    <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                    <div class="row" id="ueRow" style="display: none;">
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="teachingUnitId" name="teachingUnitId">
+                                    <option value="" selected disabled>Choisir une UE habilitée (Sorbonne Université)...</option>
+                                    <% teachingUnits.forEach(function(ue) { %>
+                                    <option value="<%= ue.id %>">
+                                        <%= ue.code %> — <%= ue.name %> (<%= ue.department || 'Sorbonne Université' %>)
+                                    </option>
+                                    <% }); %>
+                                </select>
+                                <label for="teachingUnitId">
+                                    <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Unité d'Enseignement (UE rattachée)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
                     <div class="row">
                         <div class="col">
                             <div class="form-floating mb-3">

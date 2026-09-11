@@ -1,6 +1,24 @@
 class HookManager {
   constructor() {
     this.hooks = {};
+    this.plugins = new Map();
+  }
+
+  registerPlugin(plugin) {
+    this.plugins.set(plugin.id || plugin.name, plugin);
+  }
+
+  isPluginEnabled(idOrName) {
+    const p = this.plugins.get(idOrName);
+    return !!(p && p.enabled !== false);
+  }
+
+  getPlugin(idOrName) {
+    return this.plugins.get(idOrName);
+  }
+
+  hasHook(event) {
+    return !!(this.hooks[event] && this.hooks[event].length > 0);
   }
 
   addHook(event, callback, priority = 10) {

@@ -96,7 +96,13 @@ router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
 
   let projectlist = [];
   projects.forEach(function (project) {
-    projectlist.push({ id: project.id, url: project.url, type: project.projecttypeId, group: "all" });
+    projectlist.push({
+      id: project.id,
+      url: project.url,
+      type: project.projecttypeId,
+      teachingUnitId: project.teachingUnitId,
+      group: "all",
+    });
   });
 
   let userprojectlist = [];

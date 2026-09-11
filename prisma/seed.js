@@ -15,6 +15,7 @@ async function main() {
   await prisma.history.deleteMany({});
   await prisma.userProject.deleteMany({});
   await prisma.project.deleteMany({});
+  await prisma.teachingUnit.deleteMany({});
   await prisma.machine.deleteMany({});
   await prisma.consumable.deleteMany({});
   await prisma.category.deleteMany({});
@@ -101,6 +102,43 @@ async function main() {
     projecttypes.push(await prisma.projecttype.create({ data: item }));
   }
   console.log("Seeded project types");
+
+  // 4b. Teaching Units (Sorbonne Université)
+  const teachingUnitsData = [
+    {
+      code: "LU1IN001",
+      name: "Initiation aux Fablabs & Prototypage",
+      department: "UFR d'Ingénierie & Informatique",
+      responsibleEmail: "didier.dupont@sorbonne-universite.fr",
+      active: true,
+    },
+    {
+      code: "LU2PY002",
+      name: "Physique Expérimentale & Projets Makers",
+      department: "UFR de Physique",
+      responsibleEmail: "claire.martin@sorbonne-universite.fr",
+      active: true,
+    },
+    {
+      code: "MU4IN015",
+      name: "Projet IoT, Capteurs & Systèmes Embarqués",
+      department: "Master Informatique / Polytech",
+      responsibleEmail: "julien.bernard@sorbonne-universite.fr",
+      active: true,
+    },
+    {
+      code: "LU3CH010",
+      name: "Chimie des Matériaux & Polymères",
+      department: "UFR de Chimie",
+      responsibleEmail: "sophie.leroy@sorbonne-universite.fr",
+      active: false,
+    },
+  ];
+  const teachingUnits = [];
+  for (const item of teachingUnitsData) {
+    teachingUnits.push(await prisma.teachingUnit.create({ data: item }));
+  }
+  console.log("Seeded teaching units");
 
   // 5. Warning types
   const warningtypesData = [

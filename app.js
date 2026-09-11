@@ -10,6 +10,7 @@ const { PrismaClient } = require("@prisma/client");
 const fs = require("fs");
 
 const loadPlugins = require("./core/pluginLoader");
+const hookManager = require("./core/HookManager");
 loadPlugins();
 
 dotenv.config();
@@ -88,6 +89,7 @@ app.use(
 app.use((req, res, next) => {
   res.locals.role = req.session.role;
   res.locals.username = req.session.username;
+  res.locals.isPluginUeEnabled = hookManager.isPluginEnabled("ue");
   next();
 });
 

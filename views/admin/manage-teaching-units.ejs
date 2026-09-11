@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Gestion des Unités d'Enseignement et Refacturation Sorbonne Université" />
+    <title>Fabtrack - Unités d'Enseignement (UE)</title>
+
+    <%- include('../includes/pagehead.html') %>
+  </head>
+
+  <body class="bg-body-tertiary py-4">
+    <%- include('../includes/light-dark.html') %>
+
+    <main class="main-container">
+      <%- include('../includes/header.html') %>
+
+      <!-- Top Back to Admin Button -->
+      <div class="mb-3">
+        <a href="/admin" class="btn btn-outline-secondary btn-sm">
+          <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+        </a>
+      </div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+          <h4 class="mb-1">
+            <i class="fa-solid fa-graduation-cap text-primary me-2"></i> Unités d'Enseignement (UE) & Refacturation
+          </h4>
+          <p class="text-muted small mb-0">
+            Gestion des UE habilitées de Sorbonne Université, imputation des consommables académiques et export pour la facturation.
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="/admin/ue/export-csv" class="btn btn-outline-success btn-sm">
+            <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV (Facturation)
+          </a>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createUeModal">
+            <i class="fa-solid fa-plus me-1"></i> Nouvelle UE
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4 col-sm-6">
+          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted fw-semibold text-uppercase">UE habilitées</span>
+                <i class="fa-solid fa-graduation-cap text-primary fs-5"></i>
+              </div>
+              <div class="fs-4 fw-bold text-primary"><%= activeUeCount %> / <%= teachingUnits.length %></div>
+              <div class="small text-muted">actives pour le semestre en cours</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted fw-semibold text-uppercase">Total Consommables Imputés</span>
+                <i class="fa-solid fa-coins text-warning fs-5"></i>
+              </div>
+              <div class="fs-4 fw-bold text-danger"><%= grandTotalCost.toFixed(2) %> €</div>
+              <div class="small text-muted">pris en charge (non débité des étudiants)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted fw-semibold text-uppercase">Prélèvements enregistrés</span>
+                <i class="fa-solid fa-boxes-stacked text-success fs-5"></i>
+              </div>
+              <div class="fs-4 fw-bold text-success"><%= totalActivitiesCount %></div>
+              <div class="small text-muted">actes de consommation sous projet académique</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav Tabs: UE List vs Consumption Log -->
+      <ul class="nav nav-tabs mb-3" id="ueTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active fw-semibold" id="tab-units" data-bs-toggle="tab" data-bs-target="#panel-units" type="button" role="tab">
+            <i class="fa-solid fa-list-check me-1"></i> Répertoire des UE (<%= teachingUnits.length %>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold" id="tab-log" data-bs-toggle="tab" data-bs-target="#panel-log" type="button" role="tab">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> Journal des consommations imputées (<%= activities.length %>)
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="ueTabsContent">
+        <!-- TAB 1: UE LIST -->
+        <div class="tab-pane fade show active" id="panel-units" role="tabpanel">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="teachingUnitsTable">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Code UE</th>
+                      <th>Intitulé</th>
+                      <th>Composante / Département</th>
+                      <th>Responsable</th>
+                      <th class="text-center">Projets</th>
+                      <th class="text-center">Étudiants</th>
+                      <th class="text-end">Total Imputé</th>
+                      <th class="text-center">Statut</th>
+                      <th class="text-end pe-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (teachingUnits.length === 0) { %>
+                    <tr>
+                      <td colspan="9" class="text-center text-muted py-4">
+                        Aucune unité d'enseignement enregistrée. Cliquez sur "Nouvelle UE" pour en créer une.
+                      </td>
+                    </tr>
+                    <% } %>
+                    <% teachingUnits.forEach(function(ue) { %>
+                    <tr class="<%= !ue.active ? 'opacity-50' : '' %>">
+                      <td class="ps-3 fw-bold text-primary font-monospace">
+                        <%= ue.code %>
+                      </td>
+                      <td class="fw-medium">
+                        <%= ue.name %>
+                      </td>
+                      <td class="small text-muted">
+                        <%= ue.department || '—' %>
+                      </td>
+                      <td class="small">
+                        <% if (ue.responsibleEmail) { %>
+                        <a href="mailto:<%= ue.responsibleEmail %>" class="text-decoration-none">
+                          <i class="fa-solid fa-envelope me-1 text-muted"></i><%= ue.responsibleEmail %>
+                        </a>
+                        <% } else { %>
+                        <span class="text-muted">—</span>
+                        <% } %>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-secondary-subtle text-secondary border">
+                          <%= ue.projectsCount %>
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-light text-dark border">
+                          <%= ue.studentsCount %>
+                        </span>
+                      </td>
+                      <td class="text-end fw-bold <%= ue.totalCost > 0 ? 'text-danger' : 'text-muted' %>">
+                        <%= ue.totalCost.toFixed(2) %> €
+                      </td>
+                      <td class="text-center">
+                        <% if (ue.active) { %>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                          <i class="fa-solid fa-circle-check me-1"></i> Active
+                        </span>
+                        <% } else { %>
+                        <span class="badge bg-secondary-subtle text-secondary border">
+                          <i class="fa-solid fa-circle-xmark me-1"></i> Désactivée
+                        </span>
+                        <% } %>
+                      </td>
+                      <td class="text-end pe-3 text-nowrap">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-secondary edit-ue-btn me-1"
+                          data-id="<%= ue.id %>"
+                          data-code="<%= ue.code %>"
+                          data-name="<%= ue.name %>"
+                          data-department="<%= ue.department || '' %>"
+                          data-email="<%= ue.responsibleEmail || '' %>"
+                          data-active="<%= ue.active %>"
+                          title="Modifier l'UE"
+                        >
+                          <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <form action="/admin/ue/toggle/<%= ue.id %>" method="POST" class="d-inline">
+                          <button
+                            type="submit"
+                            class="btn btn-sm <%= ue.active ? 'btn-outline-warning' : 'btn-outline-success' %>"
+                            title="<%= ue.active ? 'Désactiver cette UE' : 'Activer cette UE' %>"
+                          >
+                            <i class="fa-solid <%= ue.active ? 'fa-ban' : 'fa-check' %>"></i>
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: CONSUMPTION LOG -->
+        <div class="tab-pane fade" id="panel-log" role="tabpanel">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="consumptionLogTable">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Date</th>
+                      <th>UE</th>
+                      <th>Étudiant</th>
+                      <th>Projet</th>
+                      <th>Consommable</th>
+                      <th class="text-end">Quantité</th>
+                      <th class="text-end">Prix Unit.</th>
+                      <th class="text-end pe-3">Montant Pris en Charge</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (activities.length === 0) { %>
+                    <tr>
+                      <td colspan="8" class="text-center text-muted py-4">
+                        Aucune consommation liée à une UE pour le moment.
+                      </td>
+                    </tr>
+                    <% } %>
+                    <% activities.forEach(function(act) { %>
+                    <tr>
+                      <td class="ps-3 small text-muted text-nowrap">
+                        <%= act.date %>
+                      </td>
+                      <td>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace">
+                          <%= act.ueCode %>
+                        </span>
+                        <div class="small text-muted text-truncate" style="max-width: 180px;"><%= act.ueName %></div>
+                      </td>
+                      <td>
+                        <div class="fw-medium"><%= act.studentName %></div>
+                        <div class="small text-muted"><%= act.studentEmail %></div>
+                      </td>
+                      <td class="small">
+                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="<%= act.projectUrl %>">
+                          <%= act.projectUrl %>
+                        </span>
+                      </td>
+                      <td class="fw-medium">
+                        <%= act.consumableName %>
+                      </td>
+                      <td class="text-end text-nowrap">
+                        <%= act.quantity %> <%= act.unit %>
+                      </td>
+                      <td class="text-end text-muted small text-nowrap">
+                        <%= act.unitCost < 0.1 ? act.unitCost.toFixed(4) : act.unitCost.toFixed(2) %> € / <%= act.unit %>
+                      </td>
+                      <td class="text-end pe-3 fw-bold text-danger text-nowrap">
+                        <%= act.totalCost.toFixed(2) %> €
+                      </td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL: CREATE TEACHING UNIT -->
+      <div class="modal fade" id="createUeModal" tabindex="-1" aria-labelledby="createUeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <form action="/admin/ue/create" method="POST">
+              <div class="modal-header">
+                <h5 class="modal-title" id="createUeModalLabel">
+                  <i class="fa-solid fa-graduation-cap text-primary me-2"></i> Nouvelle Unité d'Enseignement
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="createCode" name="code" placeholder="LU1IN001" required />
+                  <label for="createCode">Code UE (ex: LU1IN001, MU4IN015)</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="createName" name="name" placeholder="Intitulé" required />
+                  <label for="createName">Intitulé de l'UE</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="createDepartment" name="department" placeholder="Composante" />
+                  <label for="createDepartment">Département / Composante (ex: UFR d'Ingénierie)</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="email" class="form-control" id="createResponsibleEmail" name="responsibleEmail" placeholder="enseignant@sorbonne-universite.fr" />
+                  <label for="createResponsibleEmail">Email Enseignant Responsable</label>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">Créer l'UE</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL: EDIT TEACHING UNIT -->
+      <div class="modal fade" id="editUeModal" tabindex="-1" aria-labelledby="editUeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <form id="editUeForm" action="/admin/ue/update/" method="POST">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editUeModalLabel">
+                  <i class="fa-solid fa-pen-to-square text-primary me-2"></i> Modifier l'Unité d'Enseignement
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="editCode" name="code" required />
+                  <label for="editCode">Code UE</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="editName" name="name" required />
+                  <label for="editName">Intitulé de l'UE</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="editDepartment" name="department" />
+                  <label for="editDepartment">Département / Composante</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="email" class="form-control" id="editResponsibleEmail" name="responsibleEmail" />
+                  <label for="editResponsibleEmail">Email Enseignant Responsable</label>
+                </div>
+                <div class="form-check form-switch mt-3">
+                  <input class="form-check-input" type="checkbox" id="editActive" name="active" value="true" />
+                  <label class="form-check-label" for="editActive">UE active (habilitée pour le semestre)</label>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <%- include('../includes/footer.html') %>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const editBtns = document.querySelectorAll(".edit-ue-btn");
+          const editForm = document.getElementById("editUeForm");
+          const editCode = document.getElementById("editCode");
+          const editName = document.getElementById("editName");
+          const editDepartment = document.getElementById("editDepartment");
+          const editEmail = document.getElementById("editResponsibleEmail");
+          const editActive = document.getElementById("editActive");
+          const editModal = new bootstrap.Modal(document.getElementById("editUeModal"));
+
+          editBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const id = btn.dataset.id;
+              editForm.action = `/admin/ue/update/${id}`;
+              editCode.value = btn.dataset.code || "";
+              editName.value = btn.dataset.name || "";
+              editDepartment.value = btn.dataset.department || "";
+              editEmail.value = btn.dataset.email || "";
+              editActive.checked = btn.dataset.active === "true";
+              editModal.show();
+            });
+          });
+        });
+      </script>
+    </main>
+  </body>
+</html>

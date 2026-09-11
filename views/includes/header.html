@@ -131,6 +131,11 @@
             <li>
                 <a class="dropdown-item" href="/admin"><i class="fa-solid fa-gear"></i>&nbsp;&nbsp;Administration panel</a>
             </li>
+            <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+            <li>
+                <a class="dropdown-item" href="/admin/ue"><i class="fa-solid fa-graduation-cap text-primary"></i>&nbsp;&nbsp;UE & Facturation (Sorbonne)</a>
+            </li>
+            <% } %>
             <% } %>
             <li>
                 <a class="dropdown-item" href="/logout"

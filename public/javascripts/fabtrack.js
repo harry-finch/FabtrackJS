@@ -113,7 +113,15 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       docInput.value = item.url;
       document.getElementById("projectid").value = item.id;
       document.getElementById("urldocumentation").href = item.url;
-      document.getElementById("projecttype").selectedIndex = item.type;
+      const projectTypeEl = document.getElementById("projecttype");
+      if (projectTypeEl) {
+        projectTypeEl.value = item.type;
+        checkAcademicProjectType();
+      }
+      const ueSelect = document.getElementById("teachingUnitId");
+      if (ueSelect && item.teachingUnitId) {
+        ueSelect.value = item.teachingUnitId;
+      }
 
       const foundElem = userprojects.find(
         (elem) => elem.userid === Number(document.getElementById("userid").value) && elem.projectid === item.id,
@@ -121,6 +129,36 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       document.getElementById("userprojectid").value = foundElem ? foundElem.id : "null";
     },
   });
+
+  // Dynamic appearance of Teaching Units (UE) field for academic projects
+  const projectTypeSelect = document.getElementById("projecttype");
+  const ueRow = document.getElementById("ueRow");
+  const ueSelect = document.getElementById("teachingUnitId");
+
+  function checkAcademicProjectType() {
+    if (!projectTypeSelect || !ueRow) return;
+    const selectedOpt = projectTypeSelect.options[projectTypeSelect.selectedIndex];
+    const isAcademic =
+      selectedOpt &&
+      (selectedOpt.text.toLowerCase().includes("academic") ||
+        selectedOpt.text.toLowerCase().includes("académique") ||
+        selectedOpt.value === "2");
+
+    if (isAcademic) {
+      ueRow.style.display = "";
+      if (ueSelect) ueSelect.setAttribute("required", "required");
+    } else {
+      ueRow.style.display = "none";
+      if (ueSelect) {
+        ueSelect.removeAttribute("required");
+        ueSelect.value = "";
+      }
+    }
+  }
+
+  if (projectTypeSelect) {
+    projectTypeSelect.addEventListener("change", checkAcademicProjectType);
+  }
 })();
 
 const activityManager = document.getElementById("activityManager");

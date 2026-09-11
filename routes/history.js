@@ -43,13 +43,16 @@ async function consumeItem(consumableId, quantity) {
 router.post(
   "/create",
   asyncHandler(async (req, res) => {
-    let { userid, projecttype, projectid, userprojectid, documentation, comments } = req.body;
+    let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId } = req.body;
 
     const parsedUserId = Number(userid);
     if (!parsedUserId || isNaN(parsedUserId)) {
       req.session.notification = "Error: Invalid user selected.";
       return res.redirect("/fabtrack");
     }
+
+    const parsedTeachingUnitId =
+      teachingUnitId && teachingUnitId !== "null" && teachingUnitId !== "" ? Number(teachingUnitId) : null;
 
     // Checking if the user is already here to avoid conflicts
     const alreadyHere = await prisma.history.findMany({
@@ -67,9 +70,20 @@ router.post(
             data: {
               url: documentation.trim(),
               projecttypeId: projecttype ? Number(projecttype) : 1,
+              teachingUnitId: parsedTeachingUnitId,
             },
           });
           projectid = project.id;
+        }
+      } else if (parsedTeachingUnitId) {
+        // If project exists, update its teachingUnitId if provided
+        try {
+          await prisma.project.update({
+            where: { id: Number(projectid) },
+            data: { teachingUnitId: parsedTeachingUnitId },
+          });
+        } catch (e) {
+          console.error("Error updating project teachingUnitId:", e);
         }
       }
 
@@ -95,14 +109,16 @@ router.post(
         }
       }
 
-      const activeWorkspaceId = req.session.selectedWorkspace && req.session.selectedWorkspace.id > 0
-        ? req.session.selectedWorkspace.id
-        : null;
+      const activeWorkspaceId =
+        req.session.selectedWorkspace && req.session.selectedWorkspace.id > 0
+          ? req.session.selectedWorkspace.id
+          : null;
 
       await prisma.history.create({
         data: {
           userId: parsedUserId,
           userprojectId: userprojectid && userprojectid !== "null" ? Number(userprojectid) : null,
+          teachingUnitId: parsedTeachingUnitId,
           comments: comments || null,
           workspaceId: activeWorkspaceId,
         },
@@ -279,8 +295,22 @@ router.post(
       if (consumed) {
         const totalPrice = Number((Number(consumed.cost) * qty).toFixed(2));
 
-        // Decrement user balance if user is specified
-        if (usrId) {
+        // Check if this history entry is associated with a Teaching Unit (UE)
+        let isCoveredByUe = false;
+        let ueInfo = null;
+        if (histId) {
+          const histEntry = await prisma.history.findUnique({
+            where: { id: histId },
+            include: { teachingUnit: true },
+          });
+          if (histEntry && histEntry.teachingUnit) {
+            isCoveredByUe = true;
+            ueInfo = histEntry.teachingUnit;
+          }
+        }
+
+        // Decrement user balance ONLY if NOT covered by a Teaching Unit (UE)
+        if (usrId && !isCoveredByUe) {
           await prisma.user.update({
             where: { id: usrId },
             data: { balance: { decrement: totalPrice } },
@@ -297,11 +327,17 @@ router.post(
           },
         });
         recordedCount++;
+
+        if (isCoveredByUe) {
+          req.session.notification = `Success: Activité enregistrée. Prise en charge UE (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € imputés à l'UE).`;
+        }
       }
     }
 
     if (recordedCount > 0) {
-      req.session.notification = "Success: Lab activity recorded successfully!";
+      if (!req.session.notification) {
+        req.session.notification = "Success: Lab activity recorded successfully!";
+      }
     } else {
       req.session.notification = "Warning: No resource was selected for this activity.";
     }

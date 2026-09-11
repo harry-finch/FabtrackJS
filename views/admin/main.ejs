@@ -160,6 +160,22 @@
                         </div>
                     </div>
                 </div>
+                <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                <div class="col">
+                    <div class="card h-100 text-center border-primary shadow-sm">
+                        <i class="fa-solid fa-graduation-cap fs-1 mt-2 text-primary text-center"></i>
+                        <div class="card-body">
+                            <a href="/admin/ue" class="btn btn-primary mb-3 position-relative">
+                                Unités d'Enseignement
+                                <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">
+                                    Sorbonne
+                                </span>
+                            </a>
+                            <p class="card-text" style="font-size: 0.8em">Gérer les UE et exporter la facturation des projets académiques</p>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
             </div>
             <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
                 <div class="col">
