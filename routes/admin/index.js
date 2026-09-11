@@ -51,6 +51,7 @@ router.get(
       });
 
       history.forEach((entry) => {
+        entry.rawArrival = entry.arrival ? moment(entry.arrival).format("YYYY-MM-DD") : "";
         entry.arrival = formatDateTime(entry.arrival);
         entry.departure = formatTime(entry.departure);
       });

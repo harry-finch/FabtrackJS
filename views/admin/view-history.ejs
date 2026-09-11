@@ -33,26 +33,44 @@
       </div>
 
       <!-- Filter Controls -->
-      <div class="row g-2 mb-3 align-items-center">
-        <div class="col-md-7">
-          <div class="d-flex flex-wrap gap-1 align-items-center">
-            <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-building"></i> Workspace:</span>
-            <button type="button" class="btn btn-sm btn-outline-secondary active filter-workspace-btn" data-ws-id="all">
-              All (<%= history.length %>)
-            </button>
-            <% availableWorkspaces.forEach(function(ws) {
-                 const count = history.filter(h => h.workspaceId === ws.id).length;
-            %>
-              <button type="button" class="btn btn-sm btn-outline-secondary filter-workspace-btn" data-ws-id="<%= ws.id %>">
-                <%= ws.name %> (<%= count %>)
+      <div class="card bg-body-secondary border-0 p-3 mb-3 shadow-sm">
+        <div class="row g-3 align-items-center">
+          <!-- Workspace filters -->
+          <div class="col-lg-5 col-md-12">
+            <div class="d-flex flex-wrap gap-1 align-items-center">
+              <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-building"></i> Workspace:</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary active filter-workspace-btn" data-ws-id="all">
+                All (<%= history.length %>)
               </button>
-            <% }); %>
+              <% availableWorkspaces.forEach(function(ws) {
+                   const count = history.filter(h => h.workspaceId === ws.id).length;
+              %>
+                <button type="button" class="btn btn-sm btn-outline-secondary filter-workspace-btn" data-ws-id="<%= ws.id %>">
+                  <%= ws.name %> (<%= count %>)
+                </button>
+              <% }); %>
+            </div>
           </div>
-        </div>
-        <div class="col-md-5">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
-            <input type="text" id="historySearchInput" class="form-control" placeholder="Search user, project, comments..." />
+
+          <!-- Date range filter -->
+          <div class="col-lg-4 col-md-7 col-sm-12">
+            <div class="d-flex align-items-center gap-1">
+              <span class="small fw-semibold text-muted me-1 text-nowrap"><i class="fa-solid fa-calendar-days"></i> Période :</span>
+              <input type="date" id="historyStartDate" class="form-control form-control-sm" title="Date de début" />
+              <span class="text-muted small">à</span>
+              <input type="date" id="historyEndDate" class="form-control form-control-sm" title="Date de fin" />
+              <button type="button" id="clearDateBtn" class="btn btn-sm btn-outline-secondary" title="Réinitialiser la période" style="display: none;">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search filter -->
+          <div class="col-lg-3 col-md-5 col-sm-12">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input type="text" id="historySearchInput" class="form-control" placeholder="Recherche..." />
+            </div>
           </div>
         </div>
       </div>
@@ -79,7 +97,7 @@
           </tr>
           <% } else { %>
             <% history.forEach(function(entry) { %>
-            <tr data-ws-id="<%= entry.workspaceId || '' %>">
+            <tr data-ws-id="<%= entry.workspaceId || '' %>" data-arrival="<%= entry.rawArrival || '' %>">
               <td class="text-center"><%= entry.id %></td>
               <td><strong><%= entry.arrival %></strong></td>
               <td class="text-center">
@@ -205,22 +223,30 @@
         // Filtering and search logic
         const wsButtons = document.querySelectorAll('.filter-workspace-btn');
         const searchInput = document.getElementById('historySearchInput');
+        const startDateInput = document.getElementById('historyStartDate');
+        const endDateInput = document.getElementById('historyEndDate');
+        const clearDateBtn = document.getElementById('clearDateBtn');
         const rows = document.querySelectorAll('#table-content tr[data-ws-id]');
         const counter = document.getElementById('historyCounter');
 
         let activeWorkspace = 'all';
         let searchQuery = '';
+        let startDate = '';
+        let endDate = '';
 
         function applyFilters() {
           let visibleCount = 0;
           rows.forEach(row => {
             const rowWs = row.getAttribute('data-ws-id');
+            const rowDate = row.getAttribute('data-arrival');
             const rowText = row.textContent.toLowerCase();
 
             const matchesWs = (activeWorkspace === 'all' || rowWs === activeWorkspace);
             const matchesSearch = (!searchQuery || rowText.includes(searchQuery));
+            const matchesStartDate = (!startDate || (rowDate && rowDate >= startDate));
+            const matchesEndDate = (!endDate || (rowDate && rowDate <= endDate));
 
-            if (matchesWs && matchesSearch) {
+            if (matchesWs && matchesSearch && matchesStartDate && matchesEndDate) {
               row.style.display = '';
               visibleCount++;
             } else {
@@ -246,6 +272,25 @@
           searchInput.addEventListener('input', function() {
             searchQuery = this.value.trim().toLowerCase();
             applyFilters();
+          });
+        }
+
+        function updateDateFilters() {
+          startDate = startDateInput ? startDateInput.value : '';
+          endDate = endDateInput ? endDateInput.value : '';
+          if (clearDateBtn) {
+            clearDateBtn.style.display = (startDate || endDate) ? '' : 'none';
+          }
+          applyFilters();
+        }
+
+        if (startDateInput) startDateInput.addEventListener('change', updateDateFilters);
+        if (endDateInput) endDateInput.addEventListener('change', updateDateFilters);
+        if (clearDateBtn) {
+          clearDateBtn.addEventListener('click', function() {
+            if (startDateInput) startDateInput.value = '';
+            if (endDateInput) endDateInput.value = '';
+            updateDateFilters();
           });
         }
       </script>
