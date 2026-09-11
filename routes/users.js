@@ -140,12 +140,30 @@ router.get(
 
     const user = await prisma.user.findUnique({
       where: { id: Number(id) },
-      include: { projects: true, usertype: true },
+      include: {
+        projects: {
+          include: {
+            project: {
+              include: { projecttype: true },
+            },
+          },
+        },
+        usertype: true,
+      },
     });
 
     const history = await prisma.history.findMany({
       where: { userId: Number(id) },
-      include: { workspace: true, userproject: { include: { project: true } } },
+      include: {
+        workspace: true,
+        userproject: {
+          include: {
+            project: {
+              include: { projecttype: true },
+            },
+          },
+        },
+      },
       orderBy: { arrival: "desc" },
     });
 
@@ -165,11 +183,14 @@ router.get(
       warning.createdAt = formatDateTime(warning.createdAt);
     });
 
-    // Remove duplicate projects from history safely
-    const validProjects = history
+    // Gather all unique projects for this user (both directly assigned and from history)
+    const directProjects = (user.projects || []).map((up) => up.project).filter(Boolean);
+    const historyProjects = history
       .filter((entry) => entry.userproject && entry.userproject.project)
       .map((entry) => entry.userproject.project);
-    const userprojects = removeDuplicates(validProjects);
+
+    const userprojects = removeDuplicates([...directProjects, ...historyProjects]);
+    const projecttypes = await prisma.projecttype.findMany({ orderBy: { id: "asc" } });
 
     // 1. Fetch Machine Usage History for this user
     const machineActivities = await prisma.activity.findMany({
@@ -274,6 +295,7 @@ router.get(
       history,
       warnings,
       userprojects,
+      projecttypes,
       userMachineUsage,
       userConsumptions,
       userStats,

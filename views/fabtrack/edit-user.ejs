@@ -329,12 +329,11 @@
                     <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                       <div class="accordion-body">
                           <% if (userprojects.length > 0) { %>
-
-                          <table class="mb-5 table">
+                          <table class="mb-5 table table-hover align-middle">
                               <thead>
                                   <tr>
                                       <th scope="col">#</th>
-                                      <th scope="col">Project start</th>
+                                      <th scope="col">Project name</th>
                                       <th scope="col">Last activity</th>
                                       <th scope="col">Type</th>
                                       <th scope="col" class="text-center">Link</th>
@@ -343,9 +342,14 @@
                               </thead>
                               <tbody id="table-content">
                                   <% userprojects.forEach(function(project) { %>
-                                  <tr <% if (!project.active) { %>class="opacity-25"<% } %>>
+                                  <tr <% if (!project.active) { %>class="opacity-50"<% } %>>
                                       <td scope="row"><%= project.id %></td>
-                                      <td><%= project.projectCreationDate %></td>
+                                      <td>
+                                          <strong><%= project.url %></strong>
+                                          <% if (!project.active) { %>
+                                              <span class="badge bg-secondary-subtle text-secondary border ms-1">Archivé</span>
+                                          <% } %>
+                                      </td>
                                       <td>
                                           <%
                                           const lastEntry = history.find(entry => entry.userproject && entry.userproject.projectId === project.id);
@@ -354,25 +358,40 @@
                                       </td>
                                       <td>
                                           <%
-                                          const projectType = projecttypes.find(type => type.id === project.projecttypeId);
-                                          const projectTypeName = projectType ? projectType.name : 'Unknown Project Type';
+                                          const projectType = (project.projecttype) ? project.projecttype : (projecttypes || []).find(type => type.id === project.projecttypeId);
+                                          const projectTypeName = projectType ? projectType.name : 'Projet';
                                           %>
-                                          <%= projectTypeName %>
+                                          <span class="badge bg-secondary"><%= projectTypeName %></span>
                                       </td>
                                       <td scope="row" class="text-center">
-                                          <a href="<%= project.url %>" target="_blank"><i class="fa-solid fa-book"></i></a>
+                                          <% if (project.url && project.url.startsWith('http')) { %>
+                                              <a href="<%= project.url %>" target="_blank" class="text-primary" title="Ouvrir le lien">
+                                                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                              </a>
+                                          <% } else { %>
+                                              <span class="text-muted small">-</span>
+                                          <% } %>
                                       </td>
                                       <td scope="row" class="text-center">
                                           <% if (project.active) { %>
-                                          <a href="/history/project/archive/<%= project.id %>"><i class="fa-solid fa-hourglass-start"></i></a>
+                                              <a href="/history/project/archive/<%= project.id %>" class="btn btn-sm btn-outline-warning" title="Archiver ce projet">
+                                                  <i class="fa-solid fa-box-archive"></i>
+                                              </a>
                                           <% } else { %>
-                                          <a href="/history/project/unarchive/<%= project.id %>"><i class="fa-solid fa-hourglass-end"></i></a>
+                                              <a href="/history/project/unarchive/<%= project.id %>" class="btn btn-sm btn-outline-success" title="Désarchiver ce projet">
+                                                  <i class="fa-solid fa-box-open"></i>
+                                              </a>
                                           <% } %>
                                       </td>
                                   </tr>
                                   <% }); %>
                               </tbody>
                           </table>
+                          <% } else { %>
+                              <div class="text-center text-muted py-4">
+                                  <i class="fa-solid fa-folder-open fa-2x mb-2 opacity-50"></i>
+                                  <p class="mb-0">Aucun projet associé à cet utilisateur pour le moment.</p>
+                              </div>
                           <% } %>
                       </div>
                     </div>
