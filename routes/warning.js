@@ -1,14 +1,14 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
-const asyncHandler = require("../../middleware/asyncHandler.js");
-const isLoggedIn = require("../../middleware/checkSession.js");
+const asyncHandler = require("../middleware/asyncHandler.js");
+const isLoggedIn = require("../middleware/checkSession.js");
+const logger = require("../utilities/simpleLogger.js");
+
 router.use(isLoggedIn);
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-
-const logger = require("../../utilities/simpleLogger.js");
 
 // ******************************************************************************
 // Route to deactivate a warning
@@ -27,7 +27,7 @@ router.get(
     logger.logThat("Warning #" + result.id + " deactivated by " + req.session.username);
 
     req.session.notification = "Success: Warning deactivated";
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/fabtrack");
   }),
 );
 
@@ -42,16 +42,16 @@ router.post(
 
     const warning = await prisma.warning.create({
       data: {
-        comments: comments,
+        comments: comments || null,
         user: { connect: { id: Number(userid) } },
         warningtype: { connect: { id: Number(warningtype) } },
       },
     });
 
-    logger.logThat("Warning " + warning.id + " created by " + req.session.username);
+    logger.logThat("Warning #" + warning.id + " created by " + req.session.username);
 
     req.session.notification = "Success: Warning created";
-    res.redirect("/fabtrack");
+    res.redirect(req.session.lastPage || "/fabtrack");
   }),
 );
 

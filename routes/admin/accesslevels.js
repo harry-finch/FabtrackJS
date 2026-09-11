@@ -4,6 +4,8 @@ var router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { invalidateCache } = require("../../middleware/cacheHelper.js");
+
 router.use(isAdmin);
 
 const { PrismaClient } = require("@prisma/client");
@@ -21,7 +23,9 @@ router.get(
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/accesslevels/manage";
 
-    const access = await prisma.access.findMany({});
+    const access = await prisma.access.findMany({
+      orderBy: { id: "asc" },
+    });
 
     res.render("admin/manage-access", {
       access,
@@ -38,14 +42,20 @@ router.get(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const result = await prisma.access.delete({
-      where: { id: Number(id) },
-    });
+    try {
+      const result = await prisma.access.delete({
+        where: { id: Number(id) },
+      });
 
-    logger.logThat("Access level " + result.name + " deleted by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Access level " + result.name + " deleted by " + req.session.username);
+      req.session.notification = "Success: Access level " + result.name + " deleted";
+    } catch (error) {
+      console.error("Error deleting access level:", error);
+      req.session.notification = "Error: Failed to delete access level (check linked machines)";
+    }
 
-    req.session.notification = "Success: Access level " + result.name + " deleted";
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/admin/accesslevels/manage");
   }),
 );
 
@@ -58,13 +68,19 @@ router.post(
   asyncHandler(async (req, res) => {
     const { name, description } = req.body;
 
-    const access = await prisma.access.create({
-      data: { name: name, description: description },
-    });
+    try {
+      const access = await prisma.access.create({
+        data: { name: name.trim(), description: description.trim() },
+      });
 
-    logger.logThat("Access level " + name + " created by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Access level " + name + " created by " + req.session.username);
+      req.session.notification = "Success: Access level " + name + " created";
+    } catch (error) {
+      console.error("Error creating access level:", error);
+      req.session.notification = "Error: Failed to create access level";
+    }
 
-    req.session.notification = "Success: Access level " + name + " created";
     res.redirect("/admin/accesslevels/manage");
   }),
 );
@@ -78,14 +94,20 @@ router.post(
   asyncHandler(async (req, res) => {
     const { accessid, name, description } = req.body;
 
-    const access = await prisma.access.update({
-      where: { id: Number(accessid) },
-      data: { name: name, description: description },
-    });
+    try {
+      const access = await prisma.access.update({
+        where: { id: Number(accessid) },
+        data: { name: name.trim(), description: description.trim() },
+      });
 
-    logger.logThat("Access level " + name + " update by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Access level " + name + " updated by " + req.session.username);
+      req.session.notification = "Success: Access level " + name + " updated";
+    } catch (error) {
+      console.error("Error updating access level:", error);
+      req.session.notification = "Error: Failed to update access level";
+    }
 
-    req.session.notification = "Success: Access level " + name + " updated";
     res.redirect("/admin/accesslevels/manage");
   }),
 );

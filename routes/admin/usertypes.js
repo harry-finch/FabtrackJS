@@ -4,6 +4,8 @@ var router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { invalidateCache } = require("../../middleware/cacheHelper.js");
+
 router.use(isAdmin);
 
 const { PrismaClient } = require("@prisma/client");
@@ -21,10 +23,11 @@ router.get(
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/usertypes/manage";
 
-    const allTypes = await prisma.usertype.findMany({});
+    const allTypes = await prisma.usertype.findMany({
+      orderBy: { id: "asc" },
+    });
+
     res.render("admin/manage-usertypes", {
-      notification: notification,
-      role: req.session.role,
       usertypes: allTypes,
     });
   }),
@@ -39,14 +42,20 @@ router.get(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const result = await prisma.usertype.delete({
-      where: { id: Number(id) },
-    });
+    try {
+      const result = await prisma.usertype.delete({
+        where: { id: Number(id) },
+      });
 
-    logger.logThat("Usertype " + result.name + " deleted by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Usertype " + result.name + " deleted by " + req.session.username);
+      req.session.notification = "Success: Usertype " + result.name + " deleted";
+    } catch (error) {
+      console.error("Error deleting usertype:", error);
+      req.session.notification = "Error: Failed to delete usertype (check linked users)";
+    }
 
-    req.session.notification = "Success: Usertype " + result.name + " deleted";
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/admin/usertypes/manage");
   }),
 );
 
@@ -59,13 +68,19 @@ router.post(
   asyncHandler(async (req, res) => {
     const { name } = req.body;
 
-    const usertype = await prisma.usertype.create({
-      data: { name: name },
-    });
+    try {
+      const usertype = await prisma.usertype.create({
+        data: { name: name.trim() },
+      });
 
-    logger.logThat("Usertype " + name + " created by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Usertype " + name + " created by " + req.session.username);
+      req.session.notification = "Success: Usertype " + name + " created";
+    } catch (error) {
+      console.error("Error creating usertype:", error);
+      req.session.notification = "Error: Failed to create usertype";
+    }
 
-    req.session.notification = "Success: Usertype " + name + " created";
     res.redirect("/admin/usertypes/manage");
   }),
 );
@@ -79,14 +94,20 @@ router.post(
   asyncHandler(async (req, res) => {
     const { usertypeid, name } = req.body;
 
-    const usertype = await prisma.usertype.update({
-      where: { id: Number(usertypeid) },
-      data: { name: name },
-    });
+    try {
+      const usertype = await prisma.usertype.update({
+        where: { id: Number(usertypeid) },
+        data: { name: name.trim() },
+      });
 
-    logger.logThat("Usertype " + name + " update by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Usertype " + name + " updated by " + req.session.username);
+      req.session.notification = "Success: Usertype " + name + " updated";
+    } catch (error) {
+      console.error("Error updating usertype:", error);
+      req.session.notification = "Error: Failed to update usertype";
+    }
 
-    req.session.notification = "Success: Usertype " + name + " updated";
     res.redirect("/admin/usertypes/manage");
   }),
 );

@@ -3,34 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="">
+  <meta name="description" content="Manage Machines">
   <meta name="author" content="Stéphane Muller">
   <title>Fabtrack - Manage Machines</title>
 
-  <% include ../includes/pagehead.html %>
+  <%- include('../includes/pagehead.html') %>
 </head>
 
 <body class="d-flex justify-content-center bg-body-tertiary py-4">
-  <% include ../includes/light-dark.html %>
+  <%- include('../includes/light-dark.html') %>
 
-  <main class="w-50 mx-auto">
-    <% include ../includes/header.html %>
+  <main class="main-container">
+    <%- include('../includes/header.html') %>
 
-    <h4 class="mb-4">
-      <i class="fas fa-cogs"></i>&nbsp;&nbsp;Manage Machines
-    </h4>
+    <div class="mb-3">
+      <a href="/admin" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+      </a>
+    </div>
 
-    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createMachineModal">
-      <i class="fas fa-plus"></i> Create New Machine
-    </button>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="mb-0">
+        <i class="fa-solid fa-screwdriver-wrench"></i>&nbsp;&nbsp;Manage Machines
+      </h4>
+      <div>
+        <a href="/admin/machines/manage-types" class="btn btn-outline-secondary btn-sm me-2">
+          <i class="fa-solid fa-gears"></i> Machine Types
+        </a>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createMachineModal">
+          <i class="fa-solid fa-plus"></i> New Machine
+        </button>
+      </div>
+    </div>
 
-    <table class="table">
+    <table class="table align-middle mb-5">
       <thead>
         <tr>
           <th scope="col">#</th>
           <th scope="col">Name</th>
           <th scope="col">Type</th>
-          <th scope="col">Documentation</th>
+          <th scope="col">Category</th>
+          <th scope="col">Location</th>
+          <th scope="col">Access</th>
+          <th scope="col" class="text-center">View</th>
+          <th scope="col" class="text-center">History</th>
           <th scope="col" class="text-center">Edit</th>
           <th scope="col" class="text-center">Delete</th>
         </tr>
@@ -39,25 +55,38 @@
         <% machines.forEach(function(machine) { %>
         <tr>
           <th scope="row"><%= machine.id %></th>
-          <td><%= machine.name || '-' %></td>
-          <td><%= machine.machinetype.name %></td>
           <td>
-            <% if (machine.documentation) { %>
-              <a href="<%= machine.documentation %>" target="_blank">
-                <i class="fas fa-file-alt"></i>
-              </a>
+            <strong><%= machine.name %></strong>
+            <div class="small text-muted"><%= machine.make %> <%= machine.model %></div>
+          </td>
+          <td><span class="badge bg-primary"><%= machine.machinetype ? machine.machinetype.name : '-' %></span></td>
+          <td>
+            <% if (machine.category) { %>
+              <span class="badge bg-secondary"><%= machine.category.name %></span>
             <% } else { %>
-                -
+              <span class="text-muted small">-</span>
             <% } %>
           </td>
+          <td><span class="small"><%= machine.location ? machine.location.name : '-' %></span></td>
+          <td><span class="small"><%= machine.access ? machine.access.name : '-' %></span></td>
           <td class="text-center">
-            <a href="/admin/machines/edit/<%= machine.id %>">
-              <i class="fas fa-edit"></i>
+            <a href="/admin/machines/view/<%= machine.id %>" class="text-info" title="View details">
+              <i class="fa-solid fa-eye"></i>
             </a>
           </td>
           <td class="text-center">
-            <a href="/admin/machines/delete/<%= machine.id %>">
-              <i class="fas fa-trash-alt"></i>
+            <a href="/admin/machines/view/<%= machine.id %>#history" class="text-secondary" title="Usage history">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </a>
+          </td>
+          <td class="text-center">
+            <a href="/admin/machines/edit/<%= machine.id %>" class="text-primary" title="Edit">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+          </td>
+          <td class="text-center">
+            <a href="/admin/machines/delete/<%= machine.id %>" class="text-danger" title="Delete" onclick="return confirm('Are you sure you want to delete <%= machine.name %>?');">
+              <i class="fa-solid fa-trash-can"></i>
             </a>
           </td>
         </tr>
@@ -69,103 +98,134 @@
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-              <h5 class="modal-title" id="createMachineModalLabel">Create New Machine</h5>
+              <h5 class="modal-title" id="createMachineModalLabel"><i class="fa-solid fa-plus-circle"></i> Create New Machine</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form action="/admin/machines/create" method="post">
+            <form action="/admin/machines/create" method="post" enctype="multipart/form-data">
               <div class="row">
-                <div class="col-8">
-                  <div class="form-floating mb-3 d-grid d-flex">
-                    <input type="text" class="form-control" id="machineName" name="name">
-                    <label for="machineName" class="form-label">Name (optional):</label>
+                <div class="col-6">
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="machineName" name="name" placeholder="Name">
+                    <label for="machineName">Machine Name (optional):</label>
                   </div>
                 </div>
-                <div class="col-4">
-                  <div class="form-floating mb-3 d-grid d-flex">
+                <div class="col-3">
+                  <div class="form-floating mb-3">
                     <select class="form-select" id="machineTypeId" name="machinetypeId" required>
-                      <option value="" selected disabled>Select a type</option>
+                      <option value="" selected disabled>Select type</option>
                       <% machinetypes.forEach(function(machinetype) { %>
                         <option value="<%= machinetype.id %>"><%= machinetype.name %></option>
                       <% }); %>
                     </select>
-                    <label for="machineTypeId" class="form-label">Type:</label>
+                    <label for="machineTypeId">Type:</label>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="form-floating mb-3">
+                    <select class="form-select" id="machineCategoryId" name="categoryId">
+                      <option value="">(No category)</option>
+                      <% categories.forEach(function(cat) { %>
+                        <option value="<%= cat.id %>"><%= cat.name %></option>
+                      <% }); %>
+                    </select>
+                    <label for="machineCategoryId">Category:</label>
                   </div>
                 </div>
               </div>
               <div class="row">
                 <div class="col-6">
-                  <div class="form-floating mb-3 d-grid d-flex">
-                    <input type="text" class="form-control" id="machineMake" name="make" required>
-                    <label for="machineMake" class="form-label">Make:</label>
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="machineMake" name="make" placeholder="Make" required>
+                    <label for="machineMake">Make / Manufacturer:</label>
                   </div>
                 </div>
                 <div class="col-6">
-                  <div class="form-floating mb-3 d-grid d-flex">
-                    <input type="text" class="form-control" id="machineModel" name="model" required>
-                    <label for="machineModel" class="form-label">Model:</label>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="form-floating mb-3">
-                  <input type="file" class="form-control" id="fileInput" name="file">
-                  <label for="fileInput">Picture</label>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-6">
-                  <div class="form-floating mb-3 d-grid d-flex">
-                    <input type="text" class="form-control" id="machineSerialNum" name="serialnum" required>
-                    <label for="machineSerialNum" class="form-label">Serial Number:</label>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="form-floating mb-3 d-grid d-flex">
-                    <input type="number" class="form-control" id="machineInternalReference" name="internalReference">
-                    <label for="machineInternalReference" class="form-label">Internal Reference (optional):</label>
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="machineModel" name="model" placeholder="Model" required>
+                    <label for="machineModel">Model:</label>
                   </div>
                 </div>
               </div>
               <div class="row">
                 <div class="col-6">
-                  <div class="form-floating mb-3 d-grid d-flex">
-                    <select class="form-select" id="machineLocationId" name="locationId" required>
-                      <option value="" selected disabled>Select a location</option>
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="machineSerialNum" name="serialNumber" placeholder="Serial Number">
+                    <label for="machineSerialNum">Serial Number:</label>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-floating mb-3">
+                    <input type="number" class="form-control" id="machineInternalReference" name="internalReference" placeholder="Ref">
+                    <label for="machineInternalReference">Internal Reference (#):</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-floating mb-3">
+                    <select class="form-select" id="machineLocationId" name="locationId">
+                      <option value="" selected>Select location (optional)</option>
                       <% locations.forEach(function(location) { %>
                         <option value="<%= location.id %>"><%= location.name %></option>
                       <% }); %>
                     </select>
-                    <label for="machineLocationId" class="form-label">Location:</label>
+                    <label for="machineLocationId">Location:</label>
                   </div>
                 </div>
                 <div class="col-6">
-                  <div class="form-floating mb-3 d-grid d-flex">
+                  <div class="form-floating mb-3">
                     <select class="form-select" id="machineAccessId" name="accessId" required>
                       <option value="" selected disabled>Select access level</option>
                       <% access.forEach(function(accesslevel) { %>
                         <option value="<%= accesslevel.id %>"><%= accesslevel.name %></option>
                       <% }); %>
                     </select>
-                    <label for="machineAccessId" class="form-label">Access:</label>
+                    <label for="machineAccessId">Access Level:</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-4">
+                  <div class="form-floating mb-3">
+                    <input type="date" class="form-control" id="purchaseDate" name="purchaseDate">
+                    <label for="purchaseDate">Purchase Date:</label>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="form-floating mb-3">
+                    <input type="date" class="form-control" id="lastMaintenance" name="lastMaintenance">
+                    <label for="lastMaintenance">Last Maintenance:</label>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="form-floating mb-3">
+                    <input type="date" class="form-control" id="warrantyExpiry" name="warrantyExpiry">
+                    <label for="warrantyExpiry">Warranty Expiry:</label>
                   </div>
                 </div>
               </div>
               <div class="row">
                 <div class="col-12">
-                  <div class="form-floating mb-3 d-grid d-flex">
-                    <input type="text" class="form-control" id="machineDocumentation" name="documentation">
-                    <label for="machineDocumentation" class="form-label">Documentation URL (optional):</label>
+                  <div class="form-floating mb-3">
+                    <input type="url" class="form-control" id="machineDocumentation" name="documentation" placeholder="URL">
+                    <label for="machineDocumentation">Documentation URL (optional):</label>
                   </div>
                 </div>
               </div>
-              <button type="submit" class="btn w-100 btn-primary">Create Machine</button>
+              <div class="row mb-3">
+                <div class="col-12">
+                  <label class="form-label small text-muted">Machine Picture (optional):</label>
+                  <input type="file" class="form-control" id="fileInput" name="machinePicture" accept="image/*">
+                </div>
+              </div>
+              <button type="submit" class="btn w-100 btn-primary py-2">Create Machine</button>
             </form>
           </div>
         </div>
       </div>
     </div>
-    <% include ../includes/footer.html %>
+    <%- include('../includes/footer.html') %>
 
 </body>
 </html>

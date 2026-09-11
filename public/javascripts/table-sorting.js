@@ -1,85 +1,88 @@
-function sortTable(n) {
-  var table,
-    rows,
-    switching,
-    i,
-    x,
-    xTransformed,
-    y,
-    yTransformed,
-    shouldSwitch,
-    dir,
-    switchcount = 0;
+/**
+ * Robust, modern table sorting for FabtrackJS
+ */
+function sortTable(n, tableElem) {
+  const table = tableElem || document.querySelector("table");
+  if (!table) return;
 
-  table = document.querySelector("table");
-  switching = true;
-  const regex = new RegExp("^[0-9]+$");
+  const tbody = table.querySelector("tbody");
+  if (!tbody) return;
 
-  // Set the sorting direction to ascending:
-  dir = "asc";
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  if (rows.length <= 1) return;
 
-  // Make a loop that will continue until no switching has been done:
-  while (switching) {
-    // Start by saying: no switching is done:
-    switching = false;
-    rows = table.rows;
+  // Determine current sort direction on table
+  const currentDir = table.getAttribute("data-sort-dir") === "asc" && table.getAttribute("data-sort-col") === String(n)
+    ? "desc"
+    : "asc";
 
-    // Loop through all table rows (except the first, which contains table headers):
-    for (i = 1; i < rows.length - 1; i++) {
-      // Start by saying there should be no switching:
-      shouldSwitch = false;
+  table.setAttribute("data-sort-col", n);
+  table.setAttribute("data-sort-dir", currentDir);
 
-      // Get the two elements you want to compare, one from current row and one from the next:
-      x = rows[i].getElementsByTagName("TD")[n].innerHTML.trim();
-      y = rows[i + 1].getElementsByTagName("TD")[n].innerHTML.trim();
-
-      // Test if we're dealing with numbers or words
-      if (regex.test(x)) {
-        xTransformed = parseInt(x);
-        yTransformed = parseInt(y);
-      } else {
-        xTransformed = x.toLowerCase();
-        yTransformed = y.toLowerCase();
-      }
-
-      // Check if the two rows should switch place, based on the direction, asc or desc:
-      if (dir == "asc") {
-        if (xTransformed > yTransformed) {
-          // If so, mark as a switch and break the loop:
-          shouldSwitch = true;
-          // console.log(xTransformed + " > " + yTransformed);
-          break;
-        }
-      } else if (dir == "desc") {
-        if (xTransformed < yTransformed) {
-          // If so, mark as a switch and break the loop:
-          shouldSwitch = true;
-          // console.log(xTransformed + " < " + yTransformed);
-          break;
-        }
-      }
+  function parseCell(cell) {
+    if (!cell) return "";
+    const raw = cell.textContent.trim();
+    // Try parsing as number (handling currencies like '€', '$' and stock like '18 / min: 5')
+    const cleaned = raw.replace(/[€$]/g, "").trim().split("/")[0].trim();
+    const num = parseFloat(cleaned);
+    if (!isNaN(num) && /^-?\d+(\.\d+)?$/.test(cleaned)) {
+      return num;
     }
-
-    if (shouldSwitch) {
-      // If a switch has been marked, make the switch and mark that a switch has been done:
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-
-      // Each time a switch is done, increase this count by 1:
-      switchcount++;
-    } else {
-      // If no switching has been done AND the direction is "asc", set the direction to "desc" and run the while loop again.
-      if (switchcount == 0 && dir == "asc") {
-        dir = "desc";
-        switching = true;
-      }
-    }
+    return raw.toLowerCase();
   }
+
+  rows.sort((rowA, rowB) => {
+    const cellsA = rowA.children;
+    const cellsB = rowB.children;
+
+    if (!cellsA[n] || !cellsB[n]) return 0;
+
+    const valA = parseCell(cellsA[n]);
+    const valB = parseCell(cellsB[n]);
+
+    let comparison = 0;
+    if (typeof valA === "number" && typeof valB === "number") {
+      comparison = valA - valB;
+    } else {
+      comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    return currentDir === "asc" ? comparison : -comparison;
+  });
+
+  // Re-append sorted rows to tbody
+  rows.forEach((row) => tbody.appendChild(row));
+
+  // Update table header indicator
+  const headers = table.querySelectorAll("th");
+  headers.forEach((th, idx) => {
+    th.classList.remove("sorted-asc", "sorted-desc");
+    const icon = th.querySelector(".sort-icon");
+    if (icon) icon.remove();
+
+    if (idx === n) {
+      th.classList.add(currentDir === "asc" ? "sorted-asc" : "sorted-desc");
+      const indicator = document.createElement("span");
+      indicator.className = "sort-icon ms-1 small text-primary";
+      indicator.innerHTML = currentDir === "asc" ? "▲" : "▼";
+      th.appendChild(indicator);
+    }
+  });
 }
 
-document.querySelectorAll("th[data-sort]").forEach((th) => {
-  th.addEventListener("click", () => {
-    const columnIndex = th.getAttribute("data-sort");
-    sortTable(parseInt(columnIndex));
+// Make sortTable globally accessible
+window.sortTable = sortTable;
+
+// Auto-bind click handlers to any sortable headers that do not already have inline onclick
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("th[data-sort]").forEach((th) => {
+    th.style.cursor = "pointer";
+    if (!th.hasAttribute("onclick")) {
+      th.addEventListener("click", () => {
+        const colIndex = parseInt(th.getAttribute("data-sort"), 10);
+        const table = th.closest("table");
+        sortTable(colIndex, table);
+      });
+    }
   });
 });

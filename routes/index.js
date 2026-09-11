@@ -65,7 +65,7 @@ router.post(
       await prisma.staff.create({
         data: {
           name: username,
-          pwd: hash,
+          password: hash,
           email: mail,
         },
       });
@@ -199,6 +199,10 @@ router.post(
     const user = await prisma.staff.findUnique({ where: { name: username } });
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      if (!user.approved) {
+        req.session.notification = "Warning: Your account needs to be approved by an administrator before you can log in.";
+        return res.redirect("/login");
+      }
       req.session.loggedin = true;
       req.session.role = user.role;
       req.session.username = user.name;

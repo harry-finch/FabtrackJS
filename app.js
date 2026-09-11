@@ -25,31 +25,35 @@ const prisma = new PrismaClient();
 app.use(
   helmet({
     contentSecurityPolicy: {
-      useDefaults: true,
       directives: {
-        // Allow scripts from specific trusted sources
-        "script-src": [
-          "'self'", // Allow scripts from the same origin
-          "https://cdnjs.cloudflare.com", // Example: CDNJS
-          "https://cdn.jsdelivr.net", // Example: jsDelivr
-        ],
-        // Allow styles from specific trusted sources
-        "style-src": [
-          "'self'", // Allow inline styles from the same origin
-          "'unsafe-inline'", // Allow inline styles (use sparingly)
-          "https://fonts.googleapis.com", // Example: Google Fonts
-          "https://cdnjs.cloudflare.com", // Example: CDNJS
+        defaultSrc: ["'self'"],
+        // Allow scripts from trusted sources and inline scripts for templates
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdnjs.cloudflare.com",
           "https://cdn.jsdelivr.net",
         ],
-        // Allow fonts from specific trusted sources
-        "font-src": [
+        // Allow inline event attributes like onclick
+        scriptSrcAttr: ["'unsafe-inline'"],
+        // Allow styles from specific trusted sources and inline styles
+        styleSrc: [
           "'self'",
-          "https://fonts.gstatic.com", // Example: Google Fonts
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://cdnjs.cloudflare.com",
+          "https://cdn.jsdelivr.net",
         ],
-        // Allow images from all sources (adjust as needed)
-        "img-src": ["'self'", "data:", "https:"],
-        // Allow connections to APIs or WebSocket services (adjust as needed)
-        "connect-src": ["'self'", "https://api.example.com"], // Example: API
+        // Allow fonts from trusted sources
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com",
+          "https://cdnjs.cloudflare.com",
+        ],
+        // Allow images from all sources
+        imgSrc: ["'self'", "data:", "https:"],
+        // Allow connections
+        connectSrc: ["'self'"],
       },
     },
   }),
@@ -61,14 +65,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Ensure uploads directory exists and is statically accessible
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadsDir));
+
 app.use(
   session({
-    secret: process.env.SECRET,
+    secret: process.env.SECRET || "fabtrack-secret-key-2024",
     resave: false,
     saveUninitialized: true,
     cookie: {
       httpOnly: true,
-      maxAge: parseInt(process.env.SESSION_DURATION),
+      maxAge: parseInt(process.env.SESSION_DURATION || "86400000"),
     },
   }),
 );
@@ -83,18 +94,20 @@ app.use((req, res, next) => {
 // Workspace middleware
 async function workspaceSwitcher(req, res, next) {
   try {
-    if (!req.session.availableWorkspaces) {
-      // Fetch workspaces only if not already cached
+    if (!req.session.availableWorkspaces || req.session.invalidateCache) {
       req.session.availableWorkspaces = await prisma.workspace.findMany();
     }
 
-    // Set a default workspace if none is selected
     if (!req.session.selectedWorkspace && req.session.availableWorkspaces.length > 0) {
       req.session.selectedWorkspace = req.session.availableWorkspaces[0];
+    } else if (req.session.selectedWorkspace) {
+      // Ensure selected workspace still exists in database
+      const found = req.session.availableWorkspaces.find((w) => w.id === req.session.selectedWorkspace.id);
+      req.session.selectedWorkspace = found || (req.session.availableWorkspaces.length > 0 ? req.session.availableWorkspaces[0] : null);
     }
 
-    res.locals.availableWorkspaces = req.session.availableWorkspaces;
-    res.locals.selectedWorkspace = req.session.selectedWorkspace;
+    res.locals.availableWorkspaces = req.session.availableWorkspaces || [];
+    res.locals.selectedWorkspace = req.session.selectedWorkspace || { id: 0, name: "Fablab" };
 
     next();
   } catch (error) {
@@ -108,23 +121,28 @@ app.use(workspaceSwitcher);
 // Load types, categories and such in cache to avoid repeated db queries
 async function loadCache(req, res, next) {
   try {
-    if (!req.session.usertypes) {
+    if (!req.session.usertypes || req.session.invalidateCache) {
       req.session.usertypes = await prisma.usertype.findMany();
       req.session.projecttypes = await prisma.projecttype.findMany();
       req.session.machinetypes = await prisma.machineType.findMany();
       req.session.warningtypes = await prisma.warningtype.findMany();
-      req.session.categories = await prisma.category.findMany();
+      req.session.categories = await prisma.category.findMany({ include: { workspace: true } });
       req.session.locations = await prisma.location.findMany();
       req.session.access = await prisma.access.findMany();
+      req.session.machines = await prisma.machine.findMany();
+      req.session.equipment = await prisma.equipment.findMany();
+      req.session.invalidateCache = false;
     }
 
-    res.locals.usertypes = req.session.usertypes;
-    res.locals.projecttypes = req.session.projecttypes;
-    res.locals.machinetypes = req.session.machinetypes;
-    res.locals.warningtypes = req.session.warningtypes;
-    res.locals.categories = req.session.categories;
-    res.locals.locations = req.session.locations;
-    res.locals.access = req.session.access;
+    res.locals.usertypes = req.session.usertypes || [];
+    res.locals.projecttypes = req.session.projecttypes || [];
+    res.locals.machinetypes = req.session.machinetypes || [];
+    res.locals.warningtypes = req.session.warningtypes || [];
+    res.locals.categories = req.session.categories || [];
+    res.locals.locations = req.session.locations || [];
+    res.locals.access = req.session.access || [];
+    res.locals.machines = req.session.machines || [];
+    res.locals.equipment = req.session.equipment || [];
 
     next();
   } catch (error) {

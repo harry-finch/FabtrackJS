@@ -7,17 +7,17 @@
         <meta name="author" content="Stéphane Muller" />
         <title>Fabtrack administration panel</title>
 
-        <% include ../includes/pagehead.html %>
+        <%- include('../includes/pagehead.html') %>
 
-        <script src="javascripts/autocomplete.js"></script>
-        <link rel="stylesheet" href="stylesheets/autocomplete.css" />
+        <script src="/javascripts/autocomplete.js"></script>
+        <link rel="stylesheet" href="/stylesheets/autocomplete.css" />
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
-        <% include ../includes/light-dark.html %>
+        <%- include('../includes/light-dark.html') %>
 
-        <main class="w-50 mx-auto">
-            <% include ../includes/header.html %>
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
 
             <!-- Registering form -->
             <div id="register">
@@ -158,7 +158,7 @@
                                     </a>
                                 </td>
                                 <td class="text-center">
-                                    <a href="history/exit/<%= entry.id %>"><i class="fa-solid fa-person-running"></i></a>
+                                    <a href="/history/exit/<%= entry.id %>"><i class="fa-solid fa-person-running"></i></a>
                                 </td>
                             </tr>
                             <% }); %>
@@ -226,13 +226,13 @@
                                     </div>
                                     <div class="col-8">
                                         <div class="form-floating mb-3">
-                                            <select class="form-select" id="newusertype" name="newusertype">
-                                                <option selected></option>
-                                                <% usertypes.forEach(function(usertype) { %>
-                                                <option value="<%= usertype.id %>"><%= usertype.name %></option>
+                                            <select class="form-select" id="machineId" name="machineId">
+                                                <option value="" selected></option>
+                                                <% machines.forEach(function(machine) { %>
+                                                <option value="<%= machine.id %>"><%= machine.name %> (<%= machine.brand %>)</option>
                                                 <% }); %>
                                             </select>
-                                            <label for="newusertype">Machine</label>
+                                            <label for="machineId">Machine</label>
                                         </div>
                                     </div>
                                 </div>
@@ -242,13 +242,13 @@
                                     </div>
                                     <div class="col-8">
                                         <div class="form-floating mb-3">
-                                            <select class="form-select" id="newusertype" name="newusertype">
-                                                <option selected></option>
-                                                <% usertypes.forEach(function(usertype) { %>
-                                                <option value="<%= usertype.id %>"><%= usertype.name %></option>
+                                            <select class="form-select" id="equipmentId" name="equipmentId">
+                                                <option value="" selected></option>
+                                                <% equipment.forEach(function(eq) { %>
+                                                <option value="<%= eq.id %>"><%= eq.name %> (<%= eq.brand %>)</option>
                                                 <% }); %>
                                             </select>
-                                            <label for="newusertype">Equipment</label>
+                                            <label for="equipmentId">Equipment</label>
                                         </div>
                                     </div>
                                 </div>
@@ -259,9 +259,9 @@
                                     <div class="col-8">
                                         <div class="form-floating mb-3">
                                             <select class="form-select" id="consumable" name="consumable">
-                                                <option selected></option>
+                                                <option value="" selected></option>
                                                 <% consumables.forEach(function(consumable) { %>
-                                                <option value="<%= consumable.id %>" data-cost="<%= consumable.cost %>"><%= consumable.name %></option>
+                                                <option value="<%= consumable.id %>" data-cost="<%= consumable.cost %>"><%= consumable.name %> (<%= consumable.cost %> € / unit - Stock: <%= consumable.stock %>)</option>
                                                 <% }) %>
                                             </select>
                                             <label for="consumable">Consumable</label>
@@ -269,7 +269,7 @@
                                     </div>
                                     <div class="col-3">
                                         <div class="form-floating mb-3">
-                                            <input type="number" class="form-control input-group-icon" id="quantity" name="quantity" />
+                                            <input type="number" class="form-control input-group-icon" id="quantity" name="quantity" min="1" value="1" />
                                             <label for="quantity">Quantity</label>
                                         </div>
                                     </div>
@@ -346,9 +346,9 @@
                 </form>
             </div>
 
-            <% include ../includes/footer.html %>
+            <%- include('../includes/footer.html') %>
 
-        <script src="javascripts/fabtrack.js"></script>
+        <script src="/javascripts/fabtrack.js"></script>
 
     </body>
 </html>

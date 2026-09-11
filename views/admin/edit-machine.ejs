@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Edit machine" />
+    <title>Fabtrack - Edit <%= machine.name %></title>
+
+    <%- include('../includes/pagehead.html') %>
+  </head>
+
+  <body class="d-flex justify-content-center bg-body-tertiary py-4">
+    <%- include('../includes/light-dark.html') %>
+
+    <main class="main-container">
+      <%- include('../includes/header.html') %>
+
+      <div class="mb-3">
+        <a href="/admin" class="btn btn-outline-secondary btn-sm">
+          <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+        </a>
+      </div>
+
+      <h4 class="mb-4">
+        <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Edit Machine: <%= machine.name %>
+      </h4>
+
+      <form action="/admin/machines/update" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="machineid" value="<%= machine.id %>" />
+
+        <div class="row">
+          <div class="col-6">
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="name" name="name" value="<%= machine.name %>" required />
+              <label for="name">Machine Name</label>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-floating mb-3">
+              <select class="form-select" id="machinetypeId" name="machinetypeId" required>
+                <% machinetypes.forEach(function(type) { %>
+                  <option value="<%= type.id %>" <%= machine.machinetypeId === type.id ? 'selected' : '' %>><%= type.name %></option>
+                <% }); %>
+              </select>
+              <label for="machinetypeId">Machine Type</label>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-floating mb-3">
+              <select class="form-select" id="categoryId" name="categoryId">
+                <option value="">(No Category)</option>
+                <% categories.forEach(function(cat) { %>
+                  <option value="<%= cat.id %>" <%= machine.categoryId === cat.id ? 'selected' : '' %>><%= cat.name %></option>
+                <% }); %>
+              </select>
+              <label for="categoryId">Category</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-6">
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="make" name="make" value="<%= machine.make %>" required />
+              <label for="make">Make / Manufacturer</label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="model" name="model" value="<%= machine.model %>" required />
+              <label for="model">Model</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-6">
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="serialNumber" name="serialNumber" value="<%= machine.serialNumber || '' %>" />
+              <label for="serialNumber">Serial Number</label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-floating mb-3">
+              <input type="number" class="form-control" id="internalReference" name="internalReference" value="<%= machine.internalReference || '' %>" />
+              <label for="internalReference">Internal Reference (#)</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-6">
+            <div class="form-floating mb-3">
+              <select class="form-select" id="locationId" name="locationId">
+                <option value="">None</option>
+                <% locations.forEach(function(loc) { %>
+                  <option value="<%= loc.id %>" <%= machine.locationId === loc.id ? 'selected' : '' %>><%= loc.name %></option>
+                <% }); %>
+              </select>
+              <label for="locationId">Location</label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-floating mb-3">
+              <select class="form-select" id="accessId" name="accessId" required>
+                <% access.forEach(function(acc) { %>
+                  <option value="<%= acc.id %>" <%= machine.accessId === acc.id ? 'selected' : '' %>><%= acc.name %></option>
+                <% }); %>
+              </select>
+              <label for="accessId">Access Level</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-4">
+            <div class="form-floating mb-3">
+              <input type="date" class="form-control" id="purchaseDate" name="purchaseDate" value="<%= machine.purchaseDate ? new Date(machine.purchaseDate).toISOString().split('T')[0] : '' %>" />
+              <label for="purchaseDate">Purchase Date</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-floating mb-3">
+              <input type="date" class="form-control" id="lastMaintenance" name="lastMaintenance" value="<%= machine.lastMaintenance ? new Date(machine.lastMaintenance).toISOString().split('T')[0] : '' %>" />
+              <label for="lastMaintenance">Last Maintenance</label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="form-floating mb-3">
+              <input type="date" class="form-control" id="warrantyExpiry" name="warrantyExpiry" value="<%= machine.warrantyExpiry ? new Date(machine.warrantyExpiry).toISOString().split('T')[0] : '' %>" />
+              <label for="warrantyExpiry">Warranty Expiry</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="form-floating mb-3">
+              <input type="url" class="form-control" id="documentation" name="documentation" value="<%= machine.documentation || '' %>" placeholder="https://..." />
+              <label for="documentation">Documentation URL</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-12">
+            <label class="form-label text-muted small">Update Machine Picture (optional):</label>
+            <input type="file" class="form-control" id="machinePicture" name="machinePicture" accept="image/*" />
+            <% if (machine.picture) { %>
+              <div class="mt-2">
+                <span class="text-muted small">Current image:</span> <img src="<%= machine.picture %>" alt="preview" style="height: 40px; border-radius: 4px;" />
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Update Machine</button>
+            <a href="/admin/machines/manage" class="btn btn-secondary w-100 py-2">Cancel</a>
+          </div>
+        </div>
+      </form>
+
+      <%- include('../includes/footer.html') %>
+    </main>
+  </body>
+</html>

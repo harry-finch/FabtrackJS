@@ -3,35 +3,39 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www"
   },
   "dependencies": {
-    "@faker-js/faker": "^9.2.0",
+    "@faker-js/faker": "^10.6.0",
     "@prisma/client": "^5.22.0",
     "bcrypt": "^5.1.1",
     "bootstrap": "^5.3.3",
-    "cookie-parser": "~1.4.4",
-    "crypto": "^1.0.1",
-    "debug": "~2.6.9",
-    "dotenv": "^16.4.5",
-    "ejs": "~2.6.1",
-    "express": "~4.16.1",
-    "express-session": "^1.18.0",
+    "cookie-parser": "^1.4.7",
+    "debug": "^4.4.0",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
     "helmet": "^8.0.0",
-    "http-errors": "~1.6.3",
+    "http-errors": "^2.0.0",
     "moment": "^2.30.1",
-    "morgan": "~1.9.1",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.7.0",
-    "nodemailer": "^6.9.11",
-    "nodemon": "^3.1.7",
+    "nodemailer": "^10.0.3",
+    "nodemon": "^3.1.9",
     "randomized-string": "^2.0.1",
-    "socket.io": "^4.7.4",
-    "socket.io-client": "^4.7.4",
-    "uuid": "^11.0.3"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "uuid": "^11.1.1"
   },
   "devDependencies": {
-    "prisma": "^5.10.2"
+    "prisma": "^5.22.0"
+  },
+  "overrides": {
+    "tar": "^7.5.22",
+    "qs": "^6.16.0"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

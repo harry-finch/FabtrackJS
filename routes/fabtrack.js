@@ -121,13 +121,24 @@ router.get(
 // Route to switch workspace (if used)
 // ******************************************************************************
 
-router.post("/switchworkspace", (req, res) => {
-  const newWorkspaceId = Number(req.body.workspaceId);
+router.post(
+  "/switchworkspace",
+  asyncHandler(async (req, res) => {
+    const newWorkspaceId = Number(req.body.workspaceId);
 
-  req.session.selectedWorkspace = req.session.availableWorkspaces.find((workspace) => workspace.id === newWorkspaceId);
-  req.session.notification = "Success: Workspace switched to " + req.session.selectedWorkspace.name;
+    if (!req.session.availableWorkspaces) {
+      req.session.availableWorkspaces = await prisma.workspace.findMany();
+    }
 
-  res.sendStatus(200); // Send a success status
-});
+    const selected = req.session.availableWorkspaces.find((w) => w.id === newWorkspaceId);
+    if (selected) {
+      req.session.selectedWorkspace = selected;
+      req.session.notification = "Success: Workspace switched to " + selected.name;
+      res.sendStatus(200);
+    } else {
+      res.status(404).send("Workspace not found");
+    }
+  }),
+);
 
 module.exports = router;

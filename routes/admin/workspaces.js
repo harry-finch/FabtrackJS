@@ -4,6 +4,8 @@ var router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { invalidateCache } = require("../../middleware/cacheHelper.js");
+
 router.use(isAdmin);
 
 const { PrismaClient } = require("@prisma/client");
@@ -21,7 +23,9 @@ router.get(
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/workspaces/manage";
 
-    const workspaces = await prisma.workspace.findMany({});
+    const workspaces = await prisma.workspace.findMany({
+      orderBy: { id: "asc" },
+    });
 
     res.render("admin/manage-workspaces", {
       workspaces,
@@ -38,14 +42,20 @@ router.get(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const result = await prisma.workspace.delete({
-      where: { id: Number(id) },
-    });
+    try {
+      const result = await prisma.workspace.delete({
+        where: { id: Number(id) },
+      });
 
-    logger.logThat("Workspace " + result.name + " deleted by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Workspace " + result.name + " deleted by " + req.session.username);
+      req.session.notification = "Success: Workspace " + result.name + " deleted";
+    } catch (error) {
+      console.error("Error deleting workspace:", error);
+      req.session.notification = "Error: Failed to delete workspace (check related history or categories)";
+    }
 
-    req.session.notification = "Success: Workspace " + result.name + " deleted";
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/admin/workspaces/manage");
   }),
 );
 
@@ -58,13 +68,19 @@ router.post(
   asyncHandler(async (req, res) => {
     const { name, location } = req.body;
 
-    const workspace = await prisma.workspace.create({
-      data: { name: name, location: location },
-    });
+    try {
+      const workspace = await prisma.workspace.create({
+        data: { name: name.trim(), location: location ? location.trim() : null },
+      });
 
-    logger.logThat("Workspace " + name + " created by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Workspace " + name + " created by " + req.session.username);
+      req.session.notification = "Success: Workspace " + name + " created";
+    } catch (error) {
+      console.error("Error creating workspace:", error);
+      req.session.notification = "Error: Failed to create workspace";
+    }
 
-    req.session.notification = "Success: Workspace " + name + " created";
     res.redirect("/admin/workspaces/manage");
   }),
 );
@@ -78,13 +94,19 @@ router.post(
   asyncHandler(async (req, res) => {
     const { workspaceid, name, location } = req.body;
 
-    const workspace = await prisma.workspace.update({
-      where: { id: Number(workspaceid) },
-      data: { name: name, location: location },
-    });
+    try {
+      const workspace = await prisma.workspace.update({
+        where: { id: Number(workspaceid) },
+        data: { name: name.trim(), location: location ? location.trim() : null },
+      });
 
-    logger.logThat("Workspace " + name + " update by " + req.session.username);
-    req.session.notification = "Success: Workspace " + name + " updated";
+      invalidateCache(req);
+      logger.logThat("Workspace " + name + " updated by " + req.session.username);
+      req.session.notification = "Success: Workspace " + name + " updated";
+    } catch (error) {
+      console.error("Error updating workspace:", error);
+      req.session.notification = "Error: Failed to update workspace";
+    }
 
     res.redirect("/admin/workspaces/manage");
   }),

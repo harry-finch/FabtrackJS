@@ -4,6 +4,8 @@ var router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { invalidateCache } = require("../../middleware/cacheHelper.js");
+
 router.use(isAdmin);
 
 const { PrismaClient } = require("@prisma/client");
@@ -21,7 +23,9 @@ router.get(
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/warningtypes/manage";
 
-    const warningtypes = await prisma.warningtype.findMany({});
+    const warningtypes = await prisma.warningtype.findMany({
+      orderBy: { id: "asc" },
+    });
 
     res.render("admin/manage-warningtypes", {
       warningtypes,
@@ -38,14 +42,20 @@ router.get(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const result = await prisma.warningtype.delete({
-      where: { id: Number(id) },
-    });
+    try {
+      const result = await prisma.warningtype.delete({
+        where: { id: Number(id) },
+      });
 
-    logger.logThat("Warning type " + result.name + " deleted by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Warning type " + result.name + " deleted by " + req.session.username);
+      req.session.notification = "Success: Warning type " + result.name + " deleted";
+    } catch (error) {
+      console.error("Error deleting warning type:", error);
+      req.session.notification = "Error: Failed to delete warning type (check linked warnings)";
+    }
 
-    req.session.notification = "Success: Warning type " + result.name + " deleted";
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/admin/warningtypes/manage");
   }),
 );
 
@@ -58,13 +68,19 @@ router.post(
   asyncHandler(async (req, res) => {
     const { name, icon } = req.body;
 
-    const warningtype = await prisma.warningtype.create({
-      data: { name: name, icon: icon },
-    });
+    try {
+      const warningtype = await prisma.warningtype.create({
+        data: { name: name.trim(), icon: icon ? icon.trim() : null },
+      });
 
-    logger.logThat("Warning type " + name + " created by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Warning type " + name + " created by " + req.session.username);
+      req.session.notification = "Success: Warning type " + name + " created";
+    } catch (error) {
+      console.error("Error creating warning type:", error);
+      req.session.notification = "Error: Failed to create warning type";
+    }
 
-    req.session.notification = "Success: Warning type " + name + " created";
     res.redirect("/admin/warningtypes/manage");
   }),
 );
@@ -78,14 +94,20 @@ router.post(
   asyncHandler(async (req, res) => {
     const { warningtypeid, name, icon } = req.body;
 
-    const warningtype = await prisma.warningtype.update({
-      where: { id: Number(warningtypeid) },
-      data: { name: name, icon: icon },
-    });
+    try {
+      const warningtype = await prisma.warningtype.update({
+        where: { id: Number(warningtypeid) },
+        data: { name: name.trim(), icon: icon ? icon.trim() : null },
+      });
 
-    logger.logThat("Warning type " + name + " update by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Warning type " + name + " updated by " + req.session.username);
+      req.session.notification = "Success: Warning type " + name + " updated";
+    } catch (error) {
+      console.error("Error updating warning type:", error);
+      req.session.notification = "Error: Failed to update warning type";
+    }
 
-    req.session.notification = "Success: Warning type " + name + " updated";
     res.redirect("/admin/warningtypes/manage");
   }),
 );

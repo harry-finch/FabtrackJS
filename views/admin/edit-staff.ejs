@@ -7,18 +7,24 @@
         <meta name="author" content="Stéphane Muller" />
         <title>Fabtrack administration panel</title>
 
-        <% include ../includes/pagehead.html %>
+        <%- include('../includes/pagehead.html') %>
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
-        <% include ../includes/light-dark.html %>
+        <%- include('../includes/light-dark.html') %>
 
-        <main class="w-50 mx-auto">
-            <% include ../includes/header.html %>
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
+
+            <div class="mb-3">
+                <a href="/admin" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+                </a>
+            </div>
 
             <h4 class="mb-4"><i class="fa fa-user-pen"></i>&nbsp;&nbsp;Edit staff account</h4>
 
-            <form action="admin/staff/update" method="post">
+            <form action="/admin/staff/update" method="post">
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="username" name="username" value="<%= user.name %>" required />
                     <label for="username">Username</label>
@@ -45,10 +51,10 @@
 
                 <input type='hidden' id="id" name='id' value='<%= user.id %>' />
                 <button class="btn btn-primary w-100 py-2 mb-2" type="submit">Update account</button>
-                <button class="btn btn-secondary w-100 py-2" onclick="window.location.href = 'admin/staff/manage'">Cancel</button>
+                <button class="btn btn-secondary w-100 py-2" type="button" onclick="window.location.href = '/admin/staff/manage'">Cancel</button>
             </form>
 
-            <% include ../includes/footer.html %>
+            <%- include('../includes/footer.html') %>
 
     </body>
 </html>

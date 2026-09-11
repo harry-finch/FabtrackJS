@@ -26,9 +26,9 @@ function addPagination(tableId, data, itemsPerPage = 10) {
       for (var col in item) {
         const newCell = row.insertCell();
         newCell.innerHTML = item[col];
-        headerClassList[i].value
-          ? newCell.classList.add(headerClassList[i].value)
-          : console.log("no class");
+        if (headerClassList[i] && headerClassList[i].value) {
+          newCell.className = headerClassList[i].value;
+        }
         i++;
       }
     });

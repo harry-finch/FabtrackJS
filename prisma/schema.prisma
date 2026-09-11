@@ -52,6 +52,7 @@ model User {
   history  History[]
   warnings Warning[]
   Log      Log[]
+  activities Activity[]
 }
 
 // Types of users (e.g., student, startup, teacher...)
@@ -128,6 +129,7 @@ model History {
   user        User         @relation(fields: [userId], references: [id])
   userproject UserProject? @relation(fields: [userprojectId], references: [id])
   workspace   Workspace?   @relation(fields: [workspaceId], references: [id])
+  activities  Activity[]
 }
 
 // Workspaces within the fablab (e.g., 3D printing room, laser cutting room)
@@ -151,18 +153,25 @@ enum ResourceType {
 model Activity {
   id           Int          @id @default(autoincrement())
   createdAt    DateTime     @default(now())
+  historyId    Int?
+  userId       Int?
   resourceId   Int // ID of the resource (Machine, Equipment, or Consumable)
   resourceType ResourceType // Type of the resource (MACHINE, EQUIPMENT, CONSUMABLE)
   quantity     Int? // Only used for Consumables
+
+  history History? @relation(fields: [historyId], references: [id], onDelete: SetNull)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 // Categories within a workspace (e.g., electronics, woodworking)
 model Category {
-  id          Int    @id @default(autoincrement())
-  name        String @unique @db.VarChar(255)
-  workspaceId Int
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(255)
+  workspaceId Int?
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace?   @relation(fields: [workspaceId], references: [id])
+  consumables Consumable[]
+  machines    Machine[]
 }
 
 // Machines in the fablab (e.g., specific 3D printers, laser cutters)
@@ -170,6 +179,7 @@ model Machine {
   id                Int       @id @default(autoincrement())
   name              String    @db.VarChar(255)
   machinetypeId     Int
+  categoryId        Int?
   make              String    @db.VarChar(255)
   model             String    @db.VarChar(255)
   serialNumber      String?   @unique @db.VarChar(255)
@@ -185,6 +195,7 @@ model Machine {
   location    Location?   @relation(fields: [locationId], references: [id])
   machinetype MachineType @relation(fields: [machinetypeId], references: [id])
   access      Access      @relation(fields: [accessId], references: [id])
+  category    Category?   @relation(fields: [categoryId], references: [id])
 }
 
 model MachineType {
@@ -215,6 +226,9 @@ model Consumable {
   stock            Int              @default(0)
   reorderThreshold Int              @default(10)
   status           ConsumableStatus @default(AVAILABLE)
+  categoryId       Int?
+
+  category         Category?        @relation(fields: [categoryId], references: [id])
 }
 
 // Different locations for assets within the lab (e.g., rooms, drawers)

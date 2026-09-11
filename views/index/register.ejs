@@ -7,11 +7,11 @@
         <meta name="author" content="Stéphane Muller" />
         <title>Fabtrack signin</title>
 
-        <% include ../includes/pagehead.html %>
+        <%- include('../includes/pagehead.html') %>
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
-        <% include ../includes/light-dark.html %>
+        <%- include('../includes/light-dark.html') %>
         <main class="form-signin w-100 m-auto">
             <form action="/create-account" method="post">
                 <img class="mb-4" src="https://getbootstrap.com/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57" />
@@ -45,7 +45,7 @@
                 <p class="mt-2 text-center"><small><a href="../login">I already have an account</a></small></p>
             </form>
 
-            <% include ../includes/footer.html %>
+            <%- include('../includes/footer.html') %>
 
         <script>
         document.querySelector('form')

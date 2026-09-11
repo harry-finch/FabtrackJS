@@ -162,7 +162,7 @@ if (warningDeactivator) {
 
     modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Warning for ${warninguser}</h5>`;
     modalCode.innerHTML = warningcomments;
-    modalLink.href = "warning/deactivate/" + warningid;
+    modalLink.href = "/warning/deactivate/" + warningid;
   });
 }
 

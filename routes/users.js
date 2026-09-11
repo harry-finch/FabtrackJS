@@ -155,6 +155,7 @@ router.get(
     });
 
     // Format dates
+    user.accountCreationDate = formatDateTime(user.createdAt);
     user.createdAt = formatDateTime(user.createdAt);
     history.forEach((entry) => {
       entry.arrival = formatDateTime(entry.arrival);
@@ -164,18 +165,119 @@ router.get(
       warning.createdAt = formatDateTime(warning.createdAt);
     });
 
-    // Remove duplicate projects from history
-    if (history.userProject ?? null) {
-      const userprojects = removeDuplicates(history.map((entry) => entry.userproject.project));
-    } else {
-      userprojects = {};
-    }
+    // Remove duplicate projects from history safely
+    const validProjects = history
+      .filter((entry) => entry.userproject && entry.userproject.project)
+      .map((entry) => entry.userproject.project);
+    const userprojects = removeDuplicates(validProjects);
+
+    // 1. Fetch Machine Usage History for this user
+    const machineActivities = await prisma.activity.findMany({
+      where: {
+        userId: Number(id),
+        resourceType: "MACHINE",
+      },
+      include: {
+        history: {
+          include: {
+            workspace: true,
+            userproject: { include: { project: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const allMachines = await prisma.machine.findMany({
+      include: { machinetype: true, category: true, location: true },
+    });
+    const machineMap = new Map(allMachines.map((m) => [m.id, m]));
+
+    const userMachineUsage = machineActivities.map((act) => ({
+      id: act.id,
+      createdAt: act.createdAt,
+      formattedDate: formatDateTime(act.createdAt),
+      machine: machineMap.get(act.resourceId) || null,
+      workspace: act.history && act.history.workspace ? act.history.workspace.name : "-",
+      project: act.history && act.history.userproject && act.history.userproject.project ? act.history.userproject.project : null,
+      comments: act.history ? act.history.comments : null,
+    }));
+
+    // 2. Fetch Consumable Usage (Consumption) History for this user
+    const consumableActivities = await prisma.activity.findMany({
+      where: {
+        userId: Number(id),
+        resourceType: "CONSUMABLE",
+      },
+      include: {
+        history: {
+          include: {
+            workspace: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const allConsumables = await prisma.consumable.findMany({
+      include: { category: true },
+    });
+    const consumableMap = new Map(allConsumables.map((c) => [c.id, c]));
+
+    const userConsumptions = consumableActivities.map((act) => {
+      const consumable = consumableMap.get(act.resourceId);
+      const unitCost = consumable ? Number(consumable.cost) : 0;
+      const qty = act.quantity || 1;
+      return {
+        id: act.id,
+        createdAt: act.createdAt,
+        formattedDate: formatDateTime(act.createdAt),
+        consumable: consumable || null,
+        quantity: qty,
+        unitCost: unitCost,
+        totalCost: (unitCost * qty).toFixed(2),
+        workspace: act.history && act.history.workspace ? act.history.workspace.name : "-",
+      };
+    });
+
+    // 3. Compute enhanced user statistics
+    const totalConsumablesCount = userConsumptions.reduce((sum, c) => sum + c.quantity, 0);
+    const totalConsumablesCost = userConsumptions.reduce((sum, c) => sum + Number(c.totalCost), 0).toFixed(2);
+    const uniqueMachinesCount = new Set(userMachineUsage.map((u) => (u.machine ? u.machine.id : null)).filter(Boolean)).size;
+    const activeProjectsCount = userprojects.filter((p) => p.active !== false).length;
+
+    const userStats = {
+      balance: Number(user.balance || 0).toFixed(2),
+      balancePositive: Number(user.balance || 0) >= 0,
+      totalVisits: history.length,
+      lastVisit: history.length > 0 ? history[0].arrival : "Never",
+      totalProjects: userprojects.length,
+      activeProjects: activeProjectsCount,
+      totalMachineSessions: userMachineUsage.length,
+      uniqueMachinesCount: uniqueMachinesCount,
+      totalConsumablesCount: totalConsumablesCount,
+      totalConsumablesCost: totalConsumablesCost,
+    };
+
+    // 4. Compute user interests from categories of machines and consumables used
+    const interestSet = new Set();
+    userMachineUsage.forEach((u) => {
+      if (u.machine && u.machine.category) interestSet.add(u.machine.category.name);
+    });
+    userConsumptions.forEach((c) => {
+      if (c.consumable && c.consumable.category) interestSet.add(c.consumable.category.name);
+    });
+    const userInterests = Array.from(interestSet);
 
     res.render("fabtrack/edit-user", {
       user,
       history,
       warnings,
       userprojects,
+      userMachineUsage,
+      userConsumptions,
+      userStats,
+      userInterests,
     });
   }),
 );

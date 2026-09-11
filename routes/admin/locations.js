@@ -4,6 +4,8 @@ var router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { invalidateCache } = require("../../middleware/cacheHelper.js");
+
 router.use(isAdmin);
 
 const { PrismaClient } = require("@prisma/client");
@@ -21,11 +23,11 @@ router.get(
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/locations/manage";
 
-    const locations = await prisma.location.findMany({});
+    const locations = await prisma.location.findMany({
+      orderBy: { id: "asc" },
+    });
 
     res.render("admin/manage-locations", {
-      notification: notification,
-      role: req.session.role,
       locations: locations,
     });
   }),
@@ -40,14 +42,20 @@ router.get(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const result = await prisma.location.delete({
-      where: { id: Number(id) },
-    });
+    try {
+      const result = await prisma.location.delete({
+        where: { id: Number(id) },
+      });
 
-    logger.logThat("Location " + result.name + " deleted by " + req.session.username);
+      invalidateCache(req);
+      logger.logThat("Location " + result.name + " deleted by " + req.session.username);
+      req.session.notification = "Success: Location " + result.name + " deleted";
+    } catch (error) {
+      console.error("Error deleting location:", error);
+      req.session.notification = "Error: Failed to delete location (check linked machines)";
+    }
 
-    req.session.notification = "Success: Location " + result.name + " deleted";
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/admin/locations/manage");
   }),
 );
 
@@ -60,12 +68,18 @@ router.post(
   asyncHandler(async (req, res) => {
     const { name, description } = req.body;
 
-    const location = await prisma.location.create({
-      data: { name: name, description: description },
-    });
+    try {
+      const location = await prisma.location.create({
+        data: { name: name.trim(), description: description ? description.trim() : null },
+      });
 
-    logger.logThat("Location " + name + " created by " + req.session.username);
-    req.session.notification = "Success: Location " + name + " created";
+      invalidateCache(req);
+      logger.logThat("Location " + name + " created by " + req.session.username);
+      req.session.notification = "Success: Location " + name + " created";
+    } catch (error) {
+      console.error("Error creating location:", error);
+      req.session.notification = "Error: Failed to create location";
+    }
 
     res.redirect("/admin/locations/manage");
   }),
@@ -80,13 +94,19 @@ router.post(
   asyncHandler(async (req, res) => {
     const { locationid, name, description } = req.body;
 
-    const location = await prisma.location.update({
-      where: { id: Number(locationid) },
-      data: { name: name, description: description },
-    });
+    try {
+      const location = await prisma.location.update({
+        where: { id: Number(locationid) },
+        data: { name: name.trim(), description: description ? description.trim() : null },
+      });
 
-    logger.logThat("Location " + name + " update by " + req.session.username);
-    req.session.notification = "Success: Location " + name + " updated";
+      invalidateCache(req);
+      logger.logThat("Location " + name + " updated by " + req.session.username);
+      req.session.notification = "Success: Location " + name + " updated";
+    } catch (error) {
+      console.error("Error updating location:", error);
+      req.session.notification = "Error: Failed to update location";
+    }
 
     res.redirect("/admin/locations/manage");
   }),

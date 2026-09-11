@@ -7,15 +7,15 @@
         <meta name="author" content="Stéphane Muller" />
         <title>Fabtrack administration panel</title>
 
-        <% include ../includes/pagehead.html %>
-        <script src="javascripts/pagination.js"></script>
+        <%- include('../includes/pagehead.html') %>
+        <script src="/javascripts/pagination.js"></script>
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
-        <% include ../includes/light-dark.html %>
+        <%- include('../includes/light-dark.html') %>
 
-        <main class="w-50 mx-auto">
-            <% include ../includes/header.html %>
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
 
             <h4 class="mb-4">
                 <i class="fa fa-user-pen"></i>&nbsp;&nbsp;Edit user profile <span class="fs-6 opacity-25">(account created on <%= user.accountCreationDate %>)</span>
@@ -74,76 +74,142 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <a id="cancel" class="btn btn-secondary w-100 mb-2 py-2">Cancel</a>
+                        <a id="cancel" href="/fabtrack" class="btn btn-secondary w-100 mb-2 py-2">Cancel</a>
                     </div>
                 </div>
             </form>
 
             <hr class="mt-4 mb-4">
 
-            <h4 class="mb-4">
+            <h4 class="mb-3">
                 <i class="fa fa-user-ninja"></i>&nbsp;&nbsp;User stats
             </h4>
 
-            <div class="row">
-                <div class="col-3">
-                    User balance:
-                </div>
-                <div class="col-9">
-                    <%= user.balance %> €
-                    <% if(role == "admin") { %>
-                    &nbsp;&nbsp;>>&nbsp;&nbsp;
-                    <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
-                                data-bs-target="#addMoney">
-                        <span   data-bs-toggle="tooltip"
-                                data-bs-placement="right"
-                                data-bs-custom-class="custom-tooltip"
-                                data-bs-title="Add money to user account"><i class="fa-solid fa-money-bill-wave" style="color: #009600"></i></span>
-                    </a>
-
-                    <!-- Modal to clear balance -->
-                    <div class="modal fade" id="addMoney" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <form action="/history/credit" method="post">
-                                <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
-                                <div class="modal-header">
-                                    <h5 class="modal-title"><i class="fa-solid fa-money-bill-wave"></i> Credit account</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>How much do you want to credit this user's account?</p>
-                                    <div class="form-floating mb-3">
-                                        <input type="number" name="money" class="form-control" id="money" />
-                                        <label for="money">Credit</label>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Add money</button>
-                                </div>
-                            </form>
+            <div class="row g-3 mb-4">
+                <!-- Balance Card -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase">Solde du compte</span>
+                                <i class="fa-solid fa-wallet fs-5 <%= userStats.balancePositive ? 'text-success' : 'text-danger' %>"></i>
+                            </div>
+                            <div class="fs-4 fw-bold mb-1 <%= userStats.balancePositive ? 'text-success' : 'text-danger' %>">
+                                <%= userStats.balance %> €
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <% if (userStats.balancePositive) { %>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle small">Solde positif</span>
+                                <% } else { %>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle small">Débiteur</span>
+                                <% } %>
+                                <% if(role == "admin") { %>
+                                    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2" data-bs-toggle="modal" data-bs-target="#addMoney">
+                                        <i class="fa-solid fa-plus-circle me-1"></i> Créditer
+                                    </button>
+                                <% } %>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                    <% } %>
+                </div>
+
+                <!-- Visits Card -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase">Visites au Fablab</span>
+                                <i class="fa-solid fa-door-open fs-5 text-primary"></i>
+                            </div>
+                            <div class="fs-4 fw-bold mb-1 text-primary">
+                                <%= userStats.totalVisits %>
+                            </div>
+                            <div class="small text-muted">
+                                Dernière visite : <%= userStats.lastVisit %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Card -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase">Projets</span>
+                                <i class="fa-solid fa-folder-open fs-5 text-warning"></i>
+                            </div>
+                            <div class="fs-4 fw-bold mb-1 text-warning">
+                                <%= userStats.totalProjects %>
+                            </div>
+                            <div class="small text-muted">
+                                <%= userStats.activeProjects %> actif(s) / <%= userStats.totalProjects - userStats.activeProjects %> archivé(s)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Machine Usage Card -->
+                <div class="col-md-6 col-sm-6">
+                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase">Machines utilisées</span>
+                                <i class="fa-solid fa-gears fs-5 text-info"></i>
+                            </div>
+                            <div class="fs-4 fw-bold mb-1 text-info">
+                                <%= userStats.totalMachineSessions %> session(s)
+                            </div>
+                            <div class="small text-muted">
+                                Sur <%= userStats.uniqueMachinesCount %> machine(s) différente(s)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consumables Card -->
+                <div class="col-md-6 col-sm-12">
+                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small fw-semibold text-uppercase">Matériaux consommés</span>
+                                <i class="fa-solid fa-boxes-stacked fs-5 text-secondary"></i>
+                            </div>
+                            <div class="fs-4 fw-bold mb-1 text-secondary">
+                                <%= userStats.totalConsumablesCount %> unité(s)
+                            </div>
+                            <div class="small text-muted">
+                                Coût total débité : <%= userStats.totalConsumablesCost %> €
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-3">
-                    Number of visits to the lab:
+
+            <!-- Modal to clear / add balance -->
+            <div class="modal fade" id="addMoney" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="/history/credit" method="post">
+                        <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fa-solid fa-money-bill-wave text-success"></i> Créditer le compte</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Montant à créditer sur le compte de <strong><%= user.name %> <%= user.surname %></strong> :</p>
+                            <div class="form-floating mb-3">
+                                <input type="number" step="0.01" min="0.01" name="money" class="form-control" id="money" placeholder="Montant en euros" required />
+                                <label for="money">Montant (€)</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Ajouter le crédit</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="col-9">
-                    <%- history.length %>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    Number of projects:
-                </div>
-                <div class="col-9">
-                    <%- userprojects.length %>
-                </div>
+              </div>
             </div>
 
             <hr class="mt-4 mb-4">
@@ -178,7 +244,7 @@
                                   <td><%= warning.createdAt %></td>
                                   <td><%= warning.comments %></td>
                                   <td class="text-center">
-                                      <a href="warning/deactivate/<%= warning.id %>"><i class="fa-solid fa-circle-xmark"></i></a>
+                                      <a href="/warning/deactivate/<%= warning.id %>"><i class="fa-solid fa-circle-xmark"></i></a>
                                   </td>
                               </tr>
                               <% }); %>
@@ -243,10 +309,10 @@
                                 <% for (const entry of history) { %>
                                 <% tableData.push( {
                                   col1: entry.arrival,
-                                  col2: entry.departure,
-                                  col3: entry.workspace?entry.workspace.name:"-",
-                                  col4: '<a href="' + entry.userproject.project.url + '"><i class="fa-solid fa-book"></i></a>',
-                                  col5: entry.comments?'<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="' + entry.comments + '"><i class="fa-solid fa-comment-lines"></i></span>':'<i class="fa-regular fa-comment" style="color: grey"></i>',
+                                  col2: entry.departure || "-",
+                                  col3: entry.workspace ? entry.workspace.name : "-",
+                                  col4: (entry.userproject && entry.userproject.project) ? '<a href="' + entry.userproject.project.url + '" target="_blank"><i class="fa-solid fa-book"></i></a>' : '-',
+                                  col5: entry.comments ? '<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="' + entry.comments + '"><i class="fa-solid fa-comment-lines"></i></span>' : '<i class="fa-regular fa-comment" style="color: grey"></i>',
                                 }) %>
                                 <% } %>
                             </tbody>
@@ -282,9 +348,9 @@
                                       <td><%= project.projectCreationDate %></td>
                                       <td>
                                           <%
-                                          const lastEntry = history.find(entry => entry.userproject.projectId === project.id);
+                                          const lastEntry = history.find(entry => entry.userproject && entry.userproject.projectId === project.id);
                                           %>
-                                          <%= lastEntry.arrival %>
+                                          <%= lastEntry ? lastEntry.arrival : "-" %>
                                       </td>
                                       <td>
                                           <%
@@ -294,13 +360,13 @@
                                           <%= projectTypeName %>
                                       </td>
                                       <td scope="row" class="text-center">
-                                          <a href="<%= project.url %>"><i class="fa-solid fa-book"></i></a>
+                                          <a href="<%= project.url %>" target="_blank"><i class="fa-solid fa-book"></i></a>
                                       </td>
                                       <td scope="row" class="text-center">
                                           <% if (project.active) { %>
-                                          <a href="history/project/archive/<%= project.id %>"><i class="fa-solid fa-hourglass-start"></i></a>
+                                          <a href="/history/project/archive/<%= project.id %>"><i class="fa-solid fa-hourglass-start"></i></a>
                                           <% } else { %>
-                                          <a href="history/project/unarchive/<%= project.id %>"><i class="fa-solid fa-hourglass-end"></i></a>
+                                          <a href="/history/project/unarchive/<%= project.id %>"><i class="fa-solid fa-hourglass-end"></i></a>
                                           <% } %>
                                       </td>
                                   </tr>
@@ -311,34 +377,194 @@
                       </div>
                     </div>
                 </div>
+                <!-- Machine Usage Accordion Item -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMachines" aria-expanded="false" aria-controls="collapseMachines">
+                        <b><i class="fa-solid fa-gears text-primary"></i>&nbsp;&nbsp;Machine Usage (<%= userMachineUsage.length %>)</b>
+                      </button>
+                    </h2>
+                    <div id="collapseMachines" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                      <div class="accordion-body">
+                        <% if (userMachineUsage.length === 0) { %>
+                          <div class="text-center text-muted py-4">
+                            <i class="fa-solid fa-gears fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0">Aucune utilisation de machine enregistrée pour cet utilisateur.</p>
+                          </div>
+                        <% } else { %>
+                          <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                              <thead>
+                                <tr>
+                                  <th scope="col">#</th>
+                                  <th scope="col">Date & Heure</th>
+                                  <th scope="col">Machine</th>
+                                  <th scope="col">Type / Catégorie</th>
+                                  <th scope="col">Emplacement</th>
+                                  <th scope="col">Projet</th>
+                                  <th scope="col">Atelier</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <% userMachineUsage.forEach(function(usage) { %>
+                                  <tr>
+                                    <td><%= usage.id %></td>
+                                    <td><strong><%= usage.formattedDate %></strong></td>
+                                    <td>
+                                      <% if (usage.machine) { %>
+                                        <a href="/admin/machines/view/<%= usage.machine.id %>" class="fw-semibold text-decoration-none">
+                                          <%= usage.machine.name %>
+                                        </a>
+                                        <div class="small text-muted"><%= usage.machine.make %> <%= usage.machine.model %></div>
+                                      <% } else { %>
+                                        <span class="text-muted">Machine supprimée</span>
+                                      <% } %>
+                                    </td>
+                                    <td>
+                                      <% if (usage.machine && usage.machine.machinetype) { %>
+                                        <span class="badge bg-primary me-1"><%= usage.machine.machinetype.name %></span>
+                                      <% } %>
+                                      <% if (usage.machine && usage.machine.category) { %>
+                                        <span class="badge bg-info text-dark"><%= usage.machine.category.name %></span>
+                                      <% } %>
+                                    </td>
+                                    <td>
+                                      <span class="small text-secondary">
+                                        <%= (usage.machine && usage.machine.location) ? usage.machine.location.name : '-' %>
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <% if (usage.project) { %>
+                                        <a href="<%= usage.project.url %>" target="_blank" class="small text-decoration-none" title="<%= usage.project.url %>">
+                                          <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Projet
+                                        </a>
+                                      <% } else { %>
+                                        <span class="text-muted small">-</span>
+                                      <% } %>
+                                    </td>
+                                    <td>
+                                      <span class="badge bg-secondary-subtle text-secondary border">
+                                        <%= usage.workspace %>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                <% }); %>
+                              </tbody>
+                            </table>
+                          </div>
+                        <% } %>
+                      </div>
+                    </div>
+                </div>
+
+                <!-- Consumption Accordion Item -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                        <b><i class="fa fa-ball-pile"></i>&nbsp;&nbsp;Consumption</b>
+                        <b><i class="fa-solid fa-boxes-stacked text-success"></i>&nbsp;&nbsp;Consumption (<%= userConsumptions.length %>)</b>
                       </button>
                     </h2>
                     <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                       <div class="accordion-body">
-                        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                        <% if (userConsumptions.length === 0) { %>
+                          <div class="text-center text-muted py-4">
+                            <i class="fa-solid fa-boxes-stacked fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0">Aucun matériau consommé enregistré pour cet utilisateur.</p>
+                          </div>
+                        <% } else { %>
+                          <!-- Summary Bar -->
+                          <div class="d-flex justify-content-between align-items-center p-2 mb-3 bg-body-secondary rounded">
+                            <span class="small">
+                              <i class="fa-solid fa-cubes me-1"></i> Total unités consommées : <strong><%= userStats.totalConsumablesCount %></strong>
+                            </span>
+                            <span class="small">
+                              <i class="fa-solid fa-coins me-1 text-warning"></i> Montant total facturé : <strong class="text-danger"><%= userStats.totalConsumablesCost %> €</strong>
+                            </span>
+                          </div>
+
+                          <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                              <thead>
+                                <tr>
+                                  <th scope="col">#</th>
+                                  <th scope="col">Date & Heure</th>
+                                  <th scope="col">Consommable</th>
+                                  <th scope="col">Catégorie</th>
+                                  <th scope="col" class="text-center">Quantité</th>
+                                  <th scope="col" class="text-end">Prix unitaire</th>
+                                  <th scope="col" class="text-end">Total débité</th>
+                                  <th scope="col">Atelier</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <% userConsumptions.forEach(function(c) { %>
+                                  <tr>
+                                    <td><%= c.id %></td>
+                                    <td><strong><%= c.formattedDate %></strong></td>
+                                    <td>
+                                      <% if (c.consumable) { %>
+                                        <span class="fw-semibold"><%= c.consumable.name %></span>
+                                      <% } else { %>
+                                        <span class="text-muted">Consommable supprimé</span>
+                                      <% } %>
+                                    </td>
+                                    <td>
+                                      <% if (c.consumable && c.consumable.category) { %>
+                                        <span class="badge bg-secondary"><%= c.consumable.category.name %></span>
+                                      <% } else { %>
+                                        <span class="text-muted small">-</span>
+                                      <% } %>
+                                    </td>
+                                    <td class="text-center">
+                                      <span class="badge bg-primary-subtle text-primary border"><%= c.quantity %></span>
+                                    </td>
+                                    <td class="text-end text-muted small"><%= c.unitCost.toFixed(2) %> €</td>
+                                    <td class="text-end fw-bold text-danger"><%= c.totalCost %> €</td>
+                                    <td>
+                                      <span class="badge bg-secondary-subtle text-secondary border"><%= c.workspace %></span>
+                                    </td>
+                                  </tr>
+                                <% }); %>
+                              </tbody>
+                            </table>
+                          </div>
+                        <% } %>
                       </div>
                     </div>
                 </div>
+                <!-- Interests Accordion Item -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                        <b><i class="fa fa-circle-heart"></i>&nbsp;&nbsp;Interests</b>
+                        <b><i class="fa-solid fa-circle-heart text-danger"></i>&nbsp;&nbsp;Interests (<%= userInterests.length %>)</b>
                       </button>
                     </h2>
                     <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                       <div class="accordion-body">
-                        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                        <% if (userInterests.length === 0) { %>
+                          <div class="text-center text-muted py-4">
+                            <i class="fa-solid fa-heart-crack fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0">Aucun domaine d'intérêt identifié pour le moment (se renseigne automatiquement selon les machines et matériaux utilisés).</p>
+                          </div>
+                        <% } else { %>
+                          <p class="small text-muted mb-3">
+                            <i class="fa-solid fa-chart-pie me-1"></i> Domaines et catégories fréquentés par cet utilisateur :
+                          </p>
+                          <div class="d-flex flex-wrap gap-2">
+                            <% userInterests.forEach(function(interest) { %>
+                              <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-2 px-3 fs-6">
+                                <i class="fa-solid fa-layer-group me-1"></i> <%= interest %>
+                              </span>
+                            <% }); %>
+                          </div>
+                        <% } %>
                       </div>
                     </div>
                 </div>
             </div>
 
-        <% include ../includes/footer.html %>
-        <script src="javascripts/main.js"></script>
+        <%- include('../includes/footer.html') %>
+        <script src="/javascripts/main.js"></script>
         <script>
           // Call the pagination function after the table is rendered
           addPagination('historyTable', <%- JSON.stringify(tableData) %>);

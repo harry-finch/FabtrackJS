@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Machine details" />
+    <title>Fabtrack - <%= machine.name %></title>
+
+    <%- include('../includes/pagehead.html') %>
+  </head>
+
+  <body class="d-flex justify-content-center bg-body-tertiary py-4">
+    <%- include('../includes/light-dark.html') %>
+
+    <main class="main-container">
+      <%- include('../includes/header.html') %>
+
+      <div class="mb-3">
+        <a href="/admin" class="btn btn-outline-secondary btn-sm">
+          <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+        </a>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>
+          <i class="fa-solid fa-screwdriver-wrench"></i>&nbsp;&nbsp;<%= machine.name %>
+        </h4>
+        <div>
+          <a href="/admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary btn-sm me-2">
+            <i class="fa-solid fa-pen-to-square"></i> Edit
+          </a>
+          <a href="/admin/machines/delete/<%= machine.id %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this machine?');">
+            <i class="fa-solid fa-trash-can"></i> Delete
+          </a>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="row g-0">
+          <div class="col-md-5 d-flex align-items-center justify-content-center bg-body-secondary p-3">
+            <% if (machine.picture) { %>
+              <img
+                src="<%= machine.picture %>"
+                alt="<%= machine.name %>"
+                class="img-fluid rounded"
+                style="max-height: 280px; object-fit: cover;"
+              />
+            <% } else { %>
+              <div class="text-center text-muted p-4">
+                <i class="fa-solid fa-gears fa-4x mb-3 opacity-50"></i>
+                <p class="mb-0">No image available</p>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card-body">
+              <h4 class="card-title mb-1"><%= machine.name %></h4>
+              <p class="text-muted mb-2"><%= machine.make %> - <%= machine.model %></p>
+
+              <div class="mb-3">
+                <span class="badge bg-primary me-1"><%= machine.machinetype ? machine.machinetype.name : 'Unknown Type' %></span>
+                <% if (machine.category) { %>
+                  <span class="badge bg-info text-dark me-1"><i class="fa-solid fa-layer-group"></i> <%= machine.category.name %></span>
+                <% } %>
+                <span class="badge bg-secondary"><i class="fa-solid fa-lock"></i> <%= machine.access ? machine.access.name : 'No Access Specified' %></span>
+              </div>
+
+              <hr />
+
+              <div class="row g-2 small">
+                <div class="col-6">
+                  <strong>Serial Number:</strong>
+                  <p class="text-secondary"><%= machine.serialNumber || 'N/A' %></p>
+                </div>
+                <div class="col-6">
+                  <strong>Internal Ref:</strong>
+                  <p class="text-secondary"><%= machine.internalReference ? '#' + machine.internalReference : 'N/A' %></p>
+                </div>
+                <div class="col-6">
+                  <strong>Location:</strong>
+                  <p class="text-secondary"><%= machine.location ? machine.location.name : 'N/A' %></p>
+                </div>
+                <div class="col-6">
+                  <strong>Purchase Date:</strong>
+                  <p class="text-secondary"><%= machine.purchaseDate ? new Date(machine.purchaseDate).toLocaleDateString() : 'N/A' %></p>
+                </div>
+                <div class="col-6">
+                  <strong>Last Maintenance:</strong>
+                  <p class="text-secondary"><%= machine.lastMaintenance ? new Date(machine.lastMaintenance).toLocaleDateString() : 'N/A' %></p>
+                </div>
+                <div class="col-6">
+                  <strong>Warranty Expiry:</strong>
+                  <p class="text-secondary"><%= machine.warrantyExpiry ? new Date(machine.warrantyExpiry).toLocaleDateString() : 'N/A' %></p>
+                </div>
+                <div class="col-12">
+                  <strong>Documentation:</strong>
+                  <p class="mb-0">
+                    <% if (machine.documentation) { %>
+                      <a href="<%= machine.documentation %>" target="_blank" class="link-primary">
+                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i><%= machine.documentation %>
+                      </a>
+                    <% } else { %>
+                      <span class="text-secondary">None provided</span>
+                    <% } %>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Machine Usage History Section -->
+      <div class="card shadow-sm mb-4" id="history">
+        <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center py-3">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Historique d'utilisation de la machine
+          </h5>
+          <span class="badge bg-primary fs-6">
+            <%= usageStats.totalSessions %> session(s)
+          </span>
+        </div>
+
+        <div class="card-body">
+          <!-- Usage Metrics Overview -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center bg-body-secondary">
+                <div class="small text-muted text-uppercase fw-semibold mb-1">Nombre total d'utilisations</div>
+                <div class="fs-4 fw-bold text-primary"><%= usageStats.totalSessions %></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center bg-body-secondary">
+                <div class="small text-muted text-uppercase fw-semibold mb-1">Usagers uniques</div>
+                <div class="fs-4 fw-bold text-success"><%= usageStats.uniqueUsers %></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center bg-body-secondary">
+                <div class="small text-muted text-uppercase fw-semibold mb-1">Dernière utilisation</div>
+                <div class="fs-5 fw-bold text-secondary"><%= usageStats.lastUsed %></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Usage History Table -->
+          <% if (usageHistory.length === 0) { %>
+            <div class="text-center text-muted py-5">
+              <i class="fa-solid fa-clock-rotate-left fa-3x mb-3 opacity-50"></i>
+              <p class="mb-0">Aucune utilisation enregistrée pour cette machine pour le moment.</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="machineHistoryTable">
+                <thead>
+                  <tr>
+                    <th data-sort="0" scope="col"># <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th data-sort="1" scope="col">Date & Heure <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th data-sort="2" scope="col">Utilisateur <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th data-sort="3" scope="col">Atelier / Workspace <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th data-sort="4" scope="col">Projet associé <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th scope="col" class="text-center">Départ / Statut</th>
+                    <th scope="col">Commentaires</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% usageHistory.forEach(function(entry) { %>
+                    <tr>
+                      <td class="text-muted"><%= entry.id %></td>
+                      <td><strong><%= entry.formattedDate %></strong></td>
+                      <td>
+                        <% if (entry.user) { %>
+                          <a href="/users/edit/<%= entry.user.id %>" class="fw-semibold text-decoration-none">
+                            <i class="fa-solid fa-user me-1 text-primary"></i><%= entry.user.name %> <%= entry.user.surname %>
+                          </a>
+                          <div class="small text-muted"><%= entry.user.email %></div>
+                        <% } else { %>
+                          <span class="text-muted">Utilisateur supprimé</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary-subtle text-secondary border">
+                          <%= entry.workspace %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (entry.project) { %>
+                          <a href="<%= entry.project.url %>" target="_blank" class="small text-decoration-none" title="<%= entry.project.url %>">
+                            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Projet
+                          </a>
+                        <% } else { %>
+                          <span class="text-muted small">-</span>
+                        <% } %>
+                      </td>
+                      <td class="text-center">
+                        <% if (entry.departure && entry.departure !== '-') { %>
+                          <span class="small text-muted"><%= entry.departure %></span>
+                        <% } else { %>
+                          <span class="badge bg-success">En cours</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (entry.comments) { %>
+                          <span class="small text-secondary"><%= entry.comments %></span>
+                        <% } else { %>
+                          <span class="text-muted small">-</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="text-center mb-4">
+        <a href="/admin/machines/manage" class="btn btn-outline-secondary">
+          <i class="fa-solid fa-arrow-left me-1"></i> Back to Machines List
+        </a>
+      </div>
+
+      <%- include('../includes/footer.html') %>
+    </main>
+  </body>
+</html>
