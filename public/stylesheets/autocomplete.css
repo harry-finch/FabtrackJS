@@ -1,13 +1,14 @@
 .autocomplete {
     text-align: left;
     cursor: default;
-    border: 1px solid #ccc;
+    border: 1px solid var(--bs-border-color, #dee2e6);
     border-top: 0;
-    background: #fff;
-    box-shadow: -1px 1px 3px rgba(0, 0, 0, 0.1);
-
-    z-index: 1000;
-    overflow: auto;
+    background: var(--bs-body-bg, #ffffff);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 8px 8px;
+    z-index: 1200;
+    max-height: 280px;
+    overflow-y: auto;
     box-sizing: border-box;
 }
 
@@ -16,43 +17,63 @@
 }
 
 .autocomplete > div {
-    padding: 0.3em 0.6em;
-    line-height: 23px;
+    padding: 0.5em 0.75em;
+    line-height: 1.35;
     text-overflow: ellipsis;
-    font-size: 1.02em;
-    color: #333;
+    font-size: 0.95rem;
+    color: var(--bs-body-color, #212529);
+    border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.05));
+}
+
+.autocomplete > div:last-child {
+    border-bottom: 0;
 }
 
 .autocomplete .group {
-    background: #ccc;
-    font-size: 0.8em;
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    font-weight: bold;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bs-secondary-color, #6c757d);
+    padding: 0.35em 0.75em;
+}
+
+.autocomplete .empty {
+    padding: 0.75em 1em;
+    color: var(--bs-secondary-color, #6c757d);
+    font-style: italic;
+    text-align: center;
 }
 
 .autocomplete > div:hover:not(.group),
 .autocomplete > div.selected {
-    background: #f0f0f0;
+    background: var(--bs-secondary-bg, #e9ecef);
     cursor: pointer;
 }
 
 .autocomplete > div.selected strong {
-    font-weight: bolder;
-    color: #0d6efd;
+    font-weight: 700;
+    color: var(--bs-primary, #0d6efd);
 }
 
-/* @media (prefers-color-scheme: dark) {
-    .autocomplete {
-        background: #2b3035;
-    }
+[data-bs-theme="dark"] .autocomplete {
+    background: #212529;
+    border-color: #495057;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
 
-    .autocomplete > div {
-        color: #dddddd;
-    }
+[data-bs-theme="dark"] .autocomplete > div {
+    color: #e9ecef;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
 
-    .autocomplete > div.selected {
-        background: #0b5ed7;
-    }
+[data-bs-theme="dark"] .autocomplete .group {
+    background: #2b3035;
+    color: #adb5bd;
+}
 
-    .autocomplete > div.selected strong {
-        color: #052c65;
-    }
-} */
+[data-bs-theme="dark"] .autocomplete > div:hover:not(.group),
+[data-bs-theme="dark"] .autocomplete > div.selected {
+    background: #343a40;
+}

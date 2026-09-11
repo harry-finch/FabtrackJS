@@ -257,24 +257,27 @@
                                         Get
                                     </div>
                                     <div class="col-8">
-                                        <div class="form-floating mb-3">
-                                            <select class="form-select" id="consumable" name="consumable">
-                                                <option value="" selected disabled>Choisir un matériau / consommable</option>
-                                                <% consumables.forEach(function(consumable) { 
-                                                     const costNum = Number(consumable.cost);
-                                                     const unitStr = consumable.unit || 'u';
-                                                %>
-                                                <option
-                                                    value="<%= consumable.id %>"
-                                                    data-cost="<%= consumable.cost %>"
-                                                    data-unit="<%= unitStr %>"
-                                                    data-stock="<%= consumable.stock %>"
-                                                >
-                                                    <%= consumable.name %> (<%= costNum < 0.1 ? costNum.toFixed(4) : costNum.toFixed(2) %> € / <%= unitStr %> — Stock: <%= consumable.stock %> <%= unitStr %>)
-                                                </option>
-                                                <% }) %>
-                                            </select>
-                                            <label for="consumable">Consommable / Matériau</label>
+                                        <div class="form-floating mb-3 position-relative">
+                                            <input type="hidden" id="consumable" name="consumable" value="" />
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                id="consumableSearch"
+                                                placeholder="Taper pour rechercher un consommable..."
+                                                autocomplete="off"
+                                            />
+                                            <label for="consumableSearch">
+                                                <i class="fa-solid fa-magnifying-glass me-1 text-muted"></i> Consommable / Matériau (taper pour rechercher)
+                                            </label>
+                                            <button
+                                                type="button"
+                                                class="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-1"
+                                                id="clearConsumableBtn"
+                                                style="display: none; z-index: 5;"
+                                                title="Effacer la sélection"
+                                            >
+                                                <i class="fa-solid fa-xmark fa-lg"></i>
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="col-3">
@@ -367,6 +370,21 @@
             </div>
 
             <%- include('../includes/footer.html') %>
+
+        <script id="consumablesData" type="application/json">
+            <%- JSON.stringify(consumables.map(function(c) {
+                return {
+                    id: c.id,
+                    name: c.name,
+                    cost: Number(c.cost),
+                    unit: c.unit || 'u',
+                    stock: c.stock,
+                    stockUnit: c.stockUnit || '',
+                    unitsPerPack: Number(c.unitsPerPack || 1),
+                    categoryName: c.category ? c.category.name : ''
+                };
+            })) %>
+        </script>
 
         <script src="/javascripts/fabtrack.js"></script>
 

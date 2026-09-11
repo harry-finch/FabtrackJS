@@ -33,7 +33,14 @@ router.get(
       },
     });
 
-    const consumables = await prisma.consumable.findMany();
+    const consumables = await prisma.consumable.findMany({
+      include: {
+        category: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
 
     var history = await prisma.history.findMany({
       where: {

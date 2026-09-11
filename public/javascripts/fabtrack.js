@@ -141,6 +141,14 @@ if (activityManager) {
     modalTitle.innerHTML = `<i class="fa-solid fa-puzzle-piece"></i> New activity for ${user}`;
     historyInput.value = historyid;
     userInput.value = userid;
+
+    // Reset all selection inputs
+    const machineSelect = document.getElementById("machineId");
+    const equipmentSelect = document.getElementById("equipmentId");
+    if (machineSelect) machineSelect.selectedIndex = 0;
+    if (equipmentSelect) equipmentSelect.selectedIndex = 0;
+    if (quantityInput) quantityInput.value = 1;
+    clearConsumableSelection();
   });
 }
 
@@ -187,8 +195,22 @@ if (clearBalance) {
   });
 }
 
-// Add an event listener to the dropdown to capture the selected cost and calculate live estimate
-const consumableSelect = document.getElementById("consumable");
+// ==============================================================================
+// Consumable Autocomplete & Live Estimation for Activity Manager
+// ==============================================================================
+const consumablesDataEl = document.getElementById("consumablesData");
+let consumablesList = [];
+if (consumablesDataEl) {
+  try {
+    consumablesList = JSON.parse(consumablesDataEl.textContent);
+  } catch (e) {
+    console.error("Failed to parse consumables JSON:", e);
+  }
+}
+
+const consumableSearchInput = document.getElementById("consumableSearch");
+const hiddenConsumableInput = document.getElementById("consumable");
+const clearConsumableBtn = document.getElementById("clearConsumableBtn");
 const quantityInput = document.getElementById("quantity");
 const costInput = document.getElementById("cost");
 const quantityLabel = document.getElementById("quantityLabel");
@@ -196,17 +218,18 @@ const liveCostRow = document.getElementById("consumableLiveCostRow");
 const liveCostAmount = document.getElementById("liveCostAmount");
 const liveUnitPrice = document.getElementById("liveUnitPrice");
 
+let selectedConsumableItem = null;
+
 function updateConsumableLiveCalc() {
-  if (!consumableSelect || consumableSelect.selectedIndex < 0) return;
-  const selectedOption = consumableSelect.options[consumableSelect.selectedIndex];
-  if (!selectedOption || !selectedOption.value) {
+  if (!selectedConsumableItem) {
     if (liveCostRow) liveCostRow.style.display = "none";
     if (quantityLabel) quantityLabel.textContent = "Quantité";
+    if (costInput) costInput.value = "";
     return;
   }
 
-  const unitCost = parseFloat(selectedOption.dataset.cost) || 0.0;
-  const unit = selectedOption.dataset.unit || "u";
+  const unitCost = parseFloat(selectedConsumableItem.cost) || 0.0;
+  const unit = selectedConsumableItem.unit || "u";
   const qty = parseFloat(quantityInput ? quantityInput.value : 1) || 0;
 
   if (costInput) costInput.value = unitCost;
@@ -214,13 +237,98 @@ function updateConsumableLiveCalc() {
 
   const total = (qty * unitCost).toFixed(2);
   if (liveCostAmount) liveCostAmount.textContent = `${total} €`;
-  if (liveUnitPrice) liveUnitPrice.textContent = `${unitCost < 0.1 ? unitCost.toFixed(4) : unitCost.toFixed(2)} € / ${unit}`;
+  if (liveUnitPrice)
+    liveUnitPrice.textContent = `${unitCost < 0.1 ? unitCost.toFixed(4) : unitCost.toFixed(2)} € / ${unit}`;
   if (liveCostRow) liveCostRow.style.display = "";
 }
 
-if (consumableSelect) {
-  consumableSelect.addEventListener("change", updateConsumableLiveCalc);
+function clearConsumableSelection() {
+  selectedConsumableItem = null;
+  if (consumableSearchInput) consumableSearchInput.value = "";
+  if (hiddenConsumableInput) hiddenConsumableInput.value = "";
+  if (clearConsumableBtn) clearConsumableBtn.style.display = "none";
+  updateConsumableLiveCalc();
 }
+
+if (clearConsumableBtn) {
+  clearConsumableBtn.addEventListener("click", () => {
+    clearConsumableSelection();
+    if (consumableSearchInput) consumableSearchInput.focus();
+  });
+}
+
+if (consumableSearchInput && typeof autocomplete === "function") {
+  consumableSearchInput.addEventListener("input", () => {
+    if (!consumableSearchInput.value.trim()) {
+      clearConsumableSelection();
+    }
+  });
+
+  autocomplete({
+    input: consumableSearchInput,
+    minLength: 0,
+    showOnFocus: true,
+    preventSubmit: 2, // Do not submit form on Enter when picking an item
+    emptyMsg: "Aucun consommable trouvé",
+    fetch: function (text, callback) {
+      text = text.toLowerCase().trim();
+      if (!text) {
+        callback(consumablesList);
+        return;
+      }
+      const filtered = consumablesList.filter(function (item) {
+        const nameMatch = item.name && item.name.toLowerCase().indexOf(text) !== -1;
+        const catMatch = item.categoryName && item.categoryName.toLowerCase().indexOf(text) !== -1;
+        const unitMatch = item.unit && item.unit.toLowerCase().indexOf(text) !== -1;
+        return nameMatch || catMatch || unitMatch;
+      });
+      callback(filtered);
+    },
+    render: function (item, value) {
+      const itemElement = document.createElement("div");
+      itemElement.className = "d-flex justify-content-between align-items-center py-2 px-2 border-bottom";
+
+      const costNum = Number(item.cost);
+      const costFormatted = costNum < 0.1 ? costNum.toFixed(4) : costNum.toFixed(2);
+
+      let displayName = item.name;
+      if (value && value.trim()) {
+        try {
+          const escaped = value.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp(`(${escaped})`, "gi");
+          displayName = displayName.replace(regex, "<strong>$1</strong>");
+        } catch (e) {
+          displayName = item.name;
+        }
+      }
+
+      const categoryBadge = item.categoryName
+        ? `<span class="badge bg-secondary-subtle text-secondary-emphasis border me-1">${item.categoryName}</span>`
+        : "";
+
+      itemElement.innerHTML = `
+        <div class="me-2 text-truncate">
+          <div class="fw-semibold text-body">${displayName}</div>
+          <div class="small text-muted">${categoryBadge}${costFormatted} € / ${item.unit}</div>
+        </div>
+        <div class="text-end text-nowrap ms-2">
+          <span class="badge ${item.stock <= 0 ? "bg-danger-subtle text-danger" : "bg-light text-dark"} border">
+            Stock: ${item.stock} ${item.unit}
+          </span>
+        </div>
+      `;
+      return itemElement;
+    },
+    onSelect: function (item) {
+      consumableSearchInput.value = item.name;
+      if (hiddenConsumableInput) hiddenConsumableInput.value = item.id;
+      selectedConsumableItem = item;
+      if (clearConsumableBtn) clearConsumableBtn.style.display = "inline-block";
+      updateConsumableLiveCalc();
+    },
+  });
+}
+
 if (quantityInput) {
   quantityInput.addEventListener("input", updateConsumableLiveCalc);
 }
