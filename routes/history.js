@@ -277,7 +277,7 @@ router.post(
       const consumed = await consumeItem(consumable, qty);
 
       if (consumed) {
-        const totalPrice = Number(consumed.cost) * qty;
+        const totalPrice = Number((Number(consumed.cost) * qty).toFixed(2));
 
         // Decrement user balance if user is specified
         if (usrId) {

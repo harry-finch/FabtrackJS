@@ -237,9 +237,9 @@
                           <span class="badge bg-secondary-subtle text-secondary border"><%= entry.categoryName %></span>
                         </td>
                         <td class="text-center">
-                          <span class="badge bg-primary-subtle text-primary border"><%= entry.quantity %></span>
+                          <span class="badge bg-primary-subtle text-primary border"><%= entry.quantity %> <%= entry.unit %></span>
                         </td>
-                        <td class="text-end small text-muted"><%= entry.unitCost.toFixed(2) %> €</td>
+                        <td class="text-end small text-muted"><%= entry.unitCost < 0.1 ? entry.unitCost.toFixed(4) : entry.unitCost.toFixed(2) %> € / <%= entry.unit %></td>
                         <td class="text-end fw-bold text-danger"><%= entry.totalCost.toFixed(2) %> €</td>
                         <td>
                           <% if (entry.user) { %>
@@ -295,7 +295,7 @@
                     <td class="small"><strong><%= entry.formattedDate %></strong></td>
                     <td><span class="fw-semibold"><%= entry.consumableName %></span></td>
                     <td><span class="badge bg-secondary-subtle text-secondary border"><%= entry.categoryName %></span></td>
-                    <td class="text-center"><span class="badge bg-primary-subtle text-primary border"><%= entry.quantity %></span></td>
+                    <td class="text-center"><span class="badge bg-primary-subtle text-primary border"><%= entry.quantity %> <%= entry.unit %></span></td>
                     <td class="text-end fw-bold text-danger"><%= entry.totalCost.toFixed(2) %> €</td>
                     <td>
                       <% if (entry.user) { %>

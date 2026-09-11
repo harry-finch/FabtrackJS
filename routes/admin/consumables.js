@@ -78,12 +78,15 @@ router.get(
 router.post(
   "/create",
   asyncHandler(async (req, res) => {
-    const { name, cost, stock, reorderThreshold, categoryId } = req.body;
+    const { name, cost, stock, reorderThreshold, categoryId, unit, stockUnit, unitsPerPack } = req.body;
 
     const parsedCost = parseFloat(cost) || 0.0;
     const parsedStock = parseInt(stock, 10) || 0;
     const parsedThreshold = parseInt(reorderThreshold, 10) || 10;
     const parsedCategoryId = categoryId && categoryId !== "" && categoryId !== "null" ? Number(categoryId) : null;
+    const parsedUnit = (unit || "u").trim();
+    const parsedStockUnit = (stockUnit || "u").trim();
+    const parsedUnitsPerPack = parseFloat(unitsPerPack) > 0 ? parseFloat(unitsPerPack) : 1.0;
     const status = computeStatus(parsedStock, parsedThreshold);
 
     try {
@@ -95,6 +98,9 @@ router.post(
           reorderThreshold: parsedThreshold,
           status: status,
           categoryId: parsedCategoryId,
+          unit: parsedUnit,
+          stockUnit: parsedStockUnit,
+          unitsPerPack: parsedUnitsPerPack,
         },
       });
 
@@ -123,12 +129,15 @@ router.post(
       return res.redirect("/admin/consumables/manage");
     }
 
-    const { name, cost, stock, reorderThreshold, categoryId } = req.body;
+    const { name, cost, stock, reorderThreshold, categoryId, unit, stockUnit, unitsPerPack } = req.body;
 
     const parsedCost = parseFloat(cost) || 0.0;
     const parsedStock = parseInt(stock, 10) || 0;
     const parsedThreshold = parseInt(reorderThreshold, 10) || 10;
     const parsedCategoryId = categoryId && categoryId !== "" && categoryId !== "null" ? Number(categoryId) : null;
+    const parsedUnit = unit ? unit.trim() : undefined;
+    const parsedStockUnit = stockUnit ? stockUnit.trim() : undefined;
+    const parsedUnitsPerPack = unitsPerPack ? (parseFloat(unitsPerPack) > 0 ? parseFloat(unitsPerPack) : 1.0) : undefined;
     const status = computeStatus(parsedStock, parsedThreshold);
 
     try {
@@ -141,6 +150,9 @@ router.post(
           reorderThreshold: parsedThreshold,
           status: status,
           categoryId: parsedCategoryId,
+          unit: parsedUnit,
+          stockUnit: parsedStockUnit,
+          unitsPerPack: parsedUnitsPerPack,
         },
       });
 
@@ -157,17 +169,16 @@ router.post(
 );
 
 // ******************************************************************************
-// Route to record a stock delivery (Livraison) without editing the whole consumable
+// Route to record a stock delivery (Livraison) with packaging conversion
 // ******************************************************************************
 
 router.post(
   "/restock",
   asyncHandler(async (req, res) => {
     const targetId = Number(req.body.consumableid || req.body.id);
-    const addedQuantity = parseInt(req.body.quantity, 10);
 
-    if (!targetId || isNaN(targetId) || isNaN(addedQuantity) || addedQuantity <= 0) {
-      req.session.notification = "Error: Invalid consumable or delivery quantity (must be greater than 0).";
+    if (!targetId || isNaN(targetId)) {
+      req.session.notification = "Error: Invalid consumable ID provided.";
       return res.redirect("/admin/consumables/manage");
     }
 
@@ -178,7 +189,25 @@ router.post(
         return res.redirect("/admin/consumables/manage");
       }
 
-      const newStock = existing.stock + addedQuantity;
+      const ratio = Number(existing.unitsPerPack || 1);
+      let addedUnits = 0;
+
+      if (req.body.restockMode === "packs" && req.body.packages) {
+        const packs = parseFloat(req.body.packages);
+        if (isNaN(packs) || packs <= 0) {
+          req.session.notification = "Error: Invalid number of packages.";
+          return res.redirect("/admin/consumables/manage");
+        }
+        addedUnits = Math.round(packs * ratio);
+      } else {
+        addedUnits = parseInt(req.body.quantity, 10);
+        if (isNaN(addedUnits) || addedUnits <= 0) {
+          req.session.notification = "Error: Invalid quantity entered.";
+          return res.redirect("/admin/consumables/manage");
+        }
+      }
+
+      const newStock = existing.stock + addedUnits;
       const newStatus = computeStatus(newStock, existing.reorderThreshold);
 
       const updated = await prisma.consumable.update({
@@ -190,10 +219,11 @@ router.post(
       });
 
       invalidateCache(req);
+      const packsEquiv = ratio > 1 ? ` (~${(addedUnits / ratio).toFixed(2)} ${existing.stockUnit || "packs"})` : "";
       logger.logThat(
-        `Livraison: Added ${addedQuantity} units to consumable "${updated.name}" by ${req.session.username}`
+        `Livraison: Added ${addedUnits} ${existing.unit}${packsEquiv} to consumable "${updated.name}" by ${req.session.username}`
       );
-      req.session.notification = `Success: Delivery recorded! Added ${addedQuantity} units to "${updated.name}". New stock: ${updated.stock} units.`;
+      req.session.notification = `Success: Delivery recorded! Added +${addedUnits} ${existing.unit}${packsEquiv} to "${updated.name}". New stock: ${updated.stock} ${existing.unit}.`;
     } catch (error) {
       console.error("Error recording delivery for consumable:", error);
       req.session.notification = "Error: Failed to record delivery.";

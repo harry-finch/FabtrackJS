@@ -254,6 +254,7 @@ router.get(
         createdAt: act.createdAt,
         formattedDate: formatDateTime(act.createdAt),
         consumable: consumable || null,
+        unit: consumable && consumable.unit ? consumable.unit : "u",
         quantity: qty,
         unitCost: unitCost,
         totalCost: (unitCost * qty).toFixed(2),

@@ -227,6 +227,9 @@ model Consumable {
   reorderThreshold Int              @default(10)
   status           ConsumableStatus @default(AVAILABLE)
   categoryId       Int?
+  unit             String           @default("u") @db.VarChar(30)
+  stockUnit        String?          @default("u") @db.VarChar(50)
+  unitsPerPack     Decimal          @default(1.0)
 
   category         Category?        @relation(fields: [categoryId], references: [id])
 }

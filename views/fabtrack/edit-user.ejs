@@ -535,9 +535,9 @@
                                       <% } %>
                                     </td>
                                     <td class="text-center">
-                                      <span class="badge bg-primary-subtle text-primary border"><%= c.quantity %></span>
+                                      <span class="badge bg-primary-subtle text-primary border"><%= c.quantity %> <%= c.unit %></span>
                                     </td>
-                                    <td class="text-end text-muted small"><%= c.unitCost.toFixed(2) %> €</td>
+                                    <td class="text-end text-muted small"><%= c.unitCost < 0.1 ? c.unitCost.toFixed(4) : c.unitCost.toFixed(2) %> € / <%= c.unit %></td>
                                     <td class="text-end fw-bold text-danger"><%= c.totalCost %> €</td>
                                     <td>
                                       <span class="badge bg-secondary-subtle text-secondary border"><%= c.workspace %></span>

@@ -187,13 +187,40 @@ if (clearBalance) {
   });
 }
 
-// Add an event listener to the dropdown to capture the selected cost
+// Add an event listener to the dropdown to capture the selected cost and calculate live estimate
 const consumableSelect = document.getElementById("consumable");
-consumableSelect.addEventListener("change", () => {
-  const selectedOption = consumableSelect.options[consumableSelect.selectedIndex];
-  const selectedCost = selectedOption.dataset.cost;
+const quantityInput = document.getElementById("quantity");
+const costInput = document.getElementById("cost");
+const quantityLabel = document.getElementById("quantityLabel");
+const liveCostRow = document.getElementById("consumableLiveCostRow");
+const liveCostAmount = document.getElementById("liveCostAmount");
+const liveUnitPrice = document.getElementById("liveUnitPrice");
 
-  // Store the selected cost in a hidden input field within your form
-  const costInput = document.getElementById("cost"); // Assuming you have a hidden input with id="cost"
-  costInput.value = selectedCost;
-});
+function updateConsumableLiveCalc() {
+  if (!consumableSelect || consumableSelect.selectedIndex < 0) return;
+  const selectedOption = consumableSelect.options[consumableSelect.selectedIndex];
+  if (!selectedOption || !selectedOption.value) {
+    if (liveCostRow) liveCostRow.style.display = "none";
+    if (quantityLabel) quantityLabel.textContent = "Quantité";
+    return;
+  }
+
+  const unitCost = parseFloat(selectedOption.dataset.cost) || 0.0;
+  const unit = selectedOption.dataset.unit || "u";
+  const qty = parseFloat(quantityInput ? quantityInput.value : 1) || 0;
+
+  if (costInput) costInput.value = unitCost;
+  if (quantityLabel) quantityLabel.textContent = `Quantité (${unit})`;
+
+  const total = (qty * unitCost).toFixed(2);
+  if (liveCostAmount) liveCostAmount.textContent = `${total} €`;
+  if (liveUnitPrice) liveUnitPrice.textContent = `${unitCost < 0.1 ? unitCost.toFixed(4) : unitCost.toFixed(2)} € / ${unit}`;
+  if (liveCostRow) liveCostRow.style.display = "";
+}
+
+if (consumableSelect) {
+  consumableSelect.addEventListener("change", updateConsumableLiveCalc);
+}
+if (quantityInput) {
+  quantityInput.addEventListener("input", updateConsumableLiveCalc);
+}

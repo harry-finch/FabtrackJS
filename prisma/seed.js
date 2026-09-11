@@ -212,13 +212,13 @@ async function main() {
 
   // 12. Consumables
   const consumablesData = [
-    { name: "PLA Filament 1.75mm Black (1kg)", cost: 22.5, stock: 18, reorderThreshold: 5, status: ConsumableStatus.AVAILABLE, categoryId: categories[0].id },
-    { name: "PETG Filament 1.75mm White (1kg)", cost: 26.0, stock: 9, reorderThreshold: 4, status: ConsumableStatus.AVAILABLE, categoryId: categories[0].id },
-    { name: "Plywood Birch 3mm (600x400mm)", cost: 6.5, stock: 30, reorderThreshold: 10, status: ConsumableStatus.AVAILABLE, categoryId: categories[1].id },
-    { name: "Clear Acrylic 3mm (600x400mm)", cost: 12.0, stock: 2, reorderThreshold: 5, status: ConsumableStatus.LOW_STOCK, categoryId: categories[1].id },
-    { name: "Solder Wire Sn60Pb40 (100g roll)", cost: 8.0, stock: 0, reorderThreshold: 3, status: ConsumableStatus.OUT_OF_STOCK, categoryId: categories[2].id },
-    { name: "Carbide End Mill 3.175mm", cost: 14.5, stock: 12, reorderThreshold: 3, status: ConsumableStatus.AVAILABLE, categoryId: categories[3].id },
-    { name: "Blue Masking Tape 50mm", cost: 4.2, stock: 15, reorderThreshold: 5, status: ConsumableStatus.AVAILABLE, categoryId: categories[4].id },
+    { name: "PLA Filament 1.75mm Black (1kg)", cost: 0.035, stock: 12000, reorderThreshold: 2000, unit: "g", stockUnit: "bobine", unitsPerPack: 1000, status: ConsumableStatus.AVAILABLE, categoryId: categories[0].id },
+    { name: "PETG Filament 1.75mm White (1kg)", cost: 0.040, stock: 5000, reorderThreshold: 2000, unit: "g", stockUnit: "bobine", unitsPerPack: 1000, status: ConsumableStatus.AVAILABLE, categoryId: categories[0].id },
+    { name: "Plywood Birch 3mm (600x400mm)", cost: 6.5, stock: 30, reorderThreshold: 10, unit: "feuille", stockUnit: "paquet (10)", unitsPerPack: 10, status: ConsumableStatus.AVAILABLE, categoryId: categories[1].id },
+    { name: "Clear Acrylic 3mm (600x400mm)", cost: 12.0, stock: 2, reorderThreshold: 5, unit: "feuille", stockUnit: "paquet (5)", unitsPerPack: 5, status: ConsumableStatus.LOW_STOCK, categoryId: categories[1].id },
+    { name: "Solder Wire Sn60Pb40 (100g roll)", cost: 0.08, stock: 0, reorderThreshold: 300, unit: "g", stockUnit: "rouleau (100g)", unitsPerPack: 100, status: ConsumableStatus.OUT_OF_STOCK, categoryId: categories[2].id },
+    { name: "Carbide End Mill 3.175mm", cost: 14.5, stock: 12, reorderThreshold: 3, unit: "pièce", stockUnit: "boîte (5)", unitsPerPack: 5, status: ConsumableStatus.AVAILABLE, categoryId: categories[3].id },
+    { name: "Blue Masking Tape 50mm", cost: 4.2, stock: 15, reorderThreshold: 5, unit: "rouleau", stockUnit: "pack (6)", unitsPerPack: 6, status: ConsumableStatus.AVAILABLE, categoryId: categories[4].id },
   ];
   const consumables = [];
   for (const item of consumablesData) {
