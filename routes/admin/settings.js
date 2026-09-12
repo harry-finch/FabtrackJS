@@ -125,6 +125,10 @@ router.post(
     updates.plugin_ue_enabled = isUeEnabled ? "true" : "false";
     hookManager.setPluginEnabled("ue", isUeEnabled);
 
+    const isRfidEnabled = req.body.plugin_rfid_enabled === "true" || req.body.plugin_rfid_enabled === "on";
+    updates.plugin_rfid_enabled = isRfidEnabled ? "true" : "false";
+    hookManager.setPluginEnabled("rfid", isRfidEnabled);
+
     await settingsService.updateSettings(updates);
 
     req.session.notification = "Success: Platform settings updated successfully.";

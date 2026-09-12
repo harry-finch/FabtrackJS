@@ -63,7 +63,13 @@ router.post(
   "/create",
   clearNotification,
   asyncHandler(async (req, res) => {
-    const { newname, newsurname, newemail, newusertype, newbirthyear, newcomments } = req.body;
+    if (req.session.role === "staff") {
+      req.session.notification = "Warning: L'enregistrement d'un nouvel utilisateur doit être fait par un médiateur.";
+      return res.redirect("/fabtrack");
+    }
+
+    const { newname, newsurname, newemail, newusertype, newbirthyear, newcomments, newrfid } = req.body;
+    const cleanRfid = newrfid && newrfid.trim() ? newrfid.trim() : null;
 
     const token = uuidv4();
 
@@ -77,6 +83,7 @@ router.post(
           birthYear: Number(newbirthyear),
           comment: newcomments,
           token: token,
+          rfid: cleanRfid,
         },
       });
 
@@ -98,9 +105,16 @@ router.post(
       res.redirect("/users/manage");
     } catch (e) {
       console.error("Error creating user:", e);
-      req.session.notification =
-        e.code === "P2002" ? "Error: User already exists" : "Error: Unable to create user. Please try again.";
-      res.redirect("/users/manage");
+      let errorMsg = "Error: Unable to create user. Please try again.";
+      if (e.code === "P2002") {
+        if (e.meta && e.meta.target && e.meta.target.includes("rfid")) {
+          errorMsg = "Error: Ce badge RFID est déjà associé à un autre utilisateur.";
+        } else {
+          errorMsg = "Error: Un utilisateur avec cet email existe déjà.";
+        }
+      }
+      req.session.notification = errorMsg;
+      res.redirect(req.session.lastPage || "/users/manage");
     }
   }),
 );
@@ -135,6 +149,11 @@ router.get(
   "/edit/:id",
   clearNotification,
   asyncHandler(async (req, res) => {
+    if (req.session.role === "staff") {
+      req.session.notification = "Warning: La consultation du profil d'un usager est réservée aux médiateurs.";
+      return res.redirect("/fabtrack");
+    }
+
     const { id } = req.params;
     req.session.lastPage = `/users/edit/${id}`;
 
@@ -358,26 +377,42 @@ router.post(
   "/update/:id",
   clearNotification,
   asyncHandler(async (req, res) => {
+    if (req.session.role === "staff") {
+      req.session.notification = "Warning: La modification d'un profil est réservée aux médiateurs.";
+      return res.redirect("/fabtrack");
+    }
+
     const { id } = req.params;
-    const { name, surname, email, usertype, birthyear, comments, isExpert } = req.body;
+    const { name, surname, email, usertype, birthyear, comments, isExpert, rfid } = req.body;
+    const cleanRfid = rfid && rfid.trim() ? rfid.trim() : null;
 
-    await prisma.user.update({
-      where: { id: Number(id) },
-      data: {
-        name,
-        surname,
-        email,
-        usertypeId: Number(usertype),
-        birthYear: Number(birthyear),
-        comment: comments,
-        isExpert: isExpert === "true" || isExpert === "on" || isExpert === true,
-      },
-    });
+    try {
+      await prisma.user.update({
+        where: { id: Number(id) },
+        data: {
+          name,
+          surname,
+          email,
+          usertypeId: Number(usertype),
+          birthYear: Number(birthyear),
+          comment: comments,
+          isExpert: isExpert === "true" || isExpert === "on" || isExpert === true,
+          rfid: cleanRfid,
+        },
+      });
 
-    logger.logThat(`User ${name} ${surname} updated by ${req.session.username}`);
+      logger.logThat(`User ${name} ${surname} updated by ${req.session.username}`);
+      req.session.notification = "Success: User profile updated!";
+    } catch (e) {
+      console.error("Error updating user:", e);
+      if (e.code === "P2002") {
+        req.session.notification = "Error: Ce badge RFID ou cet email est déjà utilisé par un autre utilisateur.";
+      } else {
+        req.session.notification = "Error: Impossible de mettre à jour le profil.";
+      }
+    }
 
-    req.session.notification = "Success: User profile updated!";
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/users/manage");
   }),
 );
 

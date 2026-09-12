@@ -287,6 +287,11 @@ router.get(
 router.post(
   "/activity",
   asyncHandler(async (req, res) => {
+    if (req.session.role === "staff") {
+      req.session.notification = "Warning: Les ajouts d'activités sont réservés aux médiateurs.";
+      return res.redirect("/fabtrack");
+    }
+
     const { activityhistoryid, activityuserid, machineId, equipmentId, consumable, quantity } = req.body;
 
     const histId = activityhistoryid && activityhistoryid !== "null" ? Number(activityhistoryid) : null;

@@ -126,8 +126,10 @@
                 </div>
                 <% if (role === "admin") { %>
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;">Admin</span>
+                <% } else if (role === "staff") { %>
+                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;">Borne Kiosque</span>
                 <% } else { %>
-                    <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-2 py-1" style="font-size: 0.68rem;">Staff</span>
+                    <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-2 py-1" style="font-size: 0.68rem;">Médiateur</span>
                 <% } %>
             </div>
 

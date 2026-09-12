@@ -184,13 +184,18 @@
             <div class="row g-3">
               <% plugins.forEach(function(plugin) { 
                 const isUe = plugin.id === 'ue';
-                const isChecked = isUe ? (settings.plugin_ue_enabled !== 'false') : plugin.enabled;
+                const isRfid = plugin.id === 'rfid';
+                let isChecked = plugin.enabled;
+                if (isUe) isChecked = (settings.plugin_ue_enabled !== 'false');
+                if (isRfid) isChecked = (settings.plugin_rfid_enabled !== 'false');
+                const themeColor = isUe ? 'danger' : (isRfid ? 'info' : 'primary');
+                const iconClass = isUe ? 'fa-graduation-cap' : (isRfid ? 'fa-id-card' : 'fa-plug');
               %>
               <div class="col-12">
                 <div class="p-3 border rounded-3 bg-body d-flex flex-wrap align-items-center justify-content-between gap-3">
                   <div class="d-flex align-items-start gap-3">
-                    <div class="icon-box bg-<%= isUe ? 'danger' : 'primary' %>-subtle text-<%= isUe ? 'danger' : 'primary' %> mt-1" style="width: 42px; height: 42px; font-size: 1.1rem;">
-                      <i class="fa-solid <%= isUe ? 'fa-graduation-cap' : 'fa-plug' %>"></i>
+                    <div class="icon-box bg-<%= themeColor %>-subtle text-<%= themeColor %> mt-1" style="width: 42px; height: 42px; font-size: 1.1rem;">
+                      <i class="fa-solid <%= iconClass %>"></i>
                     </div>
                     <div>
                       <div class="d-flex align-items-center gap-2">
@@ -198,6 +203,8 @@
                         <span class="badge bg-body-secondary text-body-secondary border rounded-pill">v<%= plugin.version %></span>
                         <% if (isUe) { %>
                           <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sorbonne Université</span>
+                        <% } else if (isRfid) { %>
+                          <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">Borne Tactile</span>
                         <% } %>
                       </div>
                       <p class="text-muted small mb-0 mt-1"><%= plugin.description %></p>

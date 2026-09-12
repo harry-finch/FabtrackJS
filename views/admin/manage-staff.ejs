@@ -56,12 +56,16 @@
                                     <td><a href="mailto:<%= user.email %>" class="text-decoration-none"><%= user.email %></a></td>
                                     <td class="text-center">
                                         <% if(user.role == "admin") {%>
-                                        <a href="/admin/staff/demote/<%= user.id %>" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="Cliquer pour rétrograder">
+                                        <a href="/admin/staff/demote/<%= user.id %>" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="Cliquer pour rétrograder en médiateur">
                                             <i class="fa-solid fa-shield-halved me-1"></i>Admin
                                         </a>
+                                        <% } else if(user.role == "staff") { %>
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1">
+                                            <i class="fa-solid fa-desktop me-1"></i>Borne (Staff)
+                                        </span>
                                         <% } else { %>
                                         <a href="/admin/staff/promote/<%= user.id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Cliquer pour promouvoir admin">
-                                            <i class="fa-solid fa-user me-1"></i>Staff
+                                            <i class="fa-solid fa-user-gear me-1"></i>Médiateur
                                         </a>
                                         <% } %>
                                     </td>

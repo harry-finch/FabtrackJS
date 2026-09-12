@@ -46,6 +46,7 @@ model User {
   balance       Decimal   @default(0.0)
   termsAccepted Boolean   @default(false)
   token         String    @unique @db.VarChar(40)
+  rfid          String?   @unique @db.VarChar(100)
   deletedAt     DateTime? // Soft delete for archival
   isExpert      Boolean   @default(false)
 

@@ -66,6 +66,16 @@
                         </div>
                     </div>
                 </div>
+                <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control font-monospace" id="rfid" name="rfid" value="<%= user.rfid || '' %>" placeholder="Badge RFID" autocomplete="off" />
+                            <label for="rfid"><i class="fa-solid fa-id-card me-1 text-primary"></i> Numéro de badge RFID (UID)</label>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
                 <div class="row">
                     <div class="col">
                         <div class="form-floating mb-3">

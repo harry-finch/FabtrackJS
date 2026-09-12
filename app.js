@@ -103,6 +103,10 @@ app.use(async (req, res, next) => {
     hookManager.setPluginEnabled("ue", isUeEnabled);
     res.locals.isPluginUeEnabled = isUeEnabled;
 
+    const isRfidEnabled = settings.plugin_rfid_enabled !== "false";
+    hookManager.setPluginEnabled("rfid", isRfidEnabled);
+    res.locals.isPluginRfidEnabled = isRfidEnabled;
+
     // Apply dynamic session timeout if configured
     if (req.session && req.session.cookie) {
       const timeoutHours = parseInt(settings.session_timeout_hours || "24", 10);

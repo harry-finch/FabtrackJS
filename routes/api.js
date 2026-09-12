@@ -12,6 +12,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const logger = require("../utilities/simpleLogger.js");
+const hookManager = require("../core/HookManager.js");
+const asyncHandler = require("../middleware/asyncHandler.js");
 
 // ******************************************************************************
 // Route returning a list of all staff members (admin only)
@@ -116,5 +118,55 @@ router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
 
   res.json(data);
 });
+
+// ******************************************************************************
+// RFID Plugin Endpoints
+// ******************************************************************************
+
+router.post(
+  "/rfid/scan",
+  isLoggedIn,
+  asyncHandler(async (req, res) => {
+    if (!hookManager.isPluginEnabled("rfid")) {
+      return res.status(403).json({ success: false, error: "Le plugin RFID n'est pas activé." });
+    }
+
+    const { rfid } = req.body;
+    const workspaceId =
+      req.body.workspaceId || (req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null);
+    const staffUsername = req.session.username;
+
+    const results = await hookManager.triggerAsyncHook("rfid:scan", {
+      rfid,
+      workspaceId,
+      staffUsername,
+    });
+
+    if (results && results.length > 0) {
+      const result = results[0];
+      const statusCode = result.success ? 200 : result.code === "USER_NOT_FOUND" ? 404 : 400;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.status(500).json({ success: false, error: "Erreur lors du traitement du scan RFID." });
+  }),
+);
+
+router.get(
+  "/rfid/check-availability",
+  isLoggedIn,
+  asyncHandler(async (req, res) => {
+    const { rfid, excludeUserId } = req.query;
+    const results = await hookManager.triggerAsyncHook("rfid:checkAvailability", {
+      rfid,
+      excludeUserId,
+    });
+
+    if (results && results.length > 0) {
+      return res.json(results[0]);
+    }
+    return res.json({ available: true });
+  }),
+);
 
 module.exports = router;
