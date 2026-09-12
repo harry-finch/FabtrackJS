@@ -166,6 +166,7 @@ model Workspace {
 
   historyEntries History[]
   categories     Category[]
+  equipment      Equipment[]
 }
 
 // Enum for ResourceType in Activity polymorphic association
@@ -233,8 +234,11 @@ model MachineType {
 
 // Equipment (e.g., hand tools, safety gear)
 model Equipment {
-  id   Int    @id @default(autoincrement())
-  name String @unique @db.VarChar(255)
+  id          Int        @id @default(autoincrement())
+  name        String     @unique @db.VarChar(255)
+  workspaceId Int?
+
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 }
 
 // Consumable status enum to track stock status

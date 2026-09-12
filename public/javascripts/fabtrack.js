@@ -237,9 +237,8 @@ if (activityManager) {
 
     // Reset all selection inputs
     const machineSelect = document.getElementById("machineId");
-    const equipmentSelect = document.getElementById("equipmentId");
     if (machineSelect) machineSelect.selectedIndex = 0;
-    if (equipmentSelect) equipmentSelect.selectedIndex = 0;
+    clearEquipmentSelection();
     if (quantityInput) quantityInput.value = 1;
     clearConsumableSelection();
   });
@@ -424,4 +423,98 @@ if (consumableSearchInput && typeof autocomplete === "function") {
 
 if (quantityInput) {
   quantityInput.addEventListener("input", updateConsumableLiveCalc);
+}
+
+// ==============================================================================
+// Equipment Borrow Autocomplete for Activity Manager
+// ==============================================================================
+const equipmentDataEl = document.getElementById("equipmentData");
+let equipmentList = [];
+if (equipmentDataEl) {
+  try {
+    equipmentList = JSON.parse(equipmentDataEl.textContent);
+  } catch (e) {
+    console.error("Failed to parse equipment JSON:", e);
+  }
+}
+
+const equipmentSearchInput = document.getElementById("equipmentSearch");
+const hiddenEquipmentInput = document.getElementById("equipmentId");
+const clearEquipmentBtn = document.getElementById("clearEquipmentBtn");
+
+function clearEquipmentSelection() {
+  if (equipmentSearchInput) equipmentSearchInput.value = "";
+  if (hiddenEquipmentInput) hiddenEquipmentInput.value = "";
+  if (clearEquipmentBtn) clearEquipmentBtn.style.display = "none";
+}
+
+if (clearEquipmentBtn) {
+  clearEquipmentBtn.addEventListener("click", () => {
+    clearEquipmentSelection();
+    if (equipmentSearchInput) equipmentSearchInput.focus();
+  });
+}
+
+if (equipmentSearchInput && typeof autocomplete === "function") {
+  equipmentSearchInput.addEventListener("input", () => {
+    if (!equipmentSearchInput.value.trim()) {
+      clearEquipmentSelection();
+    }
+  });
+
+  autocomplete({
+    input: equipmentSearchInput,
+    minLength: 0,
+    showOnFocus: true,
+    preventSubmit: 2,
+    emptyMsg: "Aucun équipement trouvé",
+    fetch: function (text, callback) {
+      text = text.toLowerCase().trim();
+      if (!text) {
+        callback(equipmentList);
+        return;
+      }
+      const filtered = equipmentList.filter(function (item) {
+        const matchName = item.name && item.name.toLowerCase().indexOf(text) !== -1;
+        const matchWorkspace = item.workspaceName && item.workspaceName.toLowerCase().indexOf(text) !== -1;
+        return matchName || matchWorkspace;
+      });
+      callback(filtered);
+    },
+    render: function (item, value) {
+      const itemElement = document.createElement("div");
+      itemElement.className = "d-flex justify-content-between align-items-center py-2 px-2 border-bottom";
+
+      let displayName = item.name;
+      if (value && value.trim()) {
+        try {
+          const escaped = value.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp(`(${escaped})`, "gi");
+          displayName = displayName.replace(regex, "<strong>$1</strong>");
+        } catch (e) {
+          displayName = item.name;
+        }
+      }
+
+      const workspaceBadge = item.workspaceName
+        ? `<span class="badge bg-secondary-subtle text-secondary border ms-2 small"><i class="fa-solid fa-location-dot me-1"></i>${item.workspaceName}</span>`
+        : '';
+
+      itemElement.innerHTML = `
+        <div class="d-flex align-items-center justify-content-between w-100 py-1">
+          <div class="d-flex align-items-center text-truncate">
+            <i class="fa-solid fa-toolbox text-secondary me-2"></i>
+            <span class="fw-semibold text-body">${displayName}</span>
+          </div>
+          ${workspaceBadge}
+        </div>
+      `;
+      return itemElement;
+    },
+    onSelect: function (item) {
+      equipmentSearchInput.value = item.name;
+      if (hiddenEquipmentInput) hiddenEquipmentInput.value = item.id;
+      if (clearEquipmentBtn) clearEquipmentBtn.style.display = "inline-block";
+    },
+  });
 }

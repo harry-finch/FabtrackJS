@@ -312,14 +312,27 @@
                                         Borrow
                                     </div>
                                     <div class="col-8">
-                                        <div class="form-floating mb-3">
-                                            <select class="form-select" id="equipmentId" name="equipmentId">
-                                                <option value="" selected></option>
-                                                <% equipment.forEach(function(eq) { %>
-                                                <option value="<%= eq.id %>"><%= eq.name %> (<%= eq.brand %>)</option>
-                                                <% }); %>
-                                            </select>
-                                            <label for="equipmentId">Equipment</label>
+                                        <div class="form-floating mb-3 position-relative">
+                                            <input type="hidden" id="equipmentId" name="equipmentId" value="" />
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                id="equipmentSearch"
+                                                placeholder="Taper pour rechercher un équipement / outil..."
+                                                autocomplete="off"
+                                            />
+                                            <label for="equipmentSearch">
+                                                <i class="fa-solid fa-toolbox me-1 text-muted"></i> Emprunter un équipement / outil
+                                            </label>
+                                            <button
+                                                type="button"
+                                                class="btn btn-link text-secondary position-absolute top-50 end-0 translate-middle-y me-2 p-1"
+                                                id="clearEquipmentBtn"
+                                                style="display: none; z-index: 5;"
+                                                title="Effacer la sélection"
+                                            >
+                                                <i class="fa-solid fa-xmark fa-lg"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -453,6 +466,17 @@
                     stockUnit: c.stockUnit || '',
                     unitsPerPack: Number(c.unitsPerPack || 1),
                     categoryName: c.category ? c.category.name : ''
+                };
+            })) %>
+        </script>
+
+        <script id="equipmentData" type="application/json">
+            <%- JSON.stringify((typeof equipment !== 'undefined' ? equipment : []).map(function(eq) {
+                return {
+                    id: eq.id,
+                    name: eq.name,
+                    workspaceId: eq.workspaceId,
+                    workspaceName: eq.workspace ? eq.workspace.name : ''
                 };
             })) %>
         </script>
