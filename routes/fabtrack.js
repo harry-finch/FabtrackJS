@@ -146,6 +146,23 @@ router.post(
     const selected = req.session.availableWorkspaces.find((w) => w.id === newWorkspaceId);
     if (selected) {
       req.session.selectedWorkspace = selected;
+      req.session.lastWorkspaceId = selected.id;
+      res.cookie("fabtrack_last_workspace_id", selected.id, {
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+        sameSite: "lax",
+      });
+
+      if (req.session.username) {
+        try {
+          await prisma.staff.update({
+            where: { name: req.session.username },
+            data: { lastWorkspaceId: selected.id },
+          });
+        } catch (e) {
+          console.error("Could not save lastWorkspaceId for staff:", e);
+        }
+      }
+
       req.session.notification = "Success: Workspace switched to " + selected.name;
       res.sendStatus(200);
     } else {

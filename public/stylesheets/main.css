@@ -142,25 +142,7 @@ main.main-container {
     border-radius: 0.375rem 0px 0px 0.375rem;
 }
 
-.dropdown-menu li {
-    position: relative;
-}
-.dropdown-menu .dropdown-submenu {
-    display: none;
-    position: absolute;
-    right: 100%;
-    left: auto;
-    top: 0;
-    margin-right: 0.25rem;
-}
-.dropdown-menu .dropdown-submenu-left {
-    right: 100%;
-    left: auto;
-}
-.dropdown-menu > li:hover > .dropdown-submenu,
-.dropdown-menu > li:focus-within > .dropdown-submenu {
-    display: block;
-}
+
 
 .form-floating input[type="file"] ~ label {
     top: 0.5rem;
@@ -176,4 +158,53 @@ main.main-container {
     left: 0.75rem;
     font-size: 1rem;
     color: #dee2e6a6;
+}
+
+/* ***************************************************** */
+/* Modern Dashboard & Card Utilities */
+/* ***************************************************** */
+
+.card-dashboard {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.card-dashboard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.09) !important;
+}
+
+.icon-box {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.65rem;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.section-badge-header {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+}
+
+.table th {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.card-table-wrapper {
+    border-radius: 0.75rem;
+    overflow: hidden;
 }

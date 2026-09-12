@@ -17,55 +17,92 @@
             <%- include('../includes/header.html') %>
 
             <div class="mb-3">
-                <a href="/admin" class="btn btn-outline-secondary btn-sm">
+                <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
                     <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
                 </a>
             </div>
 
-            <h4 class="mb-4"><i class="fa fa-users-gear"></i>&nbsp;&nbsp;Manage types of users (visitors)</h4>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">
+                        <i class="fa-solid fa-user-tag text-secondary me-2"></i>Manage types of users
+                    </h4>
+                    <small class="text-muted">Profils et catégories d'usagers du fablab</small>
+                </div>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-3 py-2">
+                    <%= usertypes.length %> types
+                </span>
+            </div>
 
-            <table class="mb-5 table">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0)" scope="col">#</th>
-                        <th onclick="sortTable(1)" scope="col">Usertype</th>
-                        <th scole="col" class="text-center">Edit</th>
-                        <th scope="col" class="text-center">Delete</th>
-                    </tr>
-                </thead>
-                <tbody id="table-content">
-                    <% usertypes.forEach(function(usertype) { %>
-                    <tr>
-                        <td scope="row"><%= usertype.id %></td>
-                        <td><%= usertype.name %></td>
-                        <td class="text-center">
-                            <a href="#" id="edit-<%= usertype.id %>"
-                                        data-id="<%= usertype.id %>"
-                                        data-name="<%= usertype.name %>">
-                                <i class="fa-solid fa-user-pen"></i>
-                            </a>
-                        </td>
-                        <td class="text-center">
-                            <a href="/admin/usertypes/delete/<%= usertype.id %>"><i class="fa-solid fa-trash-can"></i></a>
-                        </td>
-                    </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-
-            <h5 class="mb-4"><i class="fa fa-user-plus"></i>&nbsp;&nbsp;Create new usertype</h5>
-
-            <form action="/admin/usertypes/create" method="post">
-                <div class="row">
-                    <input type='hidden' id="usertypeid" name='usertypeid' value='' />
-                    <div class="col-md">
-                        <input type="text" class="form-control" id="name" name="name" placeholder="Type name" required />
-                    </div>
-                    <div class="col-md">
-                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create usertype</button>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th onclick="sortTable(0)" scope="col" class="ps-3">#</th>
+                                    <th onclick="sortTable(1)" scope="col">Usertype</th>
+                                    <th scope="col" class="text-end pe-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-content">
+                                <% usertypes.forEach(function(usertype) { %>
+                                <tr>
+                                    <td scope="row" class="ps-3 text-muted">#<%= usertype.id %></td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill px-2 py-1">
+                                            <%= usertype.name %>
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-primary" id="edit-<%= usertype.id %>"
+                                                        data-id="<%= usertype.id %>"
+                                                        data-name="<%= usertype.name %>"
+                                                        title="Modifier">
+                                                <i class="fa-solid fa-user-pen"></i>
+                                            </a>
+                                            <a href="/admin/usertypes/delete/<%= usertype.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer le type d\'usager <%= usertype.name %> ?');">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </form>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                    <h5 class="fw-bold mb-0" id="formTitle">
+                        <i class="fa-solid fa-user-tag text-secondary me-2"></i>Create new usertype
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/usertypes/create" method="post" id="userTypeForm">
+                        <div class="row g-2 align-items-center">
+                            <input type='hidden' id="usertypeid" name='usertypeid' value='' />
+                            <div class="col-md-8 col-12">
+                                <div class="form-floating mb-2 mb-md-0">
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Type name" required />
+                                    <label for="name">Type name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12 d-flex gap-2">
+                                <button class="btn btn-primary rounded-pill px-4 py-3 flex-grow-1" type="submit" id="submitBtn">
+                                    Create usertype
+                                </button>
+                                <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-3 py-3" style="display: none;" onclick="cancelEdit()">
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <%- include('../includes/footer.html') %>
 
@@ -73,18 +110,29 @@
           const elements = document.querySelectorAll('[id^="edit-"]');
           elements.forEach(function(element){
             element.addEventListener("click", editItem);
-          })
+          });
 
-          function editItem() {
-            event.preventDefault();
+          function editItem(event) {
+            if (event) event.preventDefault();
 
-            document.querySelector("h5.mb-4").innerHTML = "<i class='fa fa-user-plus'></i>&nbsp;&nbsp;Update usertype";
-            document.querySelector("form").action = "/admin/usertypes/update";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update usertype";
+            document.getElementById("userTypeForm").action = "/admin/usertypes/update";
             document.getElementById("usertypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
-            document.querySelector("button.btn-primary").innerHTML = "Update usertype";
+            document.getElementById("submitBtn").innerText = "Update usertype";
+            document.getElementById("cancelEditBtn").style.display = "inline-block";
 
+            document.getElementById("userTypeForm").scrollIntoView({ behavior: 'smooth' });
             return false;
+          }
+
+          function cancelEdit() {
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-user-tag text-secondary me-2'></i>Create new usertype";
+            document.getElementById("userTypeForm").action = "/admin/usertypes/create";
+            document.getElementById("usertypeid").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("submitBtn").innerText = "Create usertype";
+            document.getElementById("cancelEditBtn").style.display = "none";
           }
         </script>
 

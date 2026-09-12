@@ -99,91 +99,116 @@
                 <!-- Lab activity table (only shown if people are actually in the lab) -->
 
                 <% if( Object.entries(history).length ) { %>
-                <div>
-                    <hr class="mt-4 mb-4">
+                <div class="card border-0 shadow-sm mt-5 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="icon-box bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
+                                <i class="fa-solid fa-users"></i>
+                            </span>
+                            <div>
+                                <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> usagers actuellement présents</h5>
+                                <small class="text-muted">Atelier actif : <strong><%= selectedWorkspace.name %></strong></small>
+                            </div>
+                        </div>
 
-                    <h4 class="mt-4 mb-4">
-                        <i class="fa fa-users"></i>&nbsp;&nbsp;<%- Object.entries(history).length %> people currently present in <%= selectedWorkspace.name %>
-                    </h4>
+                        <!-- Static Workspace Badge -->
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
+                            <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
+                        </span>
+                    </div>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th onclick="sortTable(1)" scope="col">Arrival</th>
-                                <th onclick="sortTable(2)" scope="col">User</th>
-                                <th scope="col" class="text-center">Warnings</th>
-                                <th scope="col" class="text-center">Comments</th>
-                                <th scope="col" class="text-center">Activity</th>
-                                <th scope="col" class="text-center">Exit</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-content">
-                            <% history.forEach(function(entry) { %>
-                            <tr>
-                                <td scope="row"><%= entry.arrival %></td>
-                                <td><a href="/users/edit/<%= entry.userId %>"><%= entry.user.name %> <%= entry.user.surname %></a></td>
-                                <td class="text-center">
-                                    <% if ( Object.entries(entry.warnings).length ) { %>
-                                        <% entry.warnings.forEach(function(warning) { %>
-                                        <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
-                                                    data-bs-target="#warningDeactivator"
-                                                    data-bs-warningid="<%= warning.id %>"
-                                                    data-bs-warningtype="<%= warning.warningtype.id %>"
-                                                    data-bs-warningcomments="<%= warning.comments %>"
-                                                    data-bs-userid="<%= entry.user.id %>"
-                                                    data-bs-warninguser="<%= entry.user.name %> <%= entry.user.surname %>">
-                                            <span   data-bs-toggle="tooltip"
-                                                    data-bs-placement="right"
-                                                    data-bs-custom-class="custom-tooltip"
-                                                    data-bs-title="<%= warning.comments %>"><%- warning.warningtype.icon %></span>
-                                        </a>
-                                        <% }); %>
-                                    <% } %>
-                                    <% if (entry.user.balance != 0) { %>
-                                      <% if (entry.user.balance < 0) { %>
-                                        <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
-                                                    data-bs-target="#clearBalance"
-                                                    data-bs-balance="<%= entry.user.balance %>"
-                                                    data-bs-userid="<%= entry.user.id %>"
-                                                    data-bs-username="<%= entry.user.name %> <%= entry.user.surname %>">
-                                      <% } %>
-                                            <span   data-bs-toggle="tooltip"
-                                                    data-bs-placement="right"
-                                                    data-bs-custom-class="custom-tooltip"
-                                                    data-bs-title="<%= entry.user.balance %> €"><i class="fa-solid fa-money-bill-wave" style="color: #009600"></i></span>
-                                        </a>
-                                    <% } %>
-                                    <% if ( !Object.entries(entry.warnings).length && !(entry.user.balance != 0) ) { %>
-                                    <span   data-bs-toggle="tooltip" data-bs-placement="right"
-                                                data-bs-custom-class="custom-tooltip"
-                                                data-bs-title="All clear">-</span>
-                                    <% } %>
-                                </td>
-                                <td class="text-center">
-                                    <% if ( entry.comments ) { %>
-                                        <span   data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    data-bs-custom-class="custom-tooltip"
-                                                    data-bs-title="<%= entry.comments %>"><i class="fa-solid fa-comment-lines"></i></span>
-                                    <% } else { %>
-                                    <i class="fa-regular fa-comment" style="color: grey"></i>
-                                    <% } %>
-                                </td>
-                                <td class="text-center">
-                                    <a href="#" data-bs-toggle="modal"
-                                                data-bs-target="#activityManager"
-                                                data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
-                                                data-bs-userid="<%= entry.user.id %>"
-                                                data-bs-historyid="<%= entry.id %>">
-                                        <i class="fa-solid fa-square-plus"></i>
-                                    </a>
-                                </td>
-                                <td class="text-center">
-                                    <a href="/history/exit/<%= entry.id %>"><i class="fa-solid fa-person-running"></i></a>
-                                </td>
-                            </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th onclick="sortTable(1)" scope="col" class="ps-3">Arrival</th>
+                                        <th onclick="sortTable(2)" scope="col">User</th>
+                                        <th scope="col" class="text-center">Warnings / Solde</th>
+                                        <th scope="col" class="text-center">Comments</th>
+                                        <th scope="col" class="text-center">Activity</th>
+                                        <th scope="col" class="text-end pe-3">Sortie</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-content">
+                                    <% history.forEach(function(entry) { %>
+                                    <tr>
+                                        <td scope="row" class="ps-3 text-muted">
+                                            <i class="fa-regular fa-clock fa-xs me-1"></i><%= entry.arrival %>
+                                        </td>
+                                        <td>
+                                            <a href="/users/edit/<%= entry.userId %>" class="fw-semibold text-decoration-none">
+                                                <%= entry.user.name %> <%= entry.user.surname %>
+                                            </a>
+                                        </td>
+                                        <td class="text-center">
+                                            <% if ( Object.entries(entry.warnings).length ) { %>
+                                                <% entry.warnings.forEach(function(warning) { %>
+                                                <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
+                                                            data-bs-target="#warningDeactivator"
+                                                            data-bs-warningid="<%= warning.id %>"
+                                                            data-bs-warningtype="<%= warning.warningtype.id %>"
+                                                            data-bs-warningcomments="<%= warning.comments %>"
+                                                            data-bs-userid="<%= entry.user.id %>"
+                                                            data-bs-warninguser="<%= entry.user.name %> <%= entry.user.surname %>">
+                                                    <span   data-bs-toggle="tooltip"
+                                                            data-bs-placement="right"
+                                                            data-bs-custom-class="custom-tooltip"
+                                                            data-bs-title="<%= warning.comments %>"><%- warning.warningtype.icon %></span>
+                                                </a>
+                                                <% }); %>
+                                            <% } %>
+                                            <% if (entry.user.balance != 0) { %>
+                                              <% if (entry.user.balance < 0) { %>
+                                                <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
+                                                            data-bs-target="#clearBalance"
+                                                            data-bs-balance="<%= entry.user.balance %>"
+                                                            data-bs-userid="<%= entry.user.id %>"
+                                                            data-bs-username="<%= entry.user.name %> <%= entry.user.surname %>">
+                                              <% } %>
+                                                    <span   data-bs-toggle="tooltip"
+                                                            data-bs-placement="right"
+                                                            data-bs-custom-class="custom-tooltip"
+                                                            data-bs-title="<%= entry.user.balance %> €"><i class="fa-solid fa-money-bill-wave" style="color: #009600"></i></span>
+                                                </a>
+                                            <% } %>
+                                            <% if ( !Object.entries(entry.warnings).length && !(entry.user.balance != 0) ) { %>
+                                            <span   data-bs-toggle="tooltip" data-bs-placement="right"
+                                                        data-bs-custom-class="custom-tooltip"
+                                                        data-bs-title="All clear">-</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-center">
+                                            <% if ( entry.comments ) { %>
+                                                <span   data-bs-toggle="tooltip" data-bs-placement="top"
+                                                            data-bs-custom-class="custom-tooltip"
+                                                            data-bs-title="<%= entry.comments %>"><i class="fa-solid fa-comment-lines text-primary"></i></span>
+                                            <% } else { %>
+                                            <i class="fa-regular fa-comment text-muted"></i>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#activityManager"
+                                                        data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                                        data-bs-userid="<%= entry.user.id %>"
+                                                        data-bs-historyid="<%= entry.id %>"
+                                                        class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1"
+                                                        title="Ajouter une activité">
+                                                <i class="fa-solid fa-plus me-1"></i>Activité
+                                            </a>
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            <a href="/history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Enregistrer la sortie">
+                                                <i class="fa-solid fa-person-walking-arrow-right me-1"></i>Sortie
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 <% } %>
 

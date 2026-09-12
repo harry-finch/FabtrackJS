@@ -17,58 +17,82 @@
             <%- include('../includes/header.html') %>
 
             <div class="mb-3">
-                <a href="/admin" class="btn btn-outline-secondary btn-sm">
+                <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
                     <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
                 </a>
             </div>
 
-            <h4 class="mb-4"><i class="fa fa-users-gear"></i>&nbsp;&nbsp;Manage staff accounts</h4>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">
+                        <i class="fa-solid fa-users-gear text-danger me-2"></i>Manage staff accounts
+                    </h4>
+                    <small class="text-muted">Gestion des droits et comptes de l'équipe d'administration</small>
+                </div>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-3 py-2">
+                    <%= users.length %> comptes staff
+                </span>
+            </div>
 
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0)" scope="col">#</th>
-                        <th onclick="sortTable(1)" scope="col">Username</th>
-                        <th onclick="sortTable(2)" scope="col">Email</th>
-                        <th onclick="sortTable(3)" scope="col" class="text-center">Role</th>
-                        <th scope="col" class="text-center">Enabled</th>
-                        <th scope="col" class="text-center">Edit</th>
-                        <th scope="col" class="text-center">Delete</th>
-                    </tr>
-                </thead>
-                <tbody id="table-content">
-                    <% users.forEach(function(user) { %>
-                    <tr>
-                        <td scope="row"><%= user.id %></td>
-                        <td><%= user.name %></td>
-                        <td><a href="mailto:<%= user.email %>"><%= user.email %></a></td>
-                        <td class="text-center">
-                            <% if(user.role == "admin") {%>
-                            <a href="/admin/staff/demote/<%= user.id %>" title="admin"><i class="fa-solid fa-user-secret"></i></a> <%
-                            } else { %>
-                            <a href="/admin/staff/promote/<%= user.id %>" title="user"><i class="fa-regular fa-user"></i></a> <% } %>
-                        </td>
-                        <td class="text-center">
-                            <% if(user.approved) {%>
-                            <a href="/admin/staff/disable/<%= user.id %>" title="disable" style="color: #44aa44"
-                                ><i class="fa-solid fa-user-check"></i
-                            ></a>
-                            <% } else { %>
-                            <a href="/admin/staff/enable/<%= user.id %>" title="enable" style="color: #aa4444"
-                                ><i class="fa-solid fa-user-xmark"></i
-                            ></a>
-                            <% } %>
-                        </td>
-                        <td class="text-center">
-                            <a href="/admin/staff/edit/<%= user.id %>"><i class="fa-solid fa-user-pen"></i></a>
-                        </td>
-                        <td class="text-center">
-                            <a href="/admin/staff/delete/<%= user.id %>"><i class="fa-solid fa-trash-can"></i></a>
-                        </td>
-                    </tr>
-                    <% }); %>
-                </tbody>
-            </table>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th onclick="sortTable(0)" scope="col" class="ps-3">#</th>
+                                    <th onclick="sortTable(1)" scope="col">Username</th>
+                                    <th onclick="sortTable(2)" scope="col">Email</th>
+                                    <th onclick="sortTable(3)" scope="col" class="text-center">Role</th>
+                                    <th scope="col" class="text-center">Statut</th>
+                                    <th scope="col" class="text-end pe-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-content">
+                                <% users.forEach(function(user) { %>
+                                <tr>
+                                    <td scope="row" class="ps-3 text-muted">#<%= user.id %></td>
+                                    <td class="fw-semibold"><%= user.name %></td>
+                                    <td><a href="mailto:<%= user.email %>" class="text-decoration-none"><%= user.email %></a></td>
+                                    <td class="text-center">
+                                        <% if(user.role == "admin") {%>
+                                        <a href="/admin/staff/demote/<%= user.id %>" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="Cliquer pour rétrograder">
+                                            <i class="fa-solid fa-shield-halved me-1"></i>Admin
+                                        </a>
+                                        <% } else { %>
+                                        <a href="/admin/staff/promote/<%= user.id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Cliquer pour promouvoir admin">
+                                            <i class="fa-solid fa-user me-1"></i>Staff
+                                        </a>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-center">
+                                        <% if(user.approved) {%>
+                                        <a href="/admin/staff/disable/<%= user.id %>" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill text-decoration-none px-2 py-1" title="Cliquer pour désactiver">
+                                            <i class="fa-solid fa-check me-1"></i>Actif
+                                        </a>
+                                        <% } else { %>
+                                        <a href="/admin/staff/enable/<%= user.id %>" class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill text-decoration-none px-2 py-1" title="Cliquer pour activer">
+                                            <i class="fa-solid fa-xmark me-1"></i>Inactif
+                                        </a>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="/admin/staff/edit/<%= user.id %>" class="btn btn-outline-primary" title="Modifier">
+                                                <i class="fa-solid fa-user-pen"></i>
+                                            </a>
+                                            <a href="/admin/staff/delete/<%= user.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer le compte staff de <%= user.name %> ?');">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
             <%- include('../includes/footer.html') %>
     </body>

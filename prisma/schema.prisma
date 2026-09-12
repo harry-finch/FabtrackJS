@@ -27,8 +27,9 @@ model Staff {
   role        String    @default("user") @db.VarChar(20)
   pwdToken    String?   @db.VarChar(40)
   tokenExpiry DateTime?
-  createdAt   DateTime  @default(now())
-  approved    Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  approved        Boolean   @default(false)
+  lastWorkspaceId Int?
 }
 
 // Users and visitors whose activities we want to track

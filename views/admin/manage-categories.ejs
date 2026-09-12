@@ -17,98 +17,119 @@
       <%- include('../includes/header.html') %>
 
       <div class="mb-3">
-        <a href="/admin" class="btn btn-outline-secondary btn-sm">
+        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
           <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
         </a>
       </div>
 
-      <h4 class="mb-4">
-        <i class="fa-solid fa-layer-group"></i>&nbsp;&nbsp;Manage Categories
-      </h4>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="fw-bold mb-0">
+            <i class="fa-solid fa-layer-group text-primary me-2"></i>Manage Categories
+          </h4>
+          <small class="text-muted">Organisation des consommables et équipements</small>
+        </div>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-3 py-2">
+          <%= categories.length %> catégories
+        </span>
+      </div>
 
-      <table class="mb-5 table">
-        <thead>
-          <tr>
-            <th onclick="sortTable(0)" scope="col">#</th>
-            <th onclick="sortTable(1)" scope="col">Category Name</th>
-            <th onclick="sortTable(2)" scope="col">Workspace</th>
-            <th scole="col" class="text-center">Edit</th>
-            <th scope="col" class="text-center">Delete</th>
-          </tr>
-        </thead>
-        <tbody id="table-content">
-          <% categories.forEach(function(category) { %>
-          <tr>
-            <td scope="row"><%= category.id %></td>
-            <td><%= category.name %></td>
-            <td>
-              <% if (category.workspace) { %>
-                <%= category.workspace.name %>
-              <% } else { %>
-                -
-              <% } %>
-            </td>
-            <td class="text-center">
-              <a
-                href="#"
-                id="edit-<%= category.id %>"
-                data-id="<%= category.id %>"
-                data-name="<%= category.name %>"
-                data-workspace-id="<%= category.workspaceId %>"
-              >
-                <i class="fa-solid fa-pen-to-square"></i>
-              </a>
-            </td>
-            <td class="text-center">
-              <a href="/admin/categories/delete/<%= category.id %>"
-                ><i class="fa-solid fa-trash-can"></i></a
-              >
-            </td>
-          </tr>
-          <% }); %>
-        </tbody>
-      </table>
-
-      <h5 class="mb-4">
-        <i class="fa-solid fa-layer-group"></i>&nbsp;&nbsp;Create New Category
-      </h5>
-
-      <form action="/admin/categories/create" method="post">
-        <div class="row">
-          <input type="hidden" id="categoryid" name="categoryid" value="" />
-          <div class="col-8">
-            <div class="form-floating mb-3">
-              <input
-                type="text"
-                class="form-control"
-                id="name"
-                name="name"
-                placeholder="Name"
-                required
-              />
-              <label for="name">Name</label>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="form-floating mb-3">
-              <select class="form-select" id="workspaceId" name="workspaceId" required>
-                <option value="" disabled selected>Select workspace</option>
-                <% workspaces.forEach(function(workspace) { %>
-                  <option value="<%= workspace.id %>"><%= workspace.name %></option>
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th onclick="sortTable(0)" scope="col" class="ps-3">#</th>
+                  <th onclick="sortTable(1)" scope="col">Category Name</th>
+                  <th onclick="sortTable(2)" scope="col">Workspace</th>
+                  <th scope="col" class="text-end pe-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-content">
+                <% categories.forEach(function(category) { %>
+                <tr>
+                  <td scope="row" class="ps-3 text-muted">#<%= category.id %></td>
+                  <td class="fw-semibold"><%= category.name %></td>
+                  <td>
+                    <% if (category.workspace) { %>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"><%= category.workspace.name %></span>
+                    <% } else { %>
+                      <span class="text-muted small">-</span>
+                    <% } %>
+                  </td>
+                  <td class="text-end pe-3">
+                    <div class="btn-group btn-group-sm">
+                      <a
+                        href="#"
+                        class="btn btn-outline-primary"
+                        id="edit-<%= category.id %>"
+                        data-id="<%= category.id %>"
+                        data-name="<%= category.name %>"
+                        data-workspace-id="<%= category.workspaceId %>"
+                        title="Modifier"
+                      >
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </a>
+                      <a href="/admin/categories/delete/<%= category.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer la catégorie <%= category.name %> ?');">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
                 <% }); %>
-              </select>
-              <label for="workspaceId">Workspace</label>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 pt-3 pb-0">
+          <h5 class="fw-bold mb-0" id="formTitle">
+            <i class="fa-solid fa-layer-group text-primary me-2"></i>Create New Category
+          </h5>
+        </div>
+        <div class="card-body">
+          <form action="/admin/categories/create" method="post" id="categoryForm">
+            <div class="row">
+              <input type="hidden" id="categoryid" name="categoryid" value="" />
+              <div class="col-md-8 col-12">
+                <div class="form-floating mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                    placeholder="Name"
+                    required
+                  />
+                  <label for="name">Name</label>
+                </div>
+              </div>
+              <div class="col-md-4 col-12">
+                <div class="form-floating mb-3">
+                  <select class="form-select" id="workspaceId" name="workspaceId" required>
+                    <option value="" disabled selected>Select workspace</option>
+                    <% workspaces.forEach(function(workspace) { %>
+                      <option value="<%= workspace.id %>"><%= workspace.name %></option>
+                    <% }); %>
+                  </select>
+                  <label for="workspaceId">Workspace</label>
+                </div>
+              </div>
             </div>
-          </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
+                Create New Category
+              </button>
+              <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" onclick="cancelEdit()">
+                Annuler
+              </button>
+            </div>
+          </form>
         </div>
-        <div class="row">
-          <div class="col-12">
-            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">
-              Create New Category
-            </button>
-          </div>
-        </div>
-      </form>
+      </div>
 
       <%- include('../includes/footer.html') %>
 
@@ -118,19 +139,31 @@
           element.addEventListener("click", editItem);
         });
 
-        function editItem() {
-          event.preventDefault();
+        function editItem(event) {
+          if (event) event.preventDefault();
 
-          document.querySelector("h5.mb-4").innerHTML =
-            "<i class='fa-solid fa-layer-group'></i>&nbsp;&nbsp;Update Category";
-          document.querySelector("form").action = "/admin/categories/update";
+          document.getElementById("formTitle").innerHTML =
+            "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update Category";
+          document.getElementById("categoryForm").action = "/admin/categories/update";
           document.getElementById("categoryid").value = this.dataset.id;
           document.getElementById("name").value = this.dataset.name;
-          document.getElementById("workspaceId").value = this.dataset.workspaceId || ''; // Handle potential null workspaceId
-          document.querySelector("button.btn-primary").innerHTML =
-            "Update Category";
+          document.getElementById("workspaceId").value = this.dataset.workspaceId || '';
+          document.getElementById("submitBtn").innerText = "Update Category";
+          document.getElementById("cancelEditBtn").style.display = "inline-block";
 
+          document.getElementById("categoryForm").scrollIntoView({ behavior: 'smooth' });
           return false;
+        }
+
+        function cancelEdit() {
+          document.getElementById("formTitle").innerHTML =
+            "<i class='fa-solid fa-layer-group text-primary me-2'></i>Create New Category";
+          document.getElementById("categoryForm").action = "/admin/categories/create";
+          document.getElementById("categoryid").value = "";
+          document.getElementById("name").value = "";
+          document.getElementById("workspaceId").selectedIndex = 0;
+          document.getElementById("submitBtn").innerText = "Create New Category";
+          document.getElementById("cancelEditBtn").style.display = "none";
         }
       </script>
   </body>

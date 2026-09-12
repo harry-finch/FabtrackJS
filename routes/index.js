@@ -206,6 +206,9 @@ router.post(
       req.session.loggedin = true;
       req.session.role = user.role;
       req.session.username = user.name;
+      if (user.lastWorkspaceId) {
+        req.session.lastWorkspaceId = user.lastWorkspaceId;
+      }
       res.redirect("/");
     } else {
       req.session.notification = "Error: Incorrect username or password.";
@@ -218,7 +221,23 @@ router.post(
 // Logout route
 // ******************************************************************************
 
-router.get("/logout", (req, res) => {
+router.get("/logout", async (req, res) => {
+  if (req.session.username && req.session.selectedWorkspace) {
+    try {
+      await prisma.staff.update({
+        where: { name: req.session.username },
+        data: { lastWorkspaceId: req.session.selectedWorkspace.id },
+      });
+    } catch (e) {
+      console.error("Could not save last workspace on logout:", e);
+    }
+  }
+  if (req.session.selectedWorkspace) {
+    res.cookie("fabtrack_last_workspace_id", req.session.selectedWorkspace.id, {
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+    });
+  }
   req.session.destroy(() => res.redirect("/login"));
 });
 

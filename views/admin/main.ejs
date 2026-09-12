@@ -16,207 +16,479 @@
         <main class="main-container">
             <%- include('../includes/header.html') %>
 
-            <h4 class="mb-4"><i class="fa fa-screwdriver-wrench"></i>&nbsp;&nbsp;Administration panel</h4>
+            <!-- Dashboard Title Banner -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="icon-box bg-primary text-white shadow-sm">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">Administration panel</h4>
+                        <small class="text-muted">Pilotage central et configuration de Fabtrack</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+                    <a href="/fabtrack" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
+                        <i class="fa-solid fa-desktop me-1"></i> Kiosque Fabtrack
+                    </a>
+                </div>
+            </div>
 
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-users-gear fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/staff/manage" class="btn btn-danger mb-3">Manage staff accounts</a>
-                            <p class="card-text" style="font-size: 0.8em">Delete or deactivate staff accounts, give or take back rights</p>
+            <!-- SECTION 1: Activité & Suivi -->
+            <div class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle section-badge-header px-2 py-1">Activité & Suivi</span>
+                    <hr class="flex-grow-1 my-0 opacity-25">
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-primary-subtle text-primary me-3">
+                                        <i class="fa-solid fa-clipboard-list"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">View history</h6>
+                                        <small class="text-muted">Passages & sessions</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Consulter, filtrer et gérer l'historique de fréquentation du fablab</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/view-history" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
+                                        Ouvrir l'historique <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-success-subtle text-success me-3">
+                                        <i class="fa-solid fa-chart-pie"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Project consumption</h6>
+                                        <small class="text-muted">Consommables & Projets</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Historique détaillé de consommation des matières par projet ou utilisateur</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/project-consumption" class="btn btn-outline-success btn-sm w-100 rounded-pill">
+                                        Consommations <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-danger-subtle text-danger me-3">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                    </div>
+                                    <div>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <h6 class="fw-bold mb-0">Unités d'Enseignement</h6>
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">Sorbonne</span>
+                                        </div>
+                                        <small class="text-muted">Projets académiques</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Gérer les codes UE, habilitations et exports de refacturation académique</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/ue" class="btn btn-outline-danger btn-sm w-100 rounded-pill">
+                                        Gérer les UE <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
                 </div>
-                <div class="col">
-                    <div class="card h-100 text-center text-bg-secondary">
-                        <i class="fa-solid fa-square-sliders fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/staff/manage" class="btn btn-danger mb-3">Manage platform settings</a>
-                            <p class="card-text" style="font-size: 0.8em">Manage general settings for the platform</p>
+            </div>
+
+            <!-- SECTION 2: Parc Machines & Équipements -->
+            <div class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle section-badge-header px-2 py-1">Machines & Équipements</span>
+                    <hr class="flex-grow-1 my-0 opacity-25">
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-primary-subtle text-primary me-3">
+                                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Manage machines</h6>
+                                        <small class="text-muted">Parc machines</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Créer, modifier ou désactiver les machines de l'atelier</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/machines/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Machines <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-secondary-subtle text-secondary me-3">
+                                        <i class="fa-solid fa-gears"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Machine types</h6>
+                                        <small class="text-muted">Catégories d'outils</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Définir les types de machines (FDM, SLA, Laser, CNC...)</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/machines/manage-types" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Types <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-warning-subtle text-warning-emphasis me-3">
+                                        <i class="fa-solid fa-lock-keyhole"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Access levels</h6>
+                                        <small class="text-muted">Habilitations</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Niveaux requis pour réserver et utiliser chaque équipement</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/accesslevels/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Accès <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-info-subtle text-info-emphasis me-3">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Locations</h6>
+                                        <small class="text-muted">Salles & Zones</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Emplacements physiques et zones de travail du fablab</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/locations/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Emplacements <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
-                <% if( workspaces ) { %>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-building fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/workspaces/manage" class="btn btn-warning mb-3">Manage fablab workspaces</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify workspaces</p>
+
+            <!-- SECTION 3: Matières & Ressources -->
+            <div class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle section-badge-header px-2 py-1">Matières & Ressources</span>
+                    <hr class="flex-grow-1 my-0 opacity-25">
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-success-subtle text-success me-3">
+                                        <i class="fa-solid fa-boxes-stacked"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Consumables</h6>
+                                        <small class="text-muted">Stocks & Tarifs</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Inventaire, stocks en unités/grammes et livraisons</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/consumables/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Consommables <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <% } %>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-users fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/users/manage" class="btn btn-warning mb-3">Manage fablab users</a>
-                            <p class="card-text" style="font-size: 0.8em">Delete, deactivate or modify regular user accounts</p>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-secondary-subtle text-secondary me-3">
+                                        <i class="fa-solid fa-layer-group"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Categories</h6>
+                                        <small class="text-muted">Rayons & Types</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Classer les consommables (Filaments, Résines, Plaques...)</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/categories/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Catégories <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-screwdriver-wrench fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/machines/manage" class="btn btn-warning mb-3">Manage machines</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify machines</p>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-info-subtle text-info-emphasis me-3">
+                                        <i class="fa-solid fa-diagram-project"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Project types</h6>
+                                        <small class="text-muted">Typologies</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Types de projets (Académique, Personnel, Recherche, Pro...)</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/projecttypes/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Types projets <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-lock-keyhole fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/accesslevels/manage" class="btn btn-warning mb-3">Manage access levels</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify access levels</p>
+
+                    <% if( workspaces ) { %>
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-dark-subtle text-body me-3">
+                                        <i class="fa-solid fa-building"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Workspaces</h6>
+                                        <small class="text-muted">Espaces Fablab</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Gérer les différents espaces ou fablabs rattachés</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/workspaces/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Workspaces <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <% } %>
                 </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-clipboard-list fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/view-history" class="btn btn-warning mb-3">View history</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify history entries</p>
+            </div>
+
+            <!-- SECTION 4: Membres & Communauté -->
+            <div class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle section-badge-header px-2 py-1">Membres & Communauté</span>
+                    <hr class="flex-grow-1 my-0 opacity-25">
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-primary-subtle text-primary me-3">
+                                        <i class="fa-solid fa-users"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Fablab users</h6>
+                                        <small class="text-muted">Adhérents & Visiteurs</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Gérer les comptes usagers, soldes et abonnements</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/users/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Utilisateurs <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-danger-subtle text-danger me-3">
+                                        <i class="fa-solid fa-users-gear"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Staff accounts</h6>
+                                        <small class="text-muted">Équipe & Admins</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Droits d'accès et comptes administrateurs / animateurs</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/staff/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Staff <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-secondary-subtle text-secondary me-3">
+                                        <i class="fa-solid fa-user-tag"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">User types</h6>
+                                        <small class="text-muted">Profils & Statuts</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Profils (Étudiant, Chercheur, Particulier, Fabmanager...)</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/usertypes/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Types usagers <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box bg-warning-subtle text-warning-emphasis me-3">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Warning types</h6>
+                                        <small class="text-muted">Sanctions & Sécurité</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Définir les motifs d'avertissement et règles de sécurité</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/warningtypes/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+                                        Avertissements <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-layer-group fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/categories/manage" class="btn btn-primary mb-3">Manage categories</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, update or delete categories</p>
+
+            <!-- SECTION 5: Modules avancés -->
+            <div class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-body-secondary text-body-secondary border section-badge-header px-2 py-1">Outils & Modules futurs</span>
+                    <hr class="flex-grow-1 my-0 opacity-25">
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm opacity-75">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="icon-box bg-body-secondary text-secondary">
+                                        <i class="fa-solid fa-chart-line"></i>
+                                    </div>
+                                    <span class="badge bg-body-secondary text-body-secondary border">Bientôt</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">Statistics</h6>
+                                <p class="card-text text-secondary small flex-grow-1">Analyses avancées d'utilisation du matériel et affluence</p>
+                                <div class="pt-2 mt-auto">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill" disabled>Indisponible</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-user-tag fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/usertypes/manage" class="btn btn-primary mb-3">Manage user types</a>
-                            <p class="card-text" style="font-size: 0.8em">Create or delete user types</p>
+
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm opacity-75">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="icon-box bg-body-secondary text-secondary">
+                                        <i class="fa-regular fa-envelope-open-text"></i>
+                                    </div>
+                                    <span class="badge bg-body-secondary text-body-secondary border">Bientôt</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">Communication</h6>
+                                <p class="card-text text-secondary small flex-grow-1">Envoi d'e-mails groupés et newsletters aux membres</p>
+                                <div class="pt-2 mt-auto">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill" disabled>Indisponible</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-diagram-project fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/projecttypes/manage" class="btn btn-primary mb-3">Manage project types</a>
-                            <p class="card-text" style="font-size: 0.8em">Create or delete project types</p>
+
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm opacity-75">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="icon-box bg-body-secondary text-secondary">
+                                        <i class="fa-regular fa-hammer"></i>
+                                    </div>
+                                    <span class="badge bg-body-secondary text-body-secondary border">Bientôt</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">Workshops</h6>
+                                <p class="card-text text-secondary small flex-grow-1">Gestion des ateliers de formation et inscriptions</p>
+                                <div class="pt-2 mt-auto">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill" disabled>Indisponible</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-gears fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/machines/manage-types" class="btn btn-primary mb-3">Manage machine types</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify machine types</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-triangle-exclamation fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/warningtypes/manage" class="btn btn-primary mb-3">Manage warning types</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify warning types</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-location-dot fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/locations/manage" class="btn btn-primary mb-3">Manage locations</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify locations</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-boxes-stacked fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/consumables/manage" class="btn btn-primary mb-3">Manage consumables</a>
-                            <p class="card-text" style="font-size: 0.8em">Create, delete or modify consumables</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <i class="fa-solid fa-diagram-project fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/project-consumption" class="btn btn-primary mb-3">Project consumption</a>
-                            <p class="card-text" style="font-size: 0.8em">Consulter l'historique des consommables par projet</p>
-                        </div>
-                    </div>
-                </div>
-                <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
-                <div class="col">
-                    <div class="card h-100 text-center border-primary shadow-sm">
-                        <i class="fa-solid fa-graduation-cap fs-1 mt-2 text-primary text-center"></i>
-                        <div class="card-body">
-                            <a href="/admin/ue" class="btn btn-primary mb-3 position-relative">
-                                Unités d'Enseignement
-                                <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">
-                                    Sorbonne
-                                </span>
-                            </a>
-                            <p class="card-text" style="font-size: 0.8em">Gérer les UE et exporter la facturation des projets académiques</p>
-                        </div>
-                    </div>
-                </div>
-                <% } %>
-            </div>
-            <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
-                <div class="col">
-                    <div class="card h-100 text-center text-bg-secondary">
-                        <i class="fa-solid fa-chart-line-up fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="" class="btn btn-success mb-3">Statistics</a>
-                            <p class="card-text" style="font-size: 0.8em">Check your fablab's activity</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center text-bg-secondary">
-                        <i class="fa-regular fa-envelope-open-text fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="" class="btn btn-success mb-3">Communication</a>
-                            <p class="card-text" style="font-size: 0.8em">Send emails to your community</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center text-bg-secondary">
-                        <i class="fa-regular fa-hammer fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="" class="btn btn-success mb-3">Workshops</a>
-                            <p class="card-text" style="font-size: 0.8em">Create and delete workshops</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center text-bg-secondary">
-                        <i class="fa-regular fa-clipboard-list fs-1 mt-2 text-center"></i>
-                        <div class="card-body">
-                            <a href="" class="btn btn-success mb-3">View logs</a>
-                            <p class="card-text" style="font-size: 0.8em">Check the entire activity logs</p>
+
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm opacity-75">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="icon-box bg-body-secondary text-secondary">
+                                        <i class="fa-regular fa-clipboard-list"></i>
+                                    </div>
+                                    <span class="badge bg-body-secondary text-body-secondary border">Bientôt</span>
+                                </div>
+                                <h6 class="fw-bold mb-1">System logs</h6>
+                                <p class="card-text text-secondary small flex-grow-1">Journaux d'audit et historique des actions administratives</p>
+                                <div class="pt-2 mt-auto">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill" disabled>Indisponible</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <%- include('../includes/footer.html') %>
-
+        </main>
     </body>
 </html>

@@ -101,7 +101,38 @@ async function workspaceSwitcher(req, res, next) {
     }
 
     if (!req.session.selectedWorkspace && req.session.availableWorkspaces.length > 0) {
-      req.session.selectedWorkspace = req.session.availableWorkspaces[0];
+      let candidateId = null;
+
+      // 1. If staff is logged in and lastWorkspaceId is in session or database
+      if (req.session.lastWorkspaceId) {
+        candidateId = req.session.lastWorkspaceId;
+      } else if (req.session.username) {
+        const staff = await prisma.staff.findUnique({
+          where: { name: req.session.username },
+          select: { lastWorkspaceId: true },
+        });
+        if (staff && staff.lastWorkspaceId) {
+          candidateId = staff.lastWorkspaceId;
+          req.session.lastWorkspaceId = staff.lastWorkspaceId;
+        }
+      }
+
+      // 2. Persistent cookie fallback
+      if (!candidateId && req.cookies && req.cookies.fabtrack_last_workspace_id) {
+        candidateId = Number(req.cookies.fabtrack_last_workspace_id);
+      }
+
+      if (candidateId) {
+        const foundCandidate = req.session.availableWorkspaces.find((w) => w.id === candidateId);
+        if (foundCandidate) {
+          req.session.selectedWorkspace = foundCandidate;
+        }
+      }
+
+      // 3. Fallback to first available workspace if none found
+      if (!req.session.selectedWorkspace) {
+        req.session.selectedWorkspace = req.session.availableWorkspaces[0];
+      }
     } else if (req.session.selectedWorkspace) {
       // Ensure selected workspace still exists in database
       const found = req.session.availableWorkspaces.find((w) => w.id === req.session.selectedWorkspace.id);

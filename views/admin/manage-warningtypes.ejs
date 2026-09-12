@@ -17,71 +17,103 @@
             <%- include('../includes/header.html') %>
 
             <div class="mb-3">
-                <a href="/admin" class="btn btn-outline-secondary btn-sm">
+                <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
                     <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
                 </a>
             </div>
 
-            <h4 class="mb-4"><i class="fa-solid fa-triangle-exclamation"></i>&nbsp;&nbsp;Manage warning types</h4>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">
+                        <i class="fa-solid fa-triangle-exclamation text-warning-emphasis me-2"></i>Manage warning types
+                    </h4>
+                    <small class="text-muted">Motifs de rappel, avertissements et règles de sécurité</small>
+                </div>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-3 py-2">
+                    <%= warningtypes.length %> types
+                </span>
+            </div>
 
-            <table class="mb-5 table">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0)" scope="col">#</th>
-                        <th onclick="sortTable(1)" scope="col">Warning type</th>
-                        <th scole="col" class="text-center">Icon</th>
-                        <th scole="col" class="text-center">Edit</th>
-                        <th scope="col" class="text-center">Delete</th>
-                    </tr>
-                </thead>
-                <tbody id="table-content">
-                    <% warningtypes.forEach(function(warningtype) { %>
-                    <tr>
-                        <td scope="row"><%= warningtype.id %></td>
-                        <td><%= warningtype.name %></td>
-                        <td class="text-center"><%- warningtype.icon %></td>
-                        <td class="text-center">
-                            <a href="#" id="edit-<%= warningtype.id %>"
-                                        data-id="<%= warningtype.id %>"
-                                        data-name="<%= warningtype.name %>"
-                                        data-description='<%= warningtype.icon %>'>
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </a>
-                        </td>
-                        <td class="text-center">
-                            <a href="/admin/warningtypes/delete/<%= warningtype.id %>"><i class="fa-solid fa-trash-can"></i></a>
-                        </td>
-                    </tr>
-                    <% }); %>
-                </tbody>
-            </table>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th onclick="sortTable(0)" scope="col" class="ps-3">#</th>
+                                    <th onclick="sortTable(1)" scope="col">Warning type</th>
+                                    <th scope="col" class="text-center">Icon</th>
+                                    <th scope="col" class="text-end pe-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-content">
+                                <% warningtypes.forEach(function(warningtype) { %>
+                                <tr>
+                                    <td scope="row" class="ps-3 text-muted">#<%= warningtype.id %></td>
+                                    <td>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
+                                            <%= warningtype.name %>
+                                        </span>
+                                    </td>
+                                    <td class="text-center fs-5"><%- warningtype.icon %></td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-primary" id="edit-<%= warningtype.id %>"
+                                                        data-id="<%= warningtype.id %>"
+                                                        data-name="<%= warningtype.name %>"
+                                                        data-description='<%= warningtype.icon %>'
+                                                        title="Modifier">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </a>
+                                            <a href="/admin/warningtypes/delete/<%= warningtype.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer le motif <%= warningtype.name %> ?');">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-            <h5 class="mb-4"><i class="fa-solid fa-triangle-exclamation"></i>&nbsp;&nbsp;Create new warning type</h5>
-
-            <form action="/admin/warningtypes/create" method="post">
-                <div class="row">
-                    <input type='hidden' id="warningtypeid" name='warningtypeid' value='' />
-                    <div class="col-12">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Name" required />
-                            <label for="name">Name</label>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                    <h5 class="fw-bold mb-0" id="formTitle">
+                        <i class="fa-solid fa-triangle-exclamation text-warning-emphasis me-2"></i>Create new warning type
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/warningtypes/create" method="post" id="warningTypeForm">
+                        <div class="row">
+                            <input type='hidden' id="warningtypeid" name='warningtypeid' value='' />
+                            <div class="col-12">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Name" required />
+                                    <label for="name">Name</label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="form-floating mb-3">
-                            <textarea class="form-control" id="icon" name="icon" style="height: 100px"></textarea>
-                            <label for="icon">Icon</label>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-floating mb-3">
+                                    <textarea class="form-control" id="icon" name="icon" style="height: 100px"></textarea>
+                                    <label for="icon">Icon (HTML / FontAwesome icon tag)</label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
+                                Create new warning type
+                            </button>
+                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" onclick="cancelEdit()">
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create new warning type</button>
-                    </div>
-                </div>
-            </form>
+            </div>
 
             <%- include('../includes/footer.html') %>
 
@@ -89,22 +121,34 @@
           const elements = document.querySelectorAll('[id^="edit-"]');
           elements.forEach(function(element){
             element.addEventListener("click", editItem);
-          })
+          });
 
-          function editItem() {
-            event.preventDefault();
+          function editItem(event) {
+            if (event) event.preventDefault();
 
-            document.querySelector("h5.mb-4").innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i>&nbsp;&nbsp;Update warning type";
-            document.querySelector("form").action = "/admin/warningtypes/update";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update warning type";
+            document.getElementById("warningTypeForm").action = "/admin/warningtypes/update";
             document.getElementById("warningtypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
 
             const decodedIcon = this.dataset.description.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-            document.querySelector("textarea").value = decodedIcon;
+            document.getElementById("icon").value = decodedIcon;
 
-            document.querySelector("button.btn-primary").innerHTML = "Update warning type";
+            document.getElementById("submitBtn").innerText = "Update warning type";
+            document.getElementById("cancelEditBtn").style.display = "inline-block";
 
+            document.getElementById("warningTypeForm").scrollIntoView({ behavior: 'smooth' });
             return false;
+          }
+
+          function cancelEdit() {
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-triangle-exclamation text-warning-emphasis me-2'></i>Create new warning type";
+            document.getElementById("warningTypeForm").action = "/admin/warningtypes/create";
+            document.getElementById("warningtypeid").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("icon").value = "";
+            document.getElementById("submitBtn").innerText = "Create new warning type";
+            document.getElementById("cancelEditBtn").style.display = "none";
           }
         </script>
 

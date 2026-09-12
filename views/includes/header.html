@@ -1,7 +1,10 @@
-<div class="d-flex justify-content-end mb-4">
-    <div class="d-flex justify-content-center flex-fill">
-        <div style="display: block; width: 40px"></div>
-        <a href="#" onclick="location.assign(window.location.origin)">
+<div class="d-flex justify-content-between align-items-center mb-4 pb-2">
+    <!-- Spacer for balance -->
+    <div style="width: 140px;" class="d-none d-md-block"></div>
+
+    <!-- Center Logo -->
+    <div class="d-flex justify-content-center">
+        <a href="#" onclick="location.assign(window.location.origin)" title="Accueil Fabtrack">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -100,49 +103,89 @@
         ></a>
     </div>
 
+    <!-- User Profile & Navigation Menu -->
     <div class="dropdown">
-        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fa-solid fa-bars"></i>
+        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="userMenuBtn">
+            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">
+                <i class="fa-solid fa-user fa-xs"></i>
+            </div>
+            <span class="fw-semibold small"><%= username || 'Menu' %></span>
+            <i class="fa-solid fa-chevron-down fa-2xs text-muted ms-1"></i>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-            <li>
-                <a class="dropdown-item" href="/fabtrack"><i class="fa-solid fa-house"></i>&nbsp;&nbsp;Home</a>
-            </li>
-            <% if (Object.entries(availableWorkspaces).length > 0 ) { %>
-            <li>
-                <a class="dropdown-item d-flex justify-content-between align-items-center" href="#">
-                    <span><i class="fa-solid fa-building me-2"></i>Workspace</span>
-                    <i class="fa-solid fa-chevron-left small ms-2 text-muted"></i>
+
+        <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2 mt-2" style="min-width: 280px;">
+            <!-- Profile Identity -->
+            <div class="px-3 py-2 bg-body-secondary rounded-2 mb-2 d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="fw-bold small text-truncate" style="max-width: 160px;"><%= username %></div>
+                    <small class="text-muted" style="font-size: 0.72rem;">Session active</small>
+                </div>
+                <% if (role === "admin") { %>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;">Admin</span>
+                <% } else { %>
+                    <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-2 py-1" style="font-size: 0.68rem;">Staff</span>
+                <% } %>
+            </div>
+
+            <!-- WORKSPACE SELECTION (FLAT LIST, NO SUBMENU) -->
+            <% if (availableWorkspaces && availableWorkspaces.length > 0) { %>
+            <div class="px-2 py-1">
+                <div class="d-flex align-items-center justify-content-between mb-1 px-1">
+                    <span class="text-uppercase fw-bold text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;">
+                        <i class="fa-solid fa-building me-1"></i> Espace Fablab
+                    </span>
+                    <span class="badge bg-body-secondary text-body-secondary border rounded-pill" style="font-size: 0.65rem;"><%= availableWorkspaces.length %></span>
+                </div>
+                <div class="d-flex flex-column gap-1">
+                    <% availableWorkspaces.forEach(function(workspace) { 
+                        const isSelected = selectedWorkspace && (workspace.id === selectedWorkspace.id);
+                    %>
+                    <a href="#" class="workspace-link dropdown-item rounded-2 py-2 px-2 d-flex align-items-center justify-content-between <%= isSelected ? 'active bg-success-subtle text-success fw-bold' : '' %>" data-workspaceid="<%= workspace.id %>">
+                        <span class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-location-dot fa-xs <%= isSelected ? 'text-success' : 'text-muted' %>"></i>
+                            <span class="small"><%= workspace.name %></span>
+                        </span>
+                        <% if (isSelected) { %>
+                            <i class="fa-solid fa-circle-check text-success fa-sm"></i>
+                        <% } %>
+                    </a>
+                    <% }); %>
+                </div>
+            </div>
+            <hr class="dropdown-divider my-2">
+            <% } %>
+
+            <!-- NAVIGATION SECTION -->
+            <div class="px-2 py-1">
+                <span class="text-uppercase fw-bold text-muted d-block mb-1 px-1" style="font-size: 0.68rem; letter-spacing: 0.05em;">
+                    Navigation
+                </span>
+                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/fabtrack">
+                    <i class="fa-solid fa-desktop text-primary fa-sm" style="width: 16px;"></i>
+                    <span class="small">Kiosque Fabtrack</span>
                 </a>
-                <ul class="dropdown-menu dropdown-submenu dropdown-submenu-left shadow-sm">
-                    <% availableWorkspaces.forEach(function(workspace){ %>
-                    <li>
-                        <a class="dropdown-item workspace-link" data-workspaceid="<%= workspace.id %>" href="#">
-                            <%= workspace.name %> <% if (selectedWorkspace && workspace.id == selectedWorkspace.id) { %> &nbsp;&nbsp;<i
-                                class="fa-solid fa-circle-check text-success"
-                            ></i>
-                            <% } %>
-                        </a>
-                    </li>
-                    <% }) %>
-                </ul>
-            </li>
-            <% } %> <% if(role == "admin") {%>
-            <li>
-                <a class="dropdown-item" href="/admin"><i class="fa-solid fa-gear"></i>&nbsp;&nbsp;Administration panel</a>
-            </li>
-            <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
-            <li>
-                <a class="dropdown-item" href="/admin/ue"><i class="fa-solid fa-graduation-cap text-primary"></i>&nbsp;&nbsp;UE & Facturation (Sorbonne)</a>
-            </li>
-            <% } %>
-            <% } %>
-            <li>
-                <a class="dropdown-item" href="/logout"
-                    ><i class="fa-solid fa-right-from-bracket"></i>&nbsp;&nbsp;Log out (<%= username %>)</a
-                >
-            </li>
-        </ul>
+                <% if (role === "admin") { %>
+                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin">
+                    <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
+                    <span class="small">Panneau d'administration</span>
+                </a>
+                <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin/ue">
+                    <i class="fa-solid fa-graduation-cap text-danger fa-sm" style="width: 16px;"></i>
+                    <span class="small">UE & Facturation Sorbonne</span>
+                </a>
+                <% } %>
+                <% } %>
+            </div>
+
+            <hr class="dropdown-divider my-2">
+
+            <!-- LOGOUT SECTION -->
+            <a class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2" href="/logout">
+                <i class="fa-solid fa-right-from-bracket fa-sm" style="width: 16px;"></i>
+                <span class="small fw-semibold">Déconnexion</span>
+            </a>
+        </div>
     </div>
 </div>
 
