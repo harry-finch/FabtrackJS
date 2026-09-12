@@ -45,6 +45,7 @@ model User {
   comment       String?   @db.VarChar(255)
   balance       Decimal   @default(0.0)
   termsAccepted Boolean   @default(false)
+  newsletter    Boolean   @default(false)
   token         String    @unique @db.VarChar(40)
   rfid          String?   @unique @db.VarChar(100)
   deletedAt     DateTime? // Soft delete for archival

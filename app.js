@@ -117,6 +117,7 @@ app.use(async (req, res, next) => {
 
     res.locals.role = req.session ? req.session.role : undefined;
     res.locals.username = req.session ? req.session.username : undefined;
+    res.locals.currentPath = req.originalUrl ? req.originalUrl.split("?")[0] : req.path;
 
     next();
   } catch (err) {

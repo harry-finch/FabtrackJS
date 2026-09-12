@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Module de communication et listes de diffusion" />
+        <meta name="author" content="FabtrackJS" />
+        <title>Communication & Listes de diffusion - <%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %></title>
+
+        <%- include('../includes/pagehead.html') %>
+        <style>
+            .email-output-box {
+                font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+                font-size: 0.875rem;
+                background-color: var(--bs-tertiary-bg);
+                border-radius: 0.5rem;
+                resize: vertical;
+            }
+            .target-card {
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+            }
+            .target-card:hover {
+                transform: translateY(-2px);
+            }
+            .target-card.active {
+                border-color: var(--bs-primary) !important;
+                background-color: var(--bs-primary-bg-subtle) !important;
+            }
+        </style>
+    </head>
+
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+                </a>
+                <a href="/admin/workshops/manage" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="fa-solid fa-graduation-cap me-1"></i> Gestion des ateliers
+                </a>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">
+                        <i class="fa-solid fa-envelope-open-text text-primary me-2"></i>Module Communication & Listes de diffusion
+                    </h4>
+                    <small class="text-muted">Générez et copiez en un clic vos listes d'e-mails pour vos newsletters et relances d'ateliers</small>
+                </div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 shadow-sm border-0 bg-body-secondary target-card" onclick="selectTarget('newsletter')">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Inscrits Newsletter</small>
+                                <div class="fs-4 fw-bold mt-1 text-primary"><%= newsletterUsers.length %></div>
+                                <small class="text-muted">Usagers abonnés</small>
+                            </div>
+                            <div class="icon-box bg-primary-subtle text-primary">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 shadow-sm border-0 bg-body-secondary">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Ateliers actifs</small>
+                                <div class="fs-4 fw-bold mt-1 text-info"><%= workshops.length %></div>
+                                <small class="text-muted">Formations enregistrées</small>
+                            </div>
+                            <div class="icon-box bg-info-subtle text-info-emphasis">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <div class="card h-100 shadow-sm border-0 bg-body-secondary">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Intérêts Ateliers</small>
+                                <% const totalInterests = workshops.reduce((acc, w) => acc + w.interests.length, 0); %>
+                                <div class="fs-4 fw-bold mt-1 text-danger"><%= totalInterests %></div>
+                                <small class="text-muted">Demandes en attente</small>
+                            </div>
+                            <div class="icon-box bg-danger-subtle text-danger">
+                                <i class="fa-solid fa-heart"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration & Selector Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-lg-6 col-md-12">
+                            <label for="targetSelector" class="form-label fw-bold small text-uppercase text-muted mb-1">
+                                <i class="fa-solid fa-filter me-1 text-primary"></i> 1. Choisir la liste de diffusion
+                            </label>
+                            <select id="targetSelector" class="form-select" onchange="onTargetChange(this.value)">
+                                <optgroup label="Diffusion générale">
+                                    <option value="newsletter" <%= initialTarget === 'newsletter' ? 'selected' : '' %>>
+                                        ✉️ Newsletter du Fablab (<%= newsletterUsers.length %> abonnés)
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Par Atelier (Usagers intéressés)">
+                                    <% workshops.forEach(function(ws) { %>
+                                        <option value="workshop-<%= ws.id %>" <%= initialTarget === `workshop-${ws.id}` ? 'selected' : '' %>>
+                                            🎓 Atelier : <%= ws.name %> (<%= ws.interests.length %> personne<%= ws.interests.length > 1 ? 's' : '' %> intéressée<%= ws.interests.length > 1 ? 's' : '' %>)
+                                        </option>
+                                    <% }); %>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <label for="formatSelector" class="form-label fw-bold small text-uppercase text-muted mb-1">
+                                <i class="fa-solid fa-sliders me-1"></i> Format
+                            </label>
+                            <select id="formatSelector" class="form-select" onchange="renderEmailList()">
+                                <option value="email-only" selected>E-mails seuls</option>
+                                <option value="name-and-email">Prénom Nom &lt;email&gt;</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <label for="separatorSelector" class="form-label fw-bold small text-uppercase text-muted mb-1">
+                                <i class="fa-solid fa-ellipsis me-1"></i> Séparateur
+                            </label>
+                            <select id="separatorSelector" class="form-select" onchange="renderEmailList()">
+                                <option value="comma" selected>Virgule (standard)</option>
+                                <option value="semicolon">Point-virgule (Outlook)</option>
+                                <option value="newline">Saut de ligne (1 par ligne)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generator Output Area -->
+                <div class="card-body p-3 pt-0">
+                    <hr class="my-3 opacity-25">
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold text-uppercase small text-muted">
+                                <i class="fa-solid fa-terminal me-1 text-primary"></i> 2. Liste générée prête à copier
+                            </span>
+                            <span id="selectedCountBadge" class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                                0 destinataire
+                            </span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" id="copyBtn" onclick="copyGeneratedEmails()">
+                                <i class="fa-solid fa-copy me-1" id="copyIcon"></i> <span id="copyText">Copier la liste</span>
+                            </button>
+                            <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="mailtoBtn" target="_blank" title="Ouvrir votre logiciel de messagerie avec les destinataires en Cci">
+                                <i class="fa-solid fa-paper-plane me-1"></i> Ouvrir dans la messagerie
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="position-relative">
+                        <textarea
+                            id="emailOutput"
+                            class="form-control email-output-box p-3 shadow-inner"
+                            rows="4"
+                            readonly
+                            placeholder="Sélectionnez une liste pour afficher les adresses e-mails..."
+                            onclick="this.select()"
+                        ></textarea>
+                        <div id="copyToast" class="position-absolute top-50 start-50 translate-middle badge bg-success text-white px-3 py-2 shadow-lg rounded-pill" style="display: none; font-size: 0.95rem; z-index: 10;">
+                            <i class="fa-solid fa-check-circle me-1"></i> E-mails copiés dans le presse-papier !
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipient Selection Table Card -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <h6 class="fw-bold mb-0">
+                            <i class="fa-solid fa-users text-primary me-2"></i>3. Destinataires inclus dans la liste
+                        </h6>
+                        <small class="text-muted">Décochez un usager pour l'exclure temporairement de l'envoi</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="input-group input-group-sm" style="max-width: 250px;">
+                            <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" id="filterInput" class="form-control" placeholder="Filtrer la liste..." oninput="filterTable(this.value)" />
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleSelectAll(true)" data-bs-toggle="tooltip" title="Tout cocher">
+                                <i class="fa-solid fa-check-double"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleSelectAll(false)" data-bs-toggle="tooltip" title="Tout décocher">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="recipientsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 40px;" class="ps-3 text-center">
+                                        <input type="checkbox" class="form-check-input" id="masterCheckbox" checked onchange="toggleSelectAll(this.checked)" />
+                                    </th>
+                                    <th>Usager</th>
+                                    <th>E-mail</th>
+                                    <th>Type</th>
+                                    <th id="dateColHeader">Date</th>
+                                    <th class="text-end pe-3">Profil</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recipientsTableBody">
+                                <!-- Populated dynamically by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyMessage" class="text-center py-5 text-muted" style="display: none;">
+                        <i class="fa-regular fa-envelope-open fa-2x mb-2 text-secondary opacity-50 d-block"></i>
+                        <span class="fw-semibold">Aucun contact trouvé pour cette sélection.</span>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('../includes/footer.html') %>
+
+        <!-- JSON Data for instant switching without reloads -->
+        <script id="newsletterData" type="application/json">
+            <%- JSON.stringify(newsletterUsers.map(u => ({
+                id: u.id,
+                name: u.name,
+                surname: u.surname,
+                email: u.email,
+                usertype: u.usertype ? u.usertype.name : '-',
+                date: u.formattedCreatedAt,
+                dateLabel: 'Inscrit le ' + u.formattedCreatedAt
+            }))) %>
+        </script>
+
+        <script id="workshopsData" type="application/json">
+            <%- JSON.stringify(workshops.map(w => ({
+                id: w.id,
+                name: w.name,
+                interestsCount: w.interests.length,
+                interests: w.interests.map(i => ({
+                    id: i.user.id,
+                    name: i.user.name,
+                    surname: i.user.surname,
+                    email: i.user.email,
+                    usertype: i.user.usertype ? i.user.usertype.name : '-',
+                    date: i.formattedDate,
+                    dateLabel: 'Intérêt le ' + i.formattedDate
+                }))
+            }))) %>
+        </script>
+
+        <script>
+            let newsletterUsers = [];
+            let workshops = [];
+            let currentContacts = []; // Active list of contact objects { id, name, surname, email, usertype, date, dateLabel, selected }
+
+            try {
+                newsletterUsers = JSON.parse(document.getElementById('newsletterData').textContent);
+                workshops = JSON.parse(document.getElementById('workshopsData').textContent);
+            } catch (e) {
+                console.error("Error parsing JSON data:", e);
+            }
+
+            function onTargetChange(targetValue) {
+                if (targetValue === 'newsletter') {
+                    currentContacts = newsletterUsers.map(u => ({ ...u, selected: true }));
+                    document.getElementById('dateColHeader').textContent = "Inscription";
+                } else if (targetValue.startsWith('workshop-')) {
+                    const wsId = Number(targetValue.replace('workshop-', ''));
+                    const ws = workshops.find(w => w.id === wsId);
+                    if (ws && ws.interests) {
+                        currentContacts = ws.interests.map(i => ({ ...i, selected: true }));
+                    } else {
+                        currentContacts = [];
+                    }
+                    document.getElementById('dateColHeader').textContent = "Intérêt manifesté le";
+                }
+
+                // Reset search filter
+                const filterInput = document.getElementById('filterInput');
+                if (filterInput) filterInput.value = '';
+
+                renderTable();
+                renderEmailList();
+            }
+
+            function selectTarget(targetValue) {
+                const selector = document.getElementById('targetSelector');
+                if (selector) {
+                    selector.value = targetValue;
+                    onTargetChange(targetValue);
+                }
+            }
+
+            function renderTable() {
+                const tbody = document.getElementById('recipientsTableBody');
+                const emptyMsg = document.getElementById('emptyMessage');
+                const table = document.getElementById('recipientsTable');
+                tbody.innerHTML = '';
+
+                if (currentContacts.length === 0) {
+                    emptyMsg.style.display = '';
+                    table.style.display = 'none';
+                    return;
+                }
+
+                emptyMsg.style.display = 'none';
+                table.style.display = '';
+
+                currentContacts.forEach((c, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'contact-row';
+                    tr.dataset.searchText = `${c.name} ${c.surname} ${c.email} ${c.usertype}`.toLowerCase();
+
+                    tr.innerHTML = `
+                        <td class="ps-3 text-center">
+                            <input type="checkbox" class="form-check-input contact-checkbox" data-index="${index}" ${c.selected ? 'checked' : ''} onchange="toggleContactSelection(${index}, this.checked)">
+                        </td>
+                        <td>
+                            <div class="fw-semibold">${escapeHtml(c.name)} ${escapeHtml(c.surname)}</div>
+                        </td>
+                        <td>
+                            <span class="text-primary font-monospace small">${escapeHtml(c.email)}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill">${escapeHtml(c.usertype)}</span>
+                        </td>
+                        <td class="text-muted small">${escapeHtml(c.date)}</td>
+                        <td class="text-end pe-3">
+                            <a href="/users/edit/${c.id}" class="btn btn-sm btn-outline-secondary" target="_blank" title="Voir le profil">
+                                <i class="fa-solid fa-up-right-from-square"></i>
+                            </a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                updateMasterCheckbox();
+            }
+
+            function toggleContactSelection(index, isChecked) {
+                if (currentContacts[index]) {
+                    currentContacts[index].selected = isChecked;
+                    renderEmailList();
+                    updateMasterCheckbox();
+                }
+            }
+
+            function toggleSelectAll(checked) {
+                const visibleCheckboxes = document.querySelectorAll('.contact-row:not([style*="display: none"]) .contact-checkbox');
+                visibleCheckboxes.forEach(cb => {
+                    cb.checked = checked;
+                    const idx = Number(cb.dataset.index);
+                    if (currentContacts[idx]) {
+                        currentContacts[idx].selected = checked;
+                    }
+                });
+                updateMasterCheckbox();
+                renderEmailList();
+            }
+
+            function updateMasterCheckbox() {
+                const master = document.getElementById('masterCheckbox');
+                if (!master) return;
+                const total = currentContacts.length;
+                const selected = currentContacts.filter(c => c.selected).length;
+                master.checked = total > 0 && selected === total;
+                master.indeterminate = selected > 0 && selected < total;
+            }
+
+            function renderEmailList() {
+                const format = document.getElementById('formatSelector').value;
+                const separatorType = document.getElementById('separatorSelector').value;
+
+                let sep = ', ';
+                if (separatorType === 'semicolon') sep = '; ';
+                else if (separatorType === 'newline') sep = '\n';
+
+                const selected = currentContacts.filter(c => c.selected && c.email);
+                const countBadge = document.getElementById('selectedCountBadge');
+                if (countBadge) {
+                    countBadge.textContent = `${selected.length} destinataire${selected.length > 1 ? 's' : ''}`;
+                }
+
+                let outputText = '';
+                if (format === 'name-and-email') {
+                    outputText = selected.map(c => `${c.name} ${c.surname} <${c.email}>`).join(sep);
+                } else {
+                    outputText = selected.map(c => c.email).join(sep);
+                }
+
+                const outputBox = document.getElementById('emailOutput');
+                if (outputBox) {
+                    outputBox.value = outputText;
+                }
+
+                // Update mailto link (BCC)
+                const mailtoBtn = document.getElementById('mailtoBtn');
+                if (mailtoBtn) {
+                    if (selected.length > 0) {
+                        const bccEmails = selected.map(c => c.email).join(',');
+                        mailtoBtn.href = `mailto:?bcc=${encodeURIComponent(bccEmails)}`;
+                        mailtoBtn.classList.remove('disabled');
+                    } else {
+                        mailtoBtn.href = '#';
+                        mailtoBtn.classList.add('disabled');
+                    }
+                }
+            }
+
+            function copyGeneratedEmails() {
+                const outputBox = document.getElementById('emailOutput');
+                if (!outputBox || !outputBox.value.trim()) {
+                    return;
+                }
+
+                const textToCopy = outputBox.value.trim();
+
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showCopyFeedback();
+                }).catch(err => {
+                    console.warn("Clipboard API failed, fallback to execCommand:", err);
+                    outputBox.select();
+                    document.execCommand('copy');
+                    showCopyFeedback();
+                });
+            }
+
+            function showCopyFeedback() {
+                const copyBtn = document.getElementById('copyBtn');
+                const copyText = document.getElementById('copyText');
+                const copyIcon = document.getElementById('copyIcon');
+                const copyToast = document.getElementById('copyToast');
+
+                if (copyBtn) {
+                    copyBtn.classList.remove('btn-primary');
+                    copyBtn.classList.add('btn-success');
+                }
+                if (copyText) copyText.textContent = "Copié !";
+                if (copyIcon) {
+                    copyIcon.className = "fa-solid fa-check me-1";
+                }
+                if (copyToast) {
+                    copyToast.style.display = 'block';
+                }
+
+                setTimeout(() => {
+                    if (copyBtn) {
+                        copyBtn.classList.remove('btn-success');
+                        copyBtn.classList.add('btn-primary');
+                    }
+                    if (copyText) copyText.textContent = "Copier la liste";
+                    if (copyIcon) {
+                        copyIcon.className = "fa-solid fa-copy me-1";
+                    }
+                    if (copyToast) {
+                        copyToast.style.display = 'none';
+                    }
+                }, 2000);
+            }
+
+            function filterTable(query) {
+                const q = query.toLowerCase().trim();
+                const rows = document.querySelectorAll('.contact-row');
+                rows.forEach(r => {
+                    const text = r.dataset.searchText || '';
+                    if (!q || text.includes(q)) {
+                        r.style.display = '';
+                    } else {
+                        r.style.display = 'none';
+                    }
+                });
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                const initialTarget = document.getElementById('targetSelector').value;
+                onTargetChange(initialTarget);
+            });
+        </script>
+    </body>
+</html>

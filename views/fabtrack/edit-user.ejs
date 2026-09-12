@@ -18,9 +18,14 @@
             <%- include('../includes/header.html') %>
 
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <h4 class="mb-0">
-                    <i class="fa fa-user-pen"></i>&nbsp;&nbsp;Edit user profile <span class="fs-6 opacity-50">(account created on <%= user.accountCreationDate %>)</span>
-                </h4>
+                <div>
+                    <h4 class="mb-1">
+                        <i class="fa-solid fa-user-pen me-2"></i>Edit user profile
+                    </h4>
+                    <small class="text-muted">
+                        <i class="fa-regular fa-calendar-check me-1"></i>Compte créé le <%= user.accountCreationDate %>
+                    </small>
+                </div>
                 <% if (user.isExpert) { %>
                     <span class="badge bg-warning text-dark border border-warning-subtle px-3 py-2 fs-6 rounded-pill">
                         <i class="fa-solid fa-star me-1"></i> Utilisateur Expert
@@ -81,6 +86,19 @@
                         <div class="form-floating mb-3">
                             <textarea class="form-control" id="comments" name="comments" style="height: 100px"><%= user.comment %></textarea>
                             <label for="comments">Comments</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
+                            <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="newsletter" name="newsletter" value="true" <%= user.newsletter ? 'checked' : '' %>>
+                            <label class="form-check-label fw-bold" for="newsletter">
+                                <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> Inscription à la newsletter
+                            </label>
+                            <div class="form-text small text-muted ms-1">
+                                Recevoir la newsletter et les actualités du Fablab par e-mail.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -154,6 +172,9 @@
                             </div>
                             <div class="small text-muted">
                                 Dernière visite : <%= userStats.lastVisit %>
+                            </div>
+                            <div class="small text-muted">
+                                Inscrit le <%= user.accountCreationDate %>
                             </div>
                         </div>
                     </div>

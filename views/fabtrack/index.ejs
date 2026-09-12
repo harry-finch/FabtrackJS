@@ -159,10 +159,7 @@
                             <span class="icon-box bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
                                 <i class="fa-solid fa-users"></i>
                             </span>
-                            <div>
-                                <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> usagers actuellement présents</h5>
-                                <small class="text-muted">Atelier actif : <strong><%= selectedWorkspace.name %></strong></small>
-                            </div>
+                            <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> usagers actuellement présents</h5>
                         </div>
 
                         <!-- Static Workspace Badge -->
@@ -513,6 +510,19 @@
                             <div class="form-floating mb-3">
                                 <textarea class="form-control" id="newcomments" name="newcomments" style="height: 100px"></textarea>
                                 <label for="newcomments">Comments</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="newnewsletter" name="newnewsletter" value="true">
+                                <label class="form-check-label fw-semibold" for="newnewsletter">
+                                    <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> Inscription à la newsletter
+                                </label>
+                                <div class="form-text small text-muted ms-1">
+                                    L'usager accepte de recevoir la newsletter et les actualités du Fablab par e-mail.
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -68,7 +68,7 @@ router.post(
       return res.redirect("/fabtrack");
     }
 
-    const { newname, newsurname, newemail, newusertype, newbirthyear, newcomments, newrfid } = req.body;
+    const { newname, newsurname, newemail, newusertype, newbirthyear, newcomments, newrfid, newnewsletter } = req.body;
     const cleanRfid = newrfid && newrfid.trim() ? newrfid.trim() : null;
 
     const token = uuidv4();
@@ -84,6 +84,7 @@ router.post(
           comment: newcomments,
           token: token,
           rfid: cleanRfid,
+          newsletter: newnewsletter === "true" || newnewsletter === "on" || newnewsletter === true,
         },
       });
 
@@ -383,7 +384,7 @@ router.post(
     }
 
     const { id } = req.params;
-    const { name, surname, email, usertype, birthyear, comments, isExpert, rfid } = req.body;
+    const { name, surname, email, usertype, birthyear, comments, isExpert, rfid, newsletter } = req.body;
     const cleanRfid = rfid && rfid.trim() ? rfid.trim() : null;
 
     try {
@@ -398,6 +399,7 @@ router.post(
           comment: comments,
           isExpert: isExpert === "true" || isExpert === "on" || isExpert === true,
           rfid: cleanRfid,
+          newsletter: newsletter === "true" || newsletter === "on" || newsletter === true,
         },
       });
 

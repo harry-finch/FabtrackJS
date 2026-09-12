@@ -336,14 +336,14 @@ async function main() {
   // 14. Users
   const users = [];
   const sampleUsers = [
-    { name: "Alice", surname: "Dubois", email: "alice.dubois@polytechnique.edu", usertypeId: usertypes[0].id, balance: 15.5, termsAccepted: true },
-    { name: "Thomas", surname: "Bernard", email: "thomas.bernard@startup-iot.io", usertypeId: usertypes[3].id, balance: -18.0, termsAccepted: true },
-    { name: "Claire", surname: "Leroy", email: "claire.leroy@univ-paris.fr", usertypeId: usertypes[1].id, balance: 0.0, termsAccepted: true },
-    { name: "Julien", surname: "Moreau", email: "julien.moreau@makerlab.net", usertypeId: usertypes[4].id, balance: 5.0, termsAccepted: false },
-    { name: "Sophie", surname: "Roux", email: "sophie.roux@inserm.fr", usertypeId: usertypes[2].id, balance: 35.0, termsAccepted: true },
-    { name: "Marc", surname: "David", email: "marc.david@student.fr", usertypeId: usertypes[0].id, balance: -8.5, termsAccepted: true },
-    { name: "Elise", surname: "Fournier", email: "elise.fournier@designstudio.org", usertypeId: usertypes[3].id, balance: 20.0, termsAccepted: true },
-    { name: "Antoine", surname: "Girard", email: "antoine.girard@gmail.com", usertypeId: usertypes[4].id, balance: 0.0, termsAccepted: true },
+    { name: "Alice", surname: "Dubois", email: "alice.dubois@polytechnique.edu", usertypeId: usertypes[0].id, balance: 15.5, termsAccepted: true, newsletter: true },
+    { name: "Thomas", surname: "Bernard", email: "thomas.bernard@startup-iot.io", usertypeId: usertypes[3].id, balance: -18.0, termsAccepted: true, newsletter: false },
+    { name: "Claire", surname: "Leroy", email: "claire.leroy@univ-paris.fr", usertypeId: usertypes[1].id, balance: 0.0, termsAccepted: true, newsletter: true },
+    { name: "Julien", surname: "Moreau", email: "julien.moreau@makerlab.net", usertypeId: usertypes[4].id, balance: 5.0, termsAccepted: false, newsletter: false },
+    { name: "Sophie", surname: "Roux", email: "sophie.roux@inserm.fr", usertypeId: usertypes[2].id, balance: 35.0, termsAccepted: true, newsletter: true },
+    { name: "Marc", surname: "David", email: "marc.david@student.fr", usertypeId: usertypes[0].id, balance: -8.5, termsAccepted: true, newsletter: false },
+    { name: "Elise", surname: "Fournier", email: "elise.fournier@designstudio.org", usertypeId: usertypes[3].id, balance: 20.0, termsAccepted: true, newsletter: true },
+    { name: "Antoine", surname: "Girard", email: "antoine.girard@gmail.com", usertypeId: usertypes[4].id, balance: 0.0, termsAccepted: true, newsletter: false },
   ];
 
   for (const u of sampleUsers) {
@@ -356,6 +356,7 @@ async function main() {
         birthYear: 1990 + Math.floor(Math.random() * 15),
         balance: u.balance,
         termsAccepted: u.termsAccepted,
+        newsletter: u.newsletter || false,
         token: faker.string.alphanumeric(32),
         comment: "Regular user interested in rapid prototyping and digital fabrication.",
       },

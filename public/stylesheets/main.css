@@ -13,7 +13,7 @@ table th[data-sort]:hover {
     color: var(--bs-primary);
 }
 
-/* Enlarged page container replacing cramped w-50 */
+/* Page container */
 main.main-container {
     width: 100%;
     max-width: 1140px;
@@ -173,6 +173,45 @@ main.main-container {
 .card-dashboard:hover {
     transform: translateY(-3px);
     box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.09) !important;
+}
+
+.card-dashboard .card-body {
+    padding: 0.85rem !important;
+}
+
+.card-dashboard .icon-box {
+    width: 38px;
+    height: 38px;
+    font-size: 1.05rem;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.card-dashboard .card-title,
+.card-dashboard h6 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 0;
+}
+
+.card-dashboard small.text-muted {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    display: block;
+}
+
+.card-dashboard .card-text {
+    font-size: 0.76rem;
+    line-height: 1.35;
+    margin-top: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-dashboard .btn {
+    font-size: 0.76rem;
+    padding: 0.25rem 0.5rem;
+    font-weight: 500;
 }
 
 .icon-box {

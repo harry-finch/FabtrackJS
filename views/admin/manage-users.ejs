@@ -110,12 +110,19 @@
                             </thead>
                             <tbody id="table-content">
                                 <% users.forEach(function(user) { %>
-                                <tr class="user-row" data-search-text="<%= ((user.name || '') + ' ' + (user.surname || '') + ' ' + (user.email || '') + ' ' + (user.usertype ? user.usertype.name : '')).toLowerCase() %>">
+                                <tr class="user-row" data-search-text="<%= ((user.name || '') + ' ' + (user.surname || '') + ' ' + (user.email || '') + ' ' + (user.usertype ? user.usertype.name : '') + (user.newsletter ? ' newsletter' : '')).toLowerCase() %>">
                                     <td scope="row" class="ps-3 text-muted">#<%= user.id %></td>
                                     <td>
                                         <div class="fw-semibold"><%= user.name %> <%= user.surname %></div>
                                     </td>
-                                    <td><a href="mailto:<%= user.email %>" class="text-decoration-none"><%= user.email %></a></td>
+                                    <td>
+                                        <div><a href="mailto:<%= user.email %>" class="text-decoration-none"><%= user.email %></a></div>
+                                        <% if (user.newsletter) { %>
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill" style="font-size: 0.7rem;" title="Inscrit à la newsletter">
+                                                <i class="fa-solid fa-paper-plane me-1"></i>Newsletter
+                                            </span>
+                                        <% } %>
+                                    </td>
                                     <td>
                                         <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill">
                                             <%= user.usertype ? user.usertype.name : '-' %>
