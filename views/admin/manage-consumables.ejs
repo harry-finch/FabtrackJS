@@ -17,44 +17,50 @@
       <%- include('../includes/header.html') %>
 
       <div class="mb-3">
-        <a href="/admin" class="btn btn-outline-secondary btn-sm">
+        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
           <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
         </a>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">
-          <i class="fa-solid fa-boxes-stacked"></i>&nbsp;&nbsp;Manage Consumables
-        </h4>
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+          <h4 class="fw-bold mb-0">
+            <i class="fa-solid fa-boxes-stacked text-success me-2"></i>Gestion des consommables
+          </h4>
+          <small class="text-muted">Inventaire des stocks, conditionnements et coûts des matières</small>
+        </div>
         <button
           type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary btn-sm rounded-pill shadow-sm"
           id="btnNewConsumable"
           data-bs-toggle="modal"
           data-bs-target="#createConsumableModal"
         >
-          <i class="fa-solid fa-plus"></i> New Consumable
+          <i class="fa-solid fa-plus me-1"></i> Nouveau consommable
         </button>
       </div>
 
       <!-- Category Filter Pills -->
       <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-        <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-filter"></i> Category:</span>
-        <button type="button" class="btn btn-sm btn-outline-secondary active filter-category-btn" data-category="all">
-          All (<%= consumables.length %>)
+        <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-filter"></i> Catégories :</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill active filter-category-btn" data-category="all">
+          Toutes (<%= consumables.length %>)
         </button>
         <% categories.forEach(function(cat) { 
              const catCount = consumables.filter(c => c.categoryId === cat.id).length;
         %>
-          <button type="button" class="btn btn-sm btn-outline-secondary filter-category-btn" data-category="<%= cat.id %>">
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-category-btn" data-category="<%= cat.id %>">
             <%= cat.name %> (<%= catCount %>)
           </button>
         <% }); %>
       </div>
 
       <!-- Consumables Table -->
-      <table class="mb-5 table table-hover align-middle" id="consumablesTable">
-        <thead>
+      <div class="card border-0 shadow-sm mb-5">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="consumablesTable">
+              <thead class="table-light">
           <tr>
             <th data-sort="0" scope="col" style="cursor: pointer;">
               # <i class="fa-solid fa-sort text-muted small ms-1"></i>
@@ -181,6 +187,9 @@
           <% } %>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
 
       <%- include('../includes/footer.html') %>
     </main>

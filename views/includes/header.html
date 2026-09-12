@@ -110,15 +110,17 @@
     <!-- User Profile & Navigation Menu -->
     <div class="d-flex align-items-center justify-content-end gap-2" style="flex: 1 1 0; min-width: 0;">
         <% if (typeof role !== 'undefined' && role === 'admin' && (typeof currentPath === 'undefined' || !currentPath.startsWith('/admin'))) { %>
-        <a href="/admin" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" title="Accéder au panneau d'administration">
-            <i class="fa-solid fa-screwdriver-wrench"></i>
+        <a href="/admin" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm header-action-btn" title="Accéder au panneau d'administration">
+            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
+                <i class="fa-solid fa-screwdriver-wrench fa-xs"></i>
+            </div>
             <span class="fw-semibold small d-none d-sm-inline">Panneau Admin</span>
         </a>
         <% } %>
 
         <div class="dropdown">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="userMenuBtn">
-                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm header-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="userMenuBtn">
+                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
                     <i class="fa-solid fa-user fa-xs"></i>
                 </div>
                 <span class="fw-semibold small"><%= username || 'Menu' %></span>
@@ -210,5 +212,5 @@
 
 <script src="/javascripts/workspace.js"></script>
 
-<h2 class="mb-1 text-center"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
-<h5 class="lead fs-6 mb-5 text-center"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>
+<h2 class="mb-1 text-center fw-bold"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
+<h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>

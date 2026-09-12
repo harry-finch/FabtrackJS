@@ -54,9 +54,15 @@
 
             <!-- Registering form -->
             <div id="register">
-                <h4 class="mb-4">
-                    <a class="jsButton" id="registerbutton"><i class="fa fa-toggle-on"></i></a>&nbsp;&nbsp;Register an existing user
-                </h4>
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <a class="jsButton fs-4 text-primary" id="registerbutton" style="text-decoration: none;" title="Basculer vers la création"><i class="fa fa-toggle-on"></i></a>
+                        <div>
+                            <h4 class="fw-bold mb-0">Enregistrer un usager</h4>
+                            <small class="text-muted">Badgez ou recherchez un usager existant pour ouvrir sa session au Fablab</small>
+                        </div>
+                    </div>
+                </div>
                 <form action="/history/create" method="post">
                     <div class="row">
                         <div class="col-12">
@@ -145,7 +151,9 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Save</button>
+                            <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit">
+                                <i class="fa-solid fa-check me-1"></i> Enregistrer
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -454,7 +462,15 @@
             <% } else { %>
             <!-- New user creation form -->
             <div id="newuser">
-                <h4 class="mb-4"><a class="jsButton" id="newuserbutton"><i class="fa fa-toggle-off"></i></a>&nbsp;&nbsp;Create a new user</h4>
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <a class="jsButton fs-4 text-secondary" id="newuserbutton" style="text-decoration: none;" title="Basculer vers la recherche"><i class="fa fa-toggle-off"></i></a>
+                        <div>
+                            <h4 class="fw-bold mb-0">Créer un nouvel usager</h4>
+                            <small class="text-muted">Formulaire d'inscription rapide pour un nouveau membre du Fablab</small>
+                        </div>
+                    </div>
+                </div>
                 <form action="/users/create" method="post">
                     <div class="row">
                         <div class="col-4">
@@ -528,7 +544,9 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Create user</button>
+                            <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit">
+                                <i class="fa-solid fa-user-plus me-1"></i> Créer l'usager
+                            </button>
                         </div>
                     </div>
                 </form>

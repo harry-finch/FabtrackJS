@@ -19,15 +19,15 @@
 
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div>
-                    <h4 class="mb-1">
-                        <i class="fa-solid fa-user-pen me-2"></i>Edit user profile
+                    <h4 class="fw-bold mb-0">
+                        <i class="fa-solid fa-user-pen text-primary me-2"></i>Profil utilisateur : <%= user.name %> <%= user.surname %>
                     </h4>
                     <small class="text-muted">
                         <i class="fa-regular fa-calendar-check me-1"></i>Compte créé le <%= user.accountCreationDate %>
                     </small>
                 </div>
                 <% if (user.isExpert) { %>
-                    <span class="badge bg-warning text-dark border border-warning-subtle px-3 py-2 fs-6 rounded-pill">
+                    <span class="badge bg-warning text-dark border border-warning-subtle px-3 py-2 rounded-pill">
                         <i class="fa-solid fa-star me-1"></i> Utilisateur Expert
                     </span>
                 <% } %>
@@ -115,21 +115,26 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Update user profile</button>
+                <div class="row g-2 mb-4">
+                    <div class="col-sm-6">
+                        <button class="btn btn-primary w-100 py-2 rounded-pill shadow-sm" type="submit">
+                            <i class="fa-solid fa-check me-1"></i> Mettre à jour le profil
+                        </button>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <a id="cancel" href="/fabtrack" class="btn btn-secondary w-100 mb-2 py-2">Cancel</a>
+                    <div class="col-sm-6">
+                        <a id="cancel" href="/fabtrack" class="btn btn-outline-secondary w-100 py-2 rounded-pill">
+                            Annuler
+                        </a>
                     </div>
                 </div>
             </form>
 
-            <h4 class="mt-4 mb-3">
-                <i class="fa fa-user-ninja"></i>&nbsp;&nbsp;User stats
-            </h4>
+            <div class="d-flex align-items-center gap-2 mb-3 mt-4">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle section-badge-header px-2 py-1">
+                    Statistiques de l'usager
+                </span>
+                <hr class="flex-grow-1 my-0 opacity-25">
+            </div>
 
             <div class="row g-3 mb-4">
                 <!-- Balance Card -->

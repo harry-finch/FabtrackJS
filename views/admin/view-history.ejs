@@ -18,17 +18,20 @@
       <%- include('../includes/header.html') %>
 
       <div class="mb-3">
-        <a href="/admin" class="btn btn-outline-secondary btn-sm">
+        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
           <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
         </a>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">
-          <i class="fa-solid fa-clock-rotate-left"></i>&nbsp;&nbsp;History
-        </h4>
-        <span class="badge bg-secondary fs-6" id="historyCounter">
-          <%= history.length %> records
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+          <h4 class="fw-bold mb-0">
+            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Historique des visites
+          </h4>
+          <small class="text-muted">Journal chronologique des entrées, sorties et sessions au Fablab</small>
+        </div>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-3 py-2" id="historyCounter">
+          <%= history.length %> enregistrements
         </span>
       </div>
 
@@ -39,13 +42,13 @@
           <div class="col-lg-5 col-md-12">
             <div class="d-flex flex-wrap gap-1 align-items-center">
               <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-building"></i> Workspace:</span>
-              <button type="button" class="btn btn-sm btn-outline-secondary active filter-workspace-btn" data-ws-id="all">
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill active filter-workspace-btn" data-ws-id="all">
                 All (<%= history.length %>)
               </button>
               <% availableWorkspaces.forEach(function(ws) {
                    const count = history.filter(h => h.workspaceId === ws.id).length;
               %>
-                <button type="button" class="btn btn-sm btn-outline-secondary filter-workspace-btn" data-ws-id="<%= ws.id %>">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-workspace-btn" data-ws-id="<%= ws.id %>">
                   <%= ws.name %> (<%= count %>)
                 </button>
               <% }); %>
@@ -76,8 +79,11 @@
       </div>
 
       <!-- History Table directly rendered -->
-      <table class="mb-3 table align-middle" id="historyTable">
-        <thead>
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="historyTable">
+              <thead class="table-light">
           <tr>
             <th scope="col" class="text-center">#</th>
             <th scope="col">Arrival</th>
@@ -164,6 +170,9 @@
           <% } %>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
 
       <!-- Modal for editing a history entry -->
       <div class="modal fade" id="editHistoryModal" tabindex="-1" aria-labelledby="editHistoryLabel" aria-hidden="true">
