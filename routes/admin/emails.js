@@ -76,6 +76,9 @@ router.post(
     updates.mail_notif_user_agreement =
       req.body.mail_notif_user_agreement === "true" || req.body.mail_notif_user_agreement === "on" ? "true" : "false";
 
+    updates.mail_notif_machine_issue =
+      req.body.mail_notif_machine_issue === "true" || req.body.mail_notif_machine_issue === "on" ? "true" : "false";
+
     await settingsService.updateSettings(updates);
 
     req.session.notification = "Success: Configuration des e-mails et notifications enregistrée.";

@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS = {
   mail_notif_user_warning: "true",
   mail_notif_staff_registration: "true",
   mail_notif_user_agreement: "true",
+  mail_notif_machine_issue: "true",
   // BookStack Wiki Plugin settings
   plugin_bookstack_enabled: "true",
   bookstack_url: "https://wiki.fablab.sorbonne-universite.fr/BookStack/",

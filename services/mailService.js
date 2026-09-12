@@ -255,6 +255,78 @@ class MailService {
   }
 
   /**
+   * Sends an automated alert when an issue/failure is reported on a machine.
+   */
+  async sendMachineIssueAlert({ machine, issue, hostUrl: customHostUrl }) {
+    const settings = await settingsService.getSettings();
+
+    if (settings.mail_notif_machine_issue !== "true") {
+      return { skipped: true, reason: "Notification disabled in settings" };
+    }
+
+    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:3000";
+    const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
+    const reporter = issue.reporterName
+      ? `${issue.reporterName}${issue.reporterEmail ? ` (${issue.reporterEmail})` : ""}`
+      : (issue.reporterEmail || "Usager (non renseigné)");
+    const dateStr = new Date(issue.createdAt || Date.now()).toLocaleString("fr-FR");
+
+    const contentHtml = `
+      <p>Un nouvel incident ou une panne a été signalé(e) sur une machine du fablab :</p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin: 18px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Machine concernée</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">
+            ${machine.name} ${machine.make ? `(${machine.make} ${machine.model || ""})` : ""}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Signalé par</td>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0;">
+            ${reporter}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Date du signalement</td>
+          <td style="padding: 10px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0;">
+            ${dateStr}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Description du problème</td>
+          <td style="padding: 10px 14px; font-size: 13px; color: #b91c1c; font-weight: 600; white-space: pre-wrap; border-bottom: 1px solid #e2e8f0;">
+            ${issue.description}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Photo jointe</td>
+          <td style="padding: 10px 14px; font-size: 13px; color: #334155;">
+            ${issue.photoPath ? `&#128247; Une photo a été jointe au signalement (<a href="${hostUrl}${issue.photoPath}" target="_blank" style="color: #2563eb; text-decoration: underline;">consulter la photo</a>)` : "Aucune photo jointe"}
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin-bottom: 0;">Ce signalement est immédiatement consultable dans l'historique et la fiche détaillée de la machine.</p>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: `Panne signalée sur ${machine.name}`,
+      badgeText: "Panne Machine",
+      badgeColor: "#dc2626",
+      contentHtml,
+      ctaUrl: `${hostUrl}/admin/machines/view/${machine.id}`,
+      ctaText: "Voir la machine & ses incidents",
+    });
+
+    return await this.sendMail({
+      to: adminEmail,
+      subject: `[Panne Machine] Incident signalé sur ${machine.name}`,
+      html,
+    });
+  }
+
+  /**
    * Sends an immediate test email to verify SMTP configuration.
    */
   async sendTestEmail(targetEmail) {

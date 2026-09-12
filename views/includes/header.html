@@ -109,6 +109,14 @@
 
     <!-- User Profile & Navigation Menu -->
     <div class="d-flex align-items-center justify-content-end gap-2" style="flex: 1 1 0; min-width: 0;">
+        <!-- Incident Reporting Button for Mediators & Admins -->
+        <a href="/report-issue" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm header-action-btn" title="Signaler un incident ou une panne machine">
+            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
+                <i class="fa-solid fa-triangle-exclamation fa-xs"></i>
+            </div>
+            <span class="fw-semibold small d-none d-md-inline">Signaler une panne</span>
+        </a>
+
         <% if (typeof role !== 'undefined' && role === 'admin' && (typeof currentPath === 'undefined' || !currentPath.startsWith('/admin'))) { %>
         <a href="/admin" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm header-action-btn" title="Accéder au panneau d'administration">
             <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
@@ -179,6 +187,10 @@
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/fabtrack">
                         <i class="fa-solid fa-desktop text-primary fa-sm" style="width: 16px;"></i>
                         <span class="small">Kiosque Fabtrack</span>
+                    </a>
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-danger" href="/report-issue" target="_blank">
+                        <i class="fa-solid fa-triangle-exclamation text-danger fa-sm" style="width: 16px;"></i>
+                        <span class="small fw-semibold">Signaler une panne machine</span>
                     </a>
                     <% if (role === "admin") { %>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin">

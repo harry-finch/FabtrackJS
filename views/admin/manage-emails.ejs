@@ -173,6 +173,35 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Alert 5: Machine Issue / Failure Reported -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <i class="fa-solid fa-wrench"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Panne & Incident Machine</h6>
+                                                <small class="text-muted">Parc machines & maintenance</small>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch fs-5 mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchMachineIssue" name="mail_notif_machine_issue" value="true" <%= settings.mail_notif_machine_issue === 'true' ? 'checked' : '' %>>
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-3 flex-grow-1">
+                                        Alerte immédiatement l'administrateur lorsqu'un problème ou une panne est signalé(e) sur une machine (via la page publique ou le QR code de la machine), avec la photo éventuelle et les détails du problème.
+                                    </p>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewMachineIssue">
+                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -385,6 +414,65 @@
                                 <div class="text-center pt-2">
                                     <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
                                         Consulter la fiche usager &rarr;
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL 3: Preview Machine Issue Alert -->
+            <div class="modal fade" id="modalPreviewMachineIssue" tabindex="-1" aria-labelledby="modalPreviewMachineIssueLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content shadow-lg border-0">
+                        <div class="modal-header border-0 pb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="fa-solid fa-wrench fa-sm"></i>
+                                </div>
+                                <h6 class="modal-title fw-bold" id="modalPreviewMachineIssueLabel">Aperçu : Alerte Panne / Incident Machine</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                                    <span class="fw-bold fs-5">FabtrackJS</span>
+                                    <span class="badge bg-danger text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Panne Machine</span>
+                                </div>
+                                <h5 class="fw-bold mb-3">Panne signalée sur Découpeuse Laser Speedy 300</h5>
+                                <p class="text-secondary small mb-3">Un nouvel incident ou une panne a été signalé(e) sur une machine du fablab :</p>
+                                <table class="table table-bordered table-sm bg-white mb-3">
+                                    <tbody>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small w-40">Machine concernée</th>
+                                            <td class="fw-bold">Découpeuse Laser Speedy 300 (Trotec)</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Signalé par</th>
+                                            <td class="fw-bold">Marie Curie (marie.curie@sorbonne-universite.fr)</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Date du signalement</th>
+                                            <td>12/09/2026 14:30:00</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Description du problème</th>
+                                            <td class="fw-bold text-danger">La lentille de focalisation semble désaxée, coupure nette impossible même à pleine puissance.</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Photo jointe</th>
+                                            <td><i class="fa-solid fa-camera text-primary me-1"></i> Une photo a été jointe au signalement</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="text-center pt-2">
+                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                        Voir la machine &amp; ses incidents &rarr;
                                     </span>
                                 </div>
                             </div>

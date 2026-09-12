@@ -28,11 +28,19 @@
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
                   <%= machine.machinetype ? machine.machinetype.name : 'Machine' %>
                 </span>
+                <% if (openIssuesCount > 0) { %>
+                  <span class="badge bg-danger rounded-pill" style="font-size: 0.72rem;">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> <%= openIssuesCount %> panne(s) en cours
+                  </span>
+                <% } %>
               </div>
               <p class="text-muted small mb-0"><%= machine.brand %> <%= machine.model %> &bull; <%= machine.location ? machine.location.name : 'Emplacement non défini' %></p>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
+            <a href="/report-issue/<%= machine.id %>" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ouvrir la page publique de signalement pour cette machine">
+              <i class="fa-solid fa-triangle-exclamation me-1"></i> Signaler un problème
+            </a>
             <a href="/admin/machines/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-arrow-left me-1"></i> Retour aux machines
             </a>
@@ -119,6 +127,184 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Machine Issues & Failures Section -->
+      <div class="card shadow-sm mb-4" id="issues">
+        <div class="card-header bg-body-tertiary d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0">
+              <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> Incidents &amp; Pannes signalées
+            </h5>
+            <% if (openIssuesCount > 0) { %>
+              <span class="badge bg-danger rounded-pill">
+                <%= openIssuesCount %> incident(s) en cours
+              </span>
+            <% } else { %>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                <i class="fa-solid fa-circle-check me-1"></i> Opérationnelle
+              </span>
+            <% } %>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a href="/report-issue/<%= machine.id %>" target="_blank" class="btn btn-danger btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-camera me-1"></i> Signaler un problème (page publique)
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <% if (issues.length === 0) { %>
+            <div class="text-center text-muted py-4">
+              <i class="fa-solid fa-shield-halved fa-3x mb-3 text-success opacity-75"></i>
+              <p class="mb-0 fw-semibold">Aucun incident ni panne signalée pour cette machine.</p>
+              <small class="text-secondary">Les signalements envoyés via le formulaire public apparaîtront ici automatiquement.</small>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col" style="width: 130px;">Statut</th>
+                    <th scope="col" style="width: 140px;">Date</th>
+                    <th scope="col" style="width: 170px;">Signalé par</th>
+                    <th scope="col">Description du problème</th>
+                    <th scope="col" class="text-center" style="width: 110px;">Photo</th>
+                    <th scope="col" class="text-end" style="width: 180px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% issues.forEach(function(issue) { %>
+                    <tr class="<%= issue.status === 'OPEN' ? 'table-danger table-opacity-10' : '' %>">
+                      <td>
+                        <% if (issue.status === 'OPEN') { %>
+                          <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i> En cours
+                          </span>
+                        <% } else { %>
+                          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
+                            <i class="fa-solid fa-check me-1"></i> Résolu
+                          </span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <small class="fw-semibold"><%= issue.formattedCreatedAt %></small>
+                      </td>
+                      <td>
+                        <% if (issue.reporterName) { %>
+                          <div class="fw-semibold small"><%= issue.reporterName %></div>
+                        <% } %>
+                        <% if (issue.reporterEmail) { %>
+                          <div class="small text-muted text-truncate" style="max-width: 150px;"><%= issue.reporterEmail %></div>
+                        <% } %>
+                        <% if (!issue.reporterName && !issue.reporterEmail) { %>
+                          <span class="text-muted small">Usager (anonyme)</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="p-2 rounded bg-body-secondary small text-break">
+                          <%= issue.description %>
+                        </div>
+                        <% if (issue.status === 'RESOLVED' && issue.resolvedAt) { %>
+                          <div class="small text-success mt-1">
+                            <i class="fa-solid fa-check-double me-1"></i> Résolu le <%= issue.formattedResolvedAt %>
+                            <% if (issue.resolutionNotes) { %>
+                              &mdash; <em><%= issue.resolutionNotes %></em>
+                            <% } %>
+                          </div>
+                        <% } %>
+                      </td>
+                      <td class="text-center">
+                        <% if (issue.photoPath) { %>
+                          <button type="button" class="btn btn-outline-primary btn-sm p-1 rounded" data-bs-toggle="modal" data-bs-target="#modalPhotoIssue<%= issue.id %>" title="Voir la photo">
+                            <img src="<%= issue.photoPath %>" alt="Photo incident" style="width: 48px; height: 48px; object-fit: cover;" class="rounded" />
+                          </button>
+
+                          <!-- Modal Photo -->
+                          <div class="modal fade" id="modalPhotoIssue<%= issue.id %>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                              <div class="modal-content border-0 shadow-lg">
+                                <div class="modal-header">
+                                  <h6 class="modal-title fw-bold">
+                                    <i class="fa-solid fa-camera me-1 text-primary"></i> Photo de l'incident - <%= machine.name %>
+                                  </h6>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-2 text-center bg-dark rounded-bottom">
+                                  <img src="<%= issue.photoPath %>" alt="Photo de l'incident" class="img-fluid rounded" style="max-height: 80vh;" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        <% } else { %>
+                          <span class="text-muted small">-</span>
+                        <% } %>
+                      </td>
+                      <td class="text-end">
+                        <div class="d-flex justify-content-end align-items-center gap-1">
+                          <% if (issue.status === 'OPEN') { %>
+                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2.5" data-bs-toggle="modal" data-bs-target="#modalResolveIssue<%= issue.id %>" title="Marquer comme résolu">
+                              <i class="fa-solid fa-check me-1"></i> Résoudre
+                            </button>
+                          <% } else { %>
+                            <form action="/admin/machines/issues/<%= issue.id %>/status" method="POST" class="d-inline">
+                              <input type="hidden" name="status" value="OPEN" />
+                              <input type="hidden" name="machineId" value="<%= machine.id %>" />
+                              <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2" title="Rouvrir l'incident">
+                                <i class="fa-solid fa-arrow-rotate-left me-1"></i> Rouvrir
+                              </button>
+                            </form>
+                          <% } %>
+
+                          <form action="/admin/machines/issues/<%= issue.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Confirmez-vous la suppression de ce signalement ?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer">
+                              <i class="fa-solid fa-trash-can fa-xs"></i>
+                            </button>
+                          </form>
+                        </div>
+
+                        <!-- Modal Resolve Issue -->
+                        <% if (issue.status === 'OPEN') { %>
+                          <div class="modal fade" id="modalResolveIssue<%= issue.id %>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content text-start border-0 shadow">
+                                <form action="/admin/machines/issues/<%= issue.id %>/status" method="POST">
+                                  <input type="hidden" name="status" value="RESOLVED" />
+                                  <input type="hidden" name="machineId" value="<%= machine.id %>" />
+                                  <div class="modal-header">
+                                    <h6 class="modal-title fw-bold text-success">
+                                      <i class="fa-solid fa-circle-check me-1"></i> Marquer l'incident comme résolu
+                                    </h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <p class="small text-muted mb-3">
+                                      L'incident sur <strong><%= machine.name %></strong> sera archivé comme résolu.
+                                    </p>
+                                    <label for="resolutionNotes<%= issue.id %>" class="form-label small fw-semibold">
+                                      Notes de réparation / intervention (optionnel) :
+                                    </label>
+                                    <textarea class="form-control form-control-sm" id="resolutionNotes<%= issue.id %>" name="resolutionNotes" rows="3" placeholder="Ex: Remplacement de la buse d'extrusion 0.4mm, nettoyage du plateau et réalignement. Machine à nouveau opérationnelle."></textarea>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
+                                      <i class="fa-solid fa-check me-1"></i> Confirmer la résolution
+                                    </button>
+                                  </div>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
         </div>
       </div>
 

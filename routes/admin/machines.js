@@ -176,6 +176,9 @@ router.get(
         location: true,
         access: true,
         category: true,
+        issues: {
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 
@@ -225,7 +228,21 @@ router.get(
       lastUsed: usageHistory.length > 0 ? usageHistory[0].formattedDate : "Never",
     };
 
-    res.render("admin/view-machine", { machine, usageHistory, usageStats });
+    const formattedIssues = (machine.issues || []).map((issue) => ({
+      ...issue,
+      formattedCreatedAt: formatDateTime(issue.createdAt),
+      formattedResolvedAt: issue.resolvedAt ? formatDateTime(issue.resolvedAt) : null,
+    }));
+
+    const openIssuesCount = formattedIssues.filter((i) => i.status === "OPEN").length;
+
+    res.render("admin/view-machine", {
+      machine,
+      usageHistory,
+      usageStats,
+      issues: formattedIssues,
+      openIssuesCount,
+    });
   }),
 );
 
@@ -236,6 +253,94 @@ router.get(
   (req, res) => {
     res.redirect(`/admin/machines/view/${req.params.id}#history`);
   },
+);
+
+// Route shortcut to jump directly to machine issues section
+router.get(
+  "/issues/:id",
+  clearNotification,
+  (req, res) => {
+    res.redirect(`/admin/machines/view/${req.params.id}#issues`);
+  },
+);
+
+// ******************************************************************************
+// POST /admin/machines/issues/:issueId/status: Update issue status (RESOLVED / OPEN)
+// ******************************************************************************
+router.post(
+  "/issues/:issueId/status",
+  asyncHandler(async (req, res) => {
+    const { issueId } = req.params;
+    const { status, resolutionNotes, machineId } = req.body;
+
+    const currentIssue = await prisma.machineIssue.findUnique({
+      where: { id: Number(issueId) },
+    });
+
+    if (!currentIssue) {
+      req.session.notification = "Error: Incident introuvable.";
+      return res.redirect(machineId ? `/admin/machines/view/${machineId}#issues` : "/admin/machines/manage");
+    }
+
+    const newStatus = status === "RESOLVED" ? "RESOLVED" : "OPEN";
+    await prisma.machineIssue.update({
+      where: { id: Number(issueId) },
+      data: {
+        status: newStatus,
+        resolvedAt: newStatus === "RESOLVED" ? new Date() : null,
+        resolutionNotes: resolutionNotes !== undefined ? resolutionNotes.trim() || null : currentIssue.resolutionNotes,
+      },
+    });
+
+    logger.logThat(`Statut de l'incident #${issueId} modifié en "${newStatus}" pour la machine #${currentIssue.machineId}`);
+
+    req.session.notification =
+      newStatus === "RESOLVED"
+        ? "Success: Incident marqué comme résolu."
+        : "Success: Incident rouvert.";
+
+    res.redirect(`/admin/machines/view/${currentIssue.machineId}#issues`);
+  }),
+);
+
+// ******************************************************************************
+// POST /admin/machines/issues/:issueId/delete: Delete an issue report
+// ******************************************************************************
+router.post(
+  "/issues/:issueId/delete",
+  asyncHandler(async (req, res) => {
+    const { issueId } = req.params;
+    const currentIssue = await prisma.machineIssue.findUnique({
+      where: { id: Number(issueId) },
+    });
+
+    if (!currentIssue) {
+      req.session.notification = "Error: Incident introuvable.";
+      return res.redirect("/admin/machines/manage");
+    }
+
+    const targetMachineId = currentIssue.machineId;
+
+    if (currentIssue.photoPath) {
+      const fullPhotoPath = path.join(__dirname, "../../", currentIssue.photoPath);
+      if (fs.existsSync(fullPhotoPath)) {
+        try {
+          fs.unlinkSync(fullPhotoPath);
+        } catch (e) {
+          console.error("Failed to delete issue photo file:", e);
+        }
+      }
+    }
+
+    await prisma.machineIssue.delete({
+      where: { id: Number(issueId) },
+    });
+
+    logger.logThat(`Signalement d'incident #${issueId} supprimé pour la machine #${targetMachineId}`);
+
+    req.session.notification = "Success: Signalement d'incident supprimé.";
+    res.redirect(`/admin/machines/view/${targetMachineId}#issues`);
+  }),
 );
 
 // ******************************************************************************

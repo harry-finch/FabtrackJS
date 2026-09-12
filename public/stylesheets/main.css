@@ -406,3 +406,9 @@ a[href="/admin"].btn:not(.header-action-btn),
     background-color: rgba(255, 255, 255, 0.25) !important;
     color: #fff !important;
 }
+
+.btn-outline-danger.header-action-btn:hover .header-icon-circle {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    color: #fff !important;
+}
+

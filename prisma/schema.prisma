@@ -234,6 +234,7 @@ model Machine {
   machinetype MachineType @relation(fields: [machinetypeId], references: [id])
   access      Access      @relation(fields: [accessId], references: [id])
   category    Category?   @relation(fields: [categoryId], references: [id])
+  issues      MachineIssue[]
 }
 
 model MachineType {
@@ -343,3 +344,19 @@ model UserWorkshopCompletion {
   @@unique([userId, workshopId])
 }
 
+// Machine issues reported by users or staff
+model MachineIssue {
+  id              Int       @id @default(autoincrement())
+  machineId       Int
+  description     String    @db.Text
+  photoPath       String?   @db.VarChar(255)
+  reporterName    String?   @db.VarChar(255)
+  reporterEmail   String?   @db.VarChar(255)
+  status          String    @default("OPEN") @db.VarChar(50) // "OPEN", "RESOLVED"
+  resolvedAt      DateTime?
+  resolutionNotes String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  machine         Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+}
