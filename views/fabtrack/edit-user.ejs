@@ -17,20 +17,37 @@
         <main class="main-container">
             <%- include('../includes/header.html') %>
 
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <div>
-                    <h4 class="fw-bold mb-0">
-                        <i class="fa-solid fa-user-pen text-primary me-2"></i>Profil utilisateur : <%= user.name %> <%= user.surname %>
-                    </h4>
-                    <small class="text-muted">
-                        <i class="fa-regular fa-calendar-check me-1"></i>Compte créé le <%= user.accountCreationDate %>
-                    </small>
+            <!-- Page Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="fa-solid fa-user-pen"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h4 class="fw-bold mb-0"><%= user.name %> <%= user.surname %></h4>
+                                <% if (user.isExpert) { %>
+                                    <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">
+                                        <i class="fa-solid fa-star fa-2xs"></i> Expert
+                                    </span>
+                                <% } %>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
+                                    <%= user.usertype ? user.usertype.name : 'Usager' %>
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-0"><i class="fa-regular fa-calendar-check me-1"></i>Compte créé le <%= user.accountCreationDate %></p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/admin/users" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Retour usagers
+                        </a>
+                        <a href="/fabtrack" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-desktop me-1"></i> Borne accueil
+                        </a>
+                    </div>
                 </div>
-                <% if (user.isExpert) { %>
-                    <span class="badge bg-warning text-dark border border-warning-subtle px-3 py-2 rounded-pill">
-                        <i class="fa-solid fa-star me-1"></i> Utilisateur Expert
-                    </span>
-                <% } %>
             </div>
             <form action="/users/update/<%= user.id %>" method="post">
                 <div class="row">

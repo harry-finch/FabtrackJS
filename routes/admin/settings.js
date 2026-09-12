@@ -8,6 +8,10 @@ const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const settingsService = require("../../services/settingsService.js");
 const hookManager = require("../../core/HookManager.js");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+const repairCafeService = require("../../services/repairCafeService.js");
+const workshopService = require("../../services/workshopService.js");
 
 const router = express.Router();
 router.use(isAdmin);
@@ -62,10 +66,12 @@ router.get(
   asyncHandler(async (req, res) => {
     const settings = await settingsService.getSettings();
     const plugins = hookManager.getAllPlugins();
+    const projecttypes = await prisma.projecttype.findMany({ orderBy: { name: "asc" } });
 
     res.render("admin/manage-settings", {
       settings,
       plugins,
+      projecttypes,
     });
   }),
 );
@@ -129,7 +135,44 @@ router.post(
     updates.plugin_rfid_enabled = isRfidEnabled ? "true" : "false";
     hookManager.setPluginEnabled("rfid", isRfidEnabled);
 
+    const isBookstackEnabled = req.body.plugin_bookstack_enabled === "true" || req.body.plugin_bookstack_enabled === "on";
+    updates.plugin_bookstack_enabled = isBookstackEnabled ? "true" : "false";
+    hookManager.setPluginEnabled("bookstack", isBookstackEnabled);
+
+    const isRepairCafeEnabled = req.body.plugin_repaircafe_enabled === "true" || req.body.plugin_repaircafe_enabled === "on";
+    updates.plugin_repaircafe_enabled = isRepairCafeEnabled ? "true" : "false";
+    hookManager.setPluginEnabled("repaircafe", isRepairCafeEnabled);
+
+    const isWorkshopEnabled = req.body.plugin_workshop_enabled === "true" || req.body.plugin_workshop_enabled === "on";
+    updates.plugin_workshop_enabled = isWorkshopEnabled ? "true" : "false";
+    hookManager.setPluginEnabled("workshop", isWorkshopEnabled);
+
+    // Associated project type names for plugins
+    if (req.body.repaircafe_projecttype_name !== undefined) {
+      updates.repaircafe_projecttype_name = req.body.repaircafe_projecttype_name.trim() || "Repair Café";
+    }
+    if (req.body.workshop_projecttype_name !== undefined) {
+      updates.workshop_projecttype_name = req.body.workshop_projecttype_name.trim() || "Atelier";
+    }
+    if (req.body.ue_projecttype_name !== undefined) {
+      updates.ue_projecttype_name = req.body.ue_projecttype_name.trim() || "Academic";
+    }
+
     await settingsService.updateSettings(updates);
+
+    // Automatically ensure project types exist in the database
+    await repairCafeService.ensureProjectType();
+    await workshopService.ensureProjectType();
+    if (updates.ue_projecttype_name) {
+      const existingUe = await prisma.projecttype.findFirst({
+        where: { name: { equals: updates.ue_projecttype_name } },
+      });
+      if (!existingUe) {
+        await prisma.projecttype.create({
+          data: { name: updates.ue_projecttype_name },
+        });
+      }
+    }
 
     req.session.notification = "Success: Platform settings updated successfully.";
     res.redirect("/admin/settings");

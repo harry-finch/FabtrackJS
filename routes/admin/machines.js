@@ -122,7 +122,7 @@ router.post(
 // ******************************************************************************
 
 router.get(
-  "/manage",
+  ["/", "/manage"],
   clearNotification,
   asyncHandler(async (req, res) => {
     const machines = await prisma.machine.findMany({

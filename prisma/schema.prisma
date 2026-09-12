@@ -153,10 +153,19 @@ model History {
   comments              String?       @db.VarChar(255)
   workspaceId    Int?
 
+  // Repair Café Plugin fields
+  repairObject          String?       @db.VarChar(255)
+  repairStatus          String?       @db.VarChar(50) // PENDING, REPAIRED, PARTIALLY_REPAIRED, NOT_REPAIRED, NEEDS_RETURN
+  repairNotes           String?       @db.Text
+
+  // Workshop Plugin field
+  workshopId            Int?
+
   user           User          @relation(fields: [userId], references: [id])
   userproject    UserProject?  @relation(fields: [userprojectId], references: [id])
   teachingUnit   TeachingUnit? @relation(fields: [teachingUnitId], references: [id], onDelete: SetNull)
   workspace      Workspace?    @relation(fields: [workspaceId], references: [id])
+  workshop       Workshop?     @relation(fields: [workshopId], references: [id], onDelete: SetNull)
   activities     Activity[]
 }
 
@@ -304,6 +313,7 @@ model Workshop {
   access      Access?   @relation(fields: [accessId], references: [id], onDelete: SetNull)
   interests   UserWorkshopInterest[]
   completions UserWorkshopCompletion[]
+  historyEntries History[]
 }
 
 // User interest in a workshop (for contact when organized)

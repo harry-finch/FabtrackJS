@@ -41,22 +41,25 @@
     <main class="main-container">
       <%- include('../includes/header.html') %>
 
-      <!-- Top Back Navigation -->
-      <div class="mb-3">
-        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
-          <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
-        </a>
-      </div>
-
-      <!-- Header Banner -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 border-bottom pb-3">
-        <div class="d-flex align-items-center gap-3">
-          <div class="icon-box bg-primary text-white shadow-sm">
-            <i class="fa-solid fa-sliders"></i>
+      <!-- Page Header -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fa-solid fa-sliders"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0">Configuration générale</h4>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">Système</span>
+              </div>
+              <p class="text-muted small mb-0">Identité visuelle, modules, sécurité et préférences du fablab</p>
+            </div>
           </div>
-          <div>
-            <h4 class="fw-bold mb-0">Configuration générale de la plateforme</h4>
-            <small class="text-muted">Personnalisez l'identité visuelle, les modules, la sécurité et les préférences du fablab</small>
+          <div class="d-flex align-items-center gap-2">
+            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
+            </a>
           </div>
         </div>
       </div>
@@ -185,51 +188,120 @@
               <% plugins.forEach(function(plugin) { 
                 const isUe = plugin.id === 'ue';
                 const isRfid = plugin.id === 'rfid';
+                const isBookstack = plugin.id === 'bookstack';
+                const isRepairCafe = plugin.id === 'repaircafe';
+                const isWorkshop = plugin.id === 'workshop';
                 let isChecked = plugin.enabled;
                 if (isUe) isChecked = (settings.plugin_ue_enabled !== 'false');
                 if (isRfid) isChecked = (settings.plugin_rfid_enabled !== 'false');
-                const themeColor = isUe ? 'danger' : (isRfid ? 'info' : 'primary');
-                const iconClass = isUe ? 'fa-graduation-cap' : (isRfid ? 'fa-id-card' : 'fa-plug');
+                if (isBookstack) isChecked = (settings.plugin_bookstack_enabled !== 'false');
+                if (isRepairCafe) isChecked = (settings.plugin_repaircafe_enabled !== 'false');
+                if (isWorkshop) isChecked = (settings.plugin_workshop_enabled !== 'false');
+                const themeColor = isUe ? 'danger' : (isRfid ? 'info' : (isBookstack ? 'primary' : (isRepairCafe ? 'warning' : (isWorkshop ? 'success' : 'secondary'))));
+                const iconClass = isUe ? 'fa-graduation-cap' : (isRfid ? 'fa-id-card' : (isBookstack ? 'fa-book' : (isRepairCafe ? 'fa-wrench' : (isWorkshop ? 'fa-chalkboard-user' : 'fa-plug'))));
               %>
               <div class="col-12">
-                <div class="p-3 border rounded-3 bg-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-                  <div class="d-flex align-items-start gap-3">
-                    <div class="icon-box bg-<%= themeColor %>-subtle text-<%= themeColor %> mt-1" style="width: 42px; height: 42px; font-size: 1.1rem;">
-                      <i class="fa-solid <%= iconClass %>"></i>
-                    </div>
-                    <div>
-                      <div class="d-flex align-items-center gap-2">
-                        <h6 class="fw-bold mb-0"><%= plugin.name %></h6>
-                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">v<%= plugin.version %></span>
-                        <% if (isUe) { %>
-                          <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sorbonne Université</span>
-                        <% } else if (isRfid) { %>
-                          <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">Borne Tactile</span>
-                        <% } %>
+                <div class="p-3 border rounded-3 bg-body">
+                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-start gap-3">
+                      <div class="icon-box bg-<%= themeColor %>-subtle text-<%= themeColor %> mt-1" style="width: 42px; height: 42px; font-size: 1.1rem;">
+                        <i class="fa-solid <%= iconClass %>"></i>
                       </div>
-                      <p class="text-muted small mb-0 mt-1"><%= plugin.description %></p>
+                      <div>
+                        <div class="d-flex align-items-center gap-2">
+                          <h6 class="fw-bold mb-0"><%= plugin.name %></h6>
+                          <span class="badge bg-body-secondary text-body-secondary border rounded-pill">v<%= plugin.version %></span>
+                          <% if (isUe) { %>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sorbonne Université</span>
+                          <% } else if (isRfid) { %>
+                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">Borne Tactile</span>
+                          <% } else if (isBookstack) { %>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Wiki</span>
+                          <% } else if (isRepairCafe) { %>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">Repair Café</span>
+                          <% } else if (isWorkshop) { %>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Ateliers & Badges</span>
+                          <% } %>
+                        </div>
+                        <p class="text-muted small mb-0 mt-1"><%= plugin.description %></p>
+                      </div>
+                    </div>
+
+                    <div class="form-check form-switch ps-0">
+                      <input 
+                        class="form-check-input ms-0" 
+                        type="checkbox" 
+                        role="switch" 
+                        id="plugin_<%= plugin.id %>" 
+                        name="plugin_<%= plugin.id %>_enabled" 
+                        value="true" 
+                        style="width: 2.8em; height: 1.4em; cursor: pointer;"
+                        <%= isChecked ? 'checked' : '' %>
+                      >
+                      <label class="form-check-label ms-2 small fw-semibold" for="plugin_<%= plugin.id %>">
+                        <%= isChecked ? 'Activé' : 'Désactivé' %>
+                      </label>
                     </div>
                   </div>
 
-                  <div class="form-check form-switch ps-0">
-                    <input 
-                      class="form-check-input ms-0" 
-                      type="checkbox" 
-                      role="switch" 
-                      id="plugin_<%= plugin.id %>" 
-                      name="plugin_<%= plugin.id %>_enabled" 
-                      value="true" 
-                      style="width: 2.8em; height: 1.4em; cursor: pointer;"
-                      <%= isChecked ? 'checked' : '' %>
-                    >
-                    <label class="form-check-label ms-2 small fw-semibold" for="plugin_<%= plugin.id %>">
-                      <%= isChecked ? 'Activé' : 'Désactivé' %>
-                    </label>
+                  <% if (isRepairCafe || isWorkshop || isUe) { 
+                    let settingKey = '';
+                    let defaultVal = '';
+                    let labelText = '';
+                    let helpText = '';
+                    if (isRepairCafe) {
+                      settingKey = 'repaircafe_projecttype_name';
+                      defaultVal = settings.repaircafe_projecttype_name || 'Repair Café';
+                      labelText = 'Type de projet associé';
+                      helpText = 'Déclenche le champ "Objet à réparer" et masque la documentation lors du check-in.';
+                    } else if (isWorkshop) {
+                      settingKey = 'workshop_projecttype_name';
+                      defaultVal = settings.workshop_projecttype_name || 'Atelier';
+                      labelText = 'Type de projet associé';
+                      helpText = 'Déclenche la sélection d\'ateliers et attribue automatiquement le badge et l\'habilitation correspondants.';
+                    } else if (isUe) {
+                      settingKey = 'ue_projecttype_name';
+                      defaultVal = settings.ue_projecttype_name || 'Academic';
+                      labelText = 'Type de projet associé';
+                      helpText = 'Déclenche la sélection des UE Sorbonne Université et la facturation consolidée.';
+                    }
+                  %>
+                  <div class="mt-3 pt-3 border-top">
+                    <div class="row align-items-center g-2">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-semibold mb-0" for="<%= settingKey %>">
+                          <i class="fa-solid fa-folder-tree text-<%= themeColor %> me-1"></i> <%= labelText %>
+                        </label>
+                        <div class="text-muted" style="font-size: 0.78rem;"><%= helpText %></div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-tag"></i></span>
+                          <input 
+                            type="text" 
+                            class="form-control" 
+                            id="<%= settingKey %>" 
+                            name="<%= settingKey %>" 
+                            value="<%= defaultVal %>" 
+                            list="projecttypes_list"
+                            placeholder="Nom du type de projet"
+                            required
+                          >
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                  <% } %>
                 </div>
               </div>
               <% }); %>
             </div>
+
+            <datalist id="projecttypes_list">
+              <% (typeof projecttypes !== 'undefined' ? projecttypes : []).forEach(function(pt) { %>
+                <option value="<%= pt.name %>">
+              <% }); %>
+            </datalist>
           </div>
         </div>
 

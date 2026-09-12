@@ -102,10 +102,27 @@ app.use(async (req, res, next) => {
     const isUeEnabled = settings.plugin_ue_enabled !== "false";
     hookManager.setPluginEnabled("ue", isUeEnabled);
     res.locals.isPluginUeEnabled = isUeEnabled;
+    res.locals.ueProjectTypeName = settings.ue_projecttype_name || "Academic";
 
     const isRfidEnabled = settings.plugin_rfid_enabled !== "false";
     hookManager.setPluginEnabled("rfid", isRfidEnabled);
     res.locals.isPluginRfidEnabled = isRfidEnabled;
+
+    const isBookstackEnabled = settings.plugin_bookstack_enabled !== "false";
+    hookManager.setPluginEnabled("bookstack", isBookstackEnabled);
+    res.locals.isPluginBookstackEnabled = isBookstackEnabled;
+    res.locals.bookstackBaseUrl = settings.bookstack_url || "https://wiki.fablab.sorbonne-universite.fr/BookStack/";
+    res.locals.bookstackAutoPrefill = settings.bookstack_auto_prefill !== "false";
+
+    const isRepairCafeEnabled = settings.plugin_repaircafe_enabled !== "false";
+    hookManager.setPluginEnabled("repaircafe", isRepairCafeEnabled);
+    res.locals.isPluginRepairCafeEnabled = isRepairCafeEnabled;
+    res.locals.repairCafeProjectTypeName = settings.repaircafe_projecttype_name || "Repair Café";
+
+    const isWorkshopEnabled = settings.plugin_workshop_enabled !== "false";
+    hookManager.setPluginEnabled("workshop", isWorkshopEnabled);
+    res.locals.isPluginWorkshopEnabled = isWorkshopEnabled;
+    res.locals.workshopProjectTypeName = settings.workshop_projecttype_name || "Atelier";
 
     // Apply dynamic session timeout if configured
     if (req.session && req.session.cookie) {

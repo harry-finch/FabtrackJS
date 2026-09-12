@@ -15,29 +15,32 @@
     <main class="main-container">
       <%- include('../includes/header.html') %>
 
-      <!-- Top Back to Admin Button -->
-      <div class="mb-3">
-        <a href="/admin" class="btn btn-outline-secondary btn-sm">
-          <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
-        </a>
-      </div>
-
-      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-        <div>
-          <h4 class="mb-1">
-            <i class="fa-solid fa-graduation-cap text-primary me-2"></i> Unités d'Enseignement (UE) & Refacturation
-          </h4>
-          <p class="text-muted small mb-0">
-            Gestion des UE habilitées de Sorbonne Université, imputation des consommables académiques et export pour la facturation.
-          </p>
-        </div>
-        <div class="d-flex gap-2">
-          <a href="/admin/ue/export-csv" class="btn btn-outline-success btn-sm" id="topExportCsvBtn">
-            <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV (Facturation)
-          </a>
-          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createUeModal">
-            <i class="fa-solid fa-plus me-1"></i> Nouvelle UE
-          </button>
+      <!-- Page Header -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-box bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0">Unités d'Enseignement (UE) & Refacturation</h4>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.72rem;">Sorbonne Université</span>
+              </div>
+              <p class="text-muted small mb-0">Gestion des UE habilitées, imputation des consommables académiques et refacturation</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
+            </a>
+            <a href="/admin/ue/export-csv" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" id="topExportCsvBtn">
+              <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV
+            </a>
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#createUeModal">
+              <i class="fa-solid fa-plus me-1"></i> Nouvelle UE
+            </button>
+          </div>
         </div>
       </div>
 

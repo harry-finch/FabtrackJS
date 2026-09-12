@@ -50,6 +50,7 @@ router.get(
       relationLoadStrategy: "join",
       include: {
         user: true,
+        workshop: true,
       },
     });
 
@@ -120,12 +121,19 @@ router.get(
       teachingUnits = ueResults.flat().filter(Boolean);
     }
 
+    const availableWorkshops = await prisma.workshop.findMany({
+      where: { active: true },
+      include: { access: true },
+      orderBy: { name: "asc" },
+    });
+
     res.render("fabtrack/index", {
       users: allUsers,
       history,
       consumables,
       teachingUnits,
       isPluginUeEnabled,
+      availableWorkshops,
     });
   }),
 );

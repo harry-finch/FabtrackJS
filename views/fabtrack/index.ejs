@@ -77,15 +77,36 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-8">
+                        <div class="col-8" id="documentationCol">
                             <div class="form-floating mb-3 d-grid d-flex">
                                 <input type='hidden' id="projectid" name='projectid' value='null' />
                                 <input type='hidden' id="userprojectid" name='userprojectid' value='null' />
                                 <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" autocomplete="off" placeholder="Documentation" required />
                                 <label for="name">Link to project documentation</label>
-                                <a id="urldocumentation" href="">
-                                    <span class="formbutton input-group-text"><i class="fa-solid fa-book-circle-arrow-right fa-lg"></i></span>
+                                <a id="urldocumentation" href="" target="_blank" rel="noopener noreferrer">
+                                    <span class="formbutton input-group-text" id="docStatusBtn" title="Consulter la documentation du projet"><i class="fa-solid fa-book-circle-arrow-right fa-lg"></i></span>
                                 </a>
+                            </div>
+                        </div>
+                        <div class="col-8" id="repairObjectCol" style="display: none;">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="repairObject" name="repairObject" autocomplete="off" placeholder="Objet à réparer" />
+                                <label for="repairObject"><i class="fa-solid fa-screwdriver-wrench text-warning me-1"></i> Objet à réparer (ex: Cafetière Seb, Fer à repasser, Lampe...)</label>
+                            </div>
+                        </div>
+                        <div class="col-8" id="workshopCol" style="display: none;">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="workshopId" name="workshopId">
+                                    <option value="" selected disabled>Choisir un atelier...</option>
+                                    <% if (typeof availableWorkshops !== 'undefined' && availableWorkshops) { %>
+                                        <% availableWorkshops.forEach(function(ws) { %>
+                                        <option value="<%= ws.id %>">
+                                            <%= ws.name %><% if (ws.badge) { %> (Badge : <%= ws.badge.name %>)<% } %>
+                                        </option>
+                                        <% }); %>
+                                    <% } %>
+                                </select>
+                                <label for="workshopId"><i class="fa-solid fa-graduation-cap text-primary me-1"></i> Atelier suivi (badge attribué automatiquement)</label>
                             </div>
                         </div>
                         <div class="col-4">
@@ -210,6 +231,16 @@
                                                     <i class="fa-solid fa-star fa-2xs"></i> Expert
                                                 </span>
                                             <% } %>
+                                            <% if (entry.repairObject) { %>
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Objet en réparation : <%= entry.repairObject %>">
+                                                    <i class="fa-solid fa-wrench fa-2xs"></i> <%= entry.repairObject %>
+                                                </span>
+                                            <% } %>
+                                            <% if (entry.workshop) { %>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Atelier : <%= entry.workshop.name %>">
+                                                    <i class="fa-solid fa-graduation-cap fa-2xs"></i> <%= entry.workshop.name %>
+                                                </span>
+                                            <% } %>
                                         </td>
                                         <td class="text-center">
                                             <% if (isStaffRole) { %>
@@ -283,9 +314,22 @@
                                             <% } %>
                                         </td>
                                         <td class="text-end pe-3">
-                                            <a href="/history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Enregistrer la sortie">
-                                                <i class="fa-solid fa-person-walking-arrow-right me-1"></i>Sortie
-                                            </a>
+                                            <% if (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled && entry.repairObject) { %>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-warning rounded-pill px-2 py-1 btn-repair-exit" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#modalRepairCheckout"
+                                                        data-bs-historyid="<%= entry.id %>"
+                                                        data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                                        data-bs-repairobject="<%= entry.repairObject %>"
+                                                        title="Bilan Repair Café & Sortie">
+                                                    <i class="fa-solid fa-screwdriver-wrench me-1"></i>Sortie
+                                                </button>
+                                            <% } else { %>
+                                                <a href="/history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Enregistrer la sortie">
+                                                    <i class="fa-solid fa-person-walking-arrow-right me-1"></i>Sortie
+                                                </a>
+                                            <% } %>
                                         </td>
                                     </tr>
                                     <% }); %>
@@ -553,6 +597,77 @@
             </div>
             <% } %>
 
+            <!-- Modal Repair Café: Exit evaluation & outcome popup -->
+            <div class="modal fade" id="modalRepairCheckout" tabindex="-1" aria-labelledby="modalRepairCheckoutLabel" aria-hidden="true" data-bs-backdrop="static">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <form action="/history/exit-repair" method="POST">
+                            <input type="hidden" name="historyid" id="repairExitHistoryId" value="" />
+                            <div class="modal-header bg-warning-subtle text-dark border-0">
+                                <h5 class="modal-title fw-bold" id="modalRepairCheckoutLabel">
+                                    <i class="fa-solid fa-wrench me-2"></i>Bilan Repair Café — Clôture de visite
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="alert alert-light border d-flex align-items-center gap-3 mb-4">
+                                    <div class="rounded-circle bg-warning bg-opacity-25 p-3 text-warning">
+                                        <i class="fa-solid fa-screwdriver-wrench fa-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark fs-6" id="repairExitUserName">Usager</div>
+                                        <div class="text-muted small">Objet : <strong id="repairExitObjectName" class="text-primary">-</strong></div>
+                                    </div>
+                                </div>
+
+                                <label class="form-label fw-bold mb-2">Quel est le résultat de la réparation ? <span class="text-danger">*</span></label>
+                                <div class="d-flex flex-column gap-2 mb-3">
+                                    <div class="form-check p-2 border rounded-3 bg-body-tertiary">
+                                        <input class="form-check-input ms-1 me-2" type="radio" name="repairStatus" id="statusRepaired" value="REPAIRED" required checked>
+                                        <label class="form-check-label fw-semibold text-success" for="statusRepaired">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Réparé
+                                            <div class="text-muted small fw-normal ms-4">L'objet fonctionne à nouveau parfaitement</div>
+                                        </label>
+                                    </div>
+                                    <div class="form-check p-2 border rounded-3 bg-body-tertiary">
+                                        <input class="form-check-input ms-1 me-2" type="radio" name="repairStatus" id="statusPartially" value="PARTIALLY_REPAIRED">
+                                        <label class="form-check-label fw-semibold text-info" for="statusPartially">
+                                            <i class="fa-solid fa-triangle-exclamation me-1"></i> Partiellement réparé
+                                            <div class="text-muted small fw-normal ms-4">Certaines fonctions réparées ou utilisation possible avec restrictions</div>
+                                        </label>
+                                    </div>
+                                    <div class="form-check p-2 border rounded-3 bg-body-tertiary">
+                                        <input class="form-check-input ms-1 me-2" type="radio" name="repairStatus" id="statusNotRepaired" value="NOT_REPAIRED">
+                                        <label class="form-check-label fw-semibold text-danger" for="statusNotRepaired">
+                                            <i class="fa-solid fa-circle-xmark me-1"></i> Non réparé
+                                            <div class="text-muted small fw-normal ms-4">L'objet n'a pas pu être réparé (composant HS, irréparable...)</div>
+                                        </label>
+                                    </div>
+                                    <div class="form-check p-2 border rounded-3 bg-body-tertiary">
+                                        <input class="form-check-input ms-1 me-2" type="radio" name="repairStatus" id="statusNeedsReturn" value="NEEDS_RETURN">
+                                        <label class="form-check-label fw-semibold text-warning-emphasis" for="statusNeedsReturn">
+                                            <i class="fa-solid fa-rotate-right me-1"></i> À poursuivre / Doit revenir pour finir
+                                            <div class="text-muted small fw-normal ms-4">Réparation en cours, pièce commandée ou session à terminer</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-floating">
+                                    <textarea class="form-control" placeholder="Remarques éventuelles" id="repairExitNotes" name="repairNotes" style="height: 80px"></textarea>
+                                    <label for="repairExitNotes">Remarques / Pièces à prévoir (optionnel)</label>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                                    <i class="fa-solid fa-check me-1"></i> Valider la sortie
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <%- include('../includes/footer.html') %>
 
         <script id="consumablesData" type="application/json">
@@ -579,6 +694,25 @@
                     workspaceName: eq.workspace ? eq.workspace.name : ''
                 };
             })) %>
+        </script>
+        <script>
+            window.bookstackConfig = {
+                enabled: <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? 'true' : 'false' %>,
+                baseUrl: "<%= typeof bookstackBaseUrl !== 'undefined' ? bookstackBaseUrl : 'https://wiki.fablab.sorbonne-universite.fr/BookStack/' %>",
+                autoPrefill: <%= (typeof bookstackAutoPrefill !== 'undefined' && bookstackAutoPrefill) ? 'true' : 'false' %>
+            };
+            window.repairCafeConfig = {
+                enabled: <%= (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) ? 'true' : 'false' %>,
+                projectTypeName: "<%= typeof repairCafeProjectTypeName !== 'undefined' ? repairCafeProjectTypeName : 'Repair Café' %>"
+            };
+            window.workshopConfig = {
+                enabled: <%= (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) ? 'true' : 'false' %>,
+                projectTypeName: "<%= typeof workshopProjectTypeName !== 'undefined' ? workshopProjectTypeName : 'Atelier' %>"
+            };
+            window.ueConfig = {
+                enabled: <%= (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) ? 'true' : 'false' %>,
+                projectTypeName: "<%= typeof ueProjectTypeName !== 'undefined' ? ueProjectTypeName : 'Academic' %>"
+            };
         </script>
 
         <script src="/javascripts/fabtrack.js"></script>

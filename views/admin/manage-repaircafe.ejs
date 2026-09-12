@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Repair Café & Réparations - <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
+        <%- include('../includes/pagehead.html') %>
+    </head>
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
+
+            <!-- Page Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="fa-solid fa-wrench"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h4 class="fw-bold mb-0">Repair Café</h4>
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">Atelier</span>
+                            </div>
+                            <p class="text-muted small mb-0">Suivi des ateliers de co-réparation, statistiques de succès et historique des objets remis en service</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification banner -->
+            <% if (typeof notification !== 'undefined' && notification) { 
+                const isError = notification.toLowerCase().includes('error');
+                const isSuccess = notification.toLowerCase().includes('success');
+            %>
+            <div class="alert <%= isError ? 'alert-danger' : isSuccess ? 'alert-success' : 'alert-info' %> alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid <%= isError ? 'fa-triangle-exclamation' : isSuccess ? 'fa-circle-check' : 'fa-circle-info' %>"></i>
+                    <div><%= notification.replace(/^(Success:|Error:|Warning:)\s*/i, '') %></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <% } %>
+
+            <!-- SECTION 1: KPI Cards - Repair Statistics -->
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+                <!-- KPI 1: Taux de réparation global -->
+                <div class="col">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">Taux de réparation</span>
+                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i class="fa-solid fa-percent fa-sm"></i>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                            <span class="fs-2 fw-bold <%= stats.globalSuccessRate >= 60 ? 'text-success' : stats.globalSuccessRate >= 30 ? 'text-warning-emphasis' : 'text-danger' %>">
+                                <%= stats.globalSuccessRate %>%
+                            </span>
+                            <span class="text-muted small">(<%= stats.strictSuccessRate %>% strict)</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar <%= stats.globalSuccessRate >= 60 ? 'bg-success' : stats.globalSuccessRate >= 30 ? 'bg-warning' : 'bg-danger' %>" role="progressbar" style="width: <%= stats.globalSuccessRate %>%;" aria-valuenow="<%= stats.globalSuccessRate %>" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Réparés avec succès -->
+                <div class="col">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">Objets sauvés</span>
+                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i class="fa-solid fa-circle-check fa-sm"></i>
+                            </div>
+                        </div>
+                        <div class="fs-2 fw-bold text-success mb-1"><%= stats.repairedCount %></div>
+                        <small class="text-muted">+ <%= stats.partiallyRepairedCount %> partiellement réparé(s)</small>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Non réparés / En attente -->
+                <div class="col">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">À poursuivre / Échecs</span>
+                            <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i class="fa-solid fa-rotate-right fa-sm"></i>
+                            </div>
+                        </div>
+                        <div class="fs-2 fw-bold text-warning-emphasis mb-1"><%= stats.needsReturnCount %></div>
+                        <small class="text-muted">Doivent revenir (<%= stats.notRepairedCount %> non réparé(s))</small>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Nombre de visiteurs -->
+                <div class="col">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.04em;">Visiteurs</span>
+                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i class="fa-solid fa-users fa-sm"></i>
+                            </div>
+                        </div>
+                        <div class="fs-2 fw-bold text-primary mb-1"><%= stats.uniqueVisitors %></div>
+                        <small class="text-muted"><%= stats.totalVisits %> visite(s) totale(s) enregistrée(s)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Repair History Table -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill px-2 py-1">
+                            <i class="fa-solid fa-clock-rotate-left me-1"></i> Historique
+                        </span>
+                        <h5 class="fw-bold mb-0 ms-1">Sessions et objets déposés</h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" id="repairSearchInput" class="form-control form-control-sm rounded-pill px-3" style="width: 220px;" placeholder="Filtrer usager, objet..." />
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="repairHistoryTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="ps-4">Date / Heure</th>
+                                    <th scope="col">Usager</th>
+                                    <th scope="col">Objet à réparer</th>
+                                    <th scope="col" class="text-center">Résultat du diagnostic</th>
+                                    <th scope="col">Notes & Remarques</th>
+                                    <th scope="col" class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (!stats.records || stats.records.length === 0) { %>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="fa-solid fa-screwdriver-wrench fa-2xl d-block mb-3 opacity-25"></i>
+                                        Aucune visite Repair Café enregistrée pour l'instant.
+                                    </td>
+                                </tr>
+                                <% } else { %>
+                                <% stats.records.forEach(function(rec) { 
+                                    const arrivalDate = new Date(rec.arrival);
+                                    const formattedDate = arrivalDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                                    const formattedTime = arrivalDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                                    const stInfo = rec.statusInfo || { label: rec.repairStatus, color: 'secondary', icon: 'fa-question' };
+                                %>
+                                <tr>
+                                    <td class="ps-4 text-nowrap">
+                                        <div class="fw-semibold"><%= formattedDate %></div>
+                                        <small class="text-muted"><i class="fa-regular fa-clock fa-xs me-1"></i><%= formattedTime %></small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold"><%= rec.userFullName %></div>
+                                        <% if (rec.userEmail) { %>
+                                        <small class="text-muted"><%= rec.userEmail %></small>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill px-2 py-1">
+                                            <i class="fa-solid fa-screwdriver-wrench fa-xs me-1"></i><%= rec.repairObject %>
+                                        </span>
+                                    </td>
+                                    <td class="text-center text-nowrap">
+                                        <span class="badge bg-<%= stInfo.color %>-subtle text-<%= stInfo.color %> border border-<%= stInfo.color %>-subtle rounded-pill px-3 py-2 fw-semibold">
+                                            <i class="fa-solid <%= stInfo.icon %> me-1"></i><%= stInfo.label %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% if (rec.repairNotes) { %>
+                                        <span class="small text-secondary" title="<%= rec.repairNotes %>"><%= rec.repairNotes %></span>
+                                        <% } else { %>
+                                        <span class="text-muted small fst-italic">—</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-end pe-4 text-nowrap">
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-edit-repair"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editRepairModal"
+                                            data-historyid="<%= rec.id %>"
+                                            data-username="<%= rec.userFullName %>"
+                                            data-repairobject="<%= rec.repairObject %>"
+                                            data-repairstatus="<%= rec.repairStatus %>"
+                                            data-repairnotes="<%= rec.repairNotes %>"
+                                            title="Modifier cette fiche"
+                                        >
+                                            <i class="fa-solid fa-pen-to-square fa-xs me-1"></i> Modifier
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: Plugin Configuration Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                        <i class="fa-solid fa-gear me-1"></i> Configuration
+                    </span>
+                    <h5 class="fw-bold mb-0 ms-1">Paramètres du Plugin Repair Café</h5>
+                </div>
+                <div class="card-body px-4 pt-2 pb-4">
+                    <form action="/admin/repair-cafe/settings" method="POST">
+                        <div class="row g-3">
+                            <!-- Toggle switch -->
+                            <div class="col-12">
+                                <div class="p-3 border rounded-3 bg-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Activer les fonctionnalités Repair Café</h6>
+                                        <p class="text-muted small mb-0 mt-1">
+                                            Affiche le champ "Objet à réparer" lors de la sélection du type de projet et ouvre le modal de bilan de réparation lors de la sortie.
+                                        </p>
+                                    </div>
+                                    <div class="form-check form-switch ps-0">
+                                        <input 
+                                            class="form-check-input ms-0" 
+                                            type="checkbox" 
+                                            role="switch" 
+                                            id="plugin_repaircafe_enabled" 
+                                            name="plugin_repaircafe_enabled" 
+                                            value="true" 
+                                            style="width: 2.8em; height: 1.4em; cursor: pointer;"
+                                            <%= (settings.plugin_repaircafe_enabled !== 'false') ? 'checked' : '' %>
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Associated Project Type Name -->
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating mb-2">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="repaircafe_projecttype_name" 
+                                        name="repaircafe_projecttype_name" 
+                                        placeholder="Repair Café"
+                                        value="<%= settings.repaircafe_projecttype_name || 'Repair Café' %>"
+                                        required
+                                    >
+                                    <label for="repaircafe_projecttype_name">
+                                        <i class="fa-solid fa-tag text-muted me-1"></i> Intitulé du Type de Projet associé
+                                    </label>
+                                </div>
+                                <div class="form-text small text-muted">
+                                    Nom exact du type de projet dans Fabtrack qui déclenche le formulaire d'objet à réparer.
+                                </div>
+                            </div>
+
+                            <!-- Save button -->
+                            <div class="col-12 d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i> Enregistrer les paramètres
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal to Edit a Repair Record -->
+            <div class="modal fade" id="editRepairModal" tabindex="-1" aria-labelledby="editRepairModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <form action="/admin/repair-cafe/update-entry" method="POST">
+                            <input type="hidden" name="historyid" id="editHistoryId" value="" />
+                            <div class="modal-header bg-warning-subtle text-dark border-0">
+                                <h5 class="modal-title fw-bold" id="editRepairModalLabel">
+                                    <i class="fa-solid fa-wrench me-2"></i>Modifier la fiche de réparation
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-semibold">Usager</label>
+                                    <input type="text" class="form-control bg-light" id="editUserName" readonly />
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="editRepairObject" name="repairObject" placeholder="Objet à réparer" required />
+                                    <label for="editRepairObject">Objet à réparer</label>
+                                </div>
+
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="editRepairStatus" name="repairStatus" required>
+                                        <option value="REPAIRED">Réparé (Succès)</option>
+                                        <option value="PARTIALLY_REPAIRED">Partiellement réparé</option>
+                                        <option value="NOT_REPAIRED">Non réparé</option>
+                                        <option value="NEEDS_RETURN">Doit revenir pour finir</option>
+                                        <option value="PENDING">En cours de réparation</option>
+                                    </select>
+                                    <label for="editRepairStatus">Statut du diagnostic</label>
+                                </div>
+
+                                <div class="form-floating">
+                                    <textarea class="form-control" placeholder="Notes optionnelles" id="editRepairNotes" name="repairNotes" style="height: 90px"></textarea>
+                                    <label for="editRepairNotes">Notes / Remarques</label>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i> Sauvegarder
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('../includes/footer.html') %>
+        </main>
+
+        <script>
+            // Live filter for the repair history table
+            const searchInput = document.getElementById("repairSearchInput");
+            if (searchInput) {
+                searchInput.addEventListener("input", function() {
+                    const term = this.value.toLowerCase().trim();
+                    const rows = document.querySelectorAll("#repairHistoryTable tbody tr");
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(term) ? "" : "none";
+                    });
+                });
+            }
+
+            // Populate edit modal
+            const editModal = document.getElementById("editRepairModal");
+            if (editModal) {
+                editModal.addEventListener("show.bs.modal", function(event) {
+                    const btn = event.relatedTarget;
+                    if (!btn) return;
+                    document.getElementById("editHistoryId").value = btn.getAttribute("data-historyid") || "";
+                    document.getElementById("editUserName").value = btn.getAttribute("data-username") || "";
+                    document.getElementById("editRepairObject").value = btn.getAttribute("data-repairobject") || "";
+                    document.getElementById("editRepairStatus").value = btn.getAttribute("data-repairstatus") || "REPAIRED";
+                    document.getElementById("editRepairNotes").value = btn.getAttribute("data-repairnotes") || "";
+                });
+            }
+        </script>
+    </body>
+</html>

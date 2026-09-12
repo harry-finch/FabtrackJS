@@ -78,6 +78,12 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
     // Manually update the autocomplete data
     docAutocomplete.data = projects;
+
+    // Re-check documentation freshness if a project is already selected
+    const currentProjectId = document.getElementById("projectid").value;
+    if (currentProjectId && currentProjectId !== "null" && typeof checkBookstackDocFreshness === "function") {
+      checkBookstackDocFreshness(currentProjectId, userId);
+    }
   });
 
   const docAutocomplete = new autocomplete({
@@ -117,6 +123,7 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       if (projectTypeEl) {
         projectTypeEl.value = item.type;
         checkAcademicProjectType();
+        checkRepairCafeProjectType();
       }
       const ueSelect = document.getElementById("teachingUnitId");
       const unregisteredRow = document.getElementById("unregisteredUeRow");
@@ -147,8 +154,85 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
         (elem) => elem.userid === Number(document.getElementById("userid").value) && elem.projectid === item.id,
       );
       document.getElementById("userprojectid").value = foundElem ? foundElem.id : "null";
+
+      // Check BookStack documentation freshness
+      checkBookstackDocFreshness(item.id, Number(document.getElementById("userid").value));
     },
   });
+
+  // ******************************************************************************
+  // BookStack Wiki Plugin: URL auto-prefill & Freshness verification
+  // ******************************************************************************
+  const docStatusBtn = document.getElementById("docStatusBtn") || document.querySelector("#urldocumentation .formbutton");
+
+  function resetDocStatusButton() {
+    if (!docStatusBtn) return;
+    docStatusBtn.classList.remove("bg-success", "bg-danger", "border-success", "border-danger", "text-white");
+    docStatusBtn.title = "Consulter la documentation du projet";
+  }
+
+  async function checkBookstackDocFreshness(projectId, userId) {
+    if (!window.bookstackConfig || !window.bookstackConfig.enabled) return;
+    if (!projectId || projectId === "null" || !docStatusBtn) {
+      resetDocStatusButton();
+      return;
+    }
+
+    try {
+      const uId = userId || Number(document.getElementById("userid").value) || "";
+      const res = await fetch(`/api/bookstack/check-doc?projectId=${projectId}&userId=${uId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (!data.success) {
+        resetDocStatusButton();
+        return;
+      }
+
+      if (data.isUpToDate) {
+        docStatusBtn.classList.remove("bg-danger", "border-danger");
+        docStatusBtn.classList.add("bg-success", "border-success", "text-white");
+        docStatusBtn.title = data.message || "Documentation à jour";
+      } else {
+        docStatusBtn.classList.remove("bg-success", "border-success");
+        docStatusBtn.classList.add("bg-danger", "border-danger", "text-white");
+        docStatusBtn.title = data.message || "Documentation non mise à jour depuis la dernière visite";
+      }
+    } catch (e) {
+      console.error("BookStack freshness check error:", e);
+      resetDocStatusButton();
+    }
+  }
+
+  // Pre-fill documentation URL on focus when empty
+  if (docInput) {
+    docInput.addEventListener("focus", () => {
+      if (window.bookstackConfig && window.bookstackConfig.enabled && window.bookstackConfig.autoPrefill) {
+        if (!docInput.value || docInput.value.trim() === "") {
+          docInput.value = window.bookstackConfig.baseUrl;
+          const event = new Event("input", { bubbles: true });
+          docInput.dispatchEvent(event);
+        }
+      }
+    });
+
+    docInput.addEventListener("input", () => {
+      const currentVal = docInput.value.trim();
+      const matched = projects.find((p) => p.url.toLowerCase() === currentVal.toLowerCase());
+      if (matched) {
+        document.getElementById("projectid").value = matched.id;
+        document.getElementById("urldocumentation").href = matched.url;
+        checkBookstackDocFreshness(matched.id, Number(document.getElementById("userid").value));
+      } else {
+        if (document.getElementById("projectid").value !== "null") {
+          document.getElementById("projectid").value = "null";
+          document.getElementById("userprojectid").value = "null";
+        }
+        document.getElementById("urldocumentation").href = currentVal;
+        resetDocStatusButton();
+      }
+    });
+  }
 
   // Dynamic appearance of Teaching Units (UE) field for academic projects
   const projectTypeSelect = document.getElementById("projecttype");
@@ -177,11 +261,26 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
   function checkAcademicProjectType() {
     if (!projectTypeSelect || !ueRow) return;
+    const isPluginEnabled = window.ueConfig ? window.ueConfig.enabled : true;
+    if (!isPluginEnabled) {
+      ueRow.style.display = "none";
+      if (ueSelect) {
+        ueSelect.removeAttribute("required");
+        ueSelect.value = "";
+      }
+      return;
+    }
     const selectedOpt = projectTypeSelect.options[projectTypeSelect.selectedIndex];
+    const selectedText = selectedOpt ? (selectedOpt.text || "").trim().toLowerCase() : "";
+    const configuredName = (window.ueConfig && window.ueConfig.projectTypeName)
+      ? window.ueConfig.projectTypeName.trim().toLowerCase()
+      : "academic";
+
     const isAcademic =
       selectedOpt &&
-      (selectedOpt.text.toLowerCase().includes("academic") ||
-        selectedOpt.text.toLowerCase().includes("académique") ||
+      (selectedText === configuredName ||
+        selectedText.includes("academic") ||
+        selectedText.includes("académique") ||
         selectedOpt.value === "2");
 
     if (isAcademic) {
@@ -207,13 +306,89 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     }
   }
 
+  // Dynamic Project Type Fields (Documentation vs Repair Café vs Atelier/Workshop)
+  const docCol = document.getElementById("documentationCol");
+  const repairCol = document.getElementById("repairObjectCol");
+  const repairInput = document.getElementById("repairObject");
+  const workshopCol = document.getElementById("workshopCol");
+  const workshopSelect = document.getElementById("workshopId");
+
+  function updateDynamicProjectFields() {
+    if (!projectTypeSelect) return;
+    const selectedOpt = projectTypeSelect.options[projectTypeSelect.selectedIndex];
+    const selectedName = selectedOpt ? (selectedOpt.text || "").trim().toLowerCase() : "";
+
+    // Repair Café plugin check
+    const isRepairEnabled = window.repairCafeConfig && window.repairCafeConfig.enabled;
+    const repairConfiguredName = (window.repairCafeConfig && window.repairCafeConfig.projectTypeName)
+      ? window.repairCafeConfig.projectTypeName.trim().toLowerCase()
+      : "repair café";
+    const isRepairCafe = isRepairEnabled && (selectedName === repairConfiguredName || selectedName.includes("repair"));
+
+    // Workshop plugin check
+    const isWorkshopEnabled = window.workshopConfig && window.workshopConfig.enabled;
+    const workshopConfiguredName = (window.workshopConfig && window.workshopConfig.projectTypeName)
+      ? window.workshopConfig.projectTypeName.trim().toLowerCase()
+      : "atelier";
+    const isWorkshop = isWorkshopEnabled && (selectedName === workshopConfiguredName || selectedName.includes("atelier"));
+
+    if (isRepairCafe) {
+      if (docCol) docCol.style.display = "none";
+      if (repairCol) repairCol.style.display = "";
+      if (workshopCol) workshopCol.style.display = "none";
+
+      if (docInput) docInput.removeAttribute("required");
+      if (workshopSelect) {
+        workshopSelect.removeAttribute("required");
+        workshopSelect.value = "";
+      }
+      if (repairInput) repairInput.setAttribute("required", "required");
+    } else if (isWorkshop) {
+      if (docCol) docCol.style.display = "none";
+      if (repairCol) repairCol.style.display = "none";
+      if (workshopCol) workshopCol.style.display = "";
+
+      if (docInput) docInput.removeAttribute("required");
+      if (repairInput) {
+        repairInput.removeAttribute("required");
+        repairInput.value = "";
+      }
+      if (workshopSelect) workshopSelect.setAttribute("required", "required");
+    } else {
+      if (docCol) docCol.style.display = "";
+      if (repairCol) repairCol.style.display = "none";
+      if (workshopCol) workshopCol.style.display = "none";
+
+      if (repairInput) {
+        repairInput.removeAttribute("required");
+        repairInput.value = "";
+      }
+      if (workshopSelect) {
+        workshopSelect.removeAttribute("required");
+        workshopSelect.value = "";
+      }
+      if (docInput) docInput.setAttribute("required", "required");
+    }
+  }
+
+  function checkRepairCafeProjectType() {
+    updateDynamicProjectFields();
+  }
+
   if (ueSelect) {
     ueSelect.addEventListener("change", checkUnregisteredUe);
   }
 
   if (projectTypeSelect) {
-    projectTypeSelect.addEventListener("change", checkAcademicProjectType);
+    projectTypeSelect.addEventListener("change", () => {
+      checkAcademicProjectType();
+      updateDynamicProjectFields();
+    });
   }
+
+  // Initial check on load
+  checkAcademicProjectType();
+  updateDynamicProjectFields();
 })();
 
 const activityManager = document.getElementById("activityManager");
@@ -263,6 +438,36 @@ if (warningDeactivator) {
     modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Warning for ${warninguser}</h5>`;
     modalCode.innerHTML = warningcomments;
     modalLink.href = "/warning/deactivate/" + warningid;
+  });
+}
+
+// ******************************************************************************
+// Repair Café Exit Modal Handler
+// ******************************************************************************
+const modalRepairCheckout = document.getElementById("modalRepairCheckout");
+if (modalRepairCheckout) {
+  modalRepairCheckout.addEventListener("show.bs.modal", (event) => {
+    const button = event.relatedTarget;
+    if (!button) return;
+
+    const historyid = button.getAttribute("data-bs-historyid");
+    const user = button.getAttribute("data-bs-user");
+    const repairobject = button.getAttribute("data-bs-repairobject");
+
+    const historyIdInput = document.getElementById("repairExitHistoryId");
+    if (historyIdInput) historyIdInput.value = historyid || "";
+
+    const userNameEl = document.getElementById("repairExitUserName");
+    if (userNameEl) userNameEl.textContent = user || "Usager";
+
+    const objectNameEl = document.getElementById("repairExitObjectName");
+    if (objectNameEl) objectNameEl.textContent = repairobject || "Objet non précisé";
+
+    const defaultRadio = document.getElementById("statusRepaired");
+    if (defaultRadio) defaultRadio.checked = true;
+
+    const notesEl = document.getElementById("repairExitNotes");
+    if (notesEl) notesEl.value = "";
   });
 }
 

@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
   platform_favicon_path: "",
   session_timeout_hours: "24",
   plugin_ue_enabled: "true",
+  ue_projecttype_name: "Academic",
   currency_symbol: "€",
   admin_email: "admin@example.com",
   allow_self_registration: "true",
@@ -24,6 +25,18 @@ const DEFAULT_SETTINGS = {
   mail_notif_user_warning: "true",
   mail_notif_staff_registration: "true",
   mail_notif_user_agreement: "true",
+  // BookStack Wiki Plugin settings
+  plugin_bookstack_enabled: "true",
+  bookstack_url: "https://wiki.fablab.sorbonne-universite.fr/BookStack/",
+  bookstack_token_id: process.env.BOOKSTACK_TOKEN_ID || "",
+  bookstack_token_secret: process.env.BOOKSTACK_TOKEN_SECRET || "",
+  bookstack_auto_prefill: "true",
+  // Repair Café Plugin settings
+  plugin_repaircafe_enabled: "true",
+  repaircafe_projecttype_name: "Repair Café",
+  // Workshop Plugin settings
+  plugin_workshop_enabled: "true",
+  workshop_projecttype_name: "Atelier",
 };
 
 let cache = null;

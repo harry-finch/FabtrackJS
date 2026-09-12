@@ -16,32 +16,46 @@
         <main class="main-container">
             <%- include('../includes/header.html') %>
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
-                    <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
-                </a>
-                <a href="/admin/communication" class="btn btn-outline-primary btn-sm rounded-pill">
-                    <i class="fa-solid fa-envelope-open-text me-1"></i> Module Communication
-                </a>
+            <!-- Page Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h4 class="fw-bold mb-0">Gestion des ateliers</h4>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
+                                    <%= workshops.length %> ateliers
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-0">Formations, séances pratiques, intérêts exprimés et badges délivrés</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
+                        </a>
+                        <a href="/admin/communication" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-envelope-open-text me-1"></i> Module Communication
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-                <div>
-                    <h4 class="fw-bold mb-0">
-                        <i class="fa-solid fa-graduation-cap text-primary me-2"></i>Gestion des ateliers
-                    </h4>
+            <!-- Info Plugin Ateliers -->
+            <div class="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center justify-content-between mb-4 px-4 py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="icon-box bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold small">Attribution automatique via l'accueil (Check-in)</div>
+                        <div class="text-muted small">Lorsqu'un usager s'enregistre à l'accueil avec le type de projet <strong>Atelier</strong>, le badge et l'habilitation machine associés sont automatiquement crédités sur son profil.</div>
+                    </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2">
-                        <i class="fa-solid fa-chalkboard-user me-1"></i> <%= workshops.length %> ateliers
-                    </span>
-                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-3 py-2">
-                        <i class="fa-solid fa-heart me-1"></i> <%= workshops.reduce((acc, w) => acc + w.interests.length, 0) %> intérêts
-                    </span>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
-                        <i class="fa-solid fa-award me-1"></i> <%= workshops.reduce((acc, w) => acc + w.completions.length, 0) %> badges délivrés
-                    </span>
-                </div>
+                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">Plugin Actif</span>
             </div>
 
             <!-- Liste des ateliers -->

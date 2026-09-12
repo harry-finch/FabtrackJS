@@ -169,4 +169,23 @@ router.get(
   }),
 );
 
+// ******************************************************************************
+// BookStack Wiki Plugin Endpoints
+// ******************************************************************************
+const bookstackService = require("../services/bookstackService.js");
+
+router.get(
+  "/bookstack/check-doc",
+  isLoggedIn,
+  asyncHandler(async (req, res) => {
+    if (!hookManager.isPluginEnabled("bookstack")) {
+      return res.json({ enabled: false, message: "Plugin BookStack désactivé" });
+    }
+
+    const { projectId, userId } = req.query;
+    const result = await bookstackService.checkProjectDocStatus(projectId, userId);
+    return res.json(result);
+  }),
+);
+
 module.exports = router;

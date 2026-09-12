@@ -51,12 +51,21 @@ async function consumeItem(consumableId, quantity) {
 router.post(
   "/create",
   asyncHandler(async (req, res) => {
-    let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId, unregisteredUeName, unregisteredUeContact } = req.body;
+    let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId, unregisteredUeName, unregisteredUeContact, repairObject, workshopId } = req.body;
 
     const parsedUserId = Number(userid);
     if (!parsedUserId || isNaN(parsedUserId)) {
       req.session.notification = "Error: Invalid user selected.";
       return res.redirect("/fabtrack");
+    }
+
+    const cleanRepairObject = repairObject && repairObject.trim() ? repairObject.trim() : null;
+    let parsedWorkshopId = null;
+    if (workshopId && workshopId !== "null" && workshopId !== "") {
+      const num = Number(workshopId);
+      if (!isNaN(num) && num > 0) {
+        parsedWorkshopId = num;
+      }
     }
 
     let parsedTeachingUnitId = null;
@@ -83,8 +92,41 @@ router.post(
     });
 
     if (alreadyHere.length === 0) {
+      let attendedWorkshop = null;
+      if (parsedWorkshopId) {
+        attendedWorkshop = await prisma.workshop.findUnique({
+          where: { id: parsedWorkshopId },
+          include: { access: true },
+        });
+      }
+
       if (!projectid || projectid === "null" || projectid === "") {
-        if (documentation && documentation.trim() !== "") {
+        if (attendedWorkshop) {
+          // Create or retrieve project for this workshop
+          const uniqueSlug = `workshop://${encodeURIComponent(attendedWorkshop.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}-${attendedWorkshop.id}`;
+          let project = await prisma.project.findFirst({
+            where: { url: uniqueSlug },
+          });
+          if (!project) {
+            project = await prisma.project.create({
+              data: {
+                url: uniqueSlug,
+                projecttypeId: projecttype ? Number(projecttype) : 1,
+              },
+            });
+          }
+          projectid = project.id;
+        } else if (cleanRepairObject) {
+          // Create synthetic project for Repair Café item
+          const uniqueSlug = `repair-cafe://${encodeURIComponent(cleanRepairObject.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}-${Date.now()}`;
+          const project = await prisma.project.create({
+            data: {
+              url: uniqueSlug,
+              projecttypeId: projecttype ? Number(projecttype) : 1,
+            },
+          });
+          projectid = project.id;
+        } else if (documentation && documentation.trim() !== "") {
           // If project does not exist in the db, create the project
           const project = await prisma.project.create({
             data: {
@@ -162,10 +204,29 @@ router.post(
           unregisteredUeContact: parsedUnregisteredUeContact,
           comments: comments || null,
           workspaceId: activeWorkspaceId,
+          repairObject: cleanRepairObject,
+          repairStatus: cleanRepairObject ? "PENDING" : null,
+          workshopId: parsedWorkshopId,
         },
       });
 
-      req.session.notification = "Success: User is now in the lab!";
+      // Automatically award workshop badge and machine habilitation to user
+      if (parsedWorkshopId && attendedWorkshop) {
+        try {
+          const workshopService = require("../services/workshopService.js");
+          await workshopService.awardWorkshopBadge(
+            parsedUserId,
+            parsedWorkshopId,
+            req.session.username || "Atelier Fabtrack",
+          );
+          req.session.notification = `Success: Usager enregistré à l'atelier "${attendedWorkshop.name}" ! Le badge a été automatiquement ajouté à son profil.`;
+        } catch (err) {
+          console.error("Error awarding workshop badge during check-in:", err);
+          req.session.notification = "Success: User is now in the lab (erreur lors de l'attribution du badge).";
+        }
+      } else {
+        req.session.notification = "Success: User is now in the lab!";
+      }
     } else {
       req.session.notification = "Error: User is already in the lab!";
     }
@@ -193,6 +254,28 @@ router.get(
     });
 
     req.session.notification = "Success: User has left the lab!";
+    res.redirect("/fabtrack");
+  }),
+);
+
+// ******************************************************************************
+// Route to close a Repair Café history entry with outcome evaluation
+// ******************************************************************************
+
+router.post(
+  "/exit-repair",
+  asyncHandler(async (req, res) => {
+    const { historyid, repairStatus, repairNotes } = req.body;
+    const repairCafeService = require("../services/repairCafeService.js");
+
+    try {
+      await repairCafeService.recordRepairExit(historyid, { repairStatus, repairNotes });
+      req.session.notification = "Success: Bilan de réparation enregistré et sortie validée !";
+    } catch (err) {
+      console.error("Error recording repair exit:", err);
+      req.session.notification = "Error: Impossible d'enregistrer la sortie Repair Café.";
+    }
+
     res.redirect("/fabtrack");
   }),
 );

@@ -16,28 +16,35 @@
     <main class="main-container">
       <%- include('../includes/header.html') %>
 
-      <div class="mb-3">
-        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
-          <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
-        </a>
-      </div>
-
-      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-        <div>
-          <h4 class="fw-bold mb-0">
-            <i class="fa-solid fa-boxes-stacked text-success me-2"></i>Gestion des consommables
-          </h4>
-          <small class="text-muted">Inventaire des stocks, conditionnements et coûts des matières</small>
+      <!-- Page Header -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0">Gestion des consommables</h4>
+              </div>
+              <p class="text-muted small mb-0">Inventaire des stocks, conditionnements et coûts des matières</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
+            </a>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm"
+              id="btnNewConsumable"
+              data-bs-toggle="modal"
+              data-bs-target="#createConsumableModal"
+            >
+              <i class="fa-solid fa-plus me-1"></i> Nouveau consommable
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm rounded-pill shadow-sm"
-          id="btnNewConsumable"
-          data-bs-toggle="modal"
-          data-bs-target="#createConsumableModal"
-        >
-          <i class="fa-solid fa-plus me-1"></i> Nouveau consommable
-        </button>
       </div>
 
       <!-- Category Filter Pills -->
