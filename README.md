@@ -1,169 +1,254 @@
 # FabtrackJS
 
-FabtrackJS is an open source platform for tracking user activity, projects and inventory in fablabs written in NodeJS.
+FabtrackJS is a modern, open-source platform designed to track user activity, projects, equipment, and consumables inventory in fablabs and makerspaces. Built with Node.js, Express, MySQL, and Prisma ORM, it provides a clean, modular, and extensible architecture tailored for fablab managers, staff, and visitors.
 
-It's designed to be easy to use and not too much fuss.
+---
 
 ## Table of Contents
 
 - [Background](#background)
+- [Key Features](#key-features)
+- [Screenshots & Interface Preview](#screenshots--interface-preview)
+- [Security Features](#security-features)
+- [Plugins System](#plugins-system)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Features](#features)
-- [Maintainers](#maintainers)
-- [Contributing](#contributing)
-- [License](#license)
+- [Architecture & Tech Stack](#architecture--tech-stack)
+- [Maintainers & License](#maintainers--license)
+
+---
 
 ## Background
 
-Initially I wrote the project in PHP/MySQL for the fablab at [Sorbonne University](https://fablab.sorbonne-universite.fr) but a lot of the features were very specific to that fablab's organization. I thought that the core functionalities however could easily apply to any fablabs and decided to make a new open source version.
+Initially developed in PHP/MySQL for the [Sorbonne University Fablab](https://fablab.sorbonne-universite.fr), FabtrackJS was rewritten from scratch in Node.js and Express to be modular, robust, and adaptable to any fablab, makerspace, or shared workshop.
 
-I decided to develop it in NodeJS/Express because I needed to start from scratch to make it more modular, with cleaner code and comments. And because I find Javascript more pleasant to work with.
+I built the first two thirds of this version in 2023 with little to no AI-help. I then left the project on hold for 2 years and came back in 2026 to finish it with the help of the Antigravity IDE and Gemini 3.8 Flash.  
+
+---
+
+## Key Features
+
+### 👥 User & Visitor Tracking
+- Fast user check-in / check-out kiosk (`/fabtrack`) for daily visits.
+- Detailed user profiles with usage statistics, activity history, and project affiliations.
+- Disciplinary warnings system with categorization and admin email alerts.
+- RFID reader integration for automated contactless badge scanning.
+
+### 🛠️ Machine & Equipment Inventory
+- Machine catalog with specifications, documentation links, locations, warranty dates, and maintenance tracking.
+- Machine usage logs linked to users and projects.
+- **Machine Incident & Breakdown Reporting** (`/report-issue`):
+  - Completely public, mobile-first responsive reporting page accessible by anyone without login.
+  - Smartphone camera button (`capture="environment"`) to directly photograph broken parts or error screens.
+  - Pre-selection support via QR codes (`/report-issue/:machineId`).
+  - Integrated directly into the machine's administrative history (`/admin/machines/view/:id#issues`).
+  - Admin intervention workflow: mark as resolved with technical notes, reopen, or delete.
+
+### 📦 Consumables & Stock Management
+- Consumable inventory tracking with custom units (grams, meters, liters, units).
+- Low stock threshold monitoring with automated email notifications to administrators.
+- Project material consumption tracking and cost calculation.
+
+### 🏢 Workspace & Category Organization
+- Multi-workspace support (e.g. 3D printing lab, electronics lab, wood shop).
+- Fast workspace switcher for multi-room fablabs.
+- Equipment categorization by workspace.
+
+### 📧 Automated Email & Notification Center (`/admin/emails`)
+- Full SMTP configuration dashboard with live STARTTLS / direct SSL support.
+- Live test email utility to verify SMTP settings.
+- Independent notification toggles:
+  - Consumable low-stock alerts.
+  - User warning notifications.
+  - Staff registration requests.
+  - User safety charter & agreement activation links.
+  - Machine breakdown & incident alerts.
+- Live visual previews of email templates in the admin interface.
+
+### 🎨 Customizable Branding & Settings (`/admin/settings`)
+- Custom platform name and subtitle.
+- Logo and favicon upload with automatic SVG/PNG/ICO handling.
+- Dynamic session expiration timeout.
+- Configurable currency symbol.
+- Configurable project type mappings for specialized plugins.
+
+---
+
+## Screenshots & Interface Preview
+
+### 1. Visitor Check-in Kiosk (`/fabtrack`)
+The main daily interface used by visitors and mediators to register entry, associate projects, and test RFID contactless badges. Features direct access to report issues and the admin panel in the top-right header.
+
+![Kiosk Dashboard](docs/screenshots/01-kiosk-dashboard.png)
+
+---
+
+### 2. Central Administration Hub (`/admin`)
+The modular administrative dashboard organizing analytics, history, consumables, communications, academic billing, and extensible plugins (BookStack, Repair Café, Workshops).
+
+![Admin Hub](docs/screenshots/02-admin-dashboard.png)
+
+---
+
+### 3. Machine Details & Breakdown History (`/admin/machines/view/:id`)
+Comprehensive machine tracking including technical specifications, warranty dates, location, documentation, and the **Incidents & Pannes signalées** resolution tracker.
+
+![Machine Details & Issues](docs/screenshots/03-machine-view.png)
+
+---
+
+### 4. Public Issue & Breakdown Reporting (`/report-issue`)
+A completely public, mobile-first responsive reporting page allowing visitors or mediators to describe an issue, select a machine, and directly snap a photo with their smartphone camera (`capture="environment"`).
+
+![Public Breakdown Reporting](docs/screenshots/04-report-issue.png)
+
+---
+
+### 5. Automated Email & Notification Center (`/admin/emails`)
+Centralized management of the SMTP delivery server with live testing and customizable automatic notifications (low stock, user warnings, staff accounts, machine breakdowns) with template previews.
+
+![Email & Notification Settings](docs/screenshots/05-email-settings.png)
+
+---
+
+## Security Features
+
+FabtrackJS implements rigorous security practices:
+
+- **HTTP Security Headers**: Enforced with [Helmet](https://helmetjs.github.io/) including Content Security Policy (CSP), frame protection, and HSTS.
+- **Password Security**: Strong bcrypt password hashing (10 salt rounds) for staff accounts.
+- **Role-Based Access Control (RBAC)**: Distinct permissions for `admin`, `staff`, and `user` (mediator) with dedicated route protection middleware (`isAdmin`, `isAuthenticated`).
+- **Anti-Bot Honeypot**: Protection against automated form submissions on registration endpoints.
+- **Secure Password Reset**: Cryptographically secure UUID reset tokens with short expiration times and one-time use invalidation.
+- **Secure File Uploads**: File size limits, strict MIME-type and extension validation with [Multer](https://github.com/expressjs/multer), and random unique filenames to eliminate directory traversal risks.
+- **Input Sanitization & Error Handling**: Centralized asynchronous error handling (`asyncHandler`) and error isolation to prevent database credential leaks.
+
+---
+
+## Plugins System
+
+FabtrackJS features an extensible plugin architecture built on an asynchronous hook manager (`core/HookManager.js`):
+
+- **BookStack Wiki Plugin** (`plugins/bookstackPlugin.js`):
+  - Integrates with the BookStack documentation platform.
+  - Automatically pre-fills project documentation URLs.
+  - Checks if documentation has been updated since the user's last visit.
+  - Displays dynamic green/red status indicators.
+  - Admin dashboard displaying API metrics and documentation compliance rates.
+- **Repair Café Plugin** (`plugins/repairCafePlugin.js`):
+  - Specialized workflow for community Repair Café events.
+  - Dynamic form fields for repaired items and diagnostic notes.
+  - Post-visit resolution modal tracking whether items were successfully repaired.
+  - Statistics dashboard showing repair rates, visitor counts, and success metrics.
+- **Workshop (Ateliers) Plugin** (`plugins/workshopPlugin.js`):
+  - Tracks user registrations, interests, and completions of training workshops.
+  - Automatically awards badges and unlocks machine access permissions upon workshop completion.
+- **Academic / Teaching Units (UE) Plugin** (`plugins/uePlugin.js`):
+  - Student project tracking and billing integration for university courses.
+- **Borne RFID Plugin** (`plugins/rfidPlugin.js`):
+  - Contactless badge-in/out integration for quick kiosk identification.
+
+---
 
 ## Prerequisites
 
-Before installing FabtrackJS, make sure you have the following:
-
-- [Node.js](https://nodejs.org/) (v14 or higher)
-- [npm](https://www.npmjs.com/) (usually comes with Node.js)
-- [MySQL](https://www.mysql.com/) server (v5.7 or higher)
+- [Node.js](https://nodejs.org/) (v18.x or v20.x recommended)
+- [npm](https://www.npmjs.com/) (v9 or higher)
+- [MySQL](https://www.mysql.com/) server (v5.7, v8.0 or MariaDB equivalent)
 - Git
+
+---
 
 ## Installation
 
-1. Clone this repository:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/harry-finch/FabtrackJS.git
+   cd FabtrackJS
+   ```
 
-```sh
-$ git clone https://github.com/yourusername/fabtrackjs.git
-$ cd fabtrackjs
-```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-2. Install dependencies:
+3. **Configure environment variables**:
+   Create a `.env` file in the root directory (or copy `.env.example` if available):
+   ```env
+   # Database connection string
+   DATABASE_URL="mysql://username:password@localhost:3306/fabtrack"
 
-```sh
-$ npm install
-```
+   # Session Secret & Expiration (milliseconds)
+   SECRET="your-strong-random-session-secret"
+   SESSION_DURATION=86400000
 
-3. Set up environment variables by creating a `.env` file in the root directory:
+   # Server Port
+   PORT=3000
+   HOSTURL="http://localhost:3000"
 
-```sh
-# Database connection
-DATABASE_URL="mysql://username:password@localhost:3306/fabtrack"
+   # Default Admin Email (fallback)
+   ADMIN="admin@example.com"
+   MAILFROM="Fabtrack <noreply@fabtrack.local>"
 
-# Session configuration
-SECRET="your-secret-key-here"
-SESSION_DURATION=86400000  # 24 hours in milliseconds
+   # SMTP Credentials (optional, can also be configured in Admin UI)
+   HOST="smtp.example.com"
+   PORT="587"
+   USR="smtp-user"
+   PASSWD="smtp-password"
+   ```
 
-# Server configuration
-PORT=8080
-```
+4. **Initialize Database Schema with Prisma**:
+   ```bash
+   # Push schema directly to your MySQL database
+   npx prisma db push
 
-4. Initialize the database with Prisma:
+   # Seed initial reference data and admin account
+   npx prisma db seed
+   ```
 
-```sh
-# Install Prisma CLI globally if you haven't already
-$ npm install -g prisma
-
-# Generate Prisma client
-$ npx prisma generate
-
-# Create and migrate the database
-$ npx prisma migrate dev --name init
-```
-
-5. Seed the database with initial data:
-
-```sh
-$ npx prisma db seed
-```
-
-## Configuration
-
-FabtrackJS can be configured through the `.env` file. Here are some important configuration options:
-
-- `DATABASE_URL`: Your MySQL connection string
-- `SECRET`: Secret key for session encryption
-- `SESSION_DURATION`: Session duration in milliseconds
-- `PORT`: The port on which the application will run
+---
 
 ## Usage
 
-To start the application in development mode:
-
-```sh
-$ npm run dev
+### Development Mode (with automatic restart)
+```bash
+npm run dev
 ```
 
-For production:
-
-```sh
-$ npm start
+### Production Mode
+```bash
+npm start
 ```
 
-The application will be available at `http://localhost:8080` (or the port you specified).
+Access the application in your browser at `http://localhost:3000`.
 
-## Features
+- **Admin Account**: `admin` / `admin` (or credentials created during seed)
+- **Mediator Account**: `mediateur` / `mediateur`
+- **Public Reporting**: `http://localhost:3000/report-issue`
 
-- User management and tracking
-- Project tracking
-- Machine and equipment inventory (work in progress)
-- Workspace management
-- Activity logging
-- Plugin system for extensibility
-- Real-time notifications with Socket.io
+---
 
-## Development and Contributing
+## Architecture & Tech Stack
 
-This project follows the [Contributor Covenant](http://contributor-covenant.org/version/2.0/0/) Code of Conduct.
+| Layer | Technology |
+|---|---|
+| **Runtime** | Node.js |
+| **Framework** | Express.js |
+| **Database** | MySQL |
+| **ORM** | Prisma ORM (v5.22+) |
+| **Template Engine** | EJS |
+| **CSS & Components** | Bootstrap 5, FontAwesome 6 |
+| **Authentication** | Express Session + Bcrypt |
+| **File Uploads** | Multer |
+| **Email Delivery** | Nodemailer |
+| **Security** | Helmet, CSRF/Honeypot, CSP |
 
-You can find a detailed guide on how to contribute to FabtrackJS [Development Guide](DEVELOPMENT.md).
+---
 
-### Plugin System
+## Maintainers & License
 
-FabtrackJS includes a plugin system that allows you to extend functionality:
-
-1. Create a new file in the `plugins/` directory
-2. Export an object with a `register` method that accepts the hookManager
-3. Add your custom hooks
-
-Example plugin:
-
-```js
-module.exports = {
-  name: "My Custom Plugin",
-  version: "1.0.0",
-  register: function(hookManager) {
-    hookManager.addHook("customEvent", async (data) => {
-      // Your custom logic here
-      return processedData;
-    });
-  }
-};
-```
-
-### Adding Hooks
-
-You can create custom hooks in the `hooks/` directory:
-
-```js
-module.exports = () => {
-  hookManager.addHook("eventName", (data) => {
-    // Process data
-    return result;
-  });
-};
-```
-
-## Troubleshooting
-
-### Common Issues
-
-- **Database Connection Errors**: Verify your MySQL server is running and the credentials in `.env` are correct.
-- **Missing Dependencies**: Run `npm install` to ensure all dependencies are installed.
-- **Port Already in Use**: Change the PORT in your `.env` file if 8080 is already in use.
-
-## License
-
-[MIT](LICENSE) © Stéphane Muller
+- Original Author: Stéphane Muller
+- Current Repository: [harry-finch/FabtrackJS](https://github.com/harry-finch/FabtrackJS)
+- Licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) or [MIT](LICENSE) where applicable.

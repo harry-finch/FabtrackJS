@@ -1,453 +1,321 @@
-# FabtrackJS Developer Documentation
+# FabtrackJS — Developer & AI Agent Guide
 
-Welcome to the FabtrackJS development guide! This document will help you understand the project architecture, codebase organization, and how to contribute effectively.
+Welcome to the **FabtrackJS** development guide. This document serves as a comprehensive reference for both human engineers and AI coding agents to navigate, understand, and extend the FabtrackJS codebase safely, efficiently, and consistently.
+
+---
 
 ## Table of Contents
 
-- [Project Overview](#project-overview)
-- [Architecture](#architecture)
-- [Database Structure](#database-structure)
-- [Core Components](#core-components)
-- [Plugin System](#plugin-system)
-- [Development Workflow](#development-workflow)
-- [Testing](#testing)
-- [Documentation](#documentation)
-- [Contributing Guidelines](#contributing-guidelines)
+1. [Architecture & Design Principles](#1-architecture--design-principles)
+2. [Directory & File Organization](#2-directory--file-organization)
+3. [Database & Prisma ORM Workflow](#3-database--prisma-orm-workflow)
+4. [Routing & Middleware Conventions](#4-routing--middleware-conventions)
+5. [Cache & Session Lifecycle](#5-cache--session-lifecycle)
+6. [Plugin Architecture & HookManager](#6-plugin-architecture--hookmanager)
+7. [Email & Notification Subsystem](#7-email--notification-subsystem)
+8. [File Uploads with Multer](#8-file-uploads-with-multer)
+9. [UI & Templating Guidelines (EJS & Bootstrap 5)](#9-ui--templating-guidelines-ejs--bootstrap-5)
+10. [AI Agent Verification & Troubleshooting Checklist](#10-ai-agent-verification--troubleshooting-checklist)
 
-## Project Overview
+---
 
-FabtrackJS is an open-source platform designed to track user activity, projects, and inventory in fablabs. Built with NodeJS and Express, it provides a modular system for monitoring and managing a fablab's resources, users, and activities.
+## 1. Architecture & Design Principles
 
-### Key Features
+FabtrackJS is built on Node.js and Express with a layered architecture:
 
-- User management and tracking
-- Project tracking
-- Machine and equipment inventory
-- Workspace management
-- Activity logging
-- Plugin system for extensibility
-- Real-time notifications with Socket.io
+- **Data Access Layer**: MySQL accessed exclusively via **Prisma ORM** (`@prisma/client`).
+- **Service Layer (`services/`)**: Encapsulates business logic, external API integrations, email dispatching, and system settings.
+- **Routing Layer (`routes/`)**: Automatically discovered and recursively mounted based on filesystem structure.
+- **Extensibility Layer (`plugins/` & `core/HookManager.js`)**: Decoupled feature modules hook into system lifecycle events without mutating core controllers.
+- **Presentation Layer (`views/`)**: Server-side rendered EJS templates styled with Bootstrap 5, FontAwesome 6, and custom modern CSS variables supporting dark/light modes.
 
-## Architecture
+---
 
-FabtrackJS follows a modular architecture based on Express.js with a plugin system for extensibility.
+## 2. Directory & File Organization
 
-### High-Level Architecture
-
-```FabtrackJS/architecture.png#L1-20
-+----------------+     +----------------+     +----------------+
-|                |     |                |     |                |
-|  Web Interface |     |    REST API    |     | Socket.io API  |
-|                |     |                |     |                |
-+-------+--------+     +-------+--------+     +-------+--------+
-        |                      |                      |
-+-------v-----------------------v----------------------v--------+
-|                                                               |
-|                        Express Application                    |
-|                                                               |
-+-------+---------------------+------------------+--------------+
-        |                     |                  |
-+-------v-------+   +---------v---------+   +----v-------------+
-|               |   |                   |   |                  |
-| Core Modules  |   |  Plugin System    |   | Hook System      |
-|               |   |                   |   |                  |
-+-------+-------+   +---------+---------+   +------------------+
-        |                     |
-+-------v---------------------v----------------------------------+
-|                                                               |
-|                      Prisma ORM Layer                         |
-|                                                               |
-+---------------------------------------------------------------+
-                              |
-                      +-------v-------+
-                      |               |
-                      |  MySQL DB     |
-                      |               |
-                      +---------------+
 ```
-
-### Directory Structure
-
-```FabtrackJS/directory.txt#L1-20
 FabtrackJS/
-├── bin/                  # Application entry points
-│   └── www               # Server startup script
-├── core/                 # Core functionality
-│   ├── HookManager.js    # Hook management system
-│   ├── hookLoader.js     # Loads hooks from hooks directory
-│   └── pluginLoader.js   # Loads plugins from plugins directory
-├── hooks/                # Custom hooks
-├── middleware/           # Express middleware
-├── plugins/              # Extensibility plugins
-├── prisma/               # Database schema and migrations
-│   ├── migrations/       # Database migrations
-│   └── schema.prisma     # Prisma schema
-├── public/               # Static assets
-├── routes/               # API routes
-├── views/                # EJS templates
-├── app.js                # Main application file
-├── package.json          # Dependencies and scripts
-└── .env                  # Environment configuration
+├── bin/
+│   └── www                       # HTTP server entrypoint (port binding, startup)
+├── core/
+│   ├── HookManager.js            # Central hook registry and async event dispatcher
+│   ├── hookLoader.js             # Discovers and registers hooks
+│   └── pluginLoader.js           # Auto-loads plugins from plugins/ directory
+├── middleware/
+│   ├── asyncHandler.js           # Wraps async routes to forward errors to next()
+│   ├── checkAdmin.js             # Protects admin routes (requires role === 'admin')
+│   ├── checkSession.js           # Protects staff routes (requires loggedin === true)
+│   ├── clearNotification.js      # Resets session flash notification after rendering
+│   └── cacheHelper.js            # Helper to invalidate reference data cache
+├── plugins/                      # Self-contained feature plugins
+│   ├── bookstackPlugin.js        # BookStack wiki documentation sync
+│   ├── repairCafePlugin.js       # Repair café event tracking & resolution
+│   ├── workshopPlugin.js         # Workshops, badges, and machine access control
+│   ├── uePlugin.js               # Sorbonne University academic units & billing
+│   └── rfidPlugin.js             # RFID scanner & kiosk integration
+├── prisma/
+│   ├── schema.prisma             # Primary Prisma schema & relation definitions
+│   └── seed.js                   # Database seed script for test/dev environment
+├── public/                       # Publicly accessible static assets
+│   ├── javascripts/              # Client-side scripts (color mode, autocomplete, sorting)
+│   └── stylesheets/              # Global CSS styles (main.css)
+├── routes/                       # Express routes (auto-loaded dynamically)
+│   ├── admin/                    # Admin management endpoints (/admin/*)
+│   │   ├── emails.js             # SMTP settings & notification toggles
+│   │   ├── machines.js           # Machine catalog & history views
+│   │   ├── settings.js           # Platform branding & general configuration
+│   │   ├── staff.js              # Staff permissions & account management
+│   │   └── ...                   # Consumables, workshops, categories, etc.
+│   ├── fabtrack.js               # Visitor kiosk check-in / check-out interface
+│   ├── report-issue.js           # Public responsive machine issue reporting
+│   ├── users.js                  # User profile and history management
+│   └── index.js                  # Authentication (login, logout, password reset)
+├── services/                     # Business logic services (singletons)
+│   ├── settingsService.js        # Persistent platform settings (cached)
+│   ├── mailService.js            # Nodemailer transport & HTML layout rendering
+│   ├── bookstackService.js       # BookStack REST API integration
+│   ├── repairCafeService.js      # Repair café statistics & operations
+│   └── workshopService.js        # Workshop completion & machine unlocking
+├── uploads/                      # Uploaded files (logos, favicons, issue photos)
+│   └── issues/                   # Machine breakdown photos
+├── utilities/
+│   └── simpleLogger.js           # Database-backed and console activity logger
+├── views/                        # EJS templates
+│   ├── admin/                    # Admin views (manage-*.ejs, view-machine.ejs)
+│   ├── fabtrack/                 # Kiosk & user profile views (index.ejs, edit-user.ejs)
+│   ├── includes/                 # Common partials (header.html, pagehead.html, footer.html)
+│   ├── public/                   # Public unauthenticated views (report-issue.ejs)
+│   └── index/                    # Auth views (login.ejs, register.ejs, reset.ejs)
+├── app.js                        # Express app initialization, middleware, routes loader
+├── package.json                  # Dependencies and scripts
+└── .env                          # Local environment variables
 ```
 
-## Database Structure
+---
 
-FabtrackJS uses MySQL with Prisma ORM for database operations. The schema is designed to handle user tracking, project management, equipment inventory, and activity logging.
+## 3. Database & Prisma ORM Workflow
 
-### Entity Relationship Diagram
+### Modifying the Database Schema
+1. Edit [prisma/schema.prisma](file:///Users/mugen/Documents/01_Projets/FabtrackJS/prisma/schema.prisma).
+2. Apply changes and regenerate the Prisma Client:
+   ```bash
+   npx prisma db push
+   ```
+   > **Note for AI Agents**: `npx prisma db push` is preferred over migrations in this development environment as it directly synchronizes MySQL tables and immediately regenerates `./node_modules/@prisma/client`.
+3. Verify the generated client by running a lightweight Node test script if needed.
 
-The database is structured around several key entities:
+### Key Prisma Models Reference
+- **`Staff`**: Authenticated managers/mediators (`name`, `email`, `password` (bcrypt), `role: "admin"|"staff"|"user"`, `approved: Boolean`).
+- **`User`**: Fablab visitors and participants.
+- **`Machine`**: Fablab machinery. Linked to `MachineType`, `Location`, `Access`, `Category`, and `issues: MachineIssue[]`.
+- **`MachineIssue`**: Breakdown reports (`machineId`, `description`, `photoPath`, `reporterName`, `reporterEmail`, `status: "OPEN"|"RESOLVED"`, `resolvedAt`, `resolutionNotes`).
+- **`Consumable`**: Expendable materials (`name`, `quantity`, `unit`, `alertThreshold`).
+- **`History` & `Activity`**: Visitor sessions, machine usage, project affiliations, and departure timestamps.
+- **`SystemSetting`**: Key-value pairs for all runtime platform configurations.
 
-1. **Users & Staff** - People who use or manage the fablab
-2. **Projects** - Work being done in the fablab
-3. **Machines & Equipment** - Physical resources
-4. **Workspaces & Locations** - Physical organization
-5. **Activities & History** - Tracking usage and visits
+---
 
-### Main Entities
+## 4. Routing & Middleware Conventions
 
-#### User Management
-
-- **Staff** - Admin users who can log into the system
-- **User** - People being tracked (visitors, students)
-- **Usertype** - Types of users (e.g., student, teacher)
-
-#### Project Tracking
-
-- **Project** - Project information
-- **Projecttype** - Categories of projects
-- **UserProject** - Many-to-many relationship between users and projects
-
-#### Equipment Management
-
-- **Machine** - Detailed machine information
-- **MachineType** - Categories of machines
-- **Equipment** - Tools and other equipment
-- **Consumable** - Expendable materials with inventory tracking
-
-#### Workspace Management
-
-- **Workspace** - Different areas in the fablab
-- **Category** - Types of equipment within workspaces
-- **Location** - Physical locations for assets
-
-#### Activity Tracking
-
-- **History** - User visits to the fablab
-- **Activity** - Usage of machines, equipment, and consumables
-- **Warning** - Issues recorded for users
-- **Warningtype** - Categories of warnings
-- **Log** - Audit trail of system activities
-
-## Core Components
-
-### Express Application (app.js)
-
-The main application file sets up middleware, session management, and dynamically loads routes:
-
-```FabtrackJS/app.js#L142-165
-function loadRoutes(dirPath, baseRoute = "") {
-  fs.readdirSync(dirPath).forEach((file) => {
-    const fullPath = path.join(dirPath, file);
-    const stat = fs.statSync(fullPath);
-
-    if (stat.isDirectory()) {
-      // Recurse into subdirectory
-      const subRoute = `${baseRoute}/${file}`;
-      loadRoutes(fullPath, subRoute);
-    } else if (file.endsWith(".js")) {
-      // Load route file and mount it
-      const routePath = `${baseRoute}/${file.replace(".js", "")}`.replace(/\/index$/, "/");
-      const router = require(fullPath);
-
-      console.log(`Registering route: ${routePath}`);
-      app.use(routePath, router);
-    }
-  });
-}
+### Dynamic Route Discovery (`app.js`)
+Routes in the `routes/` directory are loaded recursively at server startup:
+```javascript
+// File: routes/report-issue.js -> Mounted at: /report-issue
+// File: routes/admin/machines.js -> Mounted at: /admin/machines
 ```
+- A route file must export an `express.Router()` instance.
+- **Do not manually register routes in `app.js`** unless you are defining top-level middleware. Placing the file in `routes/` or subdirectories is sufficient.
 
-### Middleware
+### Controller Best Practices
+- Always wrap route handlers with `asyncHandler`:
+  ```javascript
+  const asyncHandler = require("../middleware/asyncHandler.js");
 
-FabtrackJS includes several middleware components:
+  router.post("/example", asyncHandler(async (req, res) => {
+    // Unhandled rejections will automatically forward to global error handler
+  }));
+  ```
+- Protect admin routes with `isAdmin`:
+  ```javascript
+  const isAdmin = require("../../middleware/checkAdmin.js");
+  router.use(isAdmin);
+  ```
+- Use session notifications for flash feedback:
+  ```javascript
+  req.session.notification = "Success: Opération effectuée avec succès.";
+  // or "Error: Description de l'erreur."
+  res.redirect("/target");
+  ```
 
-1. **Security Headers** - Using Helmet for security best practices
-2. **Session Management** - For authenticated users
-3. **Workspace Switcher** - For switching between different areas of the fablab
-4. **Data Caching** - To improve performance by caching common queries
+---
 
-Example of the workspace switcher middleware:
+## 5. Cache & Session Lifecycle
 
-```FabtrackJS/app.js#L78-97
-// Workspace middleware
-async function workspaceSwitcher(req, res, next) {
-  try {
-    if (!req.session.availableWorkspaces) {
-      // Fetch workspaces only if not already cached
-      req.session.availableWorkspaces = await prisma.workspace.findMany();
-    }
+To maintain responsiveness, `app.js` runs a `loadCache` middleware that preloads reference tables into `req.session`:
+- `req.session.machines`
+- `req.session.machinetypes`
+- `req.session.categories`
+- `req.session.locations`
+- `req.session.equipment`
+- `req.session.usertypes`
 
-    // Set a default workspace if none is selected
-    if (!req.session.selectedWorkspace && req.session.availableWorkspaces.length > 0) {
-      req.session.selectedWorkspace = req.session.availableWorkspaces[0];
-    }
-
-    res.locals.availableWorkspaces = req.session.availableWorkspaces;
-    res.locals.selectedWorkspace = req.session.selectedWorkspace;
-
-    next();
-  } catch (error) {
-    console.error("Error in workspace switcher middleware:", error);
-    next(new ApiError(500, "Failed to load workspace information"));
-  }
-}
+### Critical Cache Invalidation Rule
+Whenever you create, update, or delete records in these reference tables (e.g. adding a machine, updating an equipment category), **you must invalidate the cache**:
+```javascript
+// In your route handler:
+const { invalidateCache } = require("../../middleware/cacheHelper.js");
+invalidateCache(req);
+// OR directly:
+req.session.invalidateCache = true;
 ```
+Failing to do so will result in stale dropdown options in user sessions.
 
-### Error Handling
+---
 
-A custom error handling system provides structured error reporting:
+## 6. Plugin Architecture & HookManager
 
-```FabtrackJS/app.js#L180-222
-// Custom error for API errors
-class ApiError extends Error {
-  constructor(statusCode, message) {
-    super(message);
-    this.statusCode = statusCode;
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
+Plugins reside in `plugins/` and communicate through `core/HookManager.js`.
 
-// Catch 404 errors
-app.use((req, res, next) => {
-  next(new ApiError(404, `Not Found: ${req.originalUrl}`));
-});
-
-// General error handler
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || err.status || 500;
-  const errorDetail = {
-    message: err.message || 'Internal Server Error',
-    status: statusCode,
-    stack: req.app.get('env') === 'development' ? err.stack : undefined,
-    path: req.originalUrl,
-    timestamp: new Date().toISOString()
-  };
-
-  // Log error details in any environment but more verbose in production
-  console.error(`[${errorDetail.timestamp}] ${statusCode} - ${errorDetail.message}`);
-  if (req.app.get('env') === 'production' && statusCode >= 500) {
-    console.error(err.stack);
-  }
-
-  // Respond appropriately based on request type (API/web)
-  if (req.xhr || req.headers.accept === 'application/json') {
-    res.status(statusCode).json({ error: errorDetail });
-  } else {
-    res.status(statusCode);
-    res.locals.error = req.app.get('env') === 'development' ? errorDetail : { message: errorDetail.message, status: statusCode };
-    res.locals.message = errorDetail.message;
-    res.render('error');
-  }
-});
-```
-
-## Plugin System
-
-FabtrackJS includes a plugin system for extensibility. Plugins can hook into various parts of the application to add features without modifying the core code.
-
-### Hook Manager
-
-The hook system allows registering callbacks for specific events:
-
-```FabtrackJS/core/HookManager.js#L1-20
-class HookManager {
-  constructor() {
-    this.hooks = {};
-  }
-
-  // Register a new hook
-  addHook(name, callback) {
-    if (!this.hooks[name]) {
-      this.hooks[name] = [];
-    }
-    this.hooks[name].push(callback);
-  }
-
-  // Call all callbacks registered for a hook
-  async callHook(name, data) {
-    if (!this.hooks[name]) return data;
-
-    let result = data;
-    for (const callback of this.hooks[name]) {
-      result = await callback(result);
-    }
-    return result;
-  }
-}
-
-module.exports = new HookManager();
-```
-
-### Creating Plugins
-
-Plugins are JavaScript modules that export a registration function:
-
-```FabtrackJS/plugins/examplePlugin.js#L1-20
-// Example plugin
+### Creating a New Plugin
+```javascript
+// plugins/myFeaturePlugin.js
 module.exports = {
-  name: "Example Plugin",
+  name: "Plugin My Feature",
   version: "1.0.0",
 
-  register: function(hookManager) {
-    // Register hooks for this plugin
-    hookManager.addHook("beforeUserCreate", async (userData) => {
-      // Modify or validate user data before creation
-      console.log("Processing user before creation:", userData);
-      return userData;
+  register: function (hookManager) {
+    hookManager.addHook("myEventHook", async (context) => {
+      // Execute logic, modify context if necessary
+      return context;
     });
-
-    hookManager.addHook("afterUserLogin", async (user) => {
-      // Do something after a user logs in
-      console.log("User logged in:", user.name);
-      return user;
-    });
-  }
+  },
 };
 ```
 
-## Development Workflow
+### Enabling / Disabling Plugins
+Plugin states are linked to system settings via `services/settingsService.js` and synchronized on every request in `app.js`:
+```javascript
+hookManager.setPluginEnabled("my_plugin_key", isEnabled);
+res.locals.isMyPluginEnabled = isEnabled;
+```
 
-### Setting Up the Development Environment
+---
 
-1. Clone the repository:
+## 7. Email & Notification Subsystem
+
+Automated emails are handled via `services/mailService.js` backed by `nodemailer`.
+
+### Adding a New Automated Email Notification:
+1. **Add default setting** in [services/settingsService.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/services/settingsService.js):
+   ```javascript
+   DEFAULT_SETTINGS = {
+     // ...
+     mail_notif_my_event: "true",
+   };
    ```
-   git clone https://github.com/yourusername/fabtrackjs.git
-   cd fabtrackjs
-   ```
+2. **Add dispatch method** in [services/mailService.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/services/mailService.js):
+   - Check `if (settings.mail_notif_my_event !== "true") return { skipped: true };`
+   - Use `this.renderEmailLayout({...})` for consistent branding and responsive HTML.
+   - Use `await this.sendMail({ to, subject, html })`.
+3. **Add toggle switch & modal preview** in [views/admin/manage-emails.ejs](file:///Users/mugen/Documents/01_Projets/FabtrackJS/views/admin/manage-emails.ejs).
+4. **Handle field in POST route** in [routes/admin/emails.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/routes/admin/emails.js).
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+---
 
-3. Set up environment variables by creating a `.env` file:
-   ```
-   # Database connection
-   DATABASE_URL="mysql://username:password@localhost:3306/fabtrack"
+## 8. File Uploads with Multer
 
-   # Session configuration
-   SECRET="your-secret-key-here"
-   SESSION_DURATION=86400000  # 24 hours in milliseconds
+Uploads are served statically via `/uploads` mapped to `uploads/`.
 
-   # Server configuration
-   PORT=8080
-   ```
+### Storage Pattern:
+```javascript
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-4. Initialize the database:
-   ```
-   npx prisma migrate reset
-   ```
-
-5. Start the development server:
-   ```
-   npm start
-   ```
-
-### Code Style and Conventions
-
-- Use camelCase for variable and function names
-- Use PascalCase for class names
-- Add JSDoc comments for functions and classes
-- Keep functions small and focused on a single responsibility
-- Use async/await for asynchronous code
-
-### Database Changes
-
-When making changes to the database schema:
-
-1. Update the `schema.prisma` file
-2. Create a new migration:
-   ```
-   npx prisma migrate dev --name descriptive_name
-   ```
-3. Apply the migration:
-   ```
-   npx prisma migrate deploy
-   ```
-
-## Testing
-
-Currently, FabtrackJS doesn't have automated tests. This is an area for improvement. Consider adding:
-
-1. Unit tests with Jest for core functionality
-2. Integration tests for API endpoints
-3. End-to-end tests for critical user flows
-
-## Documentation
-
-### Code Documentation
-
-Add JSDoc comments to functions and classes:
-
-```FabtrackJS/exampleDoc.js#L1-15
-/**
- * Process a user registration.
- *
- * @param {Object} userData - The user data from the registration form
- * @param {string} userData.name - User's full name
- * @param {string} userData.email - User's email address
- * @param {string} userData.password - User's password (plaintext)
- * @param {number} userData.usertypeId - ID of the user type
- * @returns {Promise<Object>} - The created user object
- * @throws {Error} - If validation fails or database error occurs
- */
-async function processUserRegistration(userData) {
-  // Implementation
+const targetDir = path.join(__dirname, "../../uploads/my_category");
+if (!fs.existsSync(targetDir)) {
+  fs.mkdirSync(targetDir, { recursive: true });
 }
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, targetDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `file-${uniqueSuffix}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
+  fileFilter: (req, file, cb) => {
+    // Validate extensions and mime types
+  },
+});
 ```
 
-### API Documentation
+---
 
-Consider using Swagger/OpenAPI to document API endpoints.
+## 9. UI & Templating Guidelines (EJS & Bootstrap 5)
 
-## Contributing Guidelines
+FabtrackJS uses server-side rendered EJS templates.
 
-### Pull Request Process
+### Standard Page Layout:
+```html
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Title - <%= platformName %></title>
+    <%- include('../includes/pagehead.html') %>
+  </head>
+  <body class="d-flex justify-content-center bg-body-tertiary py-4">
+    <%- include('../includes/light-dark.html') %>
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run linting and tests
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+    <main class="main-container">
+      <%- include('../includes/header.html') %>
 
-### Code Review Checklist
+      <!-- Page Content -->
 
-- Does the code follow our style guidelines?
-- Are there appropriate comments and documentation?
-- Does the code have appropriate error handling?
-- Are there any security concerns?
-- Does the code include appropriate tests?
-
-### Commit Message Format
-
-Use conventional commits format:
-
-```
-feat: Add user registration validation
-fix: Resolve login issue on Safari
-docs: Update API documentation
-refactor: Improve error handling middleware
+      <%- include('../includes/footer.html') %>
+    </main>
+  </body>
+</html>
 ```
 
-## Next Steps for Project Improvement
+### Visual & Component Standards:
+- **Language**: Standard user interface copy must be written in **French** (labels, buttons, modal titles, error messages).
+- **Pill Badges**: Use rounded pill badges (`rounded-pill px-2.5 py-1`) with soft semantic colors (`bg-primary-subtle text-primary border border-primary-subtle`).
+- **Icons**: Use FontAwesome 6 icons (`fa-solid fa-...`).
+- **Header Actions**: Action buttons in header use `.header-action-btn` and `.header-icon-circle`.
+- **Card Aesthetics**: Cards should feature subtle borders (`border-0 shadow-sm rounded-3` or `border rounded-3 bg-body`).
 
-1. Finish inventory management
-2. Add automated testing
-3. Implement TypeScript for better type safety
-4. Update Express to the latest version
-5. Improve error handling and logging
-6. Add comprehensive API documentation
-7. Create a UI component library for consistent design
+---
+
+## 10. AI Agent Verification & Troubleshooting Checklist
+
+Before concluding any coding task, an AI agent must perform the following validation steps:
+
+1. **Verify JavaScript Syntax**:
+   ```bash
+   node -c path/to/modifiedFile.js
+   ```
+2. **Verify EJS Compilation**:
+   Validate templates without running the full browser:
+   ```bash
+   node -e 'const ejs = require("ejs"); const fs = require("fs"); ejs.compile(fs.readFileSync("views/path/to/view.ejs", "utf8"), { filename: "views/path/to/view.ejs" });'
+   ```
+3. **Verify Database Sync**:
+   If `prisma/schema.prisma` was modified:
+   ```bash
+   npx prisma db push
+   ```
+4. **Test Route Discovery & App Boot**:
+   Ensure no unhandled exceptions during initialization:
+   ```bash
+   node -e 'require("./app.js"); console.log("App boots successfully");'
+   ```
+5. **Git Hygiene**:
+   Run `git status` to verify that no temporary or unintended test artifacts remain unstaged or untracked.
