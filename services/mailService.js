@@ -1,0 +1,290 @@
+const nodemailer = require("nodemailer");
+const settingsService = require("./settingsService.js");
+const logger = require("../utilities/simpleLogger.js");
+
+class MailService {
+  /**
+   * Builds a nodemailer transporter based on platform settings and environment fallback.
+   */
+  async getTransporter() {
+    const settings = await settingsService.getSettings();
+
+    const host = settings.smtp_host || process.env.HOST || "localhost";
+    const port = Number(settings.smtp_port || process.env.PORT || 587);
+    const user = settings.smtp_user || process.env.USR || "";
+    const pass = settings.smtp_pass || process.env.PASSWD || "";
+    const secure = settings.smtp_secure === "true" || port === 465;
+
+    const transportConfig = {
+      host,
+      port,
+      secure,
+    };
+
+    if (user && pass) {
+      transportConfig.auth = { user, pass };
+    }
+
+    return {
+      transporter: nodemailer.createTransport(transportConfig),
+      from: settings.mail_from || process.env.MAILFROM || "Fabtrack <noreply@fabtrack.local>",
+      adminRecipient: settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN || "admin@example.com",
+      settings,
+    };
+  }
+
+  /**
+   * Base method to send an email with error isolation.
+   */
+  async sendMail({ to, subject, html, text }) {
+    try {
+      const { transporter, from } = await this.getTransporter();
+
+      const mailOptions = {
+        from,
+        to,
+        subject,
+        html,
+        text: text || html.replace(/<[^>]*>?/gm, ""),
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+
+      if (previewUrl) {
+        console.log(`[MailService] Email preview URL: ${previewUrl}`);
+      }
+
+      logger.logThat(`Email envoyé avec succès à ${to} : "${subject}"`);
+      return { success: true, messageId: info.messageId, previewUrl };
+    } catch (error) {
+      console.error("[MailService] Failed to send email:", error.message);
+      logger.logThat(`Échec d'envoi d'email à ${to} : ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Generates a modern branded HTML email layout for platform notifications.
+   */
+  renderEmailLayout({ title, badgeText, badgeColor = "#EF4136", contentHtml, ctaUrl, ctaText }) {
+    const primaryColor = "#112970";
+    const lightBg = "#f8f9fa";
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title}</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+          <!-- Header Banner -->
+          <tr>
+            <td style="background-color: ${primaryColor}; padding: 24px 30px; text-align: left;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td>
+                    <span style="color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">FabtrackJS</span>
+                  </td>
+                  ${badgeText ? `
+                  <td align="right">
+                    <span style="background-color: ${badgeColor}; color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">${badgeText}</span>
+                  </td>
+                  ` : ""}
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 30px;">
+              <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: #0f172a; font-weight: 700;">${title}</h2>
+              
+              <div style="font-size: 14px; line-height: 1.6; color: #334155;">
+                ${contentHtml}
+              </div>
+
+              ${ctaUrl && ctaText ? `
+              <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center;">
+                <a href="${ctaUrl}" style="display: inline-block; background-color: ${primaryColor}; color: #ffffff; padding: 10px 22px; border-radius: 50px; font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 2px 6px rgba(17,41,112,0.25);">
+                  ${ctaText} &rarr;
+                </a>
+              </div>
+              ` : ""}
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: ${lightBg}; padding: 18px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+              Notification automatique générée par votre plateforme <strong>FabtrackJS</strong>.<br>
+              Vous pouvez gérer vos préférences d'e-mails dans le panneau d'administration.
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Sends an automated alert when a consumable reaches or drops below its reorder threshold.
+   */
+  async sendLowStockAlert(consumable, newStock) {
+    const settings = await settingsService.getSettings();
+
+    if (settings.mail_notif_consumable_low_stock !== "true") {
+      return { skipped: true, reason: "Notification disabled in settings" };
+    }
+
+    const hostUrl = process.env.HOSTURL || "http://localhost:3000";
+    const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
+    const unitStr = consumable.unit || "unités";
+    const isOutOfStock = newStock <= 0;
+    const badgeText = isOutOfStock ? "Rupture de stock" : "Stock faible";
+    const badgeColor = isOutOfStock ? "#dc3545" : "#fd7e14";
+
+    const contentHtml = `
+      <p>Le consommable suivant a atteint ou franchi à la baisse son seuil d'alerte de réapprovisionnement :</p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin: 18px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 40%;">Consommable</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${consumable.name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Stock actuel restant</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: ${badgeColor}; border-bottom: 1px solid #e2e8f0;">
+            ${newStock} ${unitStr}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Seuil de réapprovisionnement</td>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #334155;">
+            ${consumable.reorderThreshold} ${unitStr}
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin-bottom: 0;">Pensez à passer commande ou à réapprovisionner cet article pour éviter toute interruption d'activité dans le fablab.</p>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: `Alerte de stock : ${consumable.name}`,
+      badgeText,
+      badgeColor,
+      contentHtml,
+      ctaUrl: `${hostUrl}/admin/consumables/manage`,
+      ctaText: "Gérer l'inventaire des consommables",
+    });
+
+    return await this.sendMail({
+      to: adminEmail,
+      subject: `[Alerte Stock] ${badgeText} : ${consumable.name} (${newStock} ${unitStr})`,
+      html,
+    });
+  }
+
+  /**
+   * Sends an automated alert when a warning is issued to a user.
+   */
+  async sendWarningAlert({ user, warningtype, comments, staffUsername }) {
+    const settings = await settingsService.getSettings();
+
+    if (settings.mail_notif_user_warning !== "true") {
+      return { skipped: true, reason: "Notification disabled in settings" };
+    }
+
+    const hostUrl = process.env.HOSTURL || "http://localhost:3000";
+    const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
+    const author = staffUsername || "Médiateur Fablab";
+    const warningName = (warningtype && warningtype.name) ? warningtype.name : "Avertissement";
+    const userFullName = `${user.name} ${user.surname}`;
+
+    const contentHtml = `
+      <p>Un nouvel avertissement a été attribué à un usager de la plateforme :</p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin: 18px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Usager concerné</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">
+            ${userFullName} (${user.email || 'Email non renseigné'})
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Motif d'avertissement</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 13px; color: #dc3545; border-bottom: 1px solid #e2e8f0;">
+            ${warningName}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Attribué par</td>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0;">
+            ${author}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Commentaires & détails</td>
+          <td style="padding: 10px 14px; font-size: 13px; color: #334155; font-style: italic;">
+            ${comments && comments.trim() ? comments : "Aucun commentaire saisi"}
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin-bottom: 0;">Cet avertissement est visible par les animateurs lors du passage de l'usager au Fablab.</p>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: `Nouvel avertissement usager : ${userFullName}`,
+      badgeText: "Avertissement",
+      badgeColor: "#dc3545",
+      contentHtml,
+      ctaUrl: `${hostUrl}/users/edit/${user.id}`,
+      ctaText: "Consulter la fiche usager",
+    });
+
+    return await this.sendMail({
+      to: adminEmail,
+      subject: `[Avertissement Usager] ${userFullName} - ${warningName}`,
+      html,
+    });
+  }
+
+  /**
+   * Sends an immediate test email to verify SMTP configuration.
+   */
+  async sendTestEmail(targetEmail) {
+    const hostUrl = process.env.HOSTURL || "http://localhost:3000";
+    const dateStr = new Date().toLocaleString("fr-FR");
+
+    const contentHtml = `
+      <p>Ceci est un <strong>e-mail de test</strong> envoyé depuis votre instance FabtrackJS.</p>
+      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; margin: 16px 0; color: #065f46;">
+        <strong style="display: block; margin-bottom: 4px;">&#10004; Configuration SMTP opérationnelle !</strong>
+        Votre serveur de messagerie est correctement configuré et prêt à délivrer les notifications automatiques.
+      </div>
+      <p style="font-size: 13px; color: #64748b;">Date et heure du test : <strong>${dateStr}</strong></p>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: "Test de configuration e-mail réussi",
+      badgeText: "Test SMTP",
+      badgeColor: "#10b981",
+      contentHtml,
+      ctaUrl: `${hostUrl}/admin/emails`,
+      ctaText: "Retourner à la configuration",
+    });
+
+    return await this.sendMail({
+      to: targetEmail,
+      subject: "FabtrackJS : Test de configuration e-mail réussi",
+      html,
+    });
+  }
+}
+
+module.exports = new MailService();

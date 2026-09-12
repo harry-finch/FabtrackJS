@@ -12,6 +12,18 @@ const DEFAULT_SETTINGS = {
   currency_symbol: "€",
   admin_email: "admin@example.com",
   allow_self_registration: "true",
+  // Email & Notifications settings
+  mail_admin_recipient: process.env.ADMIN || "admin@example.com",
+  mail_from: process.env.MAILFROM || "Fabtrack <noreply@fabtrack.local>",
+  smtp_host: process.env.HOST || "",
+  smtp_port: process.env.PORT || "587",
+  smtp_user: process.env.USR || "",
+  smtp_pass: process.env.PASSWD || "",
+  smtp_secure: "false",
+  mail_notif_consumable_low_stock: "true",
+  mail_notif_user_warning: "true",
+  mail_notif_staff_registration: "true",
+  mail_notif_user_agreement: "true",
 };
 
 let cache = null;

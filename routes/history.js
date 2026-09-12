@@ -9,6 +9,7 @@ router.use(isLoggedIn);
 
 const { PrismaClient, ResourceType, ConsumableStatus } = require("@prisma/client");
 const prisma = new PrismaClient();
+const mailService = require("../services/mailService.js");
 
 // Helper to update consumable stock and status
 async function consumeItem(consumableId, quantity) {
@@ -32,6 +33,13 @@ async function consumeItem(consumableId, quantity) {
       status: newStatus,
     },
   });
+
+  // Alert admin if stock just reached or fell below reorder threshold
+  if (newStock <= consumable.reorderThreshold && (consumable.stock > consumable.reorderThreshold || (consumable.stock > 0 && newStock === 0))) {
+    mailService.sendLowStockAlert(consumable, newStock).catch((err) => {
+      console.error("[consumeItem] Failed to send low stock alert email:", err);
+    });
+  }
 
   return consumable;
 }

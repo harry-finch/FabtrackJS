@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Configuration des E-mails & Alertes - <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
+        <%- include('../includes/pagehead.html') %>
+    </head>
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
+
+            <!-- Page Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-1">Configuration des E-mails & Alertes</h4>
+                            <p class="text-muted small mb-0">Gestion du serveur d'envoi SMTP et des notifications automatiques de la plateforme</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification banner -->
+            <% if (typeof notification !== 'undefined' && notification) { 
+                const isError = notification.toLowerCase().includes('error');
+                const isSuccess = notification.toLowerCase().includes('success');
+            %>
+            <div class="alert <%= isError ? 'alert-danger' : isSuccess ? 'alert-success' : 'alert-info' %> alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid <%= isError ? 'fa-triangle-exclamation' : isSuccess ? 'fa-circle-check' : 'fa-circle-info' %>"></i>
+                    <div><%= notification.replace(/^(Success:|Error:|Warning:)\s*/i, '') %></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <% } %>
+
+            <form action="/admin/emails/settings" method="POST">
+                <!-- ROW 1: Automated Alerts (Core Request) -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
+                                    <i class="fa-solid fa-bell me-1"></i> Notifications Système
+                                </span>
+                                <h5 class="fw-bold mb-0">Alertes & E-mails automatiques</h5>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-1 mb-0">Activez ou désactivez les courriels déclenchés automatiquement par les événements du Fablab</p>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div class="row g-3">
+                            <!-- Alert 1: Consumable Low Stock -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <i class="fa-solid fa-boxes-stacked"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Alerte Stock Bas</h6>
+                                                <small class="text-muted">Consommables & matières</small>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch fs-5 mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchLowStock" name="mail_notif_consumable_low_stock" value="true" <%= settings.mail_notif_consumable_low_stock === 'true' ? 'checked' : '' %>>
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-3 flex-grow-1">
+                                        Envoie un e-mail à l'administrateur dès qu'un consommable franchit à la baisse son seuil d'alerte de réapprovisionnement (en débit ou modification manuelle).
+                                    </p>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewStock">
+                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alert 2: User Warning Added -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Alerte Nouvel Avertissement</h6>
+                                                <small class="text-muted">Sécurité & usagers</small>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch fs-5 mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchWarning" name="mail_notif_user_warning" value="true" <%= settings.mail_notif_user_warning === 'true' ? 'checked' : '' %>>
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-3 flex-grow-1">
+                                        Envoie un e-mail à l'administrateur dès qu'un avertissement (warning) est attribué à un usager, avec le motif, le commentaire et le nom du médiateur.
+                                    </p>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewWarning">
+                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alert 3: Staff Account Registration -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-info-subtle text-info-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <i class="fa-solid fa-users-gear"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Nouveau Compte Staff</h6>
+                                                <small class="text-muted">Validation d'accès</small>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch fs-5 mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchStaff" name="mail_notif_staff_registration" value="true" <%= settings.mail_notif_staff_registration === 'true' ? 'checked' : '' %>>
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-3 flex-grow-1">
+                                        Avertit l'administrateur lorsqu'un nouvel animateur ou membre du personnel crée son compte et nécessite une activation manuelle de ses droits.
+                                    </p>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <span class="small text-muted">Intégré à l'inscription staff</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alert 4: User Terms Agreement -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <i class="fa-solid fa-file-signature"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Charte & Inscription Usager</h6>
+                                                <small class="text-muted">Accord CGU & accès</small>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch fs-5 mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchAgreement" name="mail_notif_user_agreement" value="true" <%= settings.mail_notif_user_agreement === 'true' ? 'checked' : '' %>>
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-3 flex-grow-1">
+                                        Envoie le lien d'acceptation du règlement et de la charte de sécurité lors de la création initiale d'un profil usager.
+                                    </p>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Usager</span>
+                                        <span class="small text-muted">Lien d'activation personnalisé</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 2: SMTP & Delivery Server Settings -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill px-2.5 py-1">
+                                <i class="fa-solid fa-server me-1"></i> Serveur SMTP
+                            </span>
+                            <h5 class="fw-bold mb-0">Paramètres d'envoi et expéditeur</h5>
+                        </div>
+                        <p class="text-muted small mt-1 mb-0">Configurez les identifiants de votre serveur de messagerie pour l'acheminement des e-mails</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <!-- Admin Alert Recipient Email -->
+                            <div class="col-12 col-md-6">
+                                <label for="mail_admin_recipient" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-user-shield me-1 text-primary"></i> E-mail administrateur (destinataire des alertes)
+                                </label>
+                                <input type="email" class="form-control" id="mail_admin_recipient" name="mail_admin_recipient" value="<%= settings.mail_admin_recipient || '' %>" placeholder="admin@fablab.fr" required>
+                                <div class="form-text small">Toutes les alertes système (stock bas, warnings, nouveaux comptes) seront envoyées à cette adresse.</div>
+                            </div>
+
+                            <!-- Sender 'From' Header -->
+                            <div class="col-12 col-md-6">
+                                <label for="mail_from" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-at me-1 text-primary"></i> Adresse expéditeur (« From »)
+                                </label>
+                                <input type="text" class="form-control" id="mail_from" name="mail_from" value="<%= settings.mail_from || '' %>" placeholder="Fabtrack &lt;noreply@fablab.fr&gt;" required>
+                                <div class="form-text small">Nom et adresse qui apparaîtront dans la boîte de réception des destinataires.</div>
+                            </div>
+
+                            <!-- SMTP Host -->
+                            <div class="col-12 col-md-6">
+                                <label for="smtp_host" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-network-wired me-1 text-secondary"></i> Hôte SMTP
+                                </label>
+                                <input type="text" class="form-control" id="smtp_host" name="smtp_host" value="<%= settings.smtp_host || '' %>" placeholder="smtp.mon-domaine.fr ou smtp.gmail.com">
+                                <div class="form-text small">Laissez vide pour utiliser la variable <code>HOST</code> du fichier d'environnement.</div>
+                            </div>
+
+                            <!-- SMTP Port & Security -->
+                            <div class="col-12 col-md-3">
+                                <label for="smtp_port" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-hashtag me-1 text-secondary"></i> Port SMTP
+                                </label>
+                                <input type="number" class="form-control" id="smtp_port" name="smtp_port" value="<%= settings.smtp_port || '587' %>" placeholder="587" min="1" max="65535">
+                                <div class="form-text small">Habituellement 587 (STARTTLS) ou 465 (SSL).</div>
+                            </div>
+
+                            <div class="col-12 col-md-3 d-flex flex-column justify-content-center">
+                                <label class="form-label fw-semibold small mb-2">Chiffrement direct</label>
+                                <div class="form-check form-switch pt-1">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="smtp_secure" name="smtp_secure" value="true" <%= settings.smtp_secure === 'true' ? 'checked' : '' %>>
+                                    <label class="form-check-label small" for="smtp_secure">Activer SSL/TLS direct (port 465)</label>
+                                </div>
+                            </div>
+
+                            <!-- SMTP Username -->
+                            <div class="col-12 col-md-6">
+                                <label for="smtp_user" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-user me-1 text-secondary"></i> Nom d'utilisateur SMTP
+                                </label>
+                                <input type="text" class="form-control" id="smtp_user" name="smtp_user" value="<%= settings.smtp_user || '' %>" placeholder="Identifiant ou email SMTP" autocomplete="off">
+                            </div>
+
+                            <!-- SMTP Password -->
+                            <div class="col-12 col-md-6">
+                                <label for="smtp_pass" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-key me-1 text-secondary"></i> Mot de passe SMTP
+                                </label>
+                                <input type="password" class="form-control" id="smtp_pass" name="smtp_pass" placeholder="<%= hasSmtpPass ? '•••••••••••• (inchangé)' : 'Saisir le mot de passe' %>" autocomplete="new-password">
+                                <div class="form-text small"><%= hasSmtpPass ? 'Un mot de passe est déjà enregistré. Laissez vide pour ne pas le modifier.' : 'Mot de passe d\'authentification du serveur SMTP.' %></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> Enregistrer les paramètres
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- ROW 3: Live SMTP Testing Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Outil de vérification
+                        </span>
+                        <h5 class="fw-bold mb-0">Tester la délivrabilité SMTP</h5>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Envoyez immédiatement un e-mail de test pour vérifier la connectivité et la bonne réception</p>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/admin/emails/test" method="POST" class="row g-3 align-items-end">
+                        <div class="col-12 col-md-8">
+                            <label for="test_recipient" class="form-label fw-semibold small">Adresse de réception pour le test</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="test_recipient" name="test_recipient" value="<%= adminEmail %>" placeholder="votre-adresse@domaine.fr" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <button type="submit" class="btn btn-outline-success rounded-pill w-100 py-2 shadow-sm">
+                                <i class="fa-solid fa-paper-plane me-1"></i> Envoyer un e-mail de test
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODAL 1: Preview Stock Alert -->
+            <div class="modal fade" id="modalPreviewStock" tabindex="-1" aria-labelledby="modalPreviewStockLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content shadow-lg border-0">
+                        <div class="modal-header border-0 pb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="fa-solid fa-boxes-stacked fa-sm"></i>
+                                </div>
+                                <h6 class="modal-title fw-bold" id="modalPreviewStockLabel">Aperçu : Alerte de Stock Bas</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                                    <span class="fw-bold fs-5">FabtrackJS</span>
+                                    <span class="badge bg-warning text-dark fw-bold text-uppercase px-2 py-1 rounded-pill">Stock faible</span>
+                                </div>
+                                <h5 class="fw-bold mb-3">Alerte de stock : PLA Filament 1.75mm Black</h5>
+                                <p class="text-secondary small mb-3">Le consommable suivant a atteint ou franchi à la baisse son seuil d'alerte de réapprovisionnement :</p>
+                                <table class="table table-bordered table-sm bg-white mb-3">
+                                    <tbody>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small w-40">Consommable</th>
+                                            <td class="fw-bold">PLA Filament 1.75mm Black</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Stock actuel restant</th>
+                                            <td class="fw-bold text-danger">150 g</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Seuil d'alerte</th>
+                                            <td>500 g</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="text-center pt-2">
+                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                        Gérer l'inventaire des consommables &rarr;
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL 2: Preview Warning Alert -->
+            <div class="modal fade" id="modalPreviewWarning" tabindex="-1" aria-labelledby="modalPreviewWarningLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content shadow-lg border-0">
+                        <div class="modal-header border-0 pb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="fa-solid fa-triangle-exclamation fa-sm"></i>
+                                </div>
+                                <h6 class="modal-title fw-bold" id="modalPreviewWarningLabel">Aperçu : Alerte d'Avertissement Usager</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                                    <span class="fw-bold fs-5">FabtrackJS</span>
+                                    <span class="badge bg-danger text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Avertissement</span>
+                                </div>
+                                <h5 class="fw-bold mb-3">Nouvel avertissement usager : Jean Dupont</h5>
+                                <p class="text-secondary small mb-3">Un nouvel avertissement a été attribué à un usager de la plateforme :</p>
+                                <table class="table table-bordered table-sm bg-white mb-3">
+                                    <tbody>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small w-40">Usager concerné</th>
+                                            <td class="fw-bold">Jean Dupont (jean.dupont@sorbonne-universite.fr)</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Motif d'avertissement</th>
+                                            <td class="fw-bold text-danger">Non-respect des consignes de sécurité</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Attribué par</th>
+                                            <td>Médiateur Staff (Alexandre)</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Commentaires</th>
+                                            <td class="fst-italic">Utilisation de la découpeuse laser sans ventilation active. Rappel à l'ordre effectué.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="text-center pt-2">
+                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                        Consulter la fiche usager &rarr;
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('../includes/footer.html') %>
+        </main>
+    </body>
+</html>

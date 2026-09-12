@@ -9,6 +9,7 @@ router.use(isLoggedIn);
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const mailService = require("../services/mailService.js");
 
 // ******************************************************************************
 // Route to deactivate a warning
@@ -46,9 +47,25 @@ router.post(
         user: { connect: { id: Number(userid) } },
         warningtype: { connect: { id: Number(warningtype) } },
       },
+      include: {
+        user: true,
+        warningtype: true,
+      },
     });
 
     logger.logThat("Warning #" + warning.id + " created by " + req.session.username);
+
+    // Send automated email alert to admin
+    mailService
+      .sendWarningAlert({
+        user: warning.user,
+        warningtype: warning.warningtype,
+        comments: warning.comments,
+        staffUsername: req.session.username,
+      })
+      .catch((err) => {
+        console.error("[warning/create] Failed to send warning alert email:", err);
+      });
 
     req.session.notification = "Success: Warning created";
     res.redirect(req.session.lastPage || "/fabtrack");
