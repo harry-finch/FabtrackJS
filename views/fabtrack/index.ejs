@@ -161,6 +161,11 @@
                                             <a href="/users/edit/<%= entry.userId %>" class="fw-semibold text-decoration-none">
                                                 <%= entry.user.name %> <%= entry.user.surname %>
                                             </a>
+                                            <% if (entry.user.isExpert) { %>
+                                                <span class="badge bg-warning text-dark border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Utilisateur expert">
+                                                    <i class="fa-solid fa-star fa-2xs"></i> Expert
+                                                </span>
+                                            <% } %>
                                         </td>
                                         <td class="text-center">
                                             <% if ( Object.entries(entry.warnings).length ) { %>

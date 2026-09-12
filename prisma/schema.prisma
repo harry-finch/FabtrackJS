@@ -47,13 +47,16 @@ model User {
   termsAccepted Boolean   @default(false)
   token         String    @unique @db.VarChar(40)
   deletedAt     DateTime? // Soft delete for archival
+  isExpert      Boolean   @default(false)
 
-  usertype Usertype      @relation(fields: [usertypeId], references: [id])
-  projects UserProject[]
-  history  History[]
-  warnings Warning[]
-  Log      Log[]
-  activities Activity[]
+  usertype            Usertype                 @relation(fields: [usertypeId], references: [id])
+  projects            UserProject[]
+  history             History[]
+  warnings            Warning[]
+  Log                 Log[]
+  activities          Activity[]
+  workshopInterests   UserWorkshopInterest[]
+  workshopCompletions UserWorkshopCompletion[]
 }
 
 // Types of users (e.g., student, startup, teacher...)
@@ -268,10 +271,11 @@ model Location {
 
 // Access requirements for specific machines (e.g., authorization level)
 model Access {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(255)
-  description String    @db.VarChar(255)
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(255)
+  description String     @db.VarChar(255)
   Machine     Machine[]
+  workshops   Workshop[]
 }
 
 // Configuration and general platform settings
@@ -280,5 +284,46 @@ model SystemSetting {
   key       String   @unique @db.VarChar(100)
   value     String   @db.Text
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+// Workshop organized by the fablab
+model Workshop {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(255)
+  description String?   @db.Text
+  accessId    Int?      // Optional machine access level granted upon completion
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  access      Access?   @relation(fields: [accessId], references: [id], onDelete: SetNull)
+  interests   UserWorkshopInterest[]
+  completions UserWorkshopCompletion[]
+}
+
+// User interest in a workshop (for contact when organized)
+model UserWorkshopInterest {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  workshopId Int
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workshopId])
+}
+
+// User completion of a workshop (awards a workshop badge & unlocks machine access)
+model UserWorkshopCompletion {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  workshopId Int
+  awardedAt  DateTime @default(now())
+  awardedBy  String?  @db.VarChar(255)
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workshopId])
 }
 

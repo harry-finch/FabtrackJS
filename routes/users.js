@@ -149,6 +149,22 @@ router.get(
           },
         },
         usertype: true,
+        workshopInterests: {
+          include: {
+            workshop: {
+              include: { access: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        workshopCompletions: {
+          include: {
+            workshop: {
+              include: { access: true },
+            },
+          },
+          orderBy: { awardedAt: "desc" },
+        },
       },
     });
 
@@ -268,6 +284,29 @@ router.get(
     const uniqueMachinesCount = new Set(userMachineUsage.map((u) => (u.machine ? u.machine.id : null)).filter(Boolean)).size;
     const activeProjectsCount = userprojects.filter((p) => p.active !== false).length;
 
+    // 4. Workshop and badges calculations
+    const availableWorkshops = await prisma.workshop.findMany({
+      where: { active: true },
+      include: { access: true },
+      orderBy: { name: "asc" },
+    });
+
+    user.workshopInterests.forEach((wi) => {
+      wi.formattedDate = formatDateTime(wi.createdAt);
+    });
+    user.workshopCompletions.forEach((wc) => {
+      wc.formattedDate = formatDateTime(wc.awardedAt);
+    });
+
+    const habilitations = [];
+    const seenAccess = new Set();
+    user.workshopCompletions.forEach((wc) => {
+      if (wc.workshop && wc.workshop.access && !seenAccess.has(wc.workshop.access.id)) {
+        seenAccess.add(wc.workshop.access.id);
+        habilitations.push(wc.workshop.access);
+      }
+    });
+
     const userStats = {
       balance: Number(user.balance || 0).toFixed(2),
       balancePositive: Number(user.balance || 0) >= 0,
@@ -279,9 +318,14 @@ router.get(
       uniqueMachinesCount: uniqueMachinesCount,
       totalConsumablesCount: totalConsumablesCount,
       totalConsumablesCost: totalConsumablesCost,
+      badgesCount: (user.isExpert ? 1 : 0) + user.workshopCompletions.length,
+      workshopBadgesCount: user.workshopCompletions.length,
+      habilitationsCount: habilitations.length,
+      habilitations: habilitations,
+      isExpert: !!user.isExpert,
     };
 
-    // 4. Compute user interests from categories of machines and consumables used
+    // 5. Compute user interests from categories of machines and consumables used
     const interestSet = new Set();
     userMachineUsage.forEach((u) => {
       if (u.machine && u.machine.category) interestSet.add(u.machine.category.name);
@@ -301,6 +345,7 @@ router.get(
       userConsumptions,
       userStats,
       userInterests,
+      availableWorkshops,
     });
   }),
 );
@@ -314,7 +359,7 @@ router.post(
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, surname, email, usertype, birthyear, comments } = req.body;
+    const { name, surname, email, usertype, birthyear, comments, isExpert } = req.body;
 
     await prisma.user.update({
       where: { id: Number(id) },
@@ -325,6 +370,7 @@ router.post(
         usertypeId: Number(usertype),
         birthYear: Number(birthyear),
         comment: comments,
+        isExpert: isExpert === "true" || isExpert === "on" || isExpert === true,
       },
     });
 
@@ -332,6 +378,137 @@ router.post(
 
     req.session.notification = "Success: User profile updated!";
     res.redirect(req.session.lastPage);
+  }),
+);
+
+// ******************************************************************************
+// Workshop Interests & Badges actions for User
+// ******************************************************************************
+
+router.post(
+  "/:id/workshop-interest/add",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { workshopId } = req.body;
+
+    try {
+      await prisma.userWorkshopInterest.upsert({
+        where: {
+          userId_workshopId: {
+            userId: Number(id),
+            workshopId: Number(workshopId),
+          },
+        },
+        create: {
+          userId: Number(id),
+          workshopId: Number(workshopId),
+        },
+        update: {},
+      });
+
+      req.session.notification = "Success: Intérêt pour l'atelier enregistré.";
+    } catch (error) {
+      console.error("Error adding workshop interest:", error);
+      req.session.notification = "Error: Impossible d'enregistrer l'intérêt.";
+    }
+
+    res.redirect(`/users/edit/${id}#collapseFive`);
+  }),
+);
+
+router.get(
+  "/:id/workshop-interest/remove/:workshopId",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id, workshopId } = req.params;
+
+    try {
+      await prisma.userWorkshopInterest.deleteMany({
+        where: {
+          userId: Number(id),
+          workshopId: Number(workshopId),
+        },
+      });
+
+      req.session.notification = "Success: Intérêt retiré.";
+    } catch (error) {
+      console.error("Error removing workshop interest:", error);
+      req.session.notification = "Error: Impossible de retirer l'intérêt.";
+    }
+
+    res.redirect(`/users/edit/${id}#collapseFive`);
+  }),
+);
+
+router.post(
+  "/:id/workshop-badge/award",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { workshopId, removeInterest } = req.body;
+    const uId = Number(id);
+    const wId = Number(workshopId);
+
+    try {
+      await prisma.userWorkshopCompletion.upsert({
+        where: {
+          userId_workshopId: {
+            userId: uId,
+            workshopId: wId,
+          },
+        },
+        create: {
+          userId: uId,
+          workshopId: wId,
+          awardedBy: req.session.username || "Staff",
+        },
+        update: {
+          awardedAt: new Date(),
+          awardedBy: req.session.username || "Staff",
+        },
+      });
+
+      if (removeInterest === "true" || removeInterest === true || removeInterest === "on") {
+        await prisma.userWorkshopInterest.deleteMany({
+          where: {
+            userId: uId,
+            workshopId: wId,
+          },
+        });
+      }
+
+      req.session.notification = "Success: Atelier validé et badge d'habilitation attribué avec succès !";
+    } catch (error) {
+      console.error("Error awarding workshop badge:", error);
+      req.session.notification = "Error: Impossible d'attribuer le badge.";
+    }
+
+    res.redirect(`/users/edit/${id}#collapseFive`);
+  }),
+);
+
+router.get(
+  "/:id/workshop-badge/revoke/:workshopId",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const { id, workshopId } = req.params;
+
+    try {
+      await prisma.userWorkshopCompletion.deleteMany({
+        where: {
+          userId: Number(id),
+          workshopId: Number(workshopId),
+        },
+      });
+
+      req.session.notification = "Success: Badge d'atelier retiré.";
+    } catch (error) {
+      console.error("Error revoking workshop badge:", error);
+      req.session.notification = "Error: Impossible de retirer le badge.";
+    }
+
+    res.redirect(`/users/edit/${id}#collapseFive`);
   }),
 );
 

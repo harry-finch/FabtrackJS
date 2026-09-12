@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Gestion des ateliers et formations du Fablab" />
+        <meta name="author" content="FabtrackJS" />
+        <title>Workshops & Formations - <%= platformName %></title>
+
+        <%- include('../includes/pagehead.html') %>
+    </head>
+
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
+
+            <div class="mb-3">
+                <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+                </a>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">
+                        <i class="fa-solid fa-graduation-cap text-primary me-2"></i>Gestion des ateliers (Workshops)
+                    </h4>
+                    <small class="text-muted">Ateliers organisés par le Fablab, gestion des personnes intéressées et attribution des badges d'habilitation</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2">
+                        <i class="fa-solid fa-chalkboard-user me-1"></i> <%= workshops.length %> ateliers
+                    </span>
+                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-3 py-2">
+                        <i class="fa-solid fa-heart me-1"></i> <%= workshops.reduce((acc, w) => acc + w.interests.length, 0) %> intérêts
+                    </span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
+                        <i class="fa-solid fa-award me-1"></i> <%= workshops.reduce((acc, w) => acc + w.completions.length, 0) %> badges délivrés
+                    </span>
+                </div>
+            </div>
+
+            <!-- Liste des ateliers -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th onclick="sortTable(0)" scope="col" class="ps-3" style="width: 50px;">#</th>
+                                    <th onclick="sortTable(1)" scope="col">Atelier</th>
+                                    <th scope="col" style="width: 220px;">Habilitation machine liée</th>
+                                    <th scope="col" class="text-center" style="width: 90px;">Intéressés</th>
+                                    <th scope="col" class="text-center" style="width: 90px;">Badges remis</th>
+                                    <th scope="col" class="text-end pe-3" style="width: 90px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-content">
+                                <% if (workshops.length === 0) { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="fa-solid fa-circle-info fa-2x mb-2 opacity-50"></i>
+                                            <p class="mb-0">Aucun atelier créé pour le moment. Utilisez le formulaire ci-dessous pour ajouter votre premier atelier.</p>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                                <% workshops.forEach(function(ws) { %>
+                                <tr>
+                                    <td scope="row" class="ps-3 text-muted">#<%= ws.id %></td>
+                                    <td>
+                                        <span class="fw-bold text-primary-emphasis">
+                                            <i class="fa-solid fa-wrench fa-xs me-1 text-secondary"></i><%= ws.name %>
+                                        </span>
+                                        <% if (ws.description) { %>
+                                            <div class="text-muted small"><%= ws.description %></div>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (ws.access) { %>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
+                                                <i class="fa-solid fa-lock-open me-1"></i><%= ws.access.name %>
+                                            </span>
+                                        <% } else { %>
+                                            <span class="badge bg-body-secondary text-secondary border rounded-pill px-2 py-1">
+                                                Aucune restriction
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-center">
+                                        <% if (ws.interests.length > 0) { %>
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" 
+                                                    data-bs-toggle="modal" data-bs-target="#modalInterests-<%= ws.id %>"
+                                                    title="<%= ws.interests.length %> personne(s) intéressée(s)">
+                                                <i class="fa-solid fa-heart me-1"></i><%= ws.interests.length %>
+                                            </button>
+                                        <% } else { %>
+                                            <span class="badge bg-body-secondary text-secondary rounded-pill px-2 py-1" data-bs-toggle="tooltip" title="0 personne intéressée">
+                                                <i class="fa-regular fa-heart me-1"></i>0
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-center">
+                                        <% if (ws.completions.length > 0) { %>
+                                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1"
+                                                    data-bs-toggle="modal" data-bs-target="#modalCompletions-<%= ws.id %>"
+                                                    title="<%= ws.completions.length %> badge(s) délivré(s)">
+                                                <i class="fa-solid fa-award me-1"></i><%= ws.completions.length %>
+                                            </button>
+                                        <% } else { %>
+                                            <span class="badge bg-body-secondary text-secondary rounded-pill px-2 py-1" data-bs-toggle="tooltip" title="0 badge délivré">
+                                                <i class="fa-solid fa-award me-1"></i>0
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" id="edit-<%= ws.id %>"
+                                                    data-id="<%= ws.id %>"
+                                                    data-name="<%= ws.name %>"
+                                                    data-description="<%= ws.description || '' %>"
+                                                    data-accessid="<%= ws.accessId || '' %>"
+                                                    title="Modifier l'atelier">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            <a href="/admin/workshops/delete/<%= ws.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer définitivement l\'atelier <%= ws.name %> ?');">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire Création / Modification d'un Atelier -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                    <h5 class="fw-bold mb-0" id="formTitle">
+                        <i class="fa-solid fa-graduation-cap text-primary me-2"></i>Créer un nouvel atelier
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/workshops/create" method="post" id="workshopForm">
+                        <input type="hidden" id="workshopid" name="workshopid" value="" />
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-7">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Nom de l'atelier" required />
+                                    <label for="name">Nom de l'atelier *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-floating">
+                                    <select class="form-select" id="accessId" name="accessId">
+                                        <option value="">Aucune habilitation machine spécifique</option>
+                                        <% accessLevels.forEach(function(acc) { %>
+                                            <option value="<%= acc.id %>"><%= acc.name %></option>
+                                        <% }); %>
+                                    </select>
+                                    <label for="accessId">Habilitation machine liée (optionnel)</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="description" name="description" placeholder="Description" style="height: 100px;"></textarea>
+                                    <label for="description">Description et objectifs de la formation</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
+                                Créer l'atelier
+                            </button>
+                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" onclick="cancelEdit()">
+                                Annuler la modification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODALES DES UTILISATEURS INTÉRESSÉS ET BADGES DÉCERNÉS (PLACÉES HORS DU TABLEAU) -->
+            <% workshops.forEach(function(ws) { %>
+                <!-- MODALE DES UTILISATEURS INTÉRESSÉS -->
+                <div class="modal fade" id="modalInterests-<%= ws.id %>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="fa-solid fa-heart text-danger me-2"></i>Personnes intéressées par : <%= ws.name %>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-muted small mb-3">
+                                    Voici les utilisateurs qui ont exprimé leur intérêt pour cet atelier. Vous pouvez les contacter lors de la programmation d'une session, puis valider leur participation pour leur attribuer le badge.
+                                </p>
+                                <% if (ws.interests.length > 0) { %>
+                                    <% const emails = ws.interests.map(i => i.user.email).join(', '); %>
+                                    <div class="mb-3 d-flex justify-content-between align-items-center p-2 bg-body-tertiary rounded">
+                                        <span class="small text-muted"><%= ws.interests.length %> contact(s)</span>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('<%= emails %>')">
+                                            <i class="fa-solid fa-copy me-1"></i> Copier la liste d'emails
+                                        </button>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Utilisateur</th>
+                                                    <th>Email</th>
+                                                    <th>Intérêt manifesté le</th>
+                                                    <th class="text-end">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% ws.interests.forEach(function(item) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <a href="/users/edit/<%= item.user.id %>" class="fw-semibold text-decoration-none">
+                                                                <%= item.user.name %> <%= item.user.surname %>
+                                                            </a>
+                                                        </td>
+                                                        <td><a href="mailto:<%= item.user.email %>" class="text-decoration-none text-muted small"><%= item.user.email %></a></td>
+                                                        <td class="text-muted small"><%= item.formattedDate %></td>
+                                                        <td class="text-end">
+                                                            <div class="btn-group btn-group-sm">
+                                                                <form action="/admin/workshops/award-badge" method="post" class="d-inline">
+                                                                    <input type="hidden" name="userId" value="<%= item.user.id %>">
+                                                                    <input type="hidden" name="workshopId" value="<%= ws.id %>">
+                                                                    <input type="hidden" name="removeInterest" value="true">
+                                                                    <button type="submit" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Atelier suivi (Attribuer badge & retirer l'intérêt)">
+                                                                        <i class="fa-solid fa-check"></i>
+                                                                    </button>
+                                                                </form>
+                                                                <a href="/admin/workshops/remove-interest/<%= ws.id %>/<%= item.user.id %>" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Retirer l'intérêt" onclick="return confirm('Retirer cet utilisateur de la liste d\'intérêt ?');">
+                                                                    <i class="fa-solid fa-trash-can"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <% } else { %>
+                                    <p class="text-muted text-center my-3">Aucun utilisateur intéressé pour le moment.</p>
+                                <% } %>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODALE DES BADGES ATTRIBUÉS -->
+                <div class="modal fade" id="modalCompletions-<%= ws.id %>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="fa-solid fa-award text-success me-2"></i>Badges décernés : <%= ws.name %>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <% if (ws.completions.length === 0) { %>
+                                    <p class="text-muted text-center my-3">Aucun badge délivré pour cet atelier pour le moment.</p>
+                                <% } else { %>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Utilisateur</th>
+                                                    <th>Date d'obtention</th>
+                                                    <th>Par</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% ws.completions.forEach(function(comp) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <a href="/users/edit/<%= comp.user.id %>" class="fw-semibold text-decoration-none">
+                                                                <%= comp.user.name %> <%= comp.user.surname %>
+                                                            </a>
+                                                        </td>
+                                                        <td class="text-muted small"><%= comp.formattedDate %></td>
+                                                        <td class="text-muted small"><%= comp.awardedBy || '-' %></td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+
+            <%- include('../includes/footer.html') %>
+
+        <script>
+            // Edition en place de l'atelier
+            document.querySelectorAll("[id^='edit-']").forEach(button => {
+                button.addEventListener("click", function() {
+                    document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Modifier l'atelier";
+                    document.getElementById("workshopForm").action = "/admin/workshops/update";
+                    document.getElementById("workshopid").value = this.dataset.id;
+                    document.getElementById("name").value = this.dataset.name;
+                    document.getElementById("description").value = this.dataset.description;
+                    document.getElementById("accessId").value = this.dataset.accessid || "";
+                    document.getElementById("submitBtn").innerText = "Mettre à jour l'atelier";
+                    document.getElementById("cancelEditBtn").style.display = "inline-block";
+                    document.getElementById("workshopForm").scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            function cancelEdit() {
+                document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-graduation-cap text-primary me-2'></i>Créer un nouvel atelier";
+                document.getElementById("workshopForm").action = "/admin/workshops/create";
+                document.getElementById("workshopid").value = "";
+                document.getElementById("name").value = "";
+                document.getElementById("description").value = "";
+                document.getElementById("accessId").value = "";
+                document.getElementById("submitBtn").innerText = "Créer l'atelier";
+                document.getElementById("cancelEditBtn").style.display = "none";
+            }
+
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("Adresses emails copiées dans le presse-papiers !");
+                }).catch(err => {
+                    console.error("Erreur de copie:", err);
+                });
+            }
+        </script>
+    </body>
+</html>
