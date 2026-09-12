@@ -13,6 +13,24 @@ class HookManager {
     return !!(p && p.enabled !== false);
   }
 
+  setPluginEnabled(idOrName, isEnabled) {
+    const p = this.plugins.get(idOrName);
+    if (p) {
+      p.enabled = Boolean(isEnabled);
+    }
+  }
+
+  getAllPlugins() {
+    return Array.from(this.plugins.values()).map((p) => ({
+      id: p.id || p.name,
+      name: p.name || p.id,
+      version: p.version || "1.0.0",
+      description: p.description || "",
+      enabled: p.enabled !== false,
+      envKey: p.envKey,
+    }));
+  }
+
   getPlugin(idOrName) {
     return this.plugins.get(idOrName);
   }

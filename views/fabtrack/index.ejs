@@ -73,9 +73,30 @@
                                         <%= ue.code %> — <%= ue.name %> (<%= ue.department || 'Sorbonne Université' %>)
                                     </option>
                                     <% }); %>
+                                    <option value="unregistered" class="text-danger fw-semibold">⚠️ UE non-enregistrée</option>
                                 </select>
                                 <label for="teachingUnitId">
                                     <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Unité d'Enseignement (UE rattachée)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic fields for unregistered UE -->
+                    <div class="row" id="unregisteredUeRow" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="unregisteredUeName" name="unregisteredUeName" placeholder="ex: LU2PY001 ou Atelier Robotique">
+                                <label for="unregisteredUeName">
+                                    <i class="fa-solid fa-tag text-warning me-1"></i> Intitulé ou Code de l'UE *
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="unregisteredUeContact" name="unregisteredUeContact" placeholder="ex: prof.responsable@sorbonne-universite.fr">
+                                <label for="unregisteredUeContact">
+                                    <i class="fa-solid fa-user-tie text-info me-1"></i> Contact / Enseignant responsable
                                 </label>
                             </div>
                         </div>

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Configuration générale de Fabtrack" />
+    <title><%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %> - Configuration générale</title>
+
+    <%- include('../includes/pagehead.html') %>
+    <style>
+      .logo-preview-box {
+        min-height: 90px;
+        background: var(--bs-tertiary-bg);
+        border: 2px dashed var(--bs-border-color);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      .logo-preview-img {
+        max-height: 70px;
+        max-width: 240px;
+        object-fit: contain;
+      }
+      .favicon-preview-img {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 6px;
+        padding: 4px;
+        background: #fff;
+      }
+    </style>
+  </head>
+
+  <body class="d-flex justify-content-center bg-body-tertiary py-4">
+    <%- include('../includes/light-dark.html') %>
+
+    <main class="main-container">
+      <%- include('../includes/header.html') %>
+
+      <!-- Top Back Navigation -->
+      <div class="mb-3">
+        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill">
+          <i class="fa-solid fa-arrow-left me-1"></i> Panneau d'administration
+        </a>
+      </div>
+
+      <!-- Header Banner -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 border-bottom pb-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="icon-box bg-primary text-white shadow-sm">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-0">Configuration générale de la plateforme</h4>
+            <small class="text-muted">Personnalisez l'identité visuelle, les modules, la sécurité et les préférences du fablab</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Form for Settings -->
+      <form action="/admin/settings" method="post" enctype="multipart/form-data" id="settingsForm">
+
+        <!-- 1. IDENTITÉ VISUELLE & BRANDING -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+              <i class="fa-solid fa-paintbrush me-1"></i> Identité & Marque
+            </span>
+            <h5 class="fw-bold mb-0 ms-1">Logo et Intitulés</h5>
+          </div>
+          <div class="card-body px-4 pt-2 pb-4">
+            <div class="row g-4">
+              <!-- Platform Name & Subtitle -->
+              <div class="col-12 col-md-6">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="platform_name" name="platform_name" value="<%= settings.platform_name %>" required />
+                  <label for="platform_name"><i class="fa-solid fa-font me-1 text-primary"></i> Nom de la plateforme</label>
+                  <small class="text-muted">Affiché en grand sur le kiosque, l'en-tête et les onglets.</small>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="platform_subtitle" name="platform_subtitle" value="<%= settings.platform_subtitle %>" required />
+                  <label for="platform_subtitle"><i class="fa-solid fa-quote-left me-1 text-primary"></i> Slogan / Sous-titre</label>
+                  <small class="text-muted">Accroche située sous le nom (ex: "Track your fablab's activity").</small>
+                </div>
+              </div>
+
+              <!-- Logo Configuration -->
+              <div class="col-12 col-lg-7">
+                <label class="form-label fw-semibold">
+                  <i class="fa-solid fa-image me-1 text-primary"></i> Logo de la plateforme
+                </label>
+
+                <!-- Current Logo Mode Selector -->
+                <div class="d-flex gap-3 mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="platform_logo_type" id="logoTypeDefault" value="default" <%= settings.platform_logo_type === 'default' ? 'checked' : '' %>>
+                    <label class="form-check-label" for="logoTypeDefault">
+                      Logo Sorbonne Université (SVG par défaut)
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="platform_logo_type" id="logoTypeCustom" value="custom" <%= settings.platform_logo_type === 'custom' ? 'checked' : '' %>>
+                    <label class="form-check-label" for="logoTypeCustom">
+                      Logo personnalisé
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Upload custom logo -->
+                <div class="mb-3">
+                  <label for="logo" class="form-label small text-muted">Téléverser une nouvelle image (PNG, JPG, SVG, WebP — max 3 Mo) :</label>
+                  <input class="form-control" type="file" id="logo" name="logo" accept=".png,.jpg,.jpeg,.svg,.webp">
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="document.getElementById('resetLogoForm').submit();">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Rétablir le logo Sorbonne par défaut
+                  </button>
+                </div>
+              </div>
+
+              <!-- Logo Preview -->
+              <div class="col-12 col-lg-5">
+                <label class="form-label fw-semibold">Aperçu du logo actuel :</label>
+                <div class="logo-preview-box text-center shadow-sm" id="logoPreviewContainer">
+                  <% if (settings.platform_logo_type === 'custom' && settings.platform_logo_path) { %>
+                    <img src="<%= settings.platform_logo_path %>" alt="Logo" class="logo-preview-img" id="logoPreviewImg" />
+                  <% } else { %>
+                    <div class="text-center" id="defaultLogoPreview">
+                      <span class="badge bg-secondary-subtle text-secondary-emphasis border mb-1">Sorbonne Université</span>
+                      <p class="text-muted small mb-0">Logo officiel vectoriel actif</p>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Favicon section -->
+              <hr class="my-2 opacity-25">
+              <div class="col-12 col-md-7">
+                <label class="form-label fw-semibold">
+                  <i class="fa-solid fa-icons me-1 text-primary"></i> Favicon (icône du navigateur)
+                </label>
+                <div class="mb-2">
+                  <label for="favicon" class="form-label small text-muted">Téléverser un favicon (.ico, .png, .svg) :</label>
+                  <input class="form-control" type="file" id="favicon" name="favicon" accept=".ico,.png,.svg">
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="document.getElementById('resetFaviconForm').submit();">
+                  <i class="fa-solid fa-rotate-left me-1"></i> Rétablir le favicon par défaut
+                </button>
+              </div>
+
+              <div class="col-12 col-md-5 d-flex align-items-center gap-3">
+                <div>
+                  <label class="form-label fw-semibold d-block">Favicon actif :</label>
+                  <img src="<%= settings.platform_favicon_path || '/favicon.ico' %>" class="favicon-preview-img shadow-sm" alt="Favicon" id="faviconPreviewImg" onerror="this.src='/favicon.ico';">
+                </div>
+                <small class="text-muted">Apparaît sur l'onglet de votre navigateur et dans les favoris.</small>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. PLUGINS & EXTENSIONS -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
+              <i class="fa-solid fa-puzzle-piece me-1"></i> Extensions
+            </span>
+            <h5 class="fw-bold mb-0 ms-1">Gestion des Plugins</h5>
+          </div>
+          <div class="card-body px-4 pt-2 pb-4">
+            <p class="text-muted small mb-3">
+              Activez ou désactivez les fonctionnalités spécifiques selon le contexte de votre fablab. Les modifications prennent effet immédiatement.
+            </p>
+
+            <div class="row g-3">
+              <% plugins.forEach(function(plugin) { 
+                const isUe = plugin.id === 'ue';
+                const isChecked = isUe ? (settings.plugin_ue_enabled !== 'false') : plugin.enabled;
+              %>
+              <div class="col-12">
+                <div class="p-3 border rounded-3 bg-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="icon-box bg-<%= isUe ? 'danger' : 'primary' %>-subtle text-<%= isUe ? 'danger' : 'primary' %> mt-1" style="width: 42px; height: 42px; font-size: 1.1rem;">
+                      <i class="fa-solid <%= isUe ? 'fa-graduation-cap' : 'fa-plug' %>"></i>
+                    </div>
+                    <div>
+                      <div class="d-flex align-items-center gap-2">
+                        <h6 class="fw-bold mb-0"><%= plugin.name %></h6>
+                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">v<%= plugin.version %></span>
+                        <% if (isUe) { %>
+                          <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sorbonne Université</span>
+                        <% } %>
+                      </div>
+                      <p class="text-muted small mb-0 mt-1"><%= plugin.description %></p>
+                    </div>
+                  </div>
+
+                  <div class="form-check form-switch ps-0">
+                    <input 
+                      class="form-check-input ms-0" 
+                      type="checkbox" 
+                      role="switch" 
+                      id="plugin_<%= plugin.id %>" 
+                      name="plugin_<%= plugin.id %>_enabled" 
+                      value="true" 
+                      style="width: 2.8em; height: 1.4em; cursor: pointer;"
+                      <%= isChecked ? 'checked' : '' %>
+                    >
+                    <label class="form-check-label ms-2 small fw-semibold" for="plugin_<%= plugin.id %>">
+                      <%= isChecked ? 'Activé' : 'Désactivé' %>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. SÉCURITÉ & SESSIONS -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
+              <i class="fa-solid fa-shield-halved me-1"></i> Sécurité
+            </span>
+            <h5 class="fw-bold mb-0 ms-1">Sessions & Authentification</h5>
+          </div>
+          <div class="card-body px-4 pt-2 pb-4">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <div class="form-floating mb-2">
+                  <select class="form-select" id="session_timeout_hours" name="session_timeout_hours">
+                    <option value="1" <%= settings.session_timeout_hours === '1' ? 'selected' : '' %>>1 heure</option>
+                    <option value="4" <%= settings.session_timeout_hours === '4' ? 'selected' : '' %>>4 heures</option>
+                    <option value="8" <%= settings.session_timeout_hours === '8' ? 'selected' : '' %>>8 heures (Journée de travail)</option>
+                    <option value="24" <%= settings.session_timeout_hours === '24' ? 'selected' : '' %>>24 heures (1 jour)</option>
+                    <option value="48" <%= settings.session_timeout_hours === '48' ? 'selected' : '' %>>48 heures (2 jours)</option>
+                    <option value="168" <%= settings.session_timeout_hours === '168' ? 'selected' : '' %>>168 heures (7 jours)</option>
+                    <option value="720" <%= settings.session_timeout_hours === '720' ? 'selected' : '' %>>720 heures (30 jours)</option>
+                  </select>
+                  <label for="session_timeout_hours"><i class="fa-regular fa-clock me-1 text-warning-emphasis"></i> Expiration des sessions (Timeout)</label>
+                </div>
+                <small class="text-muted">Durée maximale d'inactivité avant déconnexion automatique du staff.</small>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-floating mb-2">
+                  <input type="email" class="form-control" id="admin_email" name="admin_email" value="<%= settings.admin_email %>" required />
+                  <label for="admin_email"><i class="fa-solid fa-envelope me-1 text-warning-emphasis"></i> Email administrateur</label>
+                </div>
+                <small class="text-muted">Reçoit les demandes de validation de nouveaux comptes staff et alertes.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. PRÉFÉRENCES DU FABLAB -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
+            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2 py-1">
+              <i class="fa-solid fa-sliders me-1"></i> Atelier
+            </span>
+            <h5 class="fw-bold mb-0 ms-1">Préférences Générales du Fablab</h5>
+          </div>
+          <div class="card-body px-4 pt-2 pb-4">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <div class="form-floating mb-2">
+                  <input type="text" class="form-control" id="currency_symbol" name="currency_symbol" value="<%= settings.currency_symbol %>" style="max-width: 160px;" required />
+                  <label for="currency_symbol"><i class="fa-solid fa-coins me-1 text-info-emphasis"></i> Symbole monétaire</label>
+                </div>
+                <small class="text-muted">Symbole monétaire utilisé pour la facturation des consommables (ex : €, $, CHF).</small>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-floating mb-2">
+                  <select class="form-select" id="allow_self_registration" name="allow_self_registration">
+                    <option value="true" <%= settings.allow_self_registration !== 'false' ? 'selected' : '' %>>Autorisée (Formulaire création visible au kiosque)</option>
+                    <option value="false" <%= settings.allow_self_registration === 'false' ? 'selected' : '' %>>Désactivée (Création uniquement par un staff)</option>
+                  </select>
+                  <label for="allow_self_registration"><i class="fa-solid fa-user-plus me-1 text-info-emphasis"></i> Inscription en autonomie au kiosque</label>
+                </div>
+                <small class="text-muted">Permet aux usagers de créer leur propre profil en arrivant au fablab.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button Bar -->
+        <div class="d-flex justify-content-end align-items-center gap-3 mb-5">
+          <a href="/admin" class="btn btn-outline-secondary rounded-pill px-4">Annuler</a>
+          <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold">
+            <i class="fa-solid fa-floppy-disk me-2"></i> Enregistrer les modifications
+          </button>
+        </div>
+      </form>
+
+      <!-- Hidden reset forms -->
+      <form id="resetLogoForm" action="/admin/settings/reset-logo" method="post" style="display: none;"></form>
+      <form id="resetFaviconForm" action="/admin/settings/reset-favicon" method="post" style="display: none;"></form>
+
+      <%- include('../includes/footer.html') %>
+    </main>
+
+    <script>
+      // Live preview for Logo
+      const logoInput = document.getElementById('logo');
+      const logoContainer = document.getElementById('logoPreviewContainer');
+      const radioCustom = document.getElementById('logoTypeCustom');
+      const radioDefault = document.getElementById('logoTypeDefault');
+
+      logoInput.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          radioCustom.checked = true;
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            logoContainer.innerHTML = '<img src="' + event.target.result + '" alt="Logo Preview" class="logo-preview-img" />';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      radioDefault.addEventListener('change', function () {
+        if (this.checked) {
+          logoContainer.innerHTML = '<div class="text-center"><span class="badge bg-secondary-subtle text-secondary-emphasis border mb-1">Sorbonne Université</span><p class="text-muted small mb-0">Logo officiel vectoriel actif</p></div>';
+        }
+      });
+
+      // Live preview for Favicon
+      const faviconInput = document.getElementById('favicon');
+      const faviconPreviewImg = document.getElementById('faviconPreviewImg');
+
+      faviconInput.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            faviconPreviewImg.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -68,8 +68,10 @@ model Project {
   id             Int           @id @default(autoincrement())
   url            String        @unique @db.VarChar(255)
   projecttypeId  Int
-  teachingUnitId Int?
-  createdAt      DateTime      @default(now())
+  teachingUnitId        Int?
+  unregisteredUeName    String?       @db.VarChar(255)
+  unregisteredUeContact String?       @db.VarChar(255)
+  createdAt             DateTime      @default(now())
   active         Boolean       @default(true)
 
   projecttype    Projecttype   @relation(fields: [projecttypeId], references: [id])
@@ -140,8 +142,10 @@ model History {
   departure      DateTime?
   userId         Int
   userprojectId  Int?
-  teachingUnitId Int?
-  comments       String?       @db.VarChar(255)
+  teachingUnitId        Int?
+  unregisteredUeName    String?       @db.VarChar(255)
+  unregisteredUeContact String?       @db.VarChar(255)
+  comments              String?       @db.VarChar(255)
   workspaceId    Int?
 
   user           User          @relation(fields: [userId], references: [id])
@@ -269,3 +273,12 @@ model Access {
   description String    @db.VarChar(255)
   Machine     Machine[]
 }
+
+// Configuration and general platform settings
+model SystemSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(100)
+  value     String   @db.Text
+  updatedAt DateTime @default(now()) @updatedAt
+}
+

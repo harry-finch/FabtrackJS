@@ -43,7 +43,7 @@ async function consumeItem(consumableId, quantity) {
 router.post(
   "/create",
   asyncHandler(async (req, res) => {
-    let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId } = req.body;
+    let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId, unregisteredUeName, unregisteredUeContact } = req.body;
 
     const parsedUserId = Number(userid);
     if (!parsedUserId || isNaN(parsedUserId)) {
@@ -51,8 +51,20 @@ router.post(
       return res.redirect("/fabtrack");
     }
 
-    const parsedTeachingUnitId =
-      teachingUnitId && teachingUnitId !== "null" && teachingUnitId !== "" ? Number(teachingUnitId) : null;
+    let parsedTeachingUnitId = null;
+    let parsedUnregisteredUeName = null;
+    let parsedUnregisteredUeContact = null;
+
+    if (teachingUnitId === "unregistered") {
+      parsedTeachingUnitId = null;
+      parsedUnregisteredUeName = unregisteredUeName && unregisteredUeName.trim() ? unregisteredUeName.trim() : "UE non-enregistrée";
+      parsedUnregisteredUeContact = unregisteredUeContact && unregisteredUeContact.trim() ? unregisteredUeContact.trim() : null;
+    } else if (teachingUnitId && teachingUnitId !== "null" && teachingUnitId !== "") {
+      const num = Number(teachingUnitId);
+      if (!isNaN(num)) {
+        parsedTeachingUnitId = num;
+      }
+    }
 
     // Checking if the user is already here to avoid conflicts
     const alreadyHere = await prisma.history.findMany({
@@ -71,6 +83,8 @@ router.post(
               url: documentation.trim(),
               projecttypeId: projecttype ? Number(projecttype) : 1,
               teachingUnitId: parsedTeachingUnitId,
+              unregisteredUeName: parsedUnregisteredUeName,
+              unregisteredUeContact: parsedUnregisteredUeContact,
             },
           });
           projectid = project.id;
@@ -80,10 +94,27 @@ router.post(
         try {
           await prisma.project.update({
             where: { id: Number(projectid) },
-            data: { teachingUnitId: parsedTeachingUnitId },
+            data: {
+              teachingUnitId: parsedTeachingUnitId,
+              unregisteredUeName: null,
+              unregisteredUeContact: null,
+            },
           });
         } catch (e) {
           console.error("Error updating project teachingUnitId:", e);
+        }
+      } else if (parsedUnregisteredUeName) {
+        try {
+          await prisma.project.update({
+            where: { id: Number(projectid) },
+            data: {
+              teachingUnitId: null,
+              unregisteredUeName: parsedUnregisteredUeName,
+              unregisteredUeContact: parsedUnregisteredUeContact,
+            },
+          });
+        } catch (e) {
+          console.error("Error updating project unregistered UE:", e);
         }
       }
 
@@ -119,6 +150,8 @@ router.post(
           userId: parsedUserId,
           userprojectId: userprojectid && userprojectid !== "null" ? Number(userprojectid) : null,
           teachingUnitId: parsedTeachingUnitId,
+          unregisteredUeName: parsedUnregisteredUeName,
+          unregisteredUeContact: parsedUnregisteredUeContact,
           comments: comments || null,
           workspaceId: activeWorkspaceId,
         },
@@ -303,9 +336,18 @@ router.post(
             where: { id: histId },
             include: { teachingUnit: true },
           });
-          if (histEntry && histEntry.teachingUnit) {
-            isCoveredByUe = true;
-            ueInfo = histEntry.teachingUnit;
+          if (histEntry) {
+            if (histEntry.teachingUnit) {
+              isCoveredByUe = true;
+              ueInfo = histEntry.teachingUnit;
+            } else if (histEntry.unregisteredUeName) {
+              isCoveredByUe = true;
+              ueInfo = {
+                code: histEntry.unregisteredUeName,
+                name: histEntry.unregisteredUeName,
+                isUnregistered: true,
+              };
+            }
           }
         }
 
@@ -329,7 +371,11 @@ router.post(
         recordedCount++;
 
         if (isCoveredByUe) {
-          req.session.notification = `Success: Activité enregistrée. Prise en charge UE (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € imputés à l'UE).`;
+          if (ueInfo && ueInfo.isUnregistered) {
+            req.session.notification = `Success: Activité enregistrée. Prise en charge UE non-enregistrée (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € en attente de régularisation).`;
+          } else {
+            req.session.notification = `Success: Activité enregistrée. Prise en charge UE (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € imputés à l'UE).`;
+          }
         }
       }
     }

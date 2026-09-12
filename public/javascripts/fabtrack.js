@@ -119,8 +119,28 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
         checkAcademicProjectType();
       }
       const ueSelect = document.getElementById("teachingUnitId");
-      if (ueSelect && item.teachingUnitId) {
-        ueSelect.value = item.teachingUnitId;
+      const unregisteredRow = document.getElementById("unregisteredUeRow");
+      const unregNameInput = document.getElementById("unregisteredUeName");
+      const unregContactInput = document.getElementById("unregisteredUeContact");
+
+      if (ueSelect) {
+        if (item.teachingUnitId) {
+          ueSelect.value = item.teachingUnitId;
+          if (unregisteredRow) unregisteredRow.style.display = "none";
+          if (unregNameInput) {
+            unregNameInput.removeAttribute("required");
+            unregNameInput.value = "";
+          }
+          if (unregContactInput) unregContactInput.value = "";
+        } else if (item.unregisteredUeName) {
+          ueSelect.value = "unregistered";
+          if (unregisteredRow) unregisteredRow.style.display = "";
+          if (unregNameInput) {
+            unregNameInput.setAttribute("required", "required");
+            unregNameInput.value = item.unregisteredUeName;
+          }
+          if (unregContactInput) unregContactInput.value = item.unregisteredUeContact || "";
+        }
       }
 
       const foundElem = userprojects.find(
@@ -134,6 +154,26 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
   const projectTypeSelect = document.getElementById("projecttype");
   const ueRow = document.getElementById("ueRow");
   const ueSelect = document.getElementById("teachingUnitId");
+  const unregisteredRow = document.getElementById("unregisteredUeRow");
+  const unregNameInput = document.getElementById("unregisteredUeName");
+  const unregContactInput = document.getElementById("unregisteredUeContact");
+
+  function checkUnregisteredUe() {
+    if (!ueSelect || !unregisteredRow) return;
+    if (ueSelect.value === "unregistered") {
+      unregisteredRow.style.display = "";
+      if (unregNameInput) unregNameInput.setAttribute("required", "required");
+    } else {
+      unregisteredRow.style.display = "none";
+      if (unregNameInput) {
+        unregNameInput.removeAttribute("required");
+        unregNameInput.value = "";
+      }
+      if (unregContactInput) {
+        unregContactInput.value = "";
+      }
+    }
+  }
 
   function checkAcademicProjectType() {
     if (!projectTypeSelect || !ueRow) return;
@@ -147,13 +187,28 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     if (isAcademic) {
       ueRow.style.display = "";
       if (ueSelect) ueSelect.setAttribute("required", "required");
+      checkUnregisteredUe();
     } else {
       ueRow.style.display = "none";
       if (ueSelect) {
         ueSelect.removeAttribute("required");
         ueSelect.value = "";
       }
+      if (unregisteredRow) {
+        unregisteredRow.style.display = "none";
+      }
+      if (unregNameInput) {
+        unregNameInput.removeAttribute("required");
+        unregNameInput.value = "";
+      }
+      if (unregContactInput) {
+        unregContactInput.value = "";
+      }
     }
+  }
+
+  if (ueSelect) {
+    ueSelect.addEventListener("change", checkUnregisteredUe);
   }
 
   if (projectTypeSelect) {

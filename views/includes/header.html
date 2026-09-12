@@ -4,7 +4,10 @@
 
     <!-- Center Logo -->
     <div class="d-flex justify-content-center">
-        <a href="#" onclick="location.assign(window.location.origin)" title="Accueil Fabtrack">
+        <a href="#" onclick="location.assign(window.location.origin)" title="Accueil <%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>">
+            <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
+                <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %> Logo" style="max-height: 54px; max-width: 200px; object-fit: contain;" class="ml-3" />
+            <% } else { %>
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -99,8 +102,9 @@
                 <path
                     fill="#EF4136"
                     d="M369.2,85v30.4h19.7v-4.8H375v-8.2h10.7v-4.8H375v-8h13.2V85H369.2z M380.1,77.2l-3.4,5.8h4.6l4.7-5.8H380.1  z"
-                ></path></svg
-        ></a>
+                ></path></svg>
+            <% } %>
+        </a>
     </div>
 
     <!-- User Profile & Navigation Menu -->
@@ -169,6 +173,10 @@
                     <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
                     <span class="small">Panneau d'administration</span>
                 </a>
+                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin/settings">
+                    <i class="fa-solid fa-sliders text-info fa-sm" style="width: 16px;"></i>
+                    <span class="small">Configuration générale</span>
+                </a>
                 <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
                 <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin/ue">
                     <i class="fa-solid fa-graduation-cap text-danger fa-sm" style="width: 16px;"></i>
@@ -191,5 +199,5 @@
 
 <script src="/javascripts/workspace.js"></script>
 
-<h2 class="mb-1 text-center">FabtrackJS</h2>
-<h5 class="lead fs-6 mb-5 text-center">Track your fablab's activity</h5>
+<h2 class="mb-1 text-center"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
+<h5 class="lead fs-6 mb-5 text-center"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>

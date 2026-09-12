@@ -32,7 +32,7 @@
           </p>
         </div>
         <div class="d-flex gap-2">
-          <a href="/admin/ue/export-csv" class="btn btn-outline-success btn-sm">
+          <a href="/admin/ue/export-csv" class="btn btn-outline-success btn-sm" id="topExportCsvBtn">
             <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV (Facturation)
           </a>
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createUeModal">
@@ -70,20 +70,24 @@
         </div>
 
         <div class="col-md-4 col-sm-6">
-          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
+          <div class="card h-100 shadow-sm border-0 <%= pendingCount > 0 ? 'bg-warning-subtle border-warning' : 'bg-body-secondary' %>">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="small text-muted fw-semibold text-uppercase">Prélèvements enregistrés</span>
-                <i class="fa-solid fa-boxes-stacked text-success fs-5"></i>
+                <span class="small <%= pendingCount > 0 ? 'text-warning-emphasis' : 'text-muted' %> fw-semibold text-uppercase">En attente de régularisation</span>
+                <i class="fa-solid fa-triangle-exclamation <%= pendingCount > 0 ? 'text-warning' : 'text-muted' %> fs-5"></i>
               </div>
-              <div class="fs-4 fw-bold text-success"><%= totalActivitiesCount %></div>
-              <div class="small text-muted">actes de consommation sous projet académique</div>
+              <div class="fs-4 fw-bold <%= pendingCount > 0 ? 'text-warning-emphasis' : 'text-muted' %>">
+                <%= pendingCount %> <span class="fs-6 fw-normal">visite(s)</span>
+              </div>
+              <div class="small <%= pendingCount > 0 ? 'text-warning-emphasis' : 'text-muted' %>">
+                <%= pendingTotalCost.toFixed(2) %> € en attente de rattachement
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Nav Tabs: UE List vs Consumption Log -->
+      <!-- Nav Tabs: UE List vs Consumption Log vs Pending Regularizations -->
       <ul class="nav nav-tabs mb-3" id="ueTabs" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active fw-semibold" id="tab-units" data-bs-toggle="tab" data-bs-target="#panel-units" type="button" role="tab">
@@ -92,7 +96,15 @@
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link fw-semibold" id="tab-log" data-bs-toggle="tab" data-bs-target="#panel-log" type="button" role="tab">
-            <i class="fa-solid fa-clock-rotate-left me-1"></i> Journal des consommations imputées (<%= activities.length %>)
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> Journal des consommations (<%= activities.length %>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold <%= pendingCount > 0 ? 'text-warning-emphasis' : '' %>" id="tab-pending" data-bs-toggle="tab" data-bs-target="#panel-pending" type="button" role="tab">
+            <i class="fa-solid fa-clipboard-question me-1"></i> En attente de régularisation
+            <% if (pendingCount > 0) { %>
+              <span class="badge bg-warning text-dark rounded-pill ms-1"><%= pendingCount %></span>
+            <% } %>
           </button>
         </li>
       </ul>
@@ -160,38 +172,36 @@
                       </td>
                       <td class="text-center">
                         <% if (ue.active) { %>
-                        <span class="badge bg-success-subtle text-success border border-success-subtle">
-                          <i class="fa-solid fa-circle-check me-1"></i> Active
-                        </span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">Habilitée</span>
                         <% } else { %>
-                        <span class="badge bg-secondary-subtle text-secondary border">
-                          <i class="fa-solid fa-circle-xmark me-1"></i> Désactivée
-                        </span>
+                        <span class="badge bg-secondary-subtle text-secondary border">Archivée</span>
                         <% } %>
                       </td>
-                      <td class="text-end pe-3 text-nowrap">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-secondary edit-ue-btn me-1"
-                          data-id="<%= ue.id %>"
-                          data-code="<%= ue.code %>"
-                          data-name="<%= ue.name %>"
-                          data-department="<%= ue.department || '' %>"
-                          data-email="<%= ue.responsibleEmail || '' %>"
-                          data-active="<%= ue.active %>"
-                          title="Modifier l'UE"
-                        >
-                          <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <form action="/admin/ue/toggle/<%= ue.id %>" method="POST" class="d-inline">
+                      <td class="text-end pe-3">
+                        <div class="btn-group btn-group-sm">
                           <button
-                            type="submit"
-                            class="btn btn-sm <%= ue.active ? 'btn-outline-warning' : 'btn-outline-success' %>"
-                            title="<%= ue.active ? 'Désactiver cette UE' : 'Activer cette UE' %>"
+                            type="button"
+                            class="btn btn-outline-secondary edit-ue-btn"
+                            data-id="<%= ue.id %>"
+                            data-code="<%= ue.code %>"
+                            data-name="<%= ue.name %>"
+                            data-department="<%= ue.department || '' %>"
+                            data-email="<%= ue.responsibleEmail || '' %>"
+                            data-active="<%= ue.active %>"
+                            title="Modifier cette UE"
                           >
-                            <i class="fa-solid <%= ue.active ? 'fa-ban' : 'fa-check' %>"></i>
+                            <i class="fa-solid fa-pen"></i>
                           </button>
-                        </form>
+                          <form action="/admin/ue/toggle/<%= ue.id %>" method="POST" class="d-inline">
+                            <button
+                              type="submit"
+                              class="btn <%= ue.active ? 'btn-outline-warning' : 'btn-outline-success' %>"
+                              title="<%= ue.active ? 'Désactiver cette UE' : 'Activer cette UE' %>"
+                            >
+                              <i class="fa-solid <%= ue.active ? 'fa-ban' : 'fa-check' %>"></i>
+                            </button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                     <% }); %>
@@ -204,52 +214,120 @@
 
         <!-- TAB 2: CONSUMPTION LOG -->
         <div class="tab-pane fade" id="panel-log" role="tabpanel">
+          <!-- Filter Controls Card -->
+          <div class="card bg-body-secondary border-0 p-3 mb-3 shadow-sm">
+            <div class="row g-3 align-items-center">
+              <!-- UE Filter -->
+              <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="d-flex align-items-center gap-2">
+                  <label for="filterLogUe" class="small fw-bold text-muted text-nowrap mb-0">
+                    <i class="fa-solid fa-graduation-cap text-primary me-1"></i> UE :
+                  </label>
+                  <select id="filterLogUe" class="form-select form-select-sm">
+                    <option value="all">Toutes les UE (<%= activities.length %>)</option>
+                    <% if (activities.some(a => a.isUnregistered)) { %>
+                      <option value="unregistered" class="text-warning-emphasis fw-semibold">
+                        ⚠️ UE non-enregistrées (<%= activities.filter(a => a.isUnregistered).length %>)
+                      </option>
+                    <% } %>
+                    <% teachingUnits.forEach(function(ue) { 
+                         const count = activities.filter(a => !a.isUnregistered && a.ueId === ue.id).length;
+                    %>
+                      <option value="<%= ue.id %>">
+                        <%= ue.code %> — <%= ue.name %> (<%= count %>)
+                      </option>
+                    <% }); %>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Date Range Filter -->
+              <div class="col-lg-5 col-md-6 col-sm-12">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="small fw-bold text-muted text-nowrap">
+                    <i class="fa-solid fa-calendar-days text-primary me-1"></i> Période :
+                  </span>
+                  <input type="date" id="filterLogStartDate" class="form-control form-control-sm" title="Date de début" />
+                  <span class="text-muted small">à</span>
+                  <input type="date" id="filterLogEndDate" class="form-control form-control-sm" title="Date de fin" />
+                  <button type="button" id="clearLogFilterBtn" class="btn btn-sm btn-outline-secondary" title="Réinitialiser les filtres" style="display: none;">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filtered Summary & CSV Button -->
+              <div class="col-lg-3 col-md-12 text-lg-end d-flex align-items-center justify-content-lg-end justify-content-between gap-2">
+                <span class="badge bg-body-tertiary text-body border py-2 px-2 text-nowrap" id="filteredLogCounter">
+                  <%= activities.length %> enregistrement(s)
+                </span>
+                <a id="exportFilteredCsvBtn" href="/admin/ue/export-csv" class="btn btn-sm btn-success text-nowrap shadow-sm">
+                  <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV filtré
+                </a>
+              </div>
+            </div>
+          </div>
+
           <div class="card border-0 shadow-sm">
             <div class="card-body p-0">
               <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="consumptionLogTable">
                   <thead class="table-light">
                     <tr>
-                      <th class="ps-3">Date</th>
-                      <th>UE</th>
-                      <th>Étudiant</th>
-                      <th>Projet</th>
-                      <th>Consommable</th>
-                      <th class="text-end">Quantité</th>
-                      <th class="text-end">Prix Unit.</th>
-                      <th class="text-end pe-3">Montant Pris en Charge</th>
+                      <th class="ps-3" style="width: 100px;">Date</th>
+                      <th style="width: 120px; max-width: 120px;">UE</th>
+                      <th style="max-width: 150px;">Étudiant</th>
+                      <th style="max-width: 140px;">Projet</th>
+                      <th style="max-width: 160px;">Consommable</th>
+                      <th class="text-end" style="width: 85px;">Quantité</th>
+                      <th class="text-end" style="width: 100px;">Prix Unit.</th>
+                      <th class="text-end pe-3" style="width: 130px;">Montant Pris en Charge</th>
                     </tr>
                   </thead>
                   <tbody>
                     <% if (activities.length === 0) { %>
-                    <tr>
+                    <tr id="emptyLogPlaceholder">
                       <td colspan="8" class="text-center text-muted py-4">
                         Aucune consommation liée à une UE pour le moment.
                       </td>
                     </tr>
                     <% } %>
                     <% activities.forEach(function(act) { %>
-                    <tr>
+                    <tr
+                      class="<%= act.isUnregistered ? 'table-warning bg-opacity-25' : '' %> log-row"
+                      data-ue-id="<%= act.isUnregistered ? 'unregistered' : act.ueId %>"
+                      data-date="<%= act.rawDate %>"
+                      data-cost="<%= act.totalCost %>"
+                    >
                       <td class="ps-3 small text-muted text-nowrap">
                         <%= act.date %>
                       </td>
-                      <td>
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace">
-                          <%= act.ueCode %>
-                        </span>
-                        <div class="small text-muted text-truncate" style="max-width: 180px;"><%= act.ueName %></div>
+                      <td style="width: 120px; max-width: 120px;">
+                        <% if (act.isUnregistered) { %>
+                          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace text-truncate d-inline-block" style="max-width: 110px;" title="<%= act.ueCode %>">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i><%= act.ueCode %>
+                          </span>
+                          <div class="small text-muted text-truncate" style="max-width: 110px;" title="<%= act.ueName %>"><%= act.ueName %></div>
+                        <% } else { %>
+                          <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace text-truncate d-inline-block" style="max-width: 110px;" title="<%= act.ueCode %>">
+                            <%= act.ueCode %>
+                          </span>
+                          <div class="small text-muted text-truncate" style="max-width: 110px;" title="<%= act.ueName %>"><%= act.ueName %></div>
+                        <% } %>
                       </td>
                       <td>
-                        <div class="fw-medium"><%= act.studentName %></div>
-                        <div class="small text-muted"><%= act.studentEmail %></div>
+                        <div class="fw-medium text-truncate" style="max-width: 140px;" title="<%= act.studentName %>"><%= act.studentName %></div>
+                        <div class="small text-muted text-truncate" style="max-width: 140px;" title="<%= act.studentEmail %>"><%= act.studentEmail %></div>
                       </td>
                       <td class="small">
-                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="<%= act.projectUrl %>">
+                        <span class="text-truncate d-inline-block" style="max-width: 130px;" title="<%= act.projectUrl %>">
                           <%= act.projectUrl %>
                         </span>
                       </td>
                       <td class="fw-medium">
-                        <%= act.consumableName %>
+                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="<%= act.consumableName %>">
+                          <%= act.consumableName %>
+                        </span>
                       </td>
                       <td class="text-end text-nowrap">
                         <%= act.quantity %> <%= act.unit %>
@@ -259,6 +337,110 @@
                       </td>
                       <td class="text-end pe-3 fw-bold text-danger text-nowrap">
                         <%= act.totalCost.toFixed(2) %> €
+                        <% if (act.isUnregistered) { %>
+                          <span class="badge bg-warning text-dark d-block text-end mt-1" style="font-size: 0.65rem;">En attente</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                    <% }); %>
+                    <tr id="noFilterMatchRow" style="display: none;">
+                      <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-filter-circle-xmark text-secondary fs-4 d-block mb-2"></i>
+                        Aucune consommation ne correspond aux filtres sélectionnés.
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot class="table-light fw-bold">
+                    <tr>
+                      <td colspan="7" class="text-end ps-3">Total des consommations affichées :</td>
+                      <td class="text-end pe-3 text-danger text-nowrap" id="filteredTotalCost">
+                        <%= grandTotalCost.toFixed(2) %> €
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: PENDING REGULARIZATIONS -->
+        <div class="tab-pane fade" id="panel-pending" role="tabpanel">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="pendingTable">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Date Visite</th>
+                      <th>Étudiant</th>
+                      <th>Projet</th>
+                      <th>UE saisie (temporaire)</th>
+                      <th>Contact Enseignant</th>
+                      <th class="text-center">Consommables</th>
+                      <th class="text-end">Montant Imputé</th>
+                      <th class="text-end pe-3">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (pendingList.length === 0) { %>
+                    <tr>
+                      <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-circle-check text-success fs-4 d-block mb-2"></i>
+                        Aucune situation en attente ! Toutes les visites académiques sont associées à des UE répertoriées.
+                      </td>
+                    </tr>
+                    <% } %>
+                    <% pendingList.forEach(function(item) { %>
+                    <tr>
+                      <td class="ps-3 small text-muted text-nowrap">
+                        <%= item.date %>
+                      </td>
+                      <td>
+                        <div class="fw-medium"><%= item.studentName %></div>
+                        <div class="small text-muted"><%= item.studentEmail %></div>
+                      </td>
+                      <td class="small">
+                        <span class="text-truncate d-inline-block" style="max-width: 180px;" title="<%= item.projectUrl %>">
+                          <%= item.projectUrl %>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-semibold">
+                          <i class="fa-solid fa-tag me-1"></i><%= item.unregisteredUeName %>
+                        </span>
+                      </td>
+                      <td class="small">
+                        <% if (item.unregisteredUeContact) { %>
+                          <% if (item.unregisteredUeContact.includes('@')) { %>
+                            <a href="mailto:<%= item.unregisteredUeContact %>" class="text-decoration-none">
+                              <i class="fa-solid fa-envelope me-1 text-muted"></i><%= item.unregisteredUeContact %>
+                            </a>
+                          <% } else { %>
+                            <i class="fa-solid fa-user-tie me-1 text-muted"></i><%= item.unregisteredUeContact %>
+                          <% } %>
+                        <% } else { %>
+                          <span class="text-muted italic">— Non renseigné —</span>
+                        <% } %>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-light text-dark border">
+                          <%= item.consumablesCount %> acte(s)
+                        </span>
+                      </td>
+                      <td class="text-end fw-bold text-danger">
+                        <%= item.totalCost.toFixed(2) %> €
+                      </td>
+                      <td class="text-end pe-3">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-warning fw-semibold shadow-sm regularize-btn"
+                          data-historyid="<%= item.id %>"
+                          data-uename="<%= item.unregisteredUeName %>"
+                          data-contact="<%= item.unregisteredUeContact %>"
+                        >
+                          <i class="fa-solid fa-wrench me-1"></i> Régulariser
+                        </button>
                       </td>
                     </tr>
                     <% }); %>
@@ -350,10 +532,112 @@
         </div>
       </div>
 
+      <!-- MODAL: REGULARIZE UNREGISTERED UE -->
+      <div class="modal fade" id="regularizeModal" tabindex="-1" aria-labelledby="regularizeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <form id="regularizeForm" action="/admin/ue/regularize" method="POST">
+              <input type="hidden" id="regHistoryId" name="historyId" />
+              <input type="hidden" id="regUnregisteredName" name="unregisteredName" />
+
+              <div class="modal-header bg-warning-subtle text-warning-emphasis">
+                <h5 class="modal-title" id="regularizeModalLabel">
+                  <i class="fa-solid fa-wrench me-2"></i> Régulariser l'UE non-enregistrée
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+
+              <div class="modal-body">
+                <div class="alert alert-warning d-flex align-items-center mb-3">
+                  <i class="fa-solid fa-circle-info fs-4 me-3"></i>
+                  <div>
+                    <div><strong>UE saisie temporairement :</strong> <span id="regUeSummary" class="font-monospace"></span></div>
+                    <div><strong>Contact / Enseignant :</strong> <span id="regContactSummary"></span></div>
+                    <small class="text-muted d-block mt-1">La régularisation associera rétroactivement toutes les consommations et projets liés à cette UE dans la base de données.</small>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-bold mb-2">Méthode de régularisation :</label>
+                  <div class="d-flex gap-4">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="regularizeAction" id="actionExisting" value="existing" checked>
+                      <label class="form-check-label fw-semibold" for="actionExisting">
+                        Associer à une UE existante
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="regularizeAction" id="actionNew" value="new">
+                      <label class="form-check-label fw-semibold" for="actionNew">
+                        Créer la nouvelle UE officielle
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- BLOCK 1: ASSOCIER A UNE UE EXISTANTE -->
+                <div id="blockExisting" class="p-3 bg-body-secondary rounded-3 mb-3">
+                  <div class="form-floating">
+                    <select class="form-select" id="targetUeId" name="targetUeId">
+                      <option value="" disabled selected>Sélectionner l'UE officielle correspondante...</option>
+                      <% teachingUnits.forEach(function(ue) { %>
+                        <option value="<%= ue.id %>">
+                          <%= ue.code %> — <%= ue.name %> (<%= ue.department || 'Sorbonne Université' %>)
+                        </option>
+                      <% }); %>
+                    </select>
+                    <label for="targetUeId"><i class="fa-solid fa-graduation-cap text-primary me-1"></i> UE Officielle</label>
+                  </div>
+                </div>
+
+                <!-- BLOCK 2: CREER LA NOUVELLE UE -->
+                <div id="blockNew" class="p-3 bg-body-secondary rounded-3 mb-3" style="display: none;">
+                  <h6 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-plus-circle me-1"></i> Fiche de la nouvelle UE</h6>
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <div class="form-floating mb-2">
+                        <input type="text" class="form-control" id="newCode" name="newCode" placeholder="LU2PY001">
+                        <label for="newCode">Code UE (ex: LU2PY001)</label>
+                      </div>
+                    </div>
+                    <div class="col-md-8">
+                      <div class="form-floating mb-2">
+                        <input type="text" class="form-control" id="newName" name="newName" placeholder="Intitulé">
+                        <label for="newName">Intitulé de l'UE</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-floating mb-2">
+                        <input type="text" class="form-control" id="newDepartment" name="newDepartment" placeholder="Composante">
+                        <label for="newDepartment">Département / Composante</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-floating mb-2">
+                        <input type="email" class="form-control" id="newResponsibleEmail" name="newResponsibleEmail" placeholder="prof@sorbonne-universite.fr">
+                        <label for="newResponsibleEmail">Email Enseignant Responsable</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-warning fw-semibold">
+                  <i class="fa-solid fa-check me-1"></i> Valider la régularisation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <%- include('../includes/footer.html') %>
 
       <script>
         document.addEventListener("DOMContentLoaded", () => {
+          // Edit UE Modal
           const editBtns = document.querySelectorAll(".edit-ue-btn");
           const editForm = document.getElementById("editUeForm");
           const editCode = document.getElementById("editCode");
@@ -375,6 +659,168 @@
               editModal.show();
             });
           });
+
+          // Regularize Modal
+          const regularizeBtns = document.querySelectorAll(".regularize-btn");
+          const regModalEl = document.getElementById("regularizeModal");
+          const regModal = regModalEl ? new bootstrap.Modal(regModalEl) : null;
+          const regHistoryId = document.getElementById("regHistoryId");
+          const regUnregisteredName = document.getElementById("regUnregisteredName");
+          const regUeSummary = document.getElementById("regUeSummary");
+          const regContactSummary = document.getElementById("regContactSummary");
+
+          const actionExisting = document.getElementById("actionExisting");
+          const actionNew = document.getElementById("actionNew");
+          const blockExisting = document.getElementById("blockExisting");
+          const blockNew = document.getElementById("blockNew");
+          const targetUeId = document.getElementById("targetUeId");
+          const newCode = document.getElementById("newCode");
+          const newName = document.getElementById("newName");
+          const newDepartment = document.getElementById("newDepartment");
+          const newEmail = document.getElementById("newResponsibleEmail");
+
+          function toggleRegularizeAction() {
+            if (actionExisting && actionExisting.checked) {
+              if (blockExisting) blockExisting.style.display = "";
+              if (blockNew) blockNew.style.display = "none";
+              if (targetUeId) targetUeId.setAttribute("required", "required");
+              if (newCode) newCode.removeAttribute("required");
+              if (newName) newName.removeAttribute("required");
+            } else {
+              if (blockExisting) blockExisting.style.display = "none";
+              if (blockNew) blockNew.style.display = "";
+              if (targetUeId) targetUeId.removeAttribute("required");
+              if (newCode) newCode.setAttribute("required", "required");
+              if (newName) newName.setAttribute("required", "required");
+            }
+          }
+
+          if (actionExisting) actionExisting.addEventListener("change", toggleRegularizeAction);
+          if (actionNew) actionNew.addEventListener("change", toggleRegularizeAction);
+
+          regularizeBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const histId = btn.dataset.historyid || "";
+              const ueName = btn.dataset.uename || "";
+              const contact = btn.dataset.contact || "";
+
+              if (regHistoryId) regHistoryId.value = histId;
+              if (regUnregisteredName) regUnregisteredName.value = ueName;
+              if (regUeSummary) regUeSummary.textContent = ueName;
+              if (regContactSummary) regContactSummary.textContent = contact || "Non renseigné";
+
+              // Pre-fill creation fields in case user chooses to create the UE
+              if (newName) newName.value = ueName;
+              if (newCode) {
+                // Try extracting code if it looks like LU1IN001
+                const words = ueName.trim().split(/[\s—\-]+/);
+                newCode.value = words[0] ? words[0].toUpperCase() : ueName.toUpperCase();
+              }
+              if (newEmail) {
+                newEmail.value = contact.includes("@") ? contact.trim() : "";
+              }
+
+              if (actionExisting) {
+                actionExisting.checked = true;
+                toggleRegularizeAction();
+              }
+
+              if (regModal) regModal.show();
+            });
+          });
+
+          // Consumption Log Filtering & Dynamic CSV Export
+          const filterLogUe = document.getElementById("filterLogUe");
+          const filterLogStartDate = document.getElementById("filterLogStartDate");
+          const filterLogEndDate = document.getElementById("filterLogEndDate");
+          const clearLogFilterBtn = document.getElementById("clearLogFilterBtn");
+          const exportFilteredCsvBtn = document.getElementById("exportFilteredCsvBtn");
+          const topExportCsvBtn = document.getElementById("topExportCsvBtn");
+          const filteredLogCounter = document.getElementById("filteredLogCounter");
+          const filteredTotalCost = document.getElementById("filteredTotalCost");
+          const noFilterMatchRow = document.getElementById("noFilterMatchRow");
+          const logRows = document.querySelectorAll(".log-row");
+
+          function applyLogFilters() {
+            const selectedUe = filterLogUe ? filterLogUe.value : "all";
+            const startDate = filterLogStartDate ? filterLogStartDate.value : "";
+            const endDate = filterLogEndDate ? filterLogEndDate.value : "";
+
+            let visibleCount = 0;
+            let currentTotal = 0;
+
+            logRows.forEach((row) => {
+              const rowUe = row.dataset.ueId;
+              const rowDate = row.dataset.date;
+              const rowCost = parseFloat(row.dataset.cost) || 0;
+
+              let matchesUe = true;
+              if (selectedUe === "unregistered") {
+                matchesUe = (rowUe === "unregistered");
+              } else if (selectedUe !== "all") {
+                matchesUe = (rowUe === selectedUe);
+              }
+
+              let matchesStartDate = true;
+              if (startDate && rowDate) {
+                matchesStartDate = (rowDate >= startDate);
+              }
+
+              let matchesEndDate = true;
+              if (endDate && rowDate) {
+                matchesEndDate = (rowDate <= endDate);
+              }
+
+              if (matchesUe && matchesStartDate && matchesEndDate) {
+                row.style.display = "";
+                visibleCount++;
+                currentTotal += rowCost;
+              } else {
+                row.style.display = "none";
+              }
+            });
+
+            if (noFilterMatchRow) {
+              noFilterMatchRow.style.display = (visibleCount === 0 && logRows.length > 0) ? "" : "none";
+            }
+
+            if (filteredLogCounter) {
+              filteredLogCounter.textContent = `${visibleCount} enregistrement(s)`;
+            }
+
+            if (filteredTotalCost) {
+              filteredTotalCost.textContent = `${currentTotal.toFixed(2)} €`;
+            }
+
+            if (clearLogFilterBtn) {
+              clearLogFilterBtn.style.display = (selectedUe !== "all" || startDate || endDate) ? "" : "none";
+            }
+
+            // Update CSV export URLs
+            const params = new URLSearchParams();
+            if (selectedUe !== "all") params.set("ueId", selectedUe);
+            if (startDate) params.set("startDate", startDate);
+            if (endDate) params.set("endDate", endDate);
+
+            const queryStr = params.toString();
+            const exportUrl = queryStr ? `/admin/ue/export-csv?${queryStr}` : `/admin/ue/export-csv`;
+
+            if (exportFilteredCsvBtn) exportFilteredCsvBtn.href = exportUrl;
+            if (topExportCsvBtn) topExportCsvBtn.href = exportUrl;
+          }
+
+          if (filterLogUe) filterLogUe.addEventListener("change", applyLogFilters);
+          if (filterLogStartDate) filterLogStartDate.addEventListener("change", applyLogFilters);
+          if (filterLogEndDate) filterLogEndDate.addEventListener("change", applyLogFilters);
+
+          if (clearLogFilterBtn) {
+            clearLogFilterBtn.addEventListener("click", () => {
+              if (filterLogUe) filterLogUe.value = "all";
+              if (filterLogStartDate) filterLogStartDate.value = "";
+              if (filterLogEndDate) filterLogEndDate.value = "";
+              applyLogFilters();
+            });
+          }
         });
       </script>
     </main>

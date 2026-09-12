@@ -11,6 +11,7 @@ const fs = require("fs");
 
 const loadPlugins = require("./core/pluginLoader");
 const hookManager = require("./core/HookManager");
+const settingsService = require("./services/settingsService");
 loadPlugins();
 
 dotenv.config();
@@ -85,12 +86,39 @@ app.use(
   }),
 );
 
-// Add session data to response locals for easier access in templates
-app.use((req, res, next) => {
-  res.locals.role = req.session.role;
-  res.locals.username = req.session.username;
-  res.locals.isPluginUeEnabled = hookManager.isPluginEnabled("ue");
-  next();
+// System settings middleware: inject settings and apply dynamic session timeout & plugin sync
+app.use(async (req, res, next) => {
+  try {
+    const settings = await settingsService.getSettings();
+    res.locals.settings = settings;
+    res.locals.platformName = settings.platform_name || "FabtrackJS";
+    res.locals.platformSubtitle = settings.platform_subtitle || "Track your fablab's activity";
+    res.locals.platformLogoType = settings.platform_logo_type || "default";
+    res.locals.platformLogoPath = settings.platform_logo_path || "";
+    res.locals.platformFaviconPath = settings.platform_favicon_path || "";
+    res.locals.currencySymbol = settings.currency_symbol || "€";
+
+    // Sync plugin states with settings
+    const isUeEnabled = settings.plugin_ue_enabled !== "false";
+    hookManager.setPluginEnabled("ue", isUeEnabled);
+    res.locals.isPluginUeEnabled = isUeEnabled;
+
+    // Apply dynamic session timeout if configured
+    if (req.session && req.session.cookie) {
+      const timeoutHours = parseInt(settings.session_timeout_hours || "24", 10);
+      if (!isNaN(timeoutHours) && timeoutHours > 0) {
+        req.session.cookie.maxAge = timeoutHours * 3600 * 1000;
+      }
+    }
+
+    res.locals.role = req.session ? req.session.role : undefined;
+    res.locals.username = req.session ? req.session.username : undefined;
+
+    next();
+  } catch (err) {
+    console.error("Error in settings middleware:", err);
+    next();
+  }
 });
 
 // Workspace middleware

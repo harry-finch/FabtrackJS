@@ -101,6 +101,8 @@ router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
       url: project.url,
       type: project.projecttypeId,
       teachingUnitId: project.teachingUnitId,
+      unregisteredUeName: project.unregisteredUeName,
+      unregisteredUeContact: project.unregisteredUeContact,
       group: "all",
     });
   });

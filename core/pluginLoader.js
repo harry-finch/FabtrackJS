@@ -16,15 +16,11 @@ function loadPlugins() {
       const isEnabledByEnv = process.env[envKey] !== undefined ? process.env[envKey] !== "false" && process.env[envKey] !== "0" : true;
       const isExplicitlyEnabled = plugin.enabled !== false && isEnabledByEnv;
 
-      if (!isExplicitlyEnabled) {
-        console.log(`Plugin ${plugin.name || file} is disabled.`);
-        return;
-      }
+      plugin.enabled = isExplicitlyEnabled;
+      hookManager.registerPlugin(plugin);
 
       if (typeof plugin.register === "function") {
-        console.log(`Loading plugin: ${plugin.name} version ${plugin.version}`);
-        plugin.enabled = true;
-        hookManager.registerPlugin(plugin);
+        console.log(`Loading plugin: ${plugin.name} version ${plugin.version} (enabled: ${isExplicitlyEnabled})`);
         plugin.register(hookManager); // Pass hookManager to the plugin
       } else {
         console.error(`Invalid plugin: ${file} (missing 'register' function)`);
