@@ -270,6 +270,43 @@ main.main-container {
     overflow: hidden;
 }
 
+/* Dark Mode support for Table Headers & table-light across all pages */
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .table thead,
+[data-bs-theme="dark"] .table thead th,
+[data-bs-theme="dark"] .table thead.table-light,
+[data-bs-theme="dark"] .table thead.table-light th,
+[data-bs-theme="dark"] .table thead.table-light td,
+[data-bs-theme="dark"] .table tfoot.table-light,
+[data-bs-theme="dark"] .table tfoot.table-light th,
+[data-bs-theme="dark"] .table tfoot.table-light td {
+    --bs-table-color: var(--bs-secondary-color);
+    --bs-table-bg: var(--bs-tertiary-bg);
+    --bs-table-border-color: var(--bs-border-color);
+    background-color: var(--bs-tertiary-bg) !important;
+    color: var(--bs-secondary-color) !important;
+    border-color: var(--bs-border-color) !important;
+    box-shadow: inset 0 0 0 9999px var(--bs-tertiary-bg) !important;
+}
+
+[data-bs-theme="dark"] .table thead th a,
+[data-bs-theme="dark"] .table thead th i,
+[data-bs-theme="dark"] .table thead th span {
+    color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .table thead th:hover,
+[data-bs-theme="dark"] .table th[onclick]:hover,
+[data-bs-theme="dark"] .table th[data-sort]:hover {
+    color: var(--bs-primary) !important;
+}
+
+[data-bs-theme="dark"] .table thead th:hover i,
+[data-bs-theme="dark"] .table th[onclick]:hover i,
+[data-bs-theme="dark"] .table th[data-sort]:hover i {
+    color: var(--bs-primary) !important;
+}
+
 /* Platform-wide Buttons & Badges */
 .btn {
     font-size: 0.885rem;
