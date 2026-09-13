@@ -12,7 +12,15 @@
     crossorigin="anonymous"
 />
 <link rel="stylesheet" href="stylesheets/main.css" />
-<link rel="icon" type="image/svg+xml" href="<%= typeof platformFaviconPath !== 'undefined' && platformFaviconPath ? platformFaviconPath : '/favicon.svg' %>" />
-<link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
+<% const favPath = typeof platformFaviconPath !== 'undefined' && platformFaviconPath ? platformFaviconPath : ''; %>
+<% if (favPath) { %>
+<link rel="icon" href="<%= favPath %>" />
+<% } else { %>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=2" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=2" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2" />
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon.png?v=2" />
+<% } %>
+
 

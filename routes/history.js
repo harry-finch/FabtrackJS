@@ -334,6 +334,45 @@ router.post(
 );
 
 // ******************************************************************************
+// Route to update a history entry's comments (e.g. from kiosk modal)
+// ******************************************************************************
+
+router.post(
+  "/update-comment",
+  asyncHandler(async (req, res) => {
+    if (req.session.role === "staff") {
+      req.session.notification = "Warning: La modification des commentaires est réservée aux médiateurs.";
+      return res.redirect(req.session.lastPage || "/fabtrack");
+    }
+
+    const { historyid, comments } = req.body;
+
+    if (!historyid) {
+      req.session.notification = "Error: Identifiant de session manquant.";
+      return res.redirect(req.session.lastPage || "/fabtrack");
+    }
+
+    try {
+      const trimmedComments = comments && typeof comments === "string" ? comments.trim() : null;
+      await prisma.history.update({
+        where: { id: Number(historyid) },
+        data: {
+          comments: trimmedComments && trimmedComments.length > 0 ? trimmedComments : null,
+        },
+      });
+
+      req.session.notification = "Success: Commentaire mis à jour avec succès.";
+    } catch (error) {
+      console.error("Error updating history comment:", error);
+      req.session.notification = "Error: Impossible de mettre à jour le commentaire.";
+    }
+
+    res.redirect(req.session.lastPage || "/fabtrack");
+  }),
+);
+
+
+// ******************************************************************************
 // Route to unarchive a project
 // ******************************************************************************
 

@@ -287,13 +287,23 @@
                                             <% if (isStaffRole) { %>
                                                 <span class="text-muted small">-</span>
                                             <% } else { %>
-                                                <% if ( entry.comments ) { %>
-                                                    <span   data-bs-toggle="tooltip" data-bs-placement="top"
-                                                                data-bs-custom-class="custom-tooltip"
-                                                                data-bs-title="<%= entry.comments %>"><i class="fa-solid fa-comment-lines text-primary"></i></span>
-                                                <% } else { %>
-                                                <i class="fa-regular fa-comment text-muted"></i>
-                                                <% } %>
+                                                <a href="#" 
+                                                   class="comment-action-btn text-decoration-none"
+                                                   data-bs-toggle="modal" 
+                                                   data-bs-target="#modalComment"
+                                                   data-bs-historyid="<%= entry.id %>"
+                                                   data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                                   data-bs-comment="<%- encodeURIComponent(entry.comments || '') %>">
+                                                    <% if ( entry.comments ) { %>
+                                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Modifier le commentaire : <%= entry.comments %>">
+                                                            <i class="fa-solid fa-comment-dots text-primary fs-5"></i>
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Ajouter un commentaire">
+                                                            <i class="fa-regular fa-comment text-secondary opacity-50 comment-empty-icon fs-5"></i>
+                                                        </span>
+                                                    <% } %>
+                                                </a>
                                             <% } %>
                                         </td>
                                         <td class="text-center">
@@ -339,6 +349,51 @@
                     </div>
                 </div>
                 <% } %>
+
+                <!-- Modal to view/edit/add comments on a user session -->
+                <div class="modal fade" id="modalComment" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCommentLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <form action="/history/update-comment" method="post" id="formComment">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="modal-title fw-bold" id="modalCommentLabel">
+                                        <i class="fa-solid fa-comment-dots text-primary me-2"></i>Commentaire de session
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                </div>
+                                <div class="modal-body pt-3">
+                                    <div class="mb-3 p-3 bg-body-tertiary rounded-3 border">
+                                        <div class="small text-muted mb-1">Usager</div>
+                                        <div class="fw-semibold fs-6" id="commentModalUserName">-</div>
+                                    </div>
+
+                                    <input type="hidden" name="historyid" id="commentModalHistoryId" value="">
+
+                                    <div class="mb-2">
+                                        <label for="commentModalText" class="form-label fw-semibold small">
+                                            Remarques / Précisions sur la session
+                                        </label>
+                                        <textarea class="form-control" id="commentModalText" name="comments" rows="4" placeholder="Saisissez un commentaire (ex: découpe laser 3mm, aide au montage, projet étudiant...)"></textarea>
+                                        <div class="form-text text-muted small">
+                                            Laissez vide ou cliquez sur « Effacer » pour supprimer le commentaire.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" id="commentModalClearBtn" title="Vider le champ texte">
+                                        <i class="fa-solid fa-eraser me-1"></i>Effacer
+                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                            <i class="fa-solid fa-check me-1"></i>Enregistrer
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Modal to clear balance -->
                 <div class="modal fade" id="clearBalance" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

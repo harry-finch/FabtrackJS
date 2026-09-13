@@ -307,6 +307,50 @@ main.main-container {
     color: var(--bs-primary) !important;
 }
 
+/* Comment Action Button in Kiosk Table */
+.comment-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.comment-action-btn:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+.comment-action-btn:hover .comment-empty-icon {
+    color: var(--bs-primary) !important;
+    opacity: 1 !important;
+    transform: scale(1.18);
+}
+
+.comment-action-btn:hover .fa-solid {
+    transform: scale(1.18);
+    transition: transform 0.2s ease;
+}
+
+.comment-action-btn i {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Auth Pages Logo (Login, Register, Forgot, Reset) */
+.app-auth-logo {
+    width: 75px;
+    height: auto;
+    max-height: 60px;
+    object-fit: contain;
+    transition: filter 0.25s ease, transform 0.25s ease;
+}
+
+[data-bs-theme="dark"] .app-auth-logo {
+    filter: brightness(0) saturate(100%) invert(48%) sepia(82%) saturate(2548%) hue-rotate(202deg) brightness(101%) contrast(98%);
+}
+
+
 /* Platform-wide Buttons & Badges */
 .btn {
     font-size: 0.885rem;

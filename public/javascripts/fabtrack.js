@@ -492,6 +492,63 @@ if (clearBalance) {
   });
 }
 
+// ******************************************************************************
+// Comment Modal Handler (kiosk table)
+// ******************************************************************************
+const modalComment = document.getElementById("modalComment");
+if (modalComment) {
+  modalComment.addEventListener("show.bs.modal", (event) => {
+    const button = event.relatedTarget;
+    if (!button) return;
+
+    // Hide any active tooltips to prevent leftover tooltip popups
+    const tooltipEl = button.querySelector("[data-bs-toggle='tooltip']") || button;
+    if (typeof bootstrap !== "undefined" && bootstrap.Tooltip) {
+      const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipEl);
+      if (tooltipInstance) {
+        tooltipInstance.hide();
+      }
+    }
+
+    const historyid = button.getAttribute("data-bs-historyid");
+    const user = button.getAttribute("data-bs-user");
+    let comment = button.getAttribute("data-bs-comment") || "";
+    try {
+      comment = decodeURIComponent(comment);
+    } catch (e) {
+      // ignore decode error if raw
+    }
+
+    const historyInput = document.getElementById("commentModalHistoryId");
+    const userNameEl = document.getElementById("commentModalUserName");
+    const commentText = document.getElementById("commentModalText");
+
+    if (historyInput) historyInput.value = historyid || "";
+    if (userNameEl) userNameEl.textContent = user || "Usager";
+    if (commentText) commentText.value = comment;
+  });
+
+  modalComment.addEventListener("shown.bs.modal", () => {
+    const commentText = document.getElementById("commentModalText");
+    if (commentText) {
+      commentText.focus();
+      commentText.setSelectionRange(commentText.value.length, commentText.value.length);
+    }
+  });
+
+  const clearBtn = document.getElementById("commentModalClearBtn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      const commentText = document.getElementById("commentModalText");
+      if (commentText) {
+        commentText.value = "";
+        commentText.focus();
+      }
+    });
+  }
+}
+
+
 // ==============================================================================
 // Consumable Autocomplete & Live Estimation for Activity Manager
 // ==============================================================================
