@@ -67,11 +67,27 @@ I built the first two thirds of this version in 2023 with little to no AI-help. 
   - Machine breakdown & incident alerts.
 - Live visual previews of email templates in the admin interface.
 
-### 🎨 Customizable Branding & Settings (`/admin/settings`)
+### 🌐 Internationalization (i18n) & Dynamic Translation
+- Native multilingual support with dynamic locale detection.
+- Fast language switcher in the bottom-right corner displaying flags and native names.
+- **Dynamic CSV Export & Import Workflow** (`/admin/settings`):
+  - Export all platform strings into a clean, UTF-8 BOM encoded spreadsheet (`translations.csv`) compatible with Microsoft Excel, LibreOffice, and Google Sheets.
+  - Re-import updated translations directly through the web UI or CLI (`npm run i18n:import`).
+  - **Automatic Language Creation**: adding a new column (e.g. `ES`, `DE`, `IT`) to the CSV automatically creates the corresponding language files and registers it throughout the entire platform.
+  - Safe fallback system: untranslated phrases automatically fallback to French without breaking layouts.
+
+### 🎨 Customizable Branding & Regional Settings (`/admin/settings`)
 - Custom platform name and subtitle.
 - Logo and favicon upload with automatic SVG/PNG/ICO handling.
+- **Configurable Date Display Format**:
+  - `JJ/MM/AAAA` (French standard — default)
+  - `AAAA-MM-JJ` (ISO 8601 standard)
+  - `MM/JJ/AAAA` (US standard)
+  - `JJ.MM.AAAA` (Swiss / German standard)
+  - `Format long` (e.g., 13 septembre 2026)
+  - Synchronized with French and English locales across all histories, profiles, and logs.
 - Dynamic session expiration timeout.
-- Configurable currency symbol.
+- Configurable currency symbol (€, $, CHF, etc.).
 - Configurable project type mappings for specialized plugins.
 
 ---
@@ -241,6 +257,8 @@ Access the application in your browser at `http://localhost:3000`.
 | **Template Engine** | EJS |
 | **CSS & Components** | Bootstrap 5, FontAwesome 6 |
 | **Authentication** | Express Session + Bcrypt |
+| **Localization (i18n)** | node-i18n + Dynamic CSV Engine |
+| **Date & Time** | Moment.js + Centralized DateService |
 | **File Uploads** | Multer |
 | **Email Delivery** | Nodemailer |
 | **Security** | Helmet, CSRF/Honeypot, CSP |

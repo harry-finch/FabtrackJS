@@ -12,10 +12,12 @@ Welcome to the **FabtrackJS** development guide. This document serves as a compr
 4. [Routing & Middleware Conventions](#4-routing--middleware-conventions)
 5. [Cache & Session Lifecycle](#5-cache--session-lifecycle)
 6. [Plugin Architecture & HookManager](#6-plugin-architecture--hookmanager)
-7. [Email & Notification Subsystem](#7-email--notification-subsystem)
-8. [File Uploads with Multer](#8-file-uploads-with-multer)
-9. [UI & Templating Guidelines (EJS & Bootstrap 5)](#9-ui--templating-guidelines-ejs--bootstrap-5)
-10. [AI Agent Verification & Troubleshooting Checklist](#10-ai-agent-verification--troubleshooting-checklist)
+7. [Internationalization (i18n) & Dynamic CSV Workflow](#7-internationalization-i18n--dynamic-csv-workflow)
+8. [Date & Time Formatting (dateService)](#8-date--time-formatting-dateservice)
+9. [Email & Notification Subsystem](#9-email--notification-subsystem)
+10. [File Uploads with Multer](#10-file-uploads-with-multer)
+11. [UI & Templating Guidelines (EJS & Bootstrap 5)](#11-ui--templating-guidelines-ejs--bootstrap-5)
+12. [AI Agent Verification & Troubleshooting Checklist](#12-ai-agent-verification--troubleshooting-checklist)
 
 ---
 
@@ -24,9 +26,10 @@ Welcome to the **FabtrackJS** development guide. This document serves as a compr
 FabtrackJS is built on Node.js and Express with a layered architecture:
 
 - **Data Access Layer**: MySQL accessed exclusively via **Prisma ORM** (`@prisma/client`).
-- **Service Layer (`services/`)**: Encapsulates business logic, external API integrations, email dispatching, and system settings.
+- **Service Layer (`services/`)**: Encapsulates business logic, external API integrations, email dispatching, internationalization, date formatting, and system settings.
 - **Routing Layer (`routes/`)**: Automatically discovered and recursively mounted based on filesystem structure.
 - **Extensibility Layer (`plugins/` & `core/HookManager.js`)**: Decoupled feature modules hook into system lifecycle events without mutating core controllers.
+- **Localization Layer (`locales/`, `config/i18n.js`, `services/i18nService.js`)**: Dynamic multi-language catalog with CSV export/import and automated language creation.
 - **Presentation Layer (`views/`)**: Server-side rendered EJS templates styled with Bootstrap 5, FontAwesome 6, and custom modern CSS variables supporting dark/light modes.
 
 ---
@@ -37,10 +40,15 @@ FabtrackJS is built on Node.js and Express with a layered architecture:
 FabtrackJS/
 ├── bin/
 │   └── www                       # HTTP server entrypoint (port binding, startup)
+├── config/
+│   └── i18n.js                   # Dynamic i18n configuration & runtime locale reloader
 ├── core/
 │   ├── HookManager.js            # Central hook registry and async event dispatcher
 │   ├── hookLoader.js             # Discovers and registers hooks
 │   └── pluginLoader.js           # Auto-loads plugins from plugins/ directory
+├── locales/                      # Active JSON translation catalogs (fr.json, en.json, ...)
+│   ├── fr.json                   # French source translations (default fallback)
+│   └── en.json                   # English translations
 ├── middleware/
 │   ├── asyncHandler.js           # Wraps async routes to forward errors to next()
 │   ├── checkAdmin.js             # Protects admin routes (requires role === 'admin')
@@ -63,15 +71,19 @@ FabtrackJS/
 │   ├── admin/                    # Admin management endpoints (/admin/*)
 │   │   ├── emails.js             # SMTP settings & notification toggles
 │   │   ├── machines.js           # Machine catalog & history views
-│   │   ├── settings.js           # Platform branding & general configuration
+│   │   ├── settings.js           # Platform branding, i18n, & general configuration
 │   │   ├── staff.js              # Staff permissions & account management
 │   │   └── ...                   # Consumables, workshops, categories, etc.
 │   ├── fabtrack.js               # Visitor kiosk check-in / check-out interface
 │   ├── report-issue.js           # Public responsive machine issue reporting
 │   ├── users.js                  # User profile and history management
-│   └── index.js                  # Authentication (login, logout, password reset)
+│   └── index.js                  # Auth, language switcher (/change-language/:lang)
+├── scripts/
+│   └── i18n-csv.js               # CLI script for npm run i18n:export & i18n:import
 ├── services/                     # Business logic services (singletons)
 │   ├── settingsService.js        # Persistent platform settings (cached)
+│   ├── dateService.js            # Centralized date/time formatting & moment locales
+│   ├── i18nService.js            # CSV spreadsheet import/export & dynamic language engine
 │   ├── mailService.js            # Nodemailer transport & HTML layout rendering
 │   ├── bookstackService.js       # BookStack REST API integration
 │   ├── repairCafeService.js      # Repair café statistics & operations
@@ -87,7 +99,8 @@ FabtrackJS/
 │   ├── public/                   # Public unauthenticated views (report-issue.ejs)
 │   └── index/                    # Auth views (login.ejs, register.ejs, reset.ejs)
 ├── app.js                        # Express app initialization, middleware, routes loader
-├── package.json                  # Dependencies and scripts
+├── package.json                  # Dependencies and scripts (i18n:export, i18n:import)
+├── translations.csv              # Single-file translation spreadsheet (UTF-8 BOM)
 └── .env                          # Local environment variables
 ```
 
@@ -201,7 +214,69 @@ res.locals.isMyPluginEnabled = isEnabled;
 
 ---
 
-## 7. Email & Notification Subsystem
+## 7. Internationalization (i18n) & Dynamic CSV Workflow
+
+FabtrackJS features a dynamic internationalization system powered by the `i18n` engine, configured in [config/i18n.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/config/i18n.js) and orchestrated by [services/i18nService.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/services/i18nService.js).
+
+### Architecture & Capabilities:
+- **Default & Fallback Locale**: French (`fr`) is the reference language and fallback if a translation string is missing.
+- **Dynamic Locale Discovery**: The platform dynamically scans the `locales/` directory for `*.json` files. When a new locale file is added, `i18n.refreshLocales()` registers it without requiring an application rewrite.
+- **Language Detection & Persistence**:
+  1. Cookie: `req.cookies.fabtrack_lang`
+  2. URL Query Param: `?lang=<code>` (automatically updates the cookie)
+  3. Header / Footer modal picker allows users to switch languages at any time.
+- **Dynamic CSV Import & Auto-Creation**:
+  - Exporting via CLI or Web creates a clean flattened CSV: `KEY,FR,EN,...`.
+  - Adding a new column (e.g., `ES`, `DE`, `IT`) to `translations.csv` and importing it will automatically create `locales/es.json` (or corresponding language), parse nested dot-notation keys, and immediately make that language selectable across the platform.
+
+### EJS Translation Pattern:
+In templates, always use the global `__` translation helper with defensive checks:
+```html
+<!-- Simple key translation -->
+<%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque' %>
+
+<!-- Translation with variable interpolation -->
+<%= typeof __ !== 'undefined' ? __('user.welcome', { name: user.firstname }) : `Bonjour ${user.firstname}` %>
+```
+
+### CLI Commands:
+```bash
+# Export all locale JSON files into translations.csv
+npm run i18n:export
+
+# Import translations.csv back into JSON locales and auto-create new languages
+npm run i18n:import
+```
+
+---
+
+## 8. Date & Time Formatting (dateService)
+
+Date and time presentation is centralized through [services/dateService.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/services/dateService.js), ensuring uniform formatting that respects both the system's configured date preset and the user's active language locale.
+
+### Configurable Date Presets:
+Configured via General Settings (`date_format_preset`):
+- `DD/MM/YYYY`: French / European (`JJ/MM/AAAA`)
+- `YYYY-MM-DD`: ISO (`AAAA-MM-JJ`)
+- `MM/DD/YYYY`: US Standard (`MM/JJ/AAAA`)
+- `DD.MM.YYYY`: Swiss / German (`JJ.MM.AAAA`)
+- `LL`: Long localized date (`14 septembre 2026` in FR / `September 14, 2026` in EN)
+
+### Available Helpers on `res.locals`:
+Middleware in `app.js` injects date helpers into every template:
+- `formatDate(date, [presetKey])`: Formats date only according to the active setting.
+- `formatDateTime(date, [presetKey])`: Formats date and time (`HH:mm`).
+- `formatTime(date)`: Formats time only (`HH:mm`).
+
+### Usage in EJS Templates:
+```html
+<span><%= formatDate(machine.createdAt) %></span>
+<span><%= formatDateTime(reservation.startTime) %></span>
+```
+
+---
+
+## 9. Email & Notification Subsystem
 
 Automated emails are handled via `services/mailService.js` backed by `nodemailer`.
 
@@ -222,7 +297,7 @@ Automated emails are handled via `services/mailService.js` backed by `nodemailer
 
 ---
 
-## 8. File Uploads with Multer
+## 10. File Uploads with Multer
 
 Uploads are served statically via `/uploads` mapped to `uploads/`.
 
@@ -257,7 +332,7 @@ const upload = multer({
 
 ---
 
-## 9. UI & Templating Guidelines (EJS & Bootstrap 5)
+## 11. UI & Templating Guidelines (EJS & Bootstrap 5)
 
 FabtrackJS uses server-side rendered EJS templates.
 
@@ -286,15 +361,15 @@ FabtrackJS uses server-side rendered EJS templates.
 ```
 
 ### Visual & Component Standards:
-- **Language**: Standard user interface copy must be written in **French** (labels, buttons, modal titles, error messages).
+- **Language**: Standard user interface copy must be written in **French** (labels, buttons, modal titles, error messages) and wrapped in i18n translation functions where dynamic localization is desired.
 - **Pill Badges**: Use rounded pill badges (`rounded-pill px-2.5 py-1`) with soft semantic colors (`bg-primary-subtle text-primary border border-primary-subtle`).
 - **Icons**: Use FontAwesome 6 icons (`fa-solid fa-...`).
-- **Header Actions**: Action buttons in header use `.header-action-btn` and `.header-icon-circle`.
+- **Header Actions**: Action buttons in header use `.header-action-btn` and `.header-icon-circle`. Tooltips should be used for compact icon-only action bars.
 - **Card Aesthetics**: Cards should feature subtle borders (`border-0 shadow-sm rounded-3` or `border rounded-3 bg-body`).
 
 ---
 
-## 10. AI Agent Verification & Troubleshooting Checklist
+## 12. AI Agent Verification & Troubleshooting Checklist
 
 Before concluding any coding task, an AI agent must perform the following validation steps:
 
@@ -319,3 +394,4 @@ Before concluding any coding task, an AI agent must perform the following valida
    ```
 5. **Git Hygiene**:
    Run `git status` to verify that no temporary or unintended test artifacts remain unstaged or untracked.
+
