@@ -10,7 +10,7 @@ module.exports = {
   name: "Plugin Ateliers",
   version: "1.0.0",
   envKey: "ENABLE_PLUGIN_WORKSHOP",
-  description: "Gestion des visites d'ateliers : sélection de l'atelier suivi lors de l'enregistrement et attribution automatique du badge et de l'habilitation machine sur le profil de l'usager.",
+  description: "Gestion des visites d'ateliers.",
 
   register(hookManager) {
     const workshopService = require("../services/workshopService.js");
