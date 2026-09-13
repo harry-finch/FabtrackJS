@@ -132,86 +132,95 @@
                         </div>
                     </div>
 
-                    <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                    <!-- UE Plugin Card -->
                     <div class="col">
-                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm <%= (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) ? '' : 'plugin-disabled' %>">
                             <div class="card-body d-flex flex-column p-3">
                                 <div class="d-flex align-items-center mb-2">
-                                    <div class="icon-box bg-danger-subtle text-danger me-2">
+                                    <div class="icon-box <%= (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) ? 'bg-danger-subtle text-danger' : 'bg-body-secondary text-secondary-emphasis' %> me-2">
                                         <i class="fa-solid fa-graduation-cap"></i>
                                     </div>
                                     <div class="min-w-0">
                                         <div class="d-flex align-items-center gap-1">
                                             <h6 class="fw-bold mb-0 text-truncate">Unités d'Ens.</h6>
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">UE</span>
+                                            <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">UE</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><i class="fa-solid fa-power-off me-1"></i>Désactivé</span>
+                                            <% } %>
                                         </div>
                                         <small class="text-muted text-truncate">Projets académiques</small>
                                     </div>
                                 </div>
                                 <p class="card-text text-secondary small flex-grow-1">Codes UE et exports de refacturation Sorbonne</p>
                                 <div class="pt-2 mt-auto">
-                                    <a href="/admin/ue" class="btn btn-outline-danger btn-sm w-100 rounded-pill">
-                                        Gérer les UE <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    <a href="/admin/ue" class="btn <%= (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) ? 'btn-outline-danger' : 'btn-outline-secondary' %> btn-sm w-100 rounded-pill">
+                                        <%= (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) ? 'Gérer les UE' : 'Gérer les UE (Désactivé)' %> <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <% } %>
 
-                    <% if (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) { %>
+                    <!-- BookStack Plugin Card -->
                     <div class="col">
-                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? '' : 'plugin-disabled' %>">
                             <div class="card-body d-flex flex-column p-3">
                                 <div class="d-flex align-items-center mb-2">
-                                    <div class="icon-box bg-primary-subtle text-primary me-2">
+                                    <div class="icon-box <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? 'bg-primary-subtle text-primary' : 'bg-body-secondary text-secondary-emphasis' %> me-2">
                                         <i class="fa-solid fa-book"></i>
                                     </div>
                                     <div class="min-w-0">
                                         <div class="d-flex align-items-center gap-1">
                                             <h6 class="fw-bold mb-0 text-truncate">BookStack</h6>
-                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.65rem;">Wiki</span>
+                                            <% if (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) { %>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.65rem;">Wiki</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><i class="fa-solid fa-power-off me-1"></i>Désactivé</span>
+                                            <% } %>
                                         </div>
                                         <small class="text-muted text-truncate">Documentation</small>
                                     </div>
                                 </div>
                                 <p class="card-text text-secondary small flex-grow-1">Suivi de fraîcheur documentaire et clés API du wiki</p>
                                 <div class="pt-2 mt-auto">
-                                    <a href="/admin/bookstack" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
-                                        BookStack <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    <a href="/admin/bookstack" class="btn <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? 'btn-outline-primary' : 'btn-outline-secondary' %> btn-sm w-100 rounded-pill">
+                                        <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? 'BookStack' : 'BookStack (Désactivé)' %> <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <% } %>
 
-                    <% if (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) { %>
+                    <!-- Repair Café Plugin Card -->
                     <div class="col">
-                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm <%= (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) ? '' : 'plugin-disabled' %>">
                             <div class="card-body d-flex flex-column p-3">
                                 <div class="d-flex align-items-center mb-2">
-                                    <div class="icon-box bg-warning-subtle text-warning-emphasis me-2">
+                                    <div class="icon-box <%= (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) ? 'bg-warning-subtle text-warning-emphasis' : 'bg-body-secondary text-secondary-emphasis' %> me-2">
                                         <i class="fa-solid fa-wrench"></i>
                                     </div>
                                     <div class="min-w-0">
                                         <div class="d-flex align-items-center gap-1">
                                             <h6 class="fw-bold mb-0 text-truncate">Repair Café</h6>
-                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.65rem;">Atelier</span>
+                                            <% if (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) { %>
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.65rem;">Atelier</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><i class="fa-solid fa-power-off me-1"></i>Désactivé</span>
+                                            <% } %>
                                         </div>
                                         <small class="text-muted text-truncate">Réparations & bilans</small>
                                     </div>
                                 </div>
                                 <p class="card-text text-secondary small flex-grow-1">Historique des réparations, taux de succès et visiteurs</p>
                                 <div class="pt-2 mt-auto">
-                                    <a href="/admin/repair-cafe" class="btn btn-outline-warning btn-sm w-100 rounded-pill">
-                                        Repair Café <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    <a href="/admin/repair-cafe" class="btn <%= (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) ? 'btn-outline-warning' : 'btn-outline-secondary' %> btn-sm w-100 rounded-pill">
+                                        <%= (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) ? 'Repair Café' : 'Repair Café (Désactivé)' %> <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <% } %>
                 </div>
             </div>
 
@@ -266,22 +275,30 @@
                         </div>
                     </div>
 
+                    <!-- Workshops (Ateliers) Plugin Card -->
                     <div class="col">
-                        <div class="card card-dashboard h-100 border-0 shadow-sm">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm <%= (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) ? '' : 'plugin-disabled' %>">
                             <div class="card-body d-flex flex-column p-3">
                                 <div class="d-flex align-items-center mb-2">
-                                    <div class="icon-box bg-primary-subtle text-primary me-2">
-                                        <i class="fa-solid fa-graduation-cap"></i>
+                                    <div class="icon-box <%= (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) ? 'bg-primary-subtle text-primary' : 'bg-body-secondary text-secondary-emphasis' %> me-2">
+                                        <i class="fa-solid fa-chalkboard-user"></i>
                                     </div>
                                     <div class="min-w-0">
-                                        <h6 class="fw-bold mb-0 text-truncate">Ateliers</h6>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <h6 class="fw-bold mb-0 text-truncate">Ateliers</h6>
+                                            <% if (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) { %>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.65rem;">Plugin</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><i class="fa-solid fa-power-off me-1"></i>Désactivé</span>
+                                            <% } %>
+                                        </div>
                                         <small class="text-muted text-truncate">Formations & badges</small>
                                     </div>
                                 </div>
                                 <p class="card-text text-secondary small flex-grow-1">Gestion des ateliers, intérêts et initiations</p>
                                 <div class="pt-2 mt-auto">
-                                    <a href="/admin/workshops/manage" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
-                                        Ateliers <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    <a href="/admin/workshops/manage" class="btn <%= (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) ? 'btn-outline-secondary' : 'btn-outline-secondary' %> btn-sm w-100 rounded-pill">
+                                        <%= (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) ? 'Ateliers' : 'Ateliers (Désactivé)' %> <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
                                     </a>
                                 </div>
                             </div>
