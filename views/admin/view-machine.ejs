@@ -34,7 +34,7 @@
                   </span>
                 <% } %>
               </div>
-              <p class="text-muted small mb-0"><%= machine.brand %> <%= machine.model %> &bull; <%= machine.location ? machine.location.name : 'Emplacement non défini' %></p>
+              <p class="text-muted small mb-0"><%= machine.make || '' %> <%= machine.model || '' %> &bull; <%= machine.location ? machine.location.name : 'Emplacement non défini' %></p>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">

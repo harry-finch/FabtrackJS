@@ -50,12 +50,12 @@
           <form action="/admin/equipment/create" method="post" class="row g-2 align-items-center">
             <div class="col-md-5 col-sm-6">
               <div class="input-group">
-                <span class="input-group-text bg-body-secondary border-end-0">
+                <span class="input-group-text bg-body-secondary">
                   <i class="fa-solid fa-wrench text-muted"></i>
                 </span>
                 <input
                   type="text"
-                  class="form-control border-start-0"
+                  class="form-control"
                   id="name"
                   name="name"
                   placeholder="Nom de l'outil (ex: Dremel, Multimètre...)"
@@ -66,10 +66,10 @@
             </div>
             <div class="col-md-4 col-sm-6">
               <div class="input-group">
-                <span class="input-group-text bg-body-secondary border-end-0">
+                <span class="input-group-text bg-body-secondary">
                   <i class="fa-solid fa-cube text-muted"></i>
                 </span>
-                <select class="form-select border-start-0" id="workspaceId" name="workspaceId">
+                <select class="form-select" id="workspaceId" name="workspaceId">
                   <option value="">-- Aucun espace / Partagé --</option>
                   <% workspaces.forEach(function(ws) { %>
                     <option value="<%= ws.id %>"><%= ws.name %></option>

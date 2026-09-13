@@ -144,7 +144,6 @@ main.main-container {
 
 .input-group-text {
     margin-left: -1px;
-    z-index: -10;
 }
 
 .input-group-icon {

@@ -450,7 +450,7 @@ router.post(
       req.session.notification = "Error: Impossible d'enregistrer l'intérêt.";
     }
 
-    res.redirect(`/users/edit/${id}#collapseFive`);
+    res.redirect(`/users/edit/${id}#collapseInterests`);
   }),
 );
 
@@ -474,7 +474,7 @@ router.get(
       req.session.notification = "Error: Impossible de retirer l'intérêt.";
     }
 
-    res.redirect(`/users/edit/${id}#collapseFive`);
+    res.redirect(`/users/edit/${id}#collapseInterests`);
   }),
 );
 
@@ -482,10 +482,30 @@ router.post(
   "/:id/workshop-badge/award",
   clearNotification,
   asyncHandler(async (req, res) => {
+    if (req.session.role !== "admin" && req.session.role !== "mediateur") {
+      req.session.notification = "Error: Seuls les administrateurs et médiateurs peuvent attribuer une habilitation.";
+      return res.redirect(`/users/edit/${req.params.id}`);
+    }
+
     const { id } = req.params;
-    const { workshopId, removeInterest } = req.body;
+    const { workshopId, removeInterest, awardedAt, awardedBy } = req.body;
     const uId = Number(id);
     const wId = Number(workshopId);
+
+    if (!wId || isNaN(wId)) {
+      req.session.notification = "Error: Atelier ou habilitation non valide.";
+      return res.redirect(`/users/edit/${id}#collapseInterests`);
+    }
+
+    let completionDate = new Date();
+    if (awardedAt) {
+      const parsedDate = new Date(awardedAt);
+      if (!isNaN(parsedDate.getTime())) {
+        completionDate = parsedDate;
+      }
+    }
+
+    const whoAwarded = (awardedBy && awardedBy.trim()) ? awardedBy.trim() : (req.session.username || "Admin");
 
     try {
       await prisma.userWorkshopCompletion.upsert({
@@ -498,11 +518,12 @@ router.post(
         create: {
           userId: uId,
           workshopId: wId,
-          awardedBy: req.session.username || "Staff",
+          awardedAt: completionDate,
+          awardedBy: whoAwarded,
         },
         update: {
-          awardedAt: new Date(),
-          awardedBy: req.session.username || "Staff",
+          awardedAt: completionDate,
+          awardedBy: whoAwarded,
         },
       });
 
@@ -515,13 +536,13 @@ router.post(
         });
       }
 
-      req.session.notification = "Success: Atelier validé et badge d'habilitation attribué avec succès !";
+      req.session.notification = "Success: Atelier validé et habilitation attribuée avec succès !";
     } catch (error) {
       console.error("Error awarding workshop badge:", error);
-      req.session.notification = "Error: Impossible d'attribuer le badge.";
+      req.session.notification = "Error: Impossible d'attribuer l'habilitation.";
     }
 
-    res.redirect(`/users/edit/${id}#collapseFive`);
+    res.redirect(`/users/edit/${id}#collapseInterests`);
   }),
 );
 
@@ -529,6 +550,11 @@ router.get(
   "/:id/workshop-badge/revoke/:workshopId",
   clearNotification,
   asyncHandler(async (req, res) => {
+    if (req.session.role !== "admin" && req.session.role !== "mediateur") {
+      req.session.notification = "Error: Seuls les administrateurs et médiateurs peuvent révoquer une habilitation.";
+      return res.redirect(`/users/edit/${req.params.id}`);
+    }
+
     const { id, workshopId } = req.params;
 
     try {
@@ -539,13 +565,13 @@ router.get(
         },
       });
 
-      req.session.notification = "Success: Badge d'atelier retiré.";
+      req.session.notification = "Success: Habilitation / Badge d'atelier retiré.";
     } catch (error) {
       console.error("Error revoking workshop badge:", error);
-      req.session.notification = "Error: Impossible de retirer le badge.";
+      req.session.notification = "Error: Impossible de retirer l'habilitation.";
     }
 
-    res.redirect(`/users/edit/${id}#collapseFive`);
+    res.redirect(`/users/edit/${id}#collapseInterests`);
   }),
 );
 

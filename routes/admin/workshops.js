@@ -5,6 +5,7 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const logger = require("../../utilities/simpleLogger.js");
 
 router.use(isAdmin);
 
@@ -75,6 +76,7 @@ router.get(
 
 router.post(
   "/create",
+  clearNotification,
   asyncHandler(async (req, res) => {
     const { name, description, accessId } = req.body;
 
@@ -87,13 +89,13 @@ router.post(
         },
       });
 
-      logger.logThat(`Workshop ${workshop.name} created by ${req.session.username}`);
-      req.session.notification = `Success: Workshop "${workshop.name}" created`;
+      await logger.logThat(`Workshop ${workshop.name} created by ${req.session.username}`);
+      req.session.notification = `Success: L'atelier "${workshop.name}" a été créé avec succès.`;
     } catch (error) {
       console.error("Error creating workshop:", error);
       req.session.notification = error.code === "P2002"
-        ? "Error: An atelier with this name already exists"
-        : "Error: Failed to create atelier";
+        ? "Error: Un atelier portant ce nom existe déjà."
+        : "Error: Impossible de créer l'atelier.";
     }
 
     res.redirect(req.session.lastPage || "/admin/workshops/manage");
@@ -106,6 +108,7 @@ router.post(
 
 router.post(
   "/update",
+  clearNotification,
   asyncHandler(async (req, res) => {
     const { workshopid, name, description, accessId } = req.body;
 
@@ -119,11 +122,11 @@ router.post(
         },
       });
 
-      logger.logThat(`Workshop ${workshop.name} updated by ${req.session.username}`);
-      req.session.notification = `Success: Workshop "${workshop.name}" updated`;
+      await logger.logThat(`Workshop ${workshop.name} updated by ${req.session.username}`);
+      req.session.notification = `Success: L'atelier "${workshop.name}" a été mis à jour avec succès.`;
     } catch (error) {
       console.error("Error updating workshop:", error);
-      req.session.notification = "Error: Failed to update atelier";
+      req.session.notification = "Error: Impossible de mettre à jour l'atelier.";
     }
 
     res.redirect(req.session.lastPage || "/admin/workshops/manage");
@@ -136,6 +139,7 @@ router.post(
 
 router.get(
   "/delete/:id",
+  clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -144,11 +148,11 @@ router.get(
         where: { id: Number(id) },
       });
 
-      logger.logThat(`Workshop ${workshop.name} deleted by ${req.session.username}`);
-      req.session.notification = `Success: Workshop "${workshop.name}" deleted`;
+      await logger.logThat(`Workshop ${workshop.name} deleted by ${req.session.username}`);
+      req.session.notification = `Success: L'atelier "${workshop.name}" a été supprimé.`;
     } catch (error) {
       console.error("Error deleting workshop:", error);
-      req.session.notification = "Error: Failed to delete atelier";
+      req.session.notification = "Error: Impossible de supprimer l'atelier.";
     }
 
     res.redirect(req.session.lastPage || "/admin/workshops/manage");
@@ -161,6 +165,7 @@ router.get(
 
 router.post(
   "/award-badge",
+  clearNotification,
   asyncHandler(async (req, res) => {
     const { userId, workshopId, removeInterest } = req.body;
     const uId = Number(userId);
@@ -199,11 +204,11 @@ router.post(
       const workshop = await prisma.workshop.findUnique({ where: { id: wId } });
       const user = await prisma.user.findUnique({ where: { id: uId } });
 
-      logger.logThat(`Badge for workshop "${workshop ? workshop.name : wId}" awarded to ${user ? user.name + " " + user.surname : uId} by ${req.session.username}`);
+      await logger.logThat(`Badge for workshop "${workshop ? workshop.name : wId}" awarded to ${user ? user.name + " " + user.surname : uId} by ${req.session.username}`);
       req.session.notification = `Success: Badge d'atelier attribué à ${user ? user.name + " " + user.surname : "l'utilisateur"} !`;
     } catch (error) {
       console.error("Error awarding workshop badge:", error);
-      req.session.notification = "Error: Impossible d'attribuer le badge d'atelier";
+      req.session.notification = "Error: Impossible d'attribuer le badge d'atelier.";
     }
 
     res.redirect(req.session.lastPage || "/admin/workshops/manage");
