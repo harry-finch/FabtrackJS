@@ -12,9 +12,23 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const repairCafeService = require("../../services/repairCafeService.js");
 const workshopService = require("../../services/workshopService.js");
+const i18nService = require("../../services/i18nService.js");
+const dateService = require("../../services/dateService.js");
 
 const router = express.Router();
 router.use(isAdmin);
+
+const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === ".csv" || file.mimetype === "text/csv" || file.mimetype === "application/vnd.ms-excel") {
+      return cb(null, true);
+    }
+    return cb(new Error("Veuillez importer un fichier CSV (.csv)."));
+  },
+});
 
 // Multer storage for branding uploads
 const uploadsDir = path.join(__dirname, "../../uploads");
@@ -72,6 +86,7 @@ router.get(
       settings,
       plugins,
       projecttypes,
+      validDateFormats: dateService.VALID_FORMATS,
     });
   }),
 );
@@ -108,6 +123,12 @@ router.post(
     }
     if (req.body.allow_self_registration !== undefined) {
       updates.allow_self_registration = req.body.allow_self_registration === "true" ? "true" : "false";
+    }
+    if (req.body.default_language !== undefined && ["fr", "en"].includes(req.body.default_language)) {
+      updates.default_language = req.body.default_language;
+    }
+    if (req.body.date_format !== undefined && dateService.VALID_FORMAT_VALUES.includes(req.body.date_format)) {
+      updates.date_format = req.body.date_format;
     }
 
     // Logo choice
@@ -206,6 +227,43 @@ router.post(
     });
 
     req.session.notification = "Success: Favicon reset to default.";
+    res.redirect("/admin/settings");
+  }),
+);
+
+// ******************************************************************************
+// GET /admin/settings/i18n/export: Download translations.csv
+// ******************************************************************************
+router.get(
+  "/i18n/export",
+  asyncHandler(async (req, res) => {
+    const csvContent = i18nService.exportToCsvString();
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="translations.csv"');
+    res.send(csvContent);
+  }),
+);
+
+// ******************************************************************************
+// POST /admin/settings/i18n/import: Upload and import translations.csv
+// ******************************************************************************
+router.post(
+  "/i18n/import",
+  csvUpload.single("translations_file"),
+  asyncHandler(async (req, res) => {
+    if (!req.file) {
+      req.session.notification = "Error: Aucun fichier CSV sélectionné.";
+      return res.redirect("/admin/settings");
+    }
+
+    try {
+      const csvText = req.file.buffer.toString("utf8");
+      const result = i18nService.importFromCsvString(csvText);
+      req.session.notification = `Success: Traductions importées avec succès (${result.totalKeys} clés mises à jour).`;
+    } catch (err) {
+      console.error("Erreur lors de l'import i18n CSV:", err);
+      req.session.notification = `Error: Échec de l'import des traductions : ${err.message}`;
+    }
     res.redirect("/admin/settings");
   }),
 );

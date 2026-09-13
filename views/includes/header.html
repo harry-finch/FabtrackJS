@@ -110,19 +110,13 @@
     <!-- User Profile & Navigation Menu -->
     <div class="d-flex align-items-center justify-content-end gap-2" style="flex: 1 1 0; min-width: 0;">
         <!-- Incident Reporting Button for Mediators & Admins -->
-        <a href="/report-issue" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm header-action-btn" title="Signaler un incident ou une panne machine">
-            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
-                <i class="fa-solid fa-triangle-exclamation fa-xs"></i>
-            </div>
-            <span class="fw-semibold small d-none d-md-inline">Signaler une panne</span>
+        <a href="/report-issue" target="_blank" class="btn btn-outline-danger btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.report_issue') %>" title="<%= __('nav.report_issue') %>">
+            <i class="fa-solid fa-triangle-exclamation fa-sm"></i>
         </a>
 
         <% if (typeof role !== 'undefined' && role === 'admin' && (typeof currentPath === 'undefined' || !currentPath.startsWith('/admin'))) { %>
-        <a href="/admin" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm header-action-btn" title="Accéder au panneau d'administration">
-            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
-                <i class="fa-solid fa-screwdriver-wrench fa-xs"></i>
-            </div>
-            <span class="fw-semibold small d-none d-sm-inline">Panneau Admin</span>
+        <a href="/admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>">
+            <i class="fa-solid fa-screwdriver-wrench fa-sm"></i>
         </a>
         <% } %>
 
@@ -131,7 +125,7 @@
                 <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
                     <i class="fa-solid fa-user fa-xs"></i>
                 </div>
-                <span class="fw-semibold small"><%= username || 'Menu' %></span>
+                <span class="fw-semibold small"><%= username || (typeof __ !== 'undefined' ? __('common.menu') : 'Menu') %></span>
                 <i class="fa-solid fa-chevron-down fa-2xs text-muted ms-1"></i>
             </button>
 
@@ -140,14 +134,14 @@
                 <div class="px-3 py-2 bg-body-secondary rounded-2 mb-2 d-flex align-items-center justify-content-between">
                     <div>
                         <div class="fw-bold small text-truncate" style="max-width: 160px;"><%= username %></div>
-                        <small class="text-muted" style="font-size: 0.72rem;">Session active</small>
+                        <small class="text-muted" style="font-size: 0.72rem;"><%= typeof __ !== 'undefined' ? __('nav.active_session') : 'Session active' %></small>
                     </div>
                     <% if (role === "admin") { %>
                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;">Admin</span>
                     <% } else if (role === "staff") { %>
-                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;">Borne Kiosque</span>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;"><%= typeof __ !== 'undefined' ? __('nav.kiosk_station') : 'Borne Kiosque' %></span>
                     <% } else { %>
-                        <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-2 py-1" style="font-size: 0.68rem;">Médiateur</span>
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-2 py-1" style="font-size: 0.68rem;"><%= typeof __ !== 'undefined' ? __('nav.mediator') : 'Médiateur' %></span>
                     <% } %>
                 </div>
 
@@ -156,7 +150,7 @@
                 <div class="px-2 py-1">
                     <div class="d-flex align-items-center justify-content-between mb-1 px-1">
                         <span class="text-uppercase fw-bold text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;">
-                            <i class="fa-solid fa-building me-1"></i> Espace Fablab
+                            <i class="fa-solid fa-building me-1"></i> <%= typeof __ !== 'undefined' ? __('nav.fablab_space') : 'Espace Fablab' %>
                         </span>
                         <span class="badge bg-body-secondary text-body-secondary border rounded-pill" style="font-size: 0.65rem;"><%= availableWorkspaces.length %></span>
                     </div>
@@ -182,29 +176,29 @@
                 <!-- NAVIGATION SECTION -->
                 <div class="px-2 py-1">
                     <span class="text-uppercase fw-bold text-muted d-block mb-1 px-1" style="font-size: 0.68rem; letter-spacing: 0.05em;">
-                        Navigation
+                        <%= typeof __ !== 'undefined' ? __('nav.navigation') : 'Navigation' %>
                     </span>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/fabtrack">
                         <i class="fa-solid fa-desktop text-primary fa-sm" style="width: 16px;"></i>
-                        <span class="small">Kiosque Fabtrack</span>
+                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque Fabtrack' %></span>
                     </a>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-danger" href="/report-issue" target="_blank">
                         <i class="fa-solid fa-triangle-exclamation text-danger fa-sm" style="width: 16px;"></i>
-                        <span class="small fw-semibold">Signaler une panne machine</span>
+                        <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.report_issue') : 'Signaler une panne machine' %></span>
                     </a>
                     <% if (role === "admin") { %>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin">
                         <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
-                        <span class="small">Panneau d'administration</span>
+                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.admin_panel') : 'Panneau d\'administration' %></span>
                     </a>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin/settings">
                         <i class="fa-solid fa-sliders text-info fa-sm" style="width: 16px;"></i>
-                        <span class="small">Configuration générale</span>
+                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.general_settings') : 'Configuration générale' %></span>
                     </a>
                     <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin/ue">
                         <i class="fa-solid fa-graduation-cap text-danger fa-sm" style="width: 16px;"></i>
-                        <span class="small">UE & Facturation Sorbonne</span>
+                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.ue_billing') : 'UE & Facturation Sorbonne' %></span>
                     </a>
                     <% } %>
                     <% } %>
@@ -215,7 +209,7 @@
                 <!-- LOGOUT SECTION -->
                 <a class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2" href="/logout">
                     <i class="fa-solid fa-right-from-bracket fa-sm" style="width: 16px;"></i>
-                    <span class="small fw-semibold">Déconnexion</span>
+                    <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.logout') : 'Déconnexion' %></span>
                 </a>
             </div>
         </div>

@@ -153,10 +153,10 @@ router.get(
 
 // ******************************************************************************
 const moment = require("moment");
+const dateService = require("../../services/dateService.js");
 
 function formatDateTime(date) {
-  if (!date) return "-";
-  return moment(date).format("L HH:mm");
+  return dateService.formatDateTime(date);
 }
 
 // ******************************************************************************

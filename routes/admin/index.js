@@ -7,6 +7,7 @@ const { PrismaClient } = require("@prisma/client");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
+const dateService = require("../../services/dateService.js");
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -17,11 +18,11 @@ router.use(isAdmin);
 
 // Helper functions for date formatting
 function formatDateTime(date) {
-  return moment(date).format("L HH:mm");
+  return dateService.formatDateTime(date);
 }
 
 function formatTime(time) {
-  return time ? moment(time).format("HH:mm") : "-";
+  return dateService.formatTime(time);
 }
 
 // ******************************************************************************

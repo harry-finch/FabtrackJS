@@ -266,4 +266,27 @@ router.get(
   }),
 );
 
+// ******************************************************************************
+// Route to switch language
+// ******************************************************************************
+
+router.get("/change-language/:lang", (req, res) => {
+  const { lang } = req.params;
+  const validLocales = ["fr", "en"];
+  if (validLocales.includes(lang)) {
+    if (req.session) {
+      req.session.lang = lang;
+    }
+    res.cookie("fabtrack_lang", lang, {
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+    });
+    if (req.setLocale) {
+      req.setLocale(lang);
+    }
+  }
+  const referer = req.headers.referer || "/fabtrack";
+  res.redirect(referer);
+});
+
 module.exports = router;

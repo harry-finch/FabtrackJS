@@ -12,6 +12,8 @@ const fs = require("fs");
 const loadPlugins = require("./core/pluginLoader");
 const hookManager = require("./core/HookManager");
 const settingsService = require("./services/settingsService");
+const dateService = require("./services/dateService");
+const i18n = require("./config/i18n");
 loadPlugins();
 
 dotenv.config();
@@ -86,17 +88,43 @@ app.use(
   }),
 );
 
+// Initialize i18n
+app.use(i18n.init);
+
 // System settings middleware: inject settings and apply dynamic session timeout & plugin sync
 app.use(async (req, res, next) => {
   try {
     const settings = await settingsService.getSettings();
     res.locals.settings = settings;
+
+    // Internationalization (i18n) setup
+    const supportedLocales = i18n.getLocales();
+    let targetLang = req.session && req.session.lang;
+    if (!targetLang && req.cookies && req.cookies.fabtrack_lang) {
+      targetLang = req.cookies.fabtrack_lang;
+    }
+    if (!targetLang || !supportedLocales.includes(targetLang)) {
+      targetLang = settings.default_language || "fr";
+    }
+    if (!supportedLocales.includes(targetLang)) {
+      targetLang = "fr";
+    }
+    req.setLocale(targetLang);
+    res.locals.currentLocale = req.getLocale();
+    res.locals.locales = supportedLocales;
     res.locals.platformName = settings.platform_name || "FabtrackJS";
     res.locals.platformSubtitle = settings.platform_subtitle || "Track your fablab's activity";
     res.locals.platformLogoType = settings.platform_logo_type || "default";
     res.locals.platformLogoPath = settings.platform_logo_path || "";
     res.locals.platformFaviconPath = settings.platform_favicon_path || "";
     res.locals.currencySymbol = settings.currency_symbol || "€";
+    res.locals.currentDateFormat = settings.date_format || "DD/MM/YYYY";
+
+    // Date formatting helpers
+    dateService.setLocale(targetLang);
+    res.locals.formatDate = dateService.formatDate;
+    res.locals.formatDateTime = dateService.formatDateTime;
+    res.locals.formatTime = dateService.formatTime;
 
     // Sync plugin states with settings
     const isUeEnabled = settings.plugin_ue_enabled !== "false";

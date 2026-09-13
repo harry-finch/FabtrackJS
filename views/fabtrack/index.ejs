@@ -56,10 +56,10 @@
             <div id="register">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <a class="jsButton fs-4 text-primary" id="registerbutton" style="text-decoration: none;" title="Basculer vers la création"><i class="fa fa-toggle-on"></i></a>
+                        <a class="jsButton fs-4 text-primary" id="registerbutton" style="text-decoration: none;" title="<%= __('kiosk.switch_to_create') %>"><i class="fa fa-toggle-on"></i></a>
                         <div>
-                            <h4 class="fw-bold mb-0">Enregistrer un usager</h4>
-                            <small class="text-muted">Badgez ou recherchez un usager existant pour ouvrir sa session au Fablab</small>
+                            <h4 class="fw-bold mb-0"><%= __('kiosk.register_user_title') %></h4>
+                            <small class="text-muted"><%= __('kiosk.register_user_subtitle') %></small>
                         </div>
                     </div>
                 </div>
@@ -68,8 +68,8 @@
                         <div class="col-12">
                             <div class="form-floating mb-3 d-grid d-flex">
                                 <input type='hidden' id="userid" name='userid' value='null' />
-                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="Name" autocomplete="off" required />
-                                <label for="name">Name</label>
+                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="<%= __('kiosk.field_name') %>" autocomplete="off" required />
+                                <label for="name"><%= __('kiosk.field_name') %></label>
                                 <a id="urlprofile" href="">
                                     <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
                                 </a>
@@ -81,8 +81,8 @@
                             <div class="form-floating mb-3 d-grid d-flex">
                                 <input type='hidden' id="projectid" name='projectid' value='null' />
                                 <input type='hidden' id="userprojectid" name='userprojectid' value='null' />
-                                <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" autocomplete="off" placeholder="Documentation" required />
-                                <label for="name">Link to project documentation</label>
+                                <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" autocomplete="off" placeholder="<%= __('kiosk.field_documentation') %>" required />
+                                <label for="name"><%= __('kiosk.field_documentation') %></label>
                                 <a id="urldocumentation" href="" target="_blank" rel="noopener noreferrer">
                                     <span class="formbutton input-group-text" id="docStatusBtn" title="Consulter la documentation du projet"><i class="fa-solid fa-book-circle-arrow-right fa-lg"></i></span>
                                 </a>
@@ -117,7 +117,7 @@
                                     <option value="<%= projecttype.id %>"><%= projecttype.name %></option>
                                     <% }); %>
                                 </select>
-                                <label for="projecttype">Type of project</label>
+                                <label for="projecttype"><%= __('kiosk.field_project_type') %></label>
                             </div>
                         </div>
                     </div>
@@ -166,14 +166,14 @@
                         <div class="col">
                             <div class="form-floating mb-3">
                                 <textarea class="form-control" id="comments" name="comments" style="height: 100px"></textarea>
-                                <label for="comments">Comments</label>
+                                <label for="comments"><%= __('kiosk.field_comments') %></label>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
                             <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit">
-                                <i class="fa-solid fa-check me-1"></i> Enregistrer
+                                <i class="fa-solid fa-check me-1"></i> <%= __('kiosk.btn_register') %>
                             </button>
                         </div>
                     </div>
@@ -188,7 +188,7 @@
                             <span class="icon-box bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
                                 <i class="fa-solid fa-users"></i>
                             </span>
-                            <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> usagers actuellement présents</h5>
+                            <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> <%= __('kiosk.users_present') %></h5>
                         </div>
 
                         <!-- Static Workspace Badge -->
@@ -202,12 +202,12 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th onclick="sortTable(1)" scope="col" class="ps-3">Arrival</th>
-                                        <th onclick="sortTable(2)" scope="col">User</th>
-                                        <th scope="col" class="text-center">Warnings / Solde</th>
-                                        <th scope="col" class="text-center">Comments</th>
-                                        <th scope="col" class="text-center">Activity</th>
-                                        <th scope="col" class="text-end pe-3">Sortie</th>
+                                        <th onclick="sortTable(1)" scope="col" class="ps-3"><%= __('kiosk.th_arrival') %></th>
+                                        <th onclick="sortTable(2)" scope="col"><%= __('kiosk.th_user') %></th>
+                                        <th scope="col" class="text-center"><%= __('kiosk.th_warnings_balance') %></th>
+                                        <th scope="col" class="text-center"><%= __('kiosk.th_comments') %></th>
+                                        <th scope="col" class="text-center"><%= __('kiosk.th_activity') %></th>
+                                        <th scope="col" class="text-end pe-3"><%= __('kiosk.th_exit') %></th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-content">
@@ -227,8 +227,8 @@
                                                 </a>
                                             <% } %>
                                             <% if (entry.user.isExpert) { %>
-                                                <span class="badge bg-warning text-dark border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Utilisateur expert">
-                                                    <i class="fa-solid fa-star fa-2xs"></i> Expert
+                                                <span class="badge bg-warning text-dark border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="<%= __('kiosk.expert_badge') %>">
+                                                    <i class="fa-solid fa-star fa-2xs"></i> <%= __('kiosk.expert_badge') %>
                                                 </span>
                                             <% } %>
                                             <% if (entry.repairObject) { %>
@@ -295,11 +295,11 @@
                                                    data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
                                                    data-bs-comment="<%- encodeURIComponent(entry.comments || '') %>">
                                                     <% if ( entry.comments ) { %>
-                                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Modifier le commentaire : <%= entry.comments %>">
+                                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="<%= __('kiosk.tooltip_edit_comment') %> : <%= entry.comments %>">
                                                             <i class="fa-solid fa-comment-dots text-primary fs-5"></i>
                                                         </span>
                                                     <% } else { %>
-                                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Ajouter un commentaire">
+                                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="<%= __('kiosk.tooltip_add_comment') %>">
                                                             <i class="fa-regular fa-comment text-secondary opacity-50 comment-empty-icon fs-5"></i>
                                                         </span>
                                                     <% } %>
@@ -318,8 +318,8 @@
                                                             data-bs-userid="<%= entry.user.id %>"
                                                             data-bs-historyid="<%= entry.id %>"
                                                             class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1"
-                                                            title="Ajouter une activité">
-                                                    <i class="fa-solid fa-plus me-1"></i>Activité
+                                                            title="<%= __('kiosk.btn_activity') %>">
+                                                    <i class="fa-solid fa-plus me-1"></i><%= __('kiosk.btn_activity') %>
                                                 </a>
                                             <% } %>
                                         </td>
@@ -332,12 +332,12 @@
                                                         data-bs-historyid="<%= entry.id %>"
                                                         data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
                                                         data-bs-repairobject="<%= entry.repairObject %>"
-                                                        title="Bilan Repair Café & Sortie">
-                                                    <i class="fa-solid fa-screwdriver-wrench me-1"></i>Sortie
+                                                        title="<%= __('kiosk.btn_exit') %>">
+                                                    <i class="fa-solid fa-screwdriver-wrench me-1"></i><%= __('kiosk.btn_exit') %>
                                                 </button>
                                             <% } else { %>
-                                                <a href="/history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Enregistrer la sortie">
-                                                    <i class="fa-solid fa-person-walking-arrow-right me-1"></i>Sortie
+                                                <a href="/history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="<%= __('kiosk.btn_exit') %>">
+                                                    <i class="fa-solid fa-person-walking-arrow-right me-1"></i><%= __('kiosk.btn_exit') %>
                                                 </a>
                                             <% } %>
                                         </td>
@@ -357,13 +357,13 @@
                             <form action="/history/update-comment" method="post" id="formComment">
                                 <div class="modal-header border-0 pb-0">
                                     <h5 class="modal-title fw-bold" id="modalCommentLabel">
-                                        <i class="fa-solid fa-comment-dots text-primary me-2"></i>Commentaire de session
+                                        <i class="fa-solid fa-comment-dots text-primary me-2"></i><%= __('kiosk.modal_comment_title') %>
                                     </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= __('common.close') %>"></button>
                                 </div>
                                 <div class="modal-body pt-3">
                                     <div class="mb-3 p-3 bg-body-tertiary rounded-3 border">
-                                        <div class="small text-muted mb-1">Usager</div>
+                                        <div class="small text-muted mb-1"><%= __('kiosk.modal_comment_user') %></div>
                                         <div class="fw-semibold fs-6" id="commentModalUserName">-</div>
                                     </div>
 
@@ -371,22 +371,22 @@
 
                                     <div class="mb-2">
                                         <label for="commentModalText" class="form-label fw-semibold small">
-                                            Remarques / Précisions sur la session
+                                            <%= __('kiosk.modal_comment_label') %>
                                         </label>
-                                        <textarea class="form-control" id="commentModalText" name="comments" rows="4" placeholder="Saisissez un commentaire (ex: découpe laser 3mm, aide au montage, projet étudiant...)"></textarea>
+                                        <textarea class="form-control" id="commentModalText" name="comments" rows="4" placeholder="<%= __('kiosk.modal_comment_placeholder') %>"></textarea>
                                         <div class="form-text text-muted small">
-                                            Laissez vide ou cliquez sur « Effacer » pour supprimer le commentaire.
+                                            <%= __('kiosk.modal_comment_help') %>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
-                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" id="commentModalClearBtn" title="Vider le champ texte">
-                                        <i class="fa-solid fa-eraser me-1"></i>Effacer
+                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" id="commentModalClearBtn" title="<%= __('kiosk.modal_comment_clear') %>">
+                                        <i class="fa-solid fa-eraser me-1"></i><%= __('kiosk.modal_comment_clear') %>
                                     </button>
                                     <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal"><%= __('common.cancel') %></button>
                                         <button type="submit" class="btn btn-primary rounded-pill px-4">
-                                            <i class="fa-solid fa-check me-1"></i>Enregistrer
+                                            <i class="fa-solid fa-check me-1"></i><%= __('kiosk.modal_comment_save') %>
                                         </button>
                                     </div>
                                 </div>
@@ -555,7 +555,7 @@
             <div class="card border-0 shadow-sm mt-4 mb-4 bg-body-tertiary border">
                 <div class="card-body p-3 text-center text-muted">
                     <i class="fa-solid fa-user-shield text-info me-2"></i>
-                    <strong>Mode Borne Tactile :</strong> L'inscription d'un nouvel usager et l'enregistrement d'activités/matériaux doivent être effectués par un médiateur du fablab.
+                    <%= __('kiosk.kiosk_touch_mode') %>
                 </div>
             </div>
             <% } else { %>
@@ -563,10 +563,10 @@
             <div id="newuser">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <a class="jsButton fs-4 text-secondary" id="newuserbutton" style="text-decoration: none;" title="Basculer vers la recherche"><i class="fa fa-toggle-off"></i></a>
+                        <a class="jsButton fs-4 text-secondary" id="newuserbutton" style="text-decoration: none;" title="<%= __('kiosk.switch_to_search') %>"><i class="fa fa-toggle-off"></i></a>
                         <div>
-                            <h4 class="fw-bold mb-0">Créer un nouvel usager</h4>
-                            <small class="text-muted">Formulaire d'inscription rapide pour un nouveau membre du Fablab</small>
+                            <h4 class="fw-bold mb-0"><%= __('kiosk.create_user_title') %></h4>
+                            <small class="text-muted"><%= __('kiosk.create_user_subtitle') %></small>
                         </div>
                     </div>
                 </div>
@@ -574,28 +574,28 @@
                     <div class="row">
                         <div class="col-4">
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="newname" name="newname" placeholder="Name" required />
-                                <label for="newname">Name</label>
+                                <input type="text" class="form-control" id="newname" name="newname" placeholder="<%= __('kiosk.new_name') %>" required />
+                                <label for="newname"><%= __('kiosk.new_name') %></label>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="newsurname" name="newsurname" placeholder="Surname" required />
-                                <label for="newsurname">Surname</label>
+                                <input type="text" class="form-control" id="newsurname" name="newsurname" placeholder="<%= __('kiosk.new_surname') %>" required />
+                                <label for="newsurname"><%= __('kiosk.new_surname') %></label>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="newbirthyear" name="newbirthyear" placeholder="Birthyear" />
-                                <label for="newbirthyear">Birth year</label>
+                                <input type="text" class="form-control" id="newbirthyear" name="newbirthyear" placeholder="<%= __('kiosk.new_birthyear') %>" />
+                                <label for="newbirthyear"><%= __('kiosk.new_birthyear') %></label>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-6">
                             <div class="form-floating mb-3">
-                                <input type="email" name="newemail" class="form-control" id="newemail" placeholder="Email" required />
-                                <label for="newemail">Email address</label>
+                                <input type="email" name="newemail" class="form-control" id="newemail" placeholder="<%= __('kiosk.new_email') %>" required />
+                                <label for="newemail"><%= __('kiosk.new_email') %></label>
                             </div>
                         </div>
                         <div class="col-6">
@@ -606,7 +606,7 @@
                                     <option value="<%= usertype.id %>"><%= usertype.name %></option>
                                     <% }); %>
                                 </select>
-                                <label for="newusertype">Type of user</label>
+                                <label for="newusertype"><%= __('kiosk.new_usertype') %></label>
                             </div>
                         </div>
                     </div>
@@ -615,7 +615,7 @@
                         <div class="col-12">
                             <div class="form-floating mb-3">
                                 <input type="text" class="form-control font-monospace" id="newrfid" name="newrfid" placeholder="Badge RFID" autocomplete="off" />
-                                <label for="newrfid"><i class="fa-solid fa-id-card me-1 text-primary"></i> Numéro de badge RFID (UID)</label>
+                                <label for="newrfid"><i class="fa-solid fa-id-card me-1 text-primary"></i> <%= __('kiosk.new_rfid') %></label>
                             </div>
                         </div>
                     </div>
@@ -624,7 +624,7 @@
                         <div class="col">
                             <div class="form-floating mb-3">
                                 <textarea class="form-control" id="newcomments" name="newcomments" style="height: 100px"></textarea>
-                                <label for="newcomments">Comments</label>
+                                <label for="newcomments"><%= __('kiosk.field_comments') %></label>
                             </div>
                         </div>
                     </div>
@@ -633,10 +633,10 @@
                             <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
                                 <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="newnewsletter" name="newnewsletter" value="true">
                                 <label class="form-check-label fw-semibold" for="newnewsletter">
-                                    <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> Inscription à la newsletter
+                                    <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> <%= __('kiosk.new_newsletter') %>
                                 </label>
                                 <div class="form-text small text-muted ms-1">
-                                    L'usager accepte de recevoir la newsletter et les actualités du Fablab par e-mail.
+                                    <%= __('kiosk.new_newsletter_desc') %>
                                 </div>
                             </div>
                         </div>
@@ -644,7 +644,7 @@
                     <div class="row">
                         <div class="col">
                             <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit">
-                                <i class="fa-solid fa-user-plus me-1"></i> Créer l'usager
+                                <i class="fa-solid fa-user-plus me-1"></i> <%= __('kiosk.btn_create_user') %>
                             </button>
                         </div>
                     </div>

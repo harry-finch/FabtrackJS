@@ -22,53 +22,92 @@
     </symbol>
 </svg>
 
-<div class="dropdown position-fixed bd-mode-toggle bottom-0 end-0 mb-3 me-3">
-    <button
-        class="btn btn-bd-primary dropdown-toggle d-flex align-items-center py-2"
-        id="bd-theme"
-        type="button"
-        aria-expanded="false"
-        data-bs-toggle="dropdown"
-        aria-label="Toggle theme (auto)"
-    >
-        <svg class="bi theme-icon-active my-1" width="1em" height="1em">
-            <use href="#circle-half"></use>
-        </svg>
-        <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
-        <li>
-            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
-                <svg class="bi me-2 opacity-50" width="1em" height="1em">
-                    <use href="#sun-fill"></use>
-                </svg>
-                Light
-                <svg class="bi d-none ms-auto" width="1em" height="1em">
-                    <use href="#check2"></use>
-                </svg>
-            </button>
-        </li>
-        <li>
-            <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
-                <svg class="bi me-2 opacity-50" width="1em" height="1em">
-                    <use href="#moon-stars-fill"></use>
-                </svg>
-                Dark
-                <svg class="bi d-none ms-auto" width="1em" height="1em">
-                    <use href="#check2"></use>
-                </svg>
-            </button>
-        </li>
-        <li>
-            <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
-                <svg class="bi me-2 opacity-50" width="1em" height="1em">
-                    <use href="#circle-half"></use>
-                </svg>
-                Auto
-                <svg class="bi d-none ms-auto" width="1em" height="1em">
-                    <use href="#check2"></use>
-                </svg>
-            </button>
-        </li>
-    </ul>
+<div class="position-fixed bottom-0 end-0 mb-3 me-3 d-flex align-items-center gap-2 z-3">
+    <!-- Language Toggle -->
+    <div class="dropdown">
+        <button
+            class="btn btn-bd-primary dropdown-toggle d-flex align-items-center py-2 px-2 shadow-sm rounded-3"
+            id="bd-lang"
+            type="button"
+            aria-expanded="false"
+            data-bs-toggle="dropdown"
+            aria-label="Toggle language"
+            title="Changer de langue / Switch language"
+        >
+            <span style="font-size: 1.1rem; line-height: 1;"><%= typeof currentLocale !== 'undefined' && currentLocale === 'en' ? '🇬🇧' : '🇫🇷' %></span>
+            <span class="small fw-bold ms-1 text-uppercase" style="font-size: 0.75rem;"><%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-lang">
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'fr') ? 'active fw-bold' : '' %>" href="/change-language/fr">
+                    <span>🇫🇷</span>
+                    <span>Français</span>
+                    <% if (typeof currentLocale !== 'undefined' && currentLocale === 'fr') { %>
+                        <svg class="bi ms-auto" width="1em" height="1em"><use href="#check2"></use></svg>
+                    <% } %>
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'en') ? 'active fw-bold' : '' %>" href="/change-language/en">
+                    <span>🇬🇧</span>
+                    <span>English</span>
+                    <% if (typeof currentLocale !== 'undefined' && currentLocale === 'en') { %>
+                        <svg class="bi ms-auto" width="1em" height="1em"><use href="#check2"></use></svg>
+                    <% } %>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Dark/Light Theme Toggle -->
+    <div class="dropdown bd-mode-toggle">
+        <button
+            class="btn btn-bd-primary dropdown-toggle d-flex align-items-center py-2"
+            id="bd-theme"
+            type="button"
+            aria-expanded="false"
+            data-bs-toggle="dropdown"
+            aria-label="Toggle theme (auto)"
+        >
+            <svg class="bi theme-icon-active my-1" width="1em" height="1em">
+                <use href="#circle-half"></use>
+            </svg>
+            <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                    <svg class="bi me-2 opacity-50" width="1em" height="1em">
+                        <use href="#sun-fill"></use>
+                    </svg>
+                    Light
+                    <svg class="bi d-none ms-auto" width="1em" height="1em">
+                        <use href="#check2"></use>
+                    </svg>
+                </button>
+            </li>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                    <svg class="bi me-2 opacity-50" width="1em" height="1em">
+                        <use href="#moon-stars-fill"></use>
+                    </svg>
+                    Dark
+                    <svg class="bi d-none ms-auto" width="1em" height="1em">
+                        <use href="#check2"></use>
+                    </svg>
+                </button>
+            </li>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                    <svg class="bi me-2 opacity-50" width="1em" height="1em">
+                        <use href="#circle-half"></use>
+                    </svg>
+                    Auto
+                    <svg class="bi d-none ms-auto" width="1em" height="1em">
+                        <use href="#check2"></use>
+                    </svg>
+                </button>
+            </li>
+        </ul>
+    </div>
 </div>

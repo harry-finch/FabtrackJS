@@ -13,6 +13,8 @@ const DEFAULT_SETTINGS = {
   currency_symbol: "€",
   admin_email: "admin@example.com",
   allow_self_registration: "true",
+  default_language: "fr",
+  date_format: "DD/MM/YYYY",
   // Email & Notifications settings
   mail_admin_recipient: process.env.ADMIN || "admin@example.com",
   mail_from: process.env.MAILFROM || "Fabtrack <noreply@fabtrack.local>",
@@ -45,6 +47,10 @@ let cache = null;
 class SettingsService {
   getDefaults() {
     return { ...DEFAULT_SETTINGS };
+  }
+
+  getCachedSettingsSync() {
+    return cache ? { ...cache } : { ...DEFAULT_SETTINGS };
   }
 
   async getSettings() {

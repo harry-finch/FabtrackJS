@@ -1,0 +1,173 @@
+﻿Key,FR,EN
+alerts.comment_error,Impossible de mettre à jour le commentaire.,Failed to update comment.
+alerts.comment_updated,Commentaire mis à jour avec succès.,Comment updated successfully.
+alerts.csv_error,Erreur lors de l'importation du fichier CSV : %s,Error importing CSV file: %s
+alerts.csv_imported,Traductions importées avec succès (%d clés mises à jour).,Translations imported successfully (%d keys updated).
+alerts.favicon_reset,Favicon rétabli par défaut.,Favicon reset to default.
+alerts.lang_switched,Langue modifiée avec succès.,Language changed successfully.
+alerts.logo_reset,Logo rétabli par défaut.,Logo reset to default.
+alerts.session_missing,Identifiant de session manquant.,Missing session ID.
+alerts.settings_saved,Modifications enregistrées avec succès.,Settings saved successfully.
+auth.back_to_login,Retour à la page de connexion,Back to login page
+auth.confirm_password,Confirmer le mot de passe,Confirm password
+auth.create_account,Créer un compte,Create account
+auth.create_account_title,Créer un compte staff,Create staff account
+auth.email,Adresse e-mail,Email address
+auth.forgot_password,Mot de passe oublié ?,Forgot my password
+auth.forgot_password_title,Récupérer votre mot de passe,Recover your password
+auth.i_have_account,J'ai déjà un compte,I already have an account
+auth.password,Mot de passe,Password
+auth.passwords_mismatch,Les mots de passe ne correspondent pas !,Passwords do not match!
+auth.recover_btn,Envoyer le lien de récupération,Send recovery email
+auth.remember_me,Se souvenir de moi,Remember me
+auth.reset_for_user,Réinitialiser le mot de passe pour %s,Reset password for %s
+auth.reset_password,Réinitialiser le mot de passe,Reset password
+auth.signin_btn,Se connecter,Sign in
+auth.signin_title,Veuillez vous connecter,Please sign in
+auth.username,Nom d'utilisateur,Username
+common.actions,Actions,Actions
+common.active,Activé,Active
+common.all,Tous,All
+common.back,Retour,Back
+common.cancel,Annuler,Cancel
+common.clear,Effacer,Clear
+common.close,Fermer,Close
+common.comments,Commentaires,Comments
+common.confirm,Confirmer,Confirm
+common.date,Date,Date
+common.delete,Supprimer,Delete
+common.description,Description,Description
+common.disabled,Désactivé,Disabled
+common.download,Télécharger,Download
+common.edit,Modifier,Edit
+common.error,Erreur,Error
+common.export,Exporter,Export
+common.filter,Filtrer,Filter
+common.import,Importer,Import
+common.info,Information,Information
+common.name,Nom,Name
+common.no,Non,No
+common.none,Aucun,None
+common.notes,Notes,Notes
+common.or,ou,or
+common.reset,Réinitialiser,Reset
+common.save,Enregistrer,Save
+common.search,Rechercher,Search
+common.status,Statut,Status
+common.success,Succès,Success
+common.upload,Téléverser,Upload
+common.warning,Avertissement,Warning
+common.yes,Oui,Yes
+kiosk.btn_activity,Activité,Activity
+kiosk.btn_create_user,Créer l'usager,Create user
+kiosk.btn_exit,Sortie,Exit
+kiosk.btn_register,Enregistrer,Check in
+kiosk.create_user_subtitle,Formulaire d'inscription rapide pour un nouveau membre du Fablab,Quick registration form for a new Fablab member
+kiosk.create_user_title,Créer un nouvel usager,Create a new user
+kiosk.expert_badge,Expert,Expert
+kiosk.field_comments,Commentaires,Comments
+kiosk.field_documentation,Lien vers la documentation du projet,Link to project documentation
+kiosk.field_name,Nom complet,Full name
+kiosk.field_project_type,Type de projet,Project type
+kiosk.kiosk_touch_mode,Mode Borne Tactile : L'inscription d'un nouvel usager et l'enregistrement d'activités/matériaux doivent être effectués par un médiateur du fablab.,Touch Kiosk Mode: Registering new users and logging activities/materials must be performed by a fablab facilitator.
+kiosk.modal_activity_title,Gestionnaire d'activités,Activity Manager
+kiosk.modal_comment_clear,Effacer,Clear
+kiosk.modal_comment_help,Laissez vide ou cliquez sur « Effacer » pour supprimer le commentaire.,Leave empty or click 'Clear' to remove this comment.
+kiosk.modal_comment_label,Remarques / Précisions sur la session,Session Remarks / Details
+kiosk.modal_comment_placeholder,"Saisissez un commentaire (ex: découpe laser 3mm, aide au montage, projet étudiant...)","Enter a comment (e.g. 3mm plywood laser cut, assembly assistance, student project...)"
+kiosk.modal_comment_save,Enregistrer,Save
+kiosk.modal_comment_title,Commentaire de session,Session Comment
+kiosk.modal_comment_user,Usager,User
+kiosk.new_birthyear,Année de naissance,Birth year
+kiosk.new_email,Adresse e-mail,Email address
+kiosk.new_name,Prénom,First name
+kiosk.new_newsletter,Inscription à la newsletter,Newsletter subscription
+kiosk.new_newsletter_desc,L'usager accepte de recevoir la newsletter et les actualités du Fablab par e-mail.,The user agrees to receive Fablab newsletters and updates via email.
+kiosk.new_rfid,Numéro de badge RFID (UID),RFID badge number (UID)
+kiosk.new_surname,Nom,Last name
+kiosk.new_usertype,Type d'usager,User type
+kiosk.register_user_subtitle,Badgez ou recherchez un usager existant pour ouvrir sa session au Fablab,Scan RFID card or search an existing user to open their Fablab session
+kiosk.register_user_title,Enregistrer un usager,Register a user
+kiosk.repair_badge,Réparation,Repair
+kiosk.subtitle,Suivez l'activité de votre fablab,Track your fablab's activity
+kiosk.switch_to_create,Créer un nouvel usager,Create a new user
+kiosk.switch_to_search,Basculer vers la recherche,Switch to search
+kiosk.th_activity,Activité,Activity
+kiosk.th_arrival,Arrivée,Arrival
+kiosk.th_comments,Commentaires,Comments
+kiosk.th_exit,Sortie,Exit
+kiosk.th_user,Usager,User
+kiosk.th_warnings_balance,Avertissements / Solde,Warnings / Balance
+kiosk.title,FabtrackJS,FabtrackJS
+kiosk.tooltip_add_comment,Ajouter un commentaire,Add comment
+kiosk.tooltip_edit_comment,Modifier le commentaire,Edit comment
+kiosk.users_present,usagers actuellement présents,users currently present
+kiosk.workshop_badge,Atelier,Workshop
+nav.active_session,Session active,Active session
+nav.admin,Panneau Admin,Admin Panel
+nav.admin_panel,Panneau Admin,Admin Panel
+nav.current_workspace,Espace actuel,Current Workspace
+nav.fablab_space,Espace Fablab,Fablab Space
+nav.general_settings,Configuration générale,General Settings
+nav.kiosk,Kiosque Fabtrack,Fabtrack Kiosk
+nav.kiosk_station,Borne Kiosque,Kiosk Station
+nav.language,Langue,Language
+nav.login,Connexion,Log In
+nav.logout,Déconnexion,Log Out
+nav.mediator,Médiateur,Mediator
+nav.navigation,Navigation,Navigation
+nav.profile,Mon Profil,My Profile
+nav.report_issue,Signaler une panne,Report Issue
+nav.switch_language,Changer de langue,Switch Language
+nav.switch_workspace,Changer d'espace,Switch Workspace
+nav.ue_billing,UE & Facturation Sorbonne,Academic courses & billing
+settings.admin_email_desc,Reçoit les demandes de validation de nouveaux comptes staff et alertes.,Receives staff registration approval requests and system alerts.
+settings.back_admin,Retour panneau admin,Back to admin panel
+settings.currency_desc,"Symbole monétaire utilisé pour la facturation des consommables (ex : €, $, CHF).","Currency symbol used for consumable invoicing (e.g. €, $, CHF)."
+settings.export_csv_btn,Télécharger le tableur CSV (traductions actuelles),Download CSV Spreadsheet (current translations)
+settings.favicon_active,Favicon :,Favicon:
+settings.favicon_desc,Apparaît sur l'onglet de votre navigateur et dans les favoris.,Appears on your browser tab and bookmarks.
+settings.field_admin_email,Email administrateur,Administrator Email
+settings.field_currency,Symbole monétaire,Currency Symbol
+settings.field_date_format,Format d'affichage des dates,Date display format
+settings.field_date_format_desc,"Définit le format de date utilisé dans l'historique, les fiches usagers et les exports.","Sets the date format used across history, user profiles, and exports."
+settings.field_default_lang,Langue par défaut du kiosque,Default Kiosk Language
+settings.field_favicon,Favicon (icône du navigateur),Favicon (browser tab icon)
+settings.field_logo,Logo de la plateforme,Platform Logo
+settings.field_platform_name,Nom de la plateforme,Platform Name
+settings.field_platform_name_desc,"Affiché en grand sur le kiosque, l'en-tête et les onglets.","Displayed prominently on the kiosk, header, and browser tabs."
+settings.field_platform_subtitle,Slogan / Sous-titre,Tagline / Subtitle
+settings.field_platform_subtitle_desc,"Accroche située sous le nom (ex: ""Track your fablab's activity"").","Catchphrase displayed below the name (e.g. ""Track your fablab's activity"")."
+settings.field_self_registration,Inscription en autonomie au kiosque,Kiosk Self-Registration
+settings.field_session_timeout,Expiration des sessions (Timeout),Session Timeout
+settings.i18n_desc,"La plateforme supporte le multilingue. Vous pouvez exporter toutes les phrases au format CSV pour les traduire dans Excel ou Google Sheets, puis les réimporter.","The platform supports multiple languages. You can export all texts as a CSV spreadsheet to edit them in Excel or Google Sheets, then re-import."
+settings.import_csv_btn,Importer un tableur CSV,Import CSV Spreadsheet
+settings.import_csv_desc,Les nouvelles traductions seront appliquées immédiatement sur l'application.,Updated translations will take effect immediately across the application.
+settings.import_csv_label,Téléverser un fichier translations.csv :,Upload a translations.csv file:
+settings.logo_custom,Logo personnalisé,Custom Logo
+settings.logo_default,Logo Sorbonne Université (SVG par défaut),Sorbonne University Logo (Default SVG)
+settings.logo_official_active,Logo officiel vectoriel actif,Official vector logo active
+settings.logo_preview,Aperçu du logo actuel :,Current logo preview:
+settings.plugins_desc,Activez ou désactivez les fonctionnalités spécifiques selon le contexte de votre fablab. Les modifications prennent effet immédiatement.,Enable or disable specific features to fit your fablab's workflow. Changes take effect immediately.
+settings.reset_favicon,Rétablir le favicon par défaut,Restore default favicon
+settings.reset_logo,Rétablir le logo Sorbonne par défaut,Restore default Sorbonne logo
+settings.save_changes,Enregistrer les modifications,Save Changes
+settings.section_brand,Identité & Marque,Identity & Brand
+settings.section_brand_title,Logo et Intitulés,Logo & Titles
+settings.section_i18n,Langues & Internationalisation,Languages & Internationalization
+settings.section_i18n_title,Traductions & Tableur CSV,Translations & CSV Spreadsheet
+settings.section_plugins,Extensions,Extensions
+settings.section_plugins_title,Gestion des Plugins,Plugin Management
+settings.section_preferences,Atelier,Workshop
+settings.section_preferences_title,Préférences Générales du Fablab,General Fablab Preferences
+settings.section_security,Sécurité,Security
+settings.section_security_title,Sessions & Authentification,Sessions & Authentication
+settings.self_registration_desc,Permet aux usagers de créer leur propre profil en arrivant au fablab.,Allows users to create their own profile upon arrival at the fablab.
+settings.self_registration_disabled,Désactivée (Création uniquement par un staff),Disabled (Registration by staff only)
+settings.self_registration_enabled,Autorisée (Formulaire création visible au kiosque),Enabled (Registration form visible at kiosk)
+settings.session_timeout_desc,Durée maximale d'inactivité avant déconnexion automatique du staff.,Maximum inactivity time before automatic staff logout.
+settings.subtitle,"Identité visuelle, modules, sécurité et préférences du fablab","Visual identity, modules, security, and fablab preferences"
+settings.system_badge,Système,System
+settings.title,Configuration générale,General Settings
+settings.upload_favicon,"Téléverser un favicon (.ico, .png, .svg) :","Upload a favicon (.ico, .png, .svg):"
+settings.upload_logo,"Téléverser une nouvelle image (PNG, JPG, SVG, WebP — max 3 Mo) :","Upload a new image (PNG, JPG, SVG, WebP — max 3 MB):"

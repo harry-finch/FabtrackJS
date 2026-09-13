@@ -15,23 +15,23 @@
         <main class="form-signin w-100 m-auto">
             <form action="/auth" method="post">
                 <img class="mb-4 app-auth-logo" src="/images/logo-fabtrack.svg" alt="FabtrackJS" width="75" height="58" />
-                <h1 class="h3 fw-normal mb-3">Please sign in</h1>
+                <h1 class="h3 fw-normal mb-3"><%= __('auth.signin_title') %></h1>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required />
-                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="<%= __('auth.username') %>" required />
+                    <label for="username"><%= __('auth.username') %></label>
                 </div>
                 <div class="form-floating">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required />
-                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="<%= __('auth.password') %>" required />
+                    <label for="password"><%= __('auth.password') %></label>
                 </div>
 
                 <div class="form-check my-3 text-start">
                     <input class="form-check-input" type="checkbox" value="remember-me" id="rememberMe" name="rememberMe" />
-                    <label class="form-check-label" for="rememberMe"> Remember me </label>
+                    <label class="form-check-label" for="rememberMe"> <%= __('auth.remember_me') %> </label>
                 </div>
-                <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
-                <p class="mt-2 text-center"><small><a href="../register">Create an account</a> | <a href="../forgot">Forgot my password</a></small></p>
+                <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.signin_btn') %></button>
+                <p class="mt-2 text-center"><small><a href="../register"><%= __('auth.create_account') %></a> | <a href="../forgot"><%= __('auth.forgot_password') %></a></small></p>
 
             </form>
 

@@ -472,6 +472,15 @@ a[href="/admin"].btn:not(.header-action-btn),
     transition: all 0.2s ease-in-out;
 }
 
+.header-action-btn.btn-icon-only {
+    width: 38px;
+    min-width: 38px;
+    padding: 0 !important;
+    justify-content: center;
+    border-radius: 50% !important;
+    gap: 0;
+}
+
 .header-action-btn .header-icon-circle {
     transition: background-color 0.2s ease, color 0.2s ease;
     flex-shrink: 0;

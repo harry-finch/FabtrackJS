@@ -15,14 +15,15 @@
         <main class="form-signin w-100 m-auto">
             <form action="/reset" method="post">
                 <img class="mb-4 app-auth-logo" src="/images/logo-fabtrack.svg" alt="FabtrackJS" width="75" height="58" />
-                <h1 class="h3 fw-normal mb-3">Recover your password</h1>
+                <h1 class="h3 fw-normal mb-3"><%= __('auth.forgot_password_title') %></h1>
 
                 <div class="form-floating">
-                    <input type="email" class="form-control" id="mail" name="mail" placeholder="Email" required />
-                    <label for="mail">Email</label>
+                    <input type="email" class="form-control" id="mail" name="mail" placeholder="<%= __('auth.email') %>" required />
+                    <label for="mail"><%= __('auth.email') %></label>
                 </div>
 
-                <button class="btn btn-primary w-100 py-2" type="submit">Recover</button>
+                <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.recover_btn') %></button>
+                <p class="mt-2 text-center"><small><a href="../login"><%= __('auth.back_to_login') %></a></small></p>
             </form>
 
             <%- include('../includes/footer.html') %>

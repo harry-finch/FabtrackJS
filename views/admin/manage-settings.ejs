@@ -404,22 +404,89 @@
                   <small class="text-muted">Permet aux usagers de créer leur propre profil en arrivant au
                     fablab.</small>
                 </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="form-floating mb-2">
+                    <select class="form-select" id="date_format" name="date_format">
+                      <option value="DD/MM/YYYY" <%= (!settings.date_format || settings.date_format === 'DD/MM/YYYY') ? 'selected' : '' %>>JJ/MM/AAAA (ex: 13/09/2026 — Standard français)</option>
+                      <option value="YYYY-MM-DD" <%= (settings.date_format === 'YYYY-MM-DD') ? 'selected' : '' %>>AAAA-MM-JJ (ex: 2026-09-13 — Standard ISO)</option>
+                      <option value="MM/DD/YYYY" <%= (settings.date_format === 'MM/DD/YYYY') ? 'selected' : '' %>>MM/JJ/AAAA (ex: 09/13/2026 — Format américain)</option>
+                      <option value="DD.MM.YYYY" <%= (settings.date_format === 'DD.MM.YYYY') ? 'selected' : '' %>>JJ.MM.AAAA (ex: 13.09.2026 — Format suisse/allemand)</option>
+                      <option value="D MMMM YYYY" <%= (settings.date_format === 'D MMMM YYYY') ? 'selected' : '' %>>Format long (ex: 13 septembre 2026)</option>
+                    </select>
+                    <label for="date_format"><i class="fa-solid fa-calendar-days me-1 text-info-emphasis"></i> <%= typeof __ !== 'undefined' ? __('settings.field_date_format') : "Format d'affichage des dates" %></label>
+                  </div>
+                  <small class="text-muted"><%= typeof __ !== 'undefined' ? __('settings.field_date_format_desc') : "Définit le format de date utilisé dans l'historique, les fiches usagers et les exports." %></small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. LANGUES & INTERNATIONALISATION -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                <i class="fa-solid fa-language me-1"></i> <%= typeof __ !== 'undefined' ? __('settings.section_i18n') : 'Langues & Internationalisation' %>
+              </span>
+              <h5 class="fw-bold mb-0 ms-1"><%= typeof __ !== 'undefined' ? __('settings.section_i18n_title') : 'Traductions & Tableur CSV' %></h5>
+            </div>
+            <div class="card-body px-4 pt-2 pb-4">
+              <p class="text-muted small mb-3">
+                <%= typeof __ !== 'undefined' ? __('settings.i18n_desc') : "La plateforme supporte le multilingue. Vous pouvez exporter toutes les phrases au format CSV pour les traduire dans Excel ou Google Sheets, puis les réimporter." %>
+              </p>
+
+              <div class="row g-4">
+                <div class="col-12 col-md-6">
+                  <div class="form-floating mb-2">
+                    <select class="form-select" id="default_language" name="default_language">
+                      <option value="fr" <%= (!settings.default_language || settings.default_language === 'fr') ? 'selected' : '' %>>🇫🇷 Français (Défaut)</option>
+                      <option value="en" <%= (settings.default_language === 'en') ? 'selected' : '' %>>🇬🇧 English</option>
+                    </select>
+                    <label for="default_language"><i class="fa-solid fa-globe me-1 text-primary"></i> <%= typeof __ !== 'undefined' ? __('settings.field_default_lang') : 'Langue par défaut du kiosque' %></label>
+                  </div>
+                  <small class="text-muted">Définit la langue initiale affichée aux usagers et sur les nouvelles sessions.</small>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label class="form-label fw-semibold d-block"><i class="fa-solid fa-file-export me-1 text-primary"></i> Export CSV :</label>
+                  <a href="/admin/settings/i18n/export" class="btn btn-outline-primary rounded-pill px-3 py-2 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa-solid fa-file-csv fs-5"></i>
+                    <span><%= typeof __ !== 'undefined' ? __('settings.export_csv_btn') : 'Télécharger le tableur CSV (traductions actuelles)' %></span>
+                  </a>
+                  <small class="text-muted mt-1 d-block">Compatible Microsoft Excel, LibreOffice et Google Sheets (encodage UTF-8 BOM préservant les accents).</small>
+                </div>
+
+                <div class="col-12">
+                  <hr class="my-1 opacity-25">
+                  <label class="form-label fw-semibold mt-2 d-block"><i class="fa-solid fa-file-import me-1 text-success"></i> <%= typeof __ !== 'undefined' ? __('settings.import_csv_label') : 'Téléverser un fichier translations.csv :' %></label>
+                  <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
+                    <input class="form-control" type="file" id="translationsFileInput" accept=".csv" style="max-width: 400px;">
+                    <button type="button" class="btn btn-outline-success rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-2" id="importCsvBtn">
+                      <i class="fa-solid fa-upload"></i>
+                      <span><%= typeof __ !== 'undefined' ? __('settings.import_csv_btn') : 'Importer un tableur CSV' %></span>
+                    </button>
+                  </div>
+                  <small class="text-muted mt-1 d-block"><%= typeof __ !== 'undefined' ? __('settings.import_csv_desc') : "Les nouvelles traductions seront appliquées immédiatement sur l'application." %></small>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Submit Button Bar -->
           <div class="d-flex justify-content-end align-items-center gap-3 mb-5">
-            <a href="/admin" class="btn btn-outline-secondary rounded-pill px-4">Annuler</a>
+            <a href="/admin" class="btn btn-outline-secondary rounded-pill px-4"><%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %></a>
             <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold">
-              <i class="fa-solid fa-floppy-disk me-2"></i> Enregistrer les modifications
+              <i class="fa-solid fa-floppy-disk me-2"></i> <%= typeof __ !== 'undefined' ? __('settings.save_changes') : 'Enregistrer les modifications' %>
             </button>
           </div>
         </form>
 
-        <!-- Hidden reset forms -->
+        <!-- Hidden reset and import forms -->
         <form id="resetLogoForm" action="/admin/settings/reset-logo" method="post" style="display: none;"></form>
         <form id="resetFaviconForm" action="/admin/settings/reset-favicon" method="post" style="display: none;"></form>
+        <form id="importCsvForm" action="/admin/settings/i18n/import" method="post" enctype="multipart/form-data" style="display: none;">
+          <input type="file" id="hiddenCsvFile" name="translations_file" accept=".csv">
+        </form>
 
         <%- include('../includes/footer.html') %>
     </main>
@@ -463,6 +530,27 @@
           reader.readAsDataURL(file);
         }
       });
+
+      // Import CSV handler
+      const fileInput = document.getElementById('translationsFileInput');
+      const importBtn = document.getElementById('importCsvBtn');
+      const hiddenForm = document.getElementById('importCsvForm');
+      const hiddenInput = document.getElementById('hiddenCsvFile');
+
+      if (importBtn && fileInput && hiddenForm && hiddenInput) {
+        importBtn.addEventListener('click', () => {
+          if (!fileInput.files || fileInput.files.length === 0) {
+            alert("Veuillez sélectionner un fichier .csv d'abord.");
+            return;
+          }
+          if (confirm("Confirmer l'importation de ce fichier CSV ? Les traductions correspondantes seront mises à jour.")) {
+            const dt = new DataTransfer();
+            dt.items.add(fileInput.files[0]);
+            hiddenInput.files = dt.files;
+            hiddenForm.submit();
+          }
+        });
+      }
     </script>
 </body>
 

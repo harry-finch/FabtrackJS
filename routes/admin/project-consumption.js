@@ -7,12 +7,12 @@ const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const dateService = require("../../services/dateService.js");
 
 router.use(isAdmin);
 
 function formatDateTime(date) {
-  if (!date) return "-";
-  return moment(date).format("L HH:mm");
+  return dateService.formatDateTime(date);
 }
 
 // ******************************************************************************

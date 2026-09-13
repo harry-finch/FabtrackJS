@@ -15,20 +15,20 @@
         <main class="form-signin w-100 m-auto">
             <form action="/reset_password" method="post">
                 <img class="mb-4 app-auth-logo" src="/images/logo-fabtrack.svg" alt="FabtrackJS" width="75" height="58" />
-                <h1 class="h3 fw-normal mb-3">Reset password for <%= user.nom %></h1>
+                <h1 class="h3 fw-normal mb-3"><%= __('auth.reset_for_user', user.nom) %></h1>
 
                 <div class="form-floating">
-                    <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="Password" required />
-                    <label for="password_verif">Password</label>
+                    <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="<%= __('auth.password') %>" required />
+                    <label for="password_verif"><%= __('auth.password') %></label>
                 </div>
                 <div class="form-floating">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required />
-                    <label for="password">Confirm password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="<%= __('auth.confirm_password') %>" required />
+                    <label for="password"><%= __('auth.confirm_password') %></label>
                 </div>
 
                 <input type="hidden" id="id" name="id" value="<%= user.id %>" />
 
-                <button class="btn btn-primary w-100 py-2" type="submit">Reset</button>
+                <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.reset_password') %></button>
                 <p class="text-body-secondary mb-3 mt-5">&copy; Stéphane Muller 2024</p>
             </form>
 
@@ -38,7 +38,7 @@
             document.querySelector("form").addEventListener("submit", (event) => {
                 if (document.getElementById("password").value != document.getElementById("password_verif").value) {
                     event.preventDefault();
-                    document.getElementById("warning").innerHTML = "Passwords do not match!";
+                    document.getElementById("warning").innerHTML = "<%= __('auth.passwords_mismatch') %>";
                     document.getElementById("warning").style.display = "block";
                 }
             });

@@ -9,6 +9,7 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
+const dateService = require("../services/dateService.js");
 const { isNull } = require("util");
 
 const prisma = new PrismaClient();
@@ -28,7 +29,7 @@ const transporter = nodemailer.createTransport({
 
 // Helper Functions
 function formatDateTime(date) {
-  return moment(date).format("L HH:mm");
+  return dateService.formatDateTime(date);
 }
 
 function removeDuplicates(array) {

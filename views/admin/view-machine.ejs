@@ -102,15 +102,15 @@
                 </div>
                 <div class="col-6">
                   <strong>Purchase Date:</strong>
-                  <p class="text-secondary"><%= machine.purchaseDate ? new Date(machine.purchaseDate).toLocaleDateString() : 'N/A' %></p>
+                  <p class="text-secondary"><%= formatDate(machine.purchaseDate) %></p>
                 </div>
                 <div class="col-6">
                   <strong>Last Maintenance:</strong>
-                  <p class="text-secondary"><%= machine.lastMaintenance ? new Date(machine.lastMaintenance).toLocaleDateString() : 'N/A' %></p>
+                  <p class="text-secondary"><%= formatDate(machine.lastMaintenance) %></p>
                 </div>
                 <div class="col-6">
                   <strong>Warranty Expiry:</strong>
-                  <p class="text-secondary"><%= machine.warrantyExpiry ? new Date(machine.warrantyExpiry).toLocaleDateString() : 'N/A' %></p>
+                  <p class="text-secondary"><%= formatDate(machine.warrantyExpiry) %></p>
                 </div>
                 <div class="col-12">
                   <strong>Documentation:</strong>

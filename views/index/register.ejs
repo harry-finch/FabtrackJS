@@ -15,34 +15,34 @@
         <main class="form-signin w-100 m-auto">
             <form action="/create-account" method="post">
                 <img class="mb-4 app-auth-logo" src="/images/logo-fabtrack.svg" alt="FabtrackJS" width="75" height="58" />
-                <h1 class="h3 fw-normal mb-3">Create account</h1>
+                <h1 class="h3 fw-normal mb-3"><%= __('auth.create_account_title') %></h1>
 
                 <div class="alert alert-warning" id="warning" style="display: none" role="alert"></div>
 
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required />
-                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="<%= __('auth.username') %>" required />
+                    <label for="username"><%= __('auth.username') %></label>
                 </div>
 
                 <div class="form-floating">
-                    <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="Password" required />
-                    <label for="password_verif">Password</label>
+                    <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="<%= __('auth.password') %>" required />
+                    <label for="password_verif"><%= __('auth.password') %></label>
                 </div>
                 <div class="form-floating">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required />
-                    <label for="password">Confirm password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="<%= __('auth.confirm_password') %>" required />
+                    <label for="password"><%= __('auth.confirm_password') %></label>
                 </div>
 
                 <div class="form-floating">
                     <input type="email" class="form-control" id="mail" name="mail" placeholder="your@email.com" required />
-                    <label for="mail">Email</label>
+                    <label for="mail"><%= __('auth.email') %></label>
                 </div>
 
                 <!-- Honeypot field (hidden) -->
                 <input type="text" name="honeypot" style="display: none;" autocomplete="off">
 
-                <button class="btn btn-primary w-100 py-2" type="submit">Register</button>
-                <p class="mt-2 text-center"><small><a href="../login">I already have an account</a></small></p>
+                <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.create_account') %></button>
+                <p class="mt-2 text-center"><small><a href="../login"><%= __('auth.i_have_account') %></a></small></p>
             </form>
 
             <%- include('../includes/footer.html') %>
@@ -54,7 +54,7 @@
               event.preventDefault();
               document
                 .getElementsByClassName("toast-body")[0]
-                .innerHTML = "Error: Passwords do not match!";
+                .innerHTML = "<%= __('auth.passwords_mismatch') %>";
               showNotification();
             }
           });
