@@ -34,28 +34,36 @@
             aria-label="Toggle language"
             title="Changer de langue / Switch language"
         >
-            <span style="font-size: 1.1rem; line-height: 1;"><%= typeof currentLocale !== 'undefined' && currentLocale === 'en' ? '🇬🇧' : '🇫🇷' %></span>
+            <span style="font-size: 1.1rem; line-height: 1;"><%= typeof currentLocaleFlag !== 'undefined' ? currentLocaleFlag : (typeof currentLocale !== 'undefined' && currentLocale === 'en' ? '🇬🇧' : '🇫🇷') %></span>
             <span class="small fw-bold ms-1 text-uppercase" style="font-size: 0.75rem;"><%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %></span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-lang">
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'fr') ? 'active fw-bold' : '' %>" href="/change-language/fr">
-                    <span>🇫🇷</span>
-                    <span>Français</span>
-                    <% if (typeof currentLocale !== 'undefined' && currentLocale === 'fr') { %>
-                        <svg class="bi ms-auto" width="1em" height="1em"><use href="#check2"></use></svg>
-                    <% } %>
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'en') ? 'active fw-bold' : '' %>" href="/change-language/en">
-                    <span>🇬🇧</span>
-                    <span>English</span>
-                    <% if (typeof currentLocale !== 'undefined' && currentLocale === 'en') { %>
-                        <svg class="bi ms-auto" width="1em" height="1em"><use href="#check2"></use></svg>
-                    <% } %>
-                </a>
-            </li>
+            <% if (typeof localesMeta !== 'undefined' && localesMeta && localesMeta.length > 0) { %>
+                <% localesMeta.forEach(function(lang) { %>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === lang.code) ? 'active fw-bold' : '' %>" href="/change-language/<%= lang.code %>">
+                            <span><%= lang.flag %></span>
+                            <span><%= lang.name %></span>
+                            <% if (typeof currentLocale !== 'undefined' && currentLocale === lang.code) { %>
+                                <svg class="bi ms-auto" width="1em" height="1em"><use href="#check2"></use></svg>
+                            <% } %>
+                        </a>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'fr') ? 'active fw-bold' : '' %>" href="/change-language/fr">
+                        <span>🇫🇷</span>
+                        <span>Français</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'en') ? 'active fw-bold' : '' %>" href="/change-language/en">
+                        <span>🇬🇧</span>
+                        <span>English</span>
+                    </a>
+                </li>
+            <% } %>
         </ul>
     </div>
 

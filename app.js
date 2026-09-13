@@ -13,6 +13,7 @@ const loadPlugins = require("./core/pluginLoader");
 const hookManager = require("./core/HookManager");
 const settingsService = require("./services/settingsService");
 const dateService = require("./services/dateService");
+const i18nService = require("./services/i18nService");
 const i18n = require("./config/i18n");
 loadPlugins();
 
@@ -98,7 +99,8 @@ app.use(async (req, res, next) => {
     res.locals.settings = settings;
 
     // Internationalization (i18n) setup
-    const supportedLocales = i18n.getLocales();
+    const supportedLocales = i18nService.getAvailableLocales();
+    const localesMeta = i18nService.getAvailableLanguagesWithMeta();
     let targetLang = req.session && req.session.lang;
     if (!targetLang && req.cookies && req.cookies.fabtrack_lang) {
       targetLang = req.cookies.fabtrack_lang;
@@ -111,7 +113,23 @@ app.use(async (req, res, next) => {
     }
     req.setLocale(targetLang);
     res.locals.currentLocale = req.getLocale();
+    const currentMeta = i18nService.getLanguageMeta(res.locals.currentLocale);
+    res.locals.currentLocaleFlag = currentMeta.flag;
+    res.locals.currentLocaleName = currentMeta.name;
     res.locals.locales = supportedLocales;
+    res.locals.localesMeta = localesMeta;
+
+    // Fallback translation: if a string in targetLang is missing or empty, fallback to French
+    if (res.locals.__) {
+      const origT = res.locals.__;
+      res.locals.__ = function (...args) {
+        const val = origT.apply(this, args);
+        if ((!val || val === args[0]) && typeof args[0] === "string") {
+          return i18n.__({ phrase: args[0], locale: "fr" }) || val;
+        }
+        return val;
+      };
+    }
     res.locals.platformName = settings.platform_name || "FabtrackJS";
     res.locals.platformSubtitle = settings.platform_subtitle || "Track your fablab's activity";
     res.locals.platformLogoType = settings.platform_logo_type || "default";

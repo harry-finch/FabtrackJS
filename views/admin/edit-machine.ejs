@@ -47,7 +47,7 @@
           <div class="col-6">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="name" name="name" value="<%= machine.name %>" required />
-              <label for="name">Machine Name</label>
+              <label for="name"><%= typeof __ !== 'undefined' ? __('machines.field_name') : 'Nom de la machine :' %></label>
             </div>
           </div>
           <div class="col-3">
@@ -57,18 +57,18 @@
                   <option value="<%= type.id %>" <%= machine.machinetypeId === type.id ? 'selected' : '' %>><%= type.name %></option>
                 <% }); %>
               </select>
-              <label for="machinetypeId">Machine Type</label>
+              <label for="machinetypeId"><%= typeof __ !== 'undefined' ? __('machines.field_type') : 'Type :' %></label>
             </div>
           </div>
           <div class="col-3">
             <div class="form-floating mb-3">
               <select class="form-select" id="categoryId" name="categoryId">
-                <option value="">(No Category)</option>
+                <option value=""><%= typeof __ !== 'undefined' ? __('machines.no_category') : '(Sans catégorie)' %></option>
                 <% categories.forEach(function(cat) { %>
                   <option value="<%= cat.id %>" <%= machine.categoryId === cat.id ? 'selected' : '' %>><%= cat.name %></option>
                 <% }); %>
               </select>
-              <label for="categoryId">Category</label>
+              <label for="categoryId"><%= typeof __ !== 'undefined' ? __('machines.field_category') : 'Catégorie :' %></label>
             </div>
           </div>
         </div>
@@ -77,13 +77,13 @@
           <div class="col-6">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="make" name="make" value="<%= machine.make %>" required />
-              <label for="make">Make / Manufacturer</label>
+              <label for="make"><%= typeof __ !== 'undefined' ? __('machines.field_make') : 'Marque / Fabricant :' %></label>
             </div>
           </div>
           <div class="col-6">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="model" name="model" value="<%= machine.model %>" required />
-              <label for="model">Model</label>
+              <label for="model"><%= typeof __ !== 'undefined' ? __('machines.field_model') : 'Modèle :' %></label>
             </div>
           </div>
         </div>
@@ -92,13 +92,13 @@
           <div class="col-6">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="serialNumber" name="serialNumber" value="<%= machine.serialNumber || '' %>" />
-              <label for="serialNumber">Serial Number</label>
+              <label for="serialNumber"><%= typeof __ !== 'undefined' ? __('machines.field_serial') : 'Numéro de série :' %></label>
             </div>
           </div>
           <div class="col-6">
             <div class="form-floating mb-3">
               <input type="number" class="form-control" id="internalReference" name="internalReference" value="<%= machine.internalReference || '' %>" />
-              <label for="internalReference">Internal Reference (#)</label>
+              <label for="internalReference"><%= typeof __ !== 'undefined' ? __('machines.field_internal_ref') : 'Référence interne (#) :' %></label>
             </div>
           </div>
         </div>
@@ -107,12 +107,12 @@
           <div class="col-6">
             <div class="form-floating mb-3">
               <select class="form-select" id="locationId" name="locationId">
-                <option value="">None</option>
+                <option value=""><%= typeof __ !== 'undefined' ? __('common.none') : 'Aucun' %></option>
                 <% locations.forEach(function(loc) { %>
                   <option value="<%= loc.id %>" <%= machine.locationId === loc.id ? 'selected' : '' %>><%= loc.name %></option>
                 <% }); %>
               </select>
-              <label for="locationId">Location</label>
+              <label for="locationId"><%= typeof __ !== 'undefined' ? __('machines.field_location') : 'Emplacement :' %></label>
             </div>
           </div>
           <div class="col-6">
@@ -122,7 +122,7 @@
                   <option value="<%= acc.id %>" <%= machine.accessId === acc.id ? 'selected' : '' %>><%= acc.name %></option>
                 <% }); %>
               </select>
-              <label for="accessId">Access Level</label>
+              <label for="accessId"><%= typeof __ !== 'undefined' ? __('machines.field_access') : 'Niveau d\'accès :' %></label>
             </div>
           </div>
         </div>
@@ -131,19 +131,19 @@
           <div class="col-4">
             <div class="form-floating mb-3">
               <input type="date" class="form-control" id="purchaseDate" name="purchaseDate" value="<%= machine.purchaseDate ? new Date(machine.purchaseDate).toISOString().split('T')[0] : '' %>" />
-              <label for="purchaseDate">Purchase Date</label>
+              <label for="purchaseDate"><%= typeof __ !== 'undefined' ? __('machines.field_purchase_date') : 'Date d\'achat :' %></label>
             </div>
           </div>
           <div class="col-4">
             <div class="form-floating mb-3">
               <input type="date" class="form-control" id="lastMaintenance" name="lastMaintenance" value="<%= machine.lastMaintenance ? new Date(machine.lastMaintenance).toISOString().split('T')[0] : '' %>" />
-              <label for="lastMaintenance">Last Maintenance</label>
+              <label for="lastMaintenance"><%= typeof __ !== 'undefined' ? __('machines.field_last_maintenance') : 'Dernière maintenance :' %></label>
             </div>
           </div>
           <div class="col-4">
             <div class="form-floating mb-3">
               <input type="date" class="form-control" id="warrantyExpiry" name="warrantyExpiry" value="<%= machine.warrantyExpiry ? new Date(machine.warrantyExpiry).toISOString().split('T')[0] : '' %>" />
-              <label for="warrantyExpiry">Warranty Expiry</label>
+              <label for="warrantyExpiry"><%= typeof __ !== 'undefined' ? __('machines.field_warranty_expiry') : 'Expiration de garantie :' %></label>
             </div>
           </div>
         </div>
@@ -152,18 +152,18 @@
           <div class="col-12">
             <div class="form-floating mb-3">
               <input type="url" class="form-control" id="documentation" name="documentation" value="<%= machine.documentation || '' %>" placeholder="https://..." />
-              <label for="documentation">Documentation URL</label>
+              <label for="documentation"><%= typeof __ !== 'undefined' ? __('machines.field_documentation') : 'URL de documentation :' %></label>
             </div>
           </div>
         </div>
 
         <div class="row mb-4">
           <div class="col-12">
-            <label class="form-label text-muted small">Update Machine Picture (optional):</label>
+            <label class="form-label text-muted small"><%= typeof __ !== 'undefined' ? __('machines.field_picture') : 'Photo de la machine (optionnel) :' %></label>
             <input type="file" class="form-control" id="machinePicture" name="machinePicture" accept="image/*" />
             <% if (machine.picture) { %>
               <div class="mt-2">
-                <span class="text-muted small">Current image:</span> <img src="<%= machine.picture %>" alt="preview" style="height: 40px; border-radius: 4px;" />
+                <span class="text-muted small">Image actuelle :</span> <img src="<%= machine.picture %>" alt="preview" style="height: 40px; border-radius: 4px;" />
               </div>
             <% } %>
           </div>
@@ -171,8 +171,8 @@
 
         <div class="row">
           <div class="col-12">
-            <button class="btn btn-primary w-100 mb-2 py-2" type="submit">Update Machine</button>
-            <a href="/admin/machines/manage" class="btn btn-secondary w-100 py-2">Cancel</a>
+            <button class="btn btn-primary w-100 mb-2 py-2" type="submit"><%= typeof __ !== 'undefined' ? __('machines.btn_update') : 'Enregistrer les modifications' %></button>
+            <a href="/admin/machines/manage" class="btn btn-secondary w-100 py-2"><%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %></a>
           </div>
         </div>
       </form>

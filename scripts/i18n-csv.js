@@ -13,7 +13,8 @@ if (action === "export") {
 } else if (action === "import") {
   const src = customPath ? path.resolve(customPath) : undefined;
   const result = i18nService.importFromCsvFile(src);
-  console.log(`✅ Importation réussie ! ${result.totalKeys} clés mises à jour dans locales/fr.json et locales/en.json.`);
+  const newMsg = result.newLocales && result.newLocales.length > 0 ? ` (Nouvelle(s) langue(s) créée(s) : ${result.newLocales.join(", ")})` : "";
+  console.log(`✅ Importation réussie ! ${result.totalKeys} clés synchronisées dans ${result.localesUpdated.map(l => "locales/" + l + ".json").join(", ")}.${newMsg}`);
 } else {
   console.error("Usage : node scripts/i18n-csv.js [export|import] [fichier.csv]");
   process.exit(1);

@@ -5,6 +5,69 @@ const i18n = require("../config/i18n");
 const LOCALES_DIR = path.join(__dirname, "../locales");
 const DEFAULT_CSV_PATH = path.join(__dirname, "../translations.csv");
 
+const KNOWN_LANGUAGES = {
+  fr: { code: "fr", name: "Français", flag: "🇫🇷" },
+  en: { code: "en", name: "English", flag: "🇬🇧" },
+  es: { code: "es", name: "Español", flag: "🇪🇸" },
+  de: { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  it: { code: "it", name: "Italiano", flag: "🇮🇹" },
+  pt: { code: "pt", name: "Português", flag: "🇵🇹" },
+  nl: { code: "nl", name: "Nederlands", flag: "🇳🇱" },
+  ca: { code: "ca", name: "Català", flag: "🇦🇩" },
+  eu: { code: "eu", name: "Euskara", flag: "🇪🇸" },
+  pl: { code: "pl", name: "Polski", flag: "🇵🇱" },
+  ro: { code: "ro", name: "Română", flag: "🇷🇴" },
+  sv: { code: "sv", name: "Svenska", flag: "🇸🇪" },
+  da: { code: "da", name: "Dansk", flag: "🇩🇰" },
+  fi: { code: "fi", name: "Suomi", flag: "🇫🇮" },
+  no: { code: "no", name: "Norsk", flag: "🇳🇴" },
+  el: { code: "el", name: "Ελληνικά", flag: "🇬🇷" },
+  tr: { code: "tr", name: "Türkçe", flag: "🇹🇷" },
+  ru: { code: "ru", name: "Русский", flag: "🇷🇺" },
+  uk: { code: "uk", name: "Українська", flag: "🇺🇦" },
+  ar: { code: "ar", name: "العربية", flag: "🇸🇦" },
+  zh: { code: "zh", name: "中文", flag: "🇨🇳" },
+  ja: { code: "ja", name: "日本語", flag: "🇯🇵" },
+  ko: { code: "ko", name: "한국어", flag: "🇰🇷" },
+};
+
+const COLUMN_ALIASES = {
+  FR: "fr",
+  FRANCAIS: "fr",
+  FRANÇAIS: "fr",
+  FRENCH: "fr",
+  EN: "en",
+  ANGLAIS: "en",
+  ENGLISH: "en",
+  ES: "es",
+  ESPAGNOL: "es",
+  SPANISH: "es",
+  DE: "de",
+  ALLEMAND: "de",
+  GERMAN: "de",
+  IT: "it",
+  ITALIEN: "it",
+  ITALIAN: "it",
+  PT: "pt",
+  PORTUGAIS: "pt",
+  PORTUGUESE: "pt",
+  NL: "nl",
+  NEERLANDAIS: "nl",
+  DUTCH: "nl",
+  RU: "ru",
+  RUSSE: "ru",
+  RUSSIAN: "ru",
+  ZH: "zh",
+  CHINOIS: "zh",
+  CHINESE: "zh",
+  JA: "ja",
+  JAPONAIS: "ja",
+  JAPANESE: "ja",
+  AR: "ar",
+  ARABE: "ar",
+  ARABIC: "ar",
+};
+
 // Helper: Flatten a nested object into dot-notated keys
 function flattenObject(obj, prefix = "") {
   let result = {};
@@ -69,7 +132,7 @@ function parseCsv(csvText) {
       if (char === '"') {
         if (nextChar === '"') {
           currentField += '"';
-          i++; // Skip the escaped quote
+          i++; // Skip escaped quote
         } else {
           insideQuotes = false;
         }
@@ -105,38 +168,102 @@ function parseCsv(csvText) {
   return rows;
 }
 
+function normalizeLanguageCode(colName) {
+  if (!colName) return null;
+  const upper = colName.trim().toUpperCase();
+  if (COLUMN_ALIASES[upper]) {
+    return COLUMN_ALIASES[upper];
+  }
+  // Check standard 2-5 letter language code (e.g., 'es', 'de', 'pt-br')
+  if (/^[A-Z]{2,3}(-[A-Z]{2,4})?$/.test(upper)) {
+    return upper.toLowerCase();
+  }
+  return null;
+}
+
 class I18nService {
-  // Export locales (fr, en) to a CSV string
+  getAvailableLocales() {
+    if (!fs.existsSync(LOCALES_DIR)) return ["fr", "en"];
+    const files = fs.readdirSync(LOCALES_DIR);
+    const found = files
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => path.basename(f, ".json").toLowerCase());
+
+    const custom = found.filter((l) => l !== "fr" && l !== "en").sort();
+    const result = [];
+    if (found.includes("fr") || true) result.push("fr");
+    if (found.includes("en") || true) result.push("en");
+    for (const c of custom) {
+      if (!result.includes(c)) result.push(c);
+    }
+    return result;
+  }
+
+  getLanguageMeta(code) {
+    const c = String(code || "").toLowerCase();
+    if (KNOWN_LANGUAGES[c]) {
+      return KNOWN_LANGUAGES[c];
+    }
+    return {
+      code: c,
+      name: c.toUpperCase(),
+      flag: "🌐",
+    };
+  }
+
+  getAvailableLanguagesWithMeta() {
+    return this.getAvailableLocales().map((code) => this.getLanguageMeta(code));
+  }
+
+  // Export all detected locales to a CSV string
   exportToCsvString() {
-    const frFile = path.join(LOCALES_DIR, "fr.json");
-    const enFile = path.join(LOCALES_DIR, "en.json");
+    const locales = this.getAvailableLocales();
+    const flatByLocale = {};
+    const allKeysSet = new Set();
 
-    const frData = fs.existsSync(frFile) ? JSON.parse(fs.readFileSync(frFile, "utf8")) : {};
-    const enData = fs.existsSync(enFile) ? JSON.parse(fs.readFileSync(enFile, "utf8")) : {};
+    for (const loc of locales) {
+      const locPath = path.join(LOCALES_DIR, `${loc}.json`);
+      if (fs.existsSync(locPath)) {
+        try {
+          const data = JSON.parse(fs.readFileSync(locPath, "utf8"));
+          const flat = flattenObject(data);
+          flatByLocale[loc] = flat;
+          Object.keys(flat).forEach((k) => allKeysSet.add(k));
+        } catch (e) {
+          console.error(`Error reading ${loc}.json:`, e);
+          flatByLocale[loc] = {};
+        }
+      } else {
+        flatByLocale[loc] = {};
+      }
+    }
 
-    const flatFr = flattenObject(frData);
-    const flatEn = flattenObject(enData);
+    const allKeys = Array.from(allKeysSet).sort();
 
-    const allKeys = Array.from(new Set([...Object.keys(flatFr), ...Object.keys(flatEn)])).sort();
+    // Build header with Key + all locales in uppercase
+    const headerCols = ["\uFEFFKey", ...locales.map((l) => l.toUpperCase())];
+    const lines = [headerCols.join(",")];
 
-    const lines = ["\uFEFFKey,FR,EN"]; // UTF-8 BOM ensures Excel opens accents properly
     for (const key of allKeys) {
-      const frVal = flatFr[key] !== undefined ? flatFr[key] : "";
-      const enVal = flatEn[key] !== undefined ? flatEn[key] : "";
-      lines.push(`${escapeCsvValue(key)},${escapeCsvValue(frVal)},${escapeCsvValue(enVal)}`);
+      const row = [escapeCsvValue(key)];
+      for (const loc of locales) {
+        const val = flatByLocale[loc] && flatByLocale[loc][key] !== undefined ? flatByLocale[loc][key] : "";
+        row.push(escapeCsvValue(val));
+      }
+      lines.push(row.join(","));
     }
 
     return lines.join("\n");
   }
 
-  // Export to a file on disk (default translations.csv)
+  // Export to a file on disk
   exportToCsvFile(destPath = DEFAULT_CSV_PATH) {
     const csvContent = this.exportToCsvString();
     fs.writeFileSync(destPath, csvContent, "utf8");
     return destPath;
   }
 
-  // Import CSV text and update fr.json and en.json
+  // Import CSV text, update existing files and dynamically create new locale files
   importFromCsvString(csvText) {
     const rows = parseCsv(csvText);
     if (!rows || rows.length < 2) {
@@ -144,28 +271,47 @@ class I18nService {
     }
 
     // Detect header columns
-    const header = rows[0].map((h) => h.trim().toUpperCase());
-    const keyIdx = header.findIndex((h) => h === "KEY" || h === "CLÉ" || h === "CLE");
-    const frIdx = header.findIndex((h) => h === "FR" || h === "FRANCAIS" || h === "FRANÇAIS" || h === "FRENCH");
-    const enIdx = header.findIndex((h) => h === "EN" || h === "ANGLAIS" || h === "ENGLISH");
+    const rawHeaders = rows[0];
+    let keyIdx = -1;
+    const targetLangs = []; // Array of { colIdx, code }
 
-    if (keyIdx === -1 || (frIdx === -1 && enIdx === -1)) {
-      throw new Error("En-têtes CSV invalides. Les colonnes requises sont : Key, FR, EN");
+    for (let i = 0; i < rawHeaders.length; i++) {
+      const col = (rawHeaders[i] || "").trim().toUpperCase();
+      if (col === "KEY" || col === "CLÉ" || col === "CLE") {
+        keyIdx = i;
+      } else {
+        const langCode = normalizeLanguageCode(col);
+        if (langCode && !targetLangs.some((t) => t.code === langCode)) {
+          targetLangs.push({ colIdx: i, code: langCode });
+        }
+      }
     }
 
-    const flatFr = {};
-    const flatEn = {};
+    if (keyIdx === -1) {
+      throw new Error("Colonne 'Key' introuvable dans le CSV. La première colonne doit être 'Key'.");
+    }
+
+    if (targetLangs.length === 0) {
+      throw new Error("Aucune colonne de langue reconnue dans le CSV (ex: FR, EN, ES, DE, IT...).");
+    }
+
+    // Prepare dictionary for each language
+    const flatByLang = {};
+    for (const target of targetLangs) {
+      flatByLang[target.code] = {};
+    }
+
+    let totalKeys = 0;
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const key = (row[keyIdx] || "").trim();
       if (!key) continue;
+      totalKeys++;
 
-      if (frIdx !== -1 && row[frIdx] !== undefined) {
-        flatFr[key] = row[frIdx];
-      }
-      if (enIdx !== -1 && row[enIdx] !== undefined) {
-        flatEn[key] = row[enIdx];
+      for (const target of targetLangs) {
+        const cellValue = row[target.colIdx] !== undefined ? row[target.colIdx] : "";
+        flatByLang[target.code][key] = cellValue;
       }
     }
 
@@ -174,15 +320,31 @@ class I18nService {
       fs.mkdirSync(LOCALES_DIR, { recursive: true });
     }
 
-    const frNested = unflattenObject(flatFr);
-    const enNested = unflattenObject(flatEn);
+    const previousLocales = this.getAvailableLocales();
+    const updatedLocales = [];
+    const newLocales = [];
 
-    fs.writeFileSync(path.join(LOCALES_DIR, "fr.json"), JSON.stringify(frNested, null, 2) + "\n", "utf8");
-    fs.writeFileSync(path.join(LOCALES_DIR, "en.json"), JSON.stringify(enNested, null, 2) + "\n", "utf8");
+    for (const target of targetLangs) {
+      const code = target.code;
+      const nested = unflattenObject(flatByLang[code]);
+      const targetFilePath = path.join(LOCALES_DIR, `${code}.json`);
+      fs.writeFileSync(targetFilePath, JSON.stringify(nested, null, 2) + "\n", "utf8");
+
+      updatedLocales.push(code);
+      if (!previousLocales.includes(code)) {
+        newLocales.push(code);
+      }
+    }
+
+    // Reconfigure i18n to immediately load the new/updated locales
+    if (typeof i18n.refreshLocales === "function") {
+      i18n.refreshLocales();
+    }
 
     return {
-      totalKeys: Object.keys(flatFr).length,
-      localesUpdated: ["fr", "en"],
+      totalKeys,
+      localesUpdated: updatedLocales,
+      newLocales,
     };
   }
 

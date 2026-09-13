@@ -8,6 +8,7 @@ const dotenv = require("dotenv");
 const isAuthenticated = require("../middleware/checkSession.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
+const i18nService = require("../services/i18nService.js");
 
 dotenv.config();
 
@@ -272,17 +273,18 @@ router.get(
 
 router.get("/change-language/:lang", (req, res) => {
   const { lang } = req.params;
-  const validLocales = ["fr", "en"];
-  if (validLocales.includes(lang)) {
+  const validLocales = i18nService.getAvailableLocales();
+  if (validLocales.includes(lang.toLowerCase())) {
+    const target = lang.toLowerCase();
     if (req.session) {
-      req.session.lang = lang;
+      req.session.lang = target;
     }
-    res.cookie("fabtrack_lang", lang, {
+    res.cookie("fabtrack_lang", target, {
       maxAge: 365 * 24 * 60 * 60 * 1000,
       sameSite: "lax",
     });
     if (req.setLocale) {
-      req.setLocale(lang);
+      req.setLocale(target);
     }
   }
   const referer = req.headers.referer || "/fabtrack";

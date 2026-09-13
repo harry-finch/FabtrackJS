@@ -124,7 +124,8 @@ router.post(
     if (req.body.allow_self_registration !== undefined) {
       updates.allow_self_registration = req.body.allow_self_registration === "true" ? "true" : "false";
     }
-    if (req.body.default_language !== undefined && ["fr", "en"].includes(req.body.default_language)) {
+    const validLocales = i18nService.getAvailableLocales();
+    if (req.body.default_language !== undefined && validLocales.includes(req.body.default_language)) {
       updates.default_language = req.body.default_language;
     }
     if (req.body.date_format !== undefined && dateService.VALID_FORMAT_VALUES.includes(req.body.date_format)) {
@@ -259,7 +260,10 @@ router.post(
     try {
       const csvText = req.file.buffer.toString("utf8");
       const result = i18nService.importFromCsvString(csvText);
-      req.session.notification = `Success: Traductions importées avec succès (${result.totalKeys} clés mises à jour).`;
+      const newLangMsg = result.newLocales && result.newLocales.length > 0
+        ? ` Nouvelle(s) langue(s) créée(s) : ${result.newLocales.map((l) => l.toUpperCase()).join(", ")} !`
+        : "";
+      req.session.notification = `Success: Traductions importées avec succès (${result.totalKeys} clés dans ${result.localesUpdated.map((l) => l.toUpperCase()).join(", ")}).${newLangMsg}`;
     } catch (err) {
       console.error("Erreur lors de l'import i18n CSV:", err);
       req.session.notification = `Error: Échec de l'import des traductions : ${err.message}`;

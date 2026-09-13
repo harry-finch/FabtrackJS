@@ -1,27 +1,35 @@
 <div class="dropdown">
     <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm header-action-btn d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="<%= typeof __ !== 'undefined' ? __('nav.switch_language') : 'Changer de langue' %>" id="headerLanguageSelector">
-        <span class="fs-6 me-1"><%= typeof currentLocale !== 'undefined' && currentLocale === 'en' ? '🇬🇧' : '🇫🇷' %></span>
+        <span class="fs-6 me-1"><%= typeof currentLocaleFlag !== 'undefined' ? currentLocaleFlag : (typeof currentLocale !== 'undefined' && currentLocale === 'en' ? '🇬🇧' : '🇫🇷') %></span>
         <span class="fw-semibold small text-uppercase"><%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %></span>
         <i class="fa-solid fa-chevron-down fa-2xs text-muted ms-1"></i>
     </button>
     <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-2 mt-2" aria-labelledby="headerLanguageSelector" style="min-width: 160px;">
-        <li>
-            <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'fr') ? 'active bg-primary text-white fw-bold' : '' %>" href="/change-language/fr">
-                <span class="fs-6">🇫🇷</span>
-                <span class="small">Français</span>
-                <% if (typeof currentLocale !== 'undefined' && currentLocale === 'fr') { %>
-                    <i class="fa-solid fa-check ms-auto fa-xs"></i>
-                <% } %>
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'en') ? 'active bg-primary text-white fw-bold' : '' %>" href="/change-language/en">
-                <span class="fs-6">🇬🇧</span>
-                <span class="small">English</span>
-                <% if (typeof currentLocale !== 'undefined' && currentLocale === 'en') { %>
-                    <i class="fa-solid fa-check ms-auto fa-xs"></i>
-                <% } %>
-            </a>
-        </li>
+        <% if (typeof localesMeta !== 'undefined' && localesMeta && localesMeta.length > 0) { %>
+            <% localesMeta.forEach(function(lang) { %>
+                <li>
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === lang.code) ? 'active bg-primary text-white fw-bold' : '' %>" href="/change-language/<%= lang.code %>">
+                        <span class="fs-6"><%= lang.flag %></span>
+                        <span class="small"><%= lang.name %></span>
+                        <% if (typeof currentLocale !== 'undefined' && currentLocale === lang.code) { %>
+                            <i class="fa-solid fa-check ms-auto fa-xs"></i>
+                        <% } %>
+                    </a>
+                </li>
+            <% }); %>
+        <% } else { %>
+            <li>
+                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/change-language/fr">
+                    <span class="fs-6">🇫🇷</span>
+                    <span class="small">Français</span>
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/change-language/en">
+                    <span class="fs-6">🇬🇧</span>
+                    <span class="small">English</span>
+                </a>
+            </li>
+        <% } %>
     </ul>
 </div>

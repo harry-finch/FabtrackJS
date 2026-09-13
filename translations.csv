@@ -58,6 +58,15 @@ common.success,Succès,Success
 common.upload,Téléverser,Upload
 common.warning,Avertissement,Warning
 common.yes,Oui,Yes
+history.col_arrival,Arrivée,Arrival
+history.col_comments,Commentaires,Comments
+history.col_delete,Supprimer,Delete
+history.col_departure,Départ,Departure
+history.col_edit,Modifier,Edit
+history.col_project,Projet,Project
+history.col_user,Usager,User
+history.col_workspace,Espace,Workspace
+history.no_records,Aucun enregistrement trouvé dans l'historique.,No history records found.
 kiosk.btn_activity,Activité,Activity
 kiosk.btn_create_user,Créer l'usager,Create user
 kiosk.btn_exit,Sortie,Exit
@@ -103,6 +112,38 @@ kiosk.tooltip_add_comment,Ajouter un commentaire,Add comment
 kiosk.tooltip_edit_comment,Modifier le commentaire,Edit comment
 kiosk.users_present,usagers actuellement présents,users currently present
 kiosk.workshop_badge,Atelier,Workshop
+machines.action_delete,Supprimer,Delete
+machines.action_edit,Modifier,Edit
+machines.action_history,Historique d'utilisation,Usage History
+machines.action_view,Voir la fiche,View Details
+machines.btn_create,Créer la machine,Create Machine
+machines.btn_update,Enregistrer les modifications,Update Machine
+machines.col_access,Niveau d'accès,Access Level
+machines.col_actions,Actions,Actions
+machines.col_category,Catégorie,Category
+machines.col_location,Emplacement,Location
+machines.col_name,Nom,Name
+machines.col_type,Type,Type
+machines.confirm_delete,Êtes-vous sûr de vouloir supprimer cette machine ?,Are you sure you want to delete this machine?
+machines.create_title,Nouvelle machine,Create New Machine
+machines.field_access,Niveau d'accès :,Access Level:
+machines.field_category,Catégorie :,Category:
+machines.field_documentation,URL de documentation (optionnel) :,Documentation URL (optional):
+machines.field_internal_ref,Référence interne (#) :,Internal Reference (#):
+machines.field_last_maintenance,Dernière maintenance :,Last Maintenance:
+machines.field_location,Emplacement :,Location:
+machines.field_make,Marque / Fabricant :,Make / Manufacturer:
+machines.field_model,Modèle :,Model:
+machines.field_name,Nom de la machine (optionnel) :,Machine Name (optional):
+machines.field_picture,Photo de la machine (optionnel) :,Machine Picture (optional):
+machines.field_purchase_date,Date d'achat :,Purchase Date:
+machines.field_serial,Numéro de série :,Serial Number:
+machines.field_type,Type :,Type:
+machines.field_warranty_expiry,Expiration de garantie :,Warranty Expiry:
+machines.no_category,(Sans catégorie),(No category)
+machines.select_access,Sélectionner un niveau d'accès,Select access level
+machines.select_location,Sélectionner un emplacement (optionnel),Select location (optional)
+machines.select_type,Sélectionner un type,Select type
 nav.active_session,Session active,Active session
 nav.admin,Panneau Admin,Admin Panel
 nav.admin_panel,Panneau Admin,Admin Panel
@@ -121,6 +162,20 @@ nav.report_issue,Signaler une panne,Report Issue
 nav.switch_language,Changer de langue,Switch Language
 nav.switch_workspace,Changer d'espace,Switch Workspace
 nav.ue_billing,UE & Facturation Sorbonne,Academic courses & billing
+profile.account_created_on,Compte créé le,Account created on
+profile.birth_year,Année de naissance,Birth Year
+profile.comments,Commentaires,Comments
+profile.email,Adresse e-mail,Email Address
+profile.expert_user,Utilisateur expert (distinction à l'appréciation du staff),Expert User (staff discretion)
+profile.expert_user_desc,Attribue le statut d'utilisateur expert. Ce badge sera le seul affiché dans la liste des personnes présentes sur le kiosque.,Assigns expert status. This badge will be shown on the kiosk list.
+profile.first_name,Prénom,First Name
+profile.last_name,Nom,Last Name
+profile.newsletter,Inscription à la newsletter,Newsletter Subscription
+profile.newsletter_desc,Recevoir la newsletter et les actualités du Fablab par e-mail.,Receive newsletter and Fablab news via email.
+profile.rfid_badge,Numéro de badge RFID (UID),RFID Badge Number (UID)
+profile.update_profile,Mettre à jour le profil,Update Profile
+profile.user_stats,Statistiques de l'usager,User Statistics
+profile.user_type,Type d'usager,User Type
 settings.admin_email_desc,Reçoit les demandes de validation de nouveaux comptes staff et alertes.,Receives staff registration approval requests and system alerts.
 settings.back_admin,Retour panneau admin,Back to admin panel
 settings.currency_desc,"Symbole monétaire utilisé pour la facturation des consommables (ex : €, $, CHF).","Currency symbol used for consumable invoicing (e.g. €, $, CHF)."
@@ -171,3 +226,8 @@ settings.system_badge,Système,System
 settings.title,Configuration générale,General Settings
 settings.upload_favicon,"Téléverser un favicon (.ico, .png, .svg) :","Upload a favicon (.ico, .png, .svg):"
 settings.upload_logo,"Téléverser une nouvelle image (PNG, JPG, SVG, WebP — max 3 Mo) :","Upload a new image (PNG, JPG, SVG, WebP — max 3 MB):"
+users_manage.col_actions,Actions,Actions
+users_manage.col_charter,Charte,Charter
+users_manage.col_email,Adresse e-mail,Email
+users_manage.col_type,Type d'usager,Type
+users_manage.col_username,Nom & Prénom,User Name

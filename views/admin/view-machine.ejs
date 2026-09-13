@@ -93,34 +93,34 @@
                   <p class="text-secondary"><%= machine.serialNumber || 'N/A' %></p>
                 </div>
                 <div class="col-6">
-                  <strong>Internal Ref:</strong>
+                  <strong><%= typeof __ !== 'undefined' ? __('machines.field_internal_ref') : 'Réf. interne :' %></strong>
                   <p class="text-secondary"><%= machine.internalReference ? '#' + machine.internalReference : 'N/A' %></p>
                 </div>
                 <div class="col-6">
-                  <strong>Location:</strong>
+                  <strong><%= typeof __ !== 'undefined' ? __('machines.col_location') : 'Emplacement :' %></strong>
                   <p class="text-secondary"><%= machine.location ? machine.location.name : 'N/A' %></p>
                 </div>
                 <div class="col-6">
-                  <strong>Purchase Date:</strong>
+                  <strong><%= typeof __ !== 'undefined' ? __('machines.field_purchase_date') : 'Date d\'achat :' %></strong>
                   <p class="text-secondary"><%= formatDate(machine.purchaseDate) %></p>
                 </div>
                 <div class="col-6">
-                  <strong>Last Maintenance:</strong>
+                  <strong><%= typeof __ !== 'undefined' ? __('machines.field_last_maintenance') : 'Dernière maintenance :' %></strong>
                   <p class="text-secondary"><%= formatDate(machine.lastMaintenance) %></p>
                 </div>
                 <div class="col-6">
-                  <strong>Warranty Expiry:</strong>
+                  <strong><%= typeof __ !== 'undefined' ? __('machines.field_warranty_expiry') : 'Expiration de garantie :' %></strong>
                   <p class="text-secondary"><%= formatDate(machine.warrantyExpiry) %></p>
                 </div>
                 <div class="col-12">
-                  <strong>Documentation:</strong>
+                  <strong><%= typeof __ !== 'undefined' ? __('machines.field_documentation') : 'Documentation :' %></strong>
                   <p class="mb-0">
                     <% if (machine.documentation) { %>
                       <a href="<%= machine.documentation %>" target="_blank" class="link-primary">
                         <i class="fa-solid fa-arrow-up-right-from-square me-1"></i><%= machine.documentation %>
                       </a>
                     <% } else { %>
-                      <span class="text-secondary">None provided</span>
+                      <span class="text-secondary"><%= typeof __ !== 'undefined' ? __('common.none') : 'Aucune' %></span>
                     <% } %>
                   </p>
                 </div>

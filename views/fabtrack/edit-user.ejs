@@ -56,12 +56,12 @@
                                     <%= user.usertype ? user.usertype.name : 'Usager' %>
                                 </span>
                             </div>
-                            <p class="text-muted small mb-0"><i class="fa-regular fa-calendar-check me-1"></i>Compte créé le <%= user.accountCreationDate %></p>
+                            <p class="text-muted small mb-0"><i class="fa-regular fa-calendar-check me-1"></i><%= typeof __ !== 'undefined' ? __('profile.account_created_on') : 'Compte créé le' %> <%= user.accountCreationDate %></p>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <a href="/fabtrack" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-desktop me-1"></i> Kiosque Fabtrack
+                            <i class="fa-solid fa-desktop me-1"></i> <%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque Fabtrack' %>
                         </a>
                     </div>
                 </div>
@@ -71,19 +71,19 @@
                     <div class="col-4">
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required />
-                            <label for="name">Name</label>
+                            <label for="name"><%= typeof __ !== 'undefined' ? __('profile.first_name') : 'Prénom' %></label>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="surname" name="surname" value="<%= user.surname %>" required />
-                            <label for="surname">Surname</label>
+                            <label for="surname"><%= typeof __ !== 'undefined' ? __('profile.last_name') : 'Nom' %></label>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control" id="birthyear" name="birthyear" value="<%= user.birthYear %>" />
-                            <label for="birthyear">Birth year</label>
+                            <label for="birthyear"><%= typeof __ !== 'undefined' ? __('profile.birth_year') : 'Année de naissance' %></label>
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                     <div class="col-6">
                         <div class="form-floating mb-3">
                             <input type="email" name="email" class="form-control" id="email" value="<%= user.email %>" required />
-                            <label for="email">Email address</label>
+                            <label for="email"><%= typeof __ !== 'undefined' ? __('profile.email') : 'Adresse e-mail' %></label>
                         </div>
                     </div>
                     <div class="col-6">
@@ -101,7 +101,7 @@
                                 <option value="<%= usertype.id %>" <% if (usertype.id == user.usertypeId) { %> selected <% } %>><%= usertype.name %></option>
                                 <% }); %>
                             </select>
-                            <label for="usertype">Type of user</label>
+                            <label for="usertype"><%= typeof __ !== 'undefined' ? __('profile.user_type') : "Type d'usager" %></label>
                         </div>
                     </div>
                 </div>
@@ -110,7 +110,7 @@
                     <div class="col-12">
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control font-monospace" id="rfid" name="rfid" value="<%= user.rfid || '' %>" placeholder="Badge RFID" autocomplete="off" />
-                            <label for="rfid"><i class="fa-solid fa-id-card me-1 text-primary"></i> Numéro de badge RFID (UID)</label>
+                            <label for="rfid"><i class="fa-solid fa-id-card me-1 text-primary"></i> <%= typeof __ !== 'undefined' ? __('profile.rfid_badge') : 'Numéro de badge RFID (UID)' %></label>
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
                     <div class="col">
                         <div class="form-floating mb-3">
                             <textarea class="form-control" id="comments" name="comments" style="height: 100px"><%= user.comment %></textarea>
-                            <label for="comments">Comments</label>
+                            <label for="comments"><%= typeof __ !== 'undefined' ? __('profile.comments') : 'Commentaires' %></label>
                         </div>
                     </div>
                 </div>
@@ -128,10 +128,10 @@
                         <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
                             <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="newsletter" name="newsletter" value="true" <%= user.newsletter ? 'checked' : '' %>>
                             <label class="form-check-label fw-bold" for="newsletter">
-                                <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> Inscription à la newsletter
+                                <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> <%= typeof __ !== 'undefined' ? __('profile.newsletter') : 'Inscription à la newsletter' %>
                             </label>
                             <div class="form-text small text-muted ms-1">
-                                Recevoir la newsletter et les actualités du Fablab par e-mail.
+                                <%= typeof __ !== 'undefined' ? __('profile.newsletter_desc') : 'Recevoir la newsletter et les actualités du Fablab par e-mail.' %>
                             </div>
                         </div>
                     </div>
@@ -141,10 +141,10 @@
                         <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
                             <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="isExpert" name="isExpert" value="true" <%= user.isExpert ? 'checked' : '' %>>
                             <label class="form-check-label fw-bold" for="isExpert">
-                                <i class="fa-solid fa-star text-warning me-1"></i> Utilisateur expert (distinction à l'appréciation du staff)
+                                <i class="fa-solid fa-star text-warning me-1"></i> <%= typeof __ !== 'undefined' ? __('profile.expert_user') : 'Utilisateur expert (distinction à l\'appréciation du staff)' %>
                             </label>
                             <div class="form-text small text-muted ms-1">
-                                Attribue le statut d'utilisateur expert. Ce badge sera le seul affiché dans la liste des personnes présentes sur le kiosque.
+                                <%= typeof __ !== 'undefined' ? __('profile.expert_user_desc') : 'Attribue le statut d\'utilisateur expert. Ce badge sera le seul affiché dans la liste des personnes présentes sur le kiosque.' %>
                             </div>
                         </div>
                     </div>
@@ -152,12 +152,12 @@
                 <div class="row g-2 mb-4">
                     <div class="col-sm-6">
                         <button class="btn btn-primary w-100 py-2 rounded-pill shadow-sm" type="submit">
-                            <i class="fa-solid fa-check me-1"></i> Mettre à jour le profil
+                            <i class="fa-solid fa-check me-1"></i> <%= typeof __ !== 'undefined' ? __('profile.update_profile') : 'Mettre à jour le profil' %>
                         </button>
                     </div>
                     <div class="col-sm-6">
                         <a id="cancel" href="/fabtrack" class="btn btn-outline-secondary w-100 py-2 rounded-pill">
-                            Annuler
+                            <%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %>
                         </a>
                     </div>
                 </div>
@@ -165,7 +165,7 @@
 
             <div class="d-flex align-items-center gap-2 mb-3 mt-4">
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle section-badge-header px-2 py-1">
-                    Statistiques de l'usager
+                    <%= typeof __ !== 'undefined' ? __('profile.user_stats') : 'Statistiques de l\'usager' %>
                 </span>
                 <hr class="flex-grow-1 my-0 opacity-25">
             </div>

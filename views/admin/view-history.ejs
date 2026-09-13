@@ -93,20 +93,20 @@
               <thead class="table-light">
           <tr>
             <th scope="col" class="text-center">#</th>
-            <th scope="col">Arrival</th>
-            <th scope="col" class="text-center">Departure</th>
-            <th scope="col">User</th>
-            <th scope="col">Workspace</th>
-            <th scope="col" class="text-center">Project</th>
-            <th scope="col" class="text-center">Comments</th>
-            <th scope="col" class="text-center">Edit</th>
-            <th scope="col" class="text-center">Delete</th>
+            <th scope="col"><%= typeof __ !== 'undefined' ? __('history.col_arrival') : 'Arrivée' %></th>
+            <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_departure') : 'Départ' %></th>
+            <th scope="col"><%= typeof __ !== 'undefined' ? __('history.col_user') : 'Usager' %></th>
+            <th scope="col"><%= typeof __ !== 'undefined' ? __('history.col_workspace') : 'Espace' %></th>
+            <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_project') : 'Projet' %></th>
+            <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_comments') : 'Commentaires' %></th>
+            <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_edit') : 'Modifier' %></th>
+            <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_delete') : 'Supprimer' %></th>
           </tr>
         </thead>
         <tbody id="table-content">
           <% if (history.length === 0) { %>
           <tr id="emptyHistoryRow">
-            <td colspan="9" class="text-center text-muted py-4">No history records found.</td>
+            <td colspan="9" class="text-center text-muted py-4"><%= typeof __ !== 'undefined' ? __('history.no_records') : 'Aucun enregistrement trouvé dans l\'historique.' %></td>
           </tr>
           <% } else { %>
             <% history.forEach(function(entry) { %>

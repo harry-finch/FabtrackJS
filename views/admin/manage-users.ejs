@@ -108,11 +108,11 @@
                             <thead class="table-light">
                                 <tr>
                                     <th data-sort="0" scope="col" class="ps-3">#</th>
-                                    <th data-sort="1" scope="col">User name</th>
-                                    <th data-sort="2" scope="col">Email</th>
-                                    <th data-sort="3" scope="col">Type</th>
-                                    <th data-sort="4" scope="col" class="text-center">Charte</th>
-                                    <th scope="col" class="text-end pe-3">Actions</th>
+                                    <th data-sort="1" scope="col"><%= typeof __ !== 'undefined' ? __('users_manage.col_username') : 'Nom & Prénom' %></th>
+                                    <th data-sort="2" scope="col"><%= typeof __ !== 'undefined' ? __('users_manage.col_email') : 'Email' %></th>
+                                    <th data-sort="3" scope="col"><%= typeof __ !== 'undefined' ? __('users_manage.col_type') : 'Type' %></th>
+                                    <th data-sort="4" scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('users_manage.col_charter') : 'Charte' %></th>
+                                    <th scope="col" class="text-end pe-3"><%= typeof __ !== 'undefined' ? __('users_manage.col_actions') : 'Actions' %></th>
                                 </tr>
                             </thead>
                             <tbody id="table-content">
