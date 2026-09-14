@@ -10,6 +10,7 @@ router.use(isLoggedIn);
 const { PrismaClient, ResourceType, ConsumableStatus } = require("@prisma/client");
 const prisma = new PrismaClient();
 const mailService = require("../services/mailService.js");
+const logger = require("../utilities/simpleLogger.js");
 
 // Helper to update consumable stock and status
 async function consumeItem(consumableId, quantity) {
@@ -436,7 +437,7 @@ router.post(
       return res.redirect("/fabtrack");
     }
 
-    const { activityhistoryid, activityuserid, machineId, equipmentId, consumable, quantity } = req.body;
+    const { activityhistoryid, activityuserid, machineId, equipmentId, consumable, quantity, borrowDurationDays } = req.body;
 
     const histId = activityhistoryid && activityhistoryid !== "null" ? Number(activityhistoryid) : null;
     const usrId = activityuserid && activityuserid !== "null" ? Number(activityuserid) : null;
@@ -458,15 +459,25 @@ router.post(
 
     // 2. Equipment Borrow
     if (equipmentId && equipmentId !== "" && equipmentId !== "null") {
+      const durationDays = Math.max(1, parseInt(borrowDurationDays, 10) || 7);
+      const expectedReturnAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+
       await prisma.activity.create({
         data: {
           historyId: histId,
           userId: usrId,
           resourceId: Number(equipmentId),
           resourceType: ResourceType.EQUIPMENT,
+          borrowDurationDays: durationDays,
+          expectedReturnAt: expectedReturnAt,
+          returnedAt: null,
         },
       });
       recordedCount++;
+
+      const eqItem = await prisma.equipment.findUnique({ where: { id: Number(equipmentId) } });
+      const eqName = eqItem ? eqItem.name : `#${equipmentId}`;
+      logger.logThat(`Équipement "${eqName}" emprunté par usager #${usrId} pour ${durationDays} jour(s) (retour prévu: ${expectedReturnAt.toLocaleDateString("fr-FR")}).`);
     }
 
     // 3. Consumable Usage
@@ -576,6 +587,51 @@ router.post(
 
     req.session.notification = "Success: Account credited!";
     res.redirect(req.session.lastPage || "/fabtrack");
+  }),
+);
+
+// ******************************************************************************
+// Route to return / check-in borrowed equipment
+// ******************************************************************************
+
+router.post(
+  "/equipment/return/:id",
+  asyncHandler(async (req, res) => {
+    if (req.session.role === "staff") {
+      req.session.notification = "Warning: La restitution de matériel est réservée aux médiateurs.";
+      return res.redirect(req.headers.referer || "/fabtrack");
+    }
+
+    const { id } = req.params;
+    const { returnNotes } = req.body;
+
+    const activity = await prisma.activity.findUnique({
+      where: { id: Number(id) },
+      include: { user: true },
+    });
+
+    if (!activity || activity.resourceType !== ResourceType.EQUIPMENT) {
+      req.session.notification = "Error: Emprunt introuvable.";
+      return res.redirect(req.headers.referer || "/fabtrack");
+    }
+
+    await prisma.activity.update({
+      where: { id: Number(id) },
+      data: {
+        returnedAt: new Date(),
+        returnNotes: returnNotes && returnNotes.trim() ? returnNotes.trim() : null,
+      },
+    });
+
+    const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
+    const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;
+    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `usager #${activity.userId}`;
+
+    logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par ${req.session.username}).`);
+    req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;
+
+    const redirectUrl = req.headers.referer || req.session.lastPage || "/admin/equipment/manage";
+    return res.redirect(redirectUrl);
   }),
 );
 

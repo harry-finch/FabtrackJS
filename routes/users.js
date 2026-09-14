@@ -284,13 +284,65 @@ router.get(
       };
     });
 
-    // 3. Compute enhanced user statistics
+    // 3. Fetch Equipment Loans History for this user
+    const equipmentActivities = await prisma.activity.findMany({
+      where: {
+        userId: Number(id),
+        resourceType: "EQUIPMENT",
+      },
+      include: {
+        history: {
+          include: { workspace: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const equipIds = [...new Set(equipmentActivities.map((a) => a.resourceId))];
+    const equipList = equipIds.length > 0
+      ? await prisma.equipment.findMany({ where: { id: { in: equipIds } }, include: { workspace: true } })
+      : [];
+    const equipMap = new Map(equipList.map((e) => [e.id, e]));
+
+    const now = new Date();
+    const userLoans = equipmentActivities.map((act) => {
+      const eq = equipMap.get(act.resourceId);
+      const isReturned = act.returnedAt !== null;
+      const isOverdue = !isReturned && act.expectedReturnAt ? new Date(act.expectedReturnAt) < now : false;
+      let daysDiff = null;
+      if (act.expectedReturnAt) {
+        const diffMs = new Date(act.expectedReturnAt) - now;
+        daysDiff = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      }
+
+      return {
+        id: act.id,
+        createdAt: act.createdAt,
+        formattedDate: formatDateTime(act.createdAt),
+        borrowDurationDays: act.borrowDurationDays || null,
+        expectedReturnAt: act.expectedReturnAt,
+        formattedExpectedReturn: act.expectedReturnAt ? formatDateTime(act.expectedReturnAt) : "-",
+        returnedAt: act.returnedAt,
+        formattedReturnedAt: act.returnedAt ? formatDateTime(act.returnedAt) : null,
+        returnNotes: act.returnNotes,
+        isReturned,
+        isOverdue,
+        daysDiff,
+        equipment: eq || null,
+        workspace: act.history && act.history.workspace ? act.history.workspace.name : (eq && eq.workspace ? eq.workspace.name : "-"),
+      };
+    });
+
+    const userActiveLoans = userLoans.filter((l) => !l.isReturned);
+    const userPastLoans = userLoans.filter((l) => l.isReturned);
+
+    // 4. Compute enhanced user statistics
     const totalConsumablesCount = userConsumptions.reduce((sum, c) => sum + c.quantity, 0);
     const totalConsumablesCost = userConsumptions.reduce((sum, c) => sum + Number(c.totalCost), 0).toFixed(2);
     const uniqueMachinesCount = new Set(userMachineUsage.map((u) => (u.machine ? u.machine.id : null)).filter(Boolean)).size;
     const activeProjectsCount = userprojects.filter((p) => p.active !== false).length;
 
-    // 4. Workshop and badges calculations
+    // 5. Workshop and badges calculations
     const availableWorkshops = await prisma.workshop.findMany({
       where: { active: true },
       include: { access: true },
@@ -324,6 +376,8 @@ router.get(
       uniqueMachinesCount: uniqueMachinesCount,
       totalConsumablesCount: totalConsumablesCount,
       totalConsumablesCost: totalConsumablesCost,
+      activeLoansCount: userActiveLoans.length,
+      totalLoansCount: userLoans.length,
       badgesCount: (user.isExpert ? 1 : 0) + user.workshopCompletions.length,
       workshopBadgesCount: user.workshopCompletions.length,
       habilitationsCount: habilitations.length,
@@ -331,7 +385,7 @@ router.get(
       isExpert: !!user.isExpert,
     };
 
-    // 5. Compute user interests from categories of machines and consumables used
+    // 6. Compute user interests from categories of machines and consumables used
     const interestSet = new Set();
     userMachineUsage.forEach((u) => {
       if (u.machine && u.machine.category) interestSet.add(u.machine.category.name);
@@ -349,6 +403,9 @@ router.get(
       projecttypes,
       userMachineUsage,
       userConsumptions,
+      userLoans,
+      userActiveLoans,
+      userPastLoans,
       userStats,
       userInterests,
       availableWorkshops,

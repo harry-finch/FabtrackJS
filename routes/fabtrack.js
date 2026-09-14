@@ -76,15 +76,53 @@ router.get(
       warningsByUser.get(warning.userId).push(warning);
     });
 
+    // 4. Fetch Active Equipment Loans for Users in Lab
+    const activeEquipmentActivities = await prisma.activity.findMany({
+      where: {
+        userId: { in: userIdsInLab },
+        resourceType: "EQUIPMENT",
+        returnedAt: null,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const equipmentIds = [...new Set(activeEquipmentActivities.map((a) => a.resourceId))];
+    const equipmentItems = equipmentIds.length > 0
+      ? await prisma.equipment.findMany({ where: { id: { in: equipmentIds } }, include: { workspace: true } })
+      : [];
+    const equipmentMap = new Map(equipmentItems.map((eq) => [eq.id, eq]));
+
+    const now = new Date();
+    const activeLoansByUser = new Map();
+    activeEquipmentActivities.forEach((act) => {
+      if (!activeLoansByUser.has(act.userId)) {
+        activeLoansByUser.set(act.userId, []);
+      }
+      const eq = equipmentMap.get(act.resourceId);
+      const isOverdue = act.expectedReturnAt ? new Date(act.expectedReturnAt) < now : false;
+      activeLoansByUser.get(act.userId).push({
+        id: act.id,
+        equipmentId: act.resourceId,
+        equipmentName: eq ? eq.name : `#${act.resourceId}`,
+        workspaceName: eq && eq.workspace ? eq.workspace.name : null,
+        borrowedAt: act.createdAt,
+        expectedReturnAt: act.expectedReturnAt,
+        borrowDurationDays: act.borrowDurationDays,
+        isOverdue,
+      });
+    });
+
     var oldRecords = false;
 
-    // 4. Populate Warnings in History Entries and handle the arrival time
+    // 5. Populate Warnings and Active Loans in History Entries and handle the arrival time
     for (const entry of history) {
       const parsedDate = moment(entry.arrival);
       const today = moment();
 
       entry.arrival = moment(entry.arrival).format("HH:mm");
       entry.warnings = warningsByUser.get(entry.userId) || [];
+      entry.activeLoans = activeLoansByUser.get(entry.userId) || [];
+      entry.hasOverdueLoans = entry.activeLoans.some((l) => l.isOverdue);
 
       // If the user has been in the lab but not logged out on a previous day
       if (parsedDate.isBefore(today, "day")) {

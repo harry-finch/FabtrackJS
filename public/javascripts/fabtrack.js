@@ -486,7 +486,7 @@ if (activityManager) {
     const historyInput = document.getElementById("activityhistoryid");
     const userInput = document.getElementById("activityuserid");
 
-    modalTitle.innerHTML = `<i class="fa-solid fa-puzzle-piece"></i> New activity for ${user}`;
+    modalTitle.innerHTML = `<i class="fa-solid fa-layer-group text-primary me-2"></i> Nouvelle activité pour ${user}`;
     historyInput.value = historyid;
     userInput.value = userid;
 
@@ -783,11 +783,29 @@ if (equipmentDataEl) {
 const equipmentSearchInput = document.getElementById("equipmentSearch");
 const hiddenEquipmentInput = document.getElementById("equipmentId");
 const clearEquipmentBtn = document.getElementById("clearEquipmentBtn");
+const borrowDurationSelect = document.getElementById("borrowDurationDays");
+const borrowNotice = document.getElementById("borrowReturnDateNotice");
+const borrowDateText = document.getElementById("borrowCalculatedDateText");
+
+function updateBorrowReturnDatePreview() {
+  if (!borrowNotice || !borrowDateText || !borrowDurationSelect) return;
+  if (!hiddenEquipmentInput || !hiddenEquipmentInput.value) {
+    borrowNotice.style.display = "none";
+    return;
+  }
+  const days = parseInt(borrowDurationSelect.value, 10) || 7;
+  const targetDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+  const options = { weekday: "long", day: "numeric", month: "long", year: "numeric" };
+  borrowDateText.textContent = targetDate.toLocaleDateString("fr-FR", options);
+  borrowNotice.style.display = "flex";
+}
 
 function clearEquipmentSelection() {
   if (equipmentSearchInput) equipmentSearchInput.value = "";
   if (hiddenEquipmentInput) hiddenEquipmentInput.value = "";
   if (clearEquipmentBtn) clearEquipmentBtn.style.display = "none";
+  if (borrowDurationSelect) borrowDurationSelect.value = "7";
+  if (borrowNotice) borrowNotice.style.display = "none";
 }
 
 if (clearEquipmentBtn) {
@@ -795,6 +813,10 @@ if (clearEquipmentBtn) {
     clearEquipmentSelection();
     if (equipmentSearchInput) equipmentSearchInput.focus();
   });
+}
+
+if (borrowDurationSelect) {
+  borrowDurationSelect.addEventListener("change", updateBorrowReturnDatePreview);
 }
 
 if (equipmentSearchInput && typeof autocomplete === "function") {
@@ -857,6 +879,7 @@ if (equipmentSearchInput && typeof autocomplete === "function") {
       equipmentSearchInput.value = item.name;
       if (hiddenEquipmentInput) hiddenEquipmentInput.value = item.id;
       if (clearEquipmentBtn) clearEquipmentBtn.style.display = "inline-block";
+      updateBorrowReturnDatePreview();
     },
   });
 }

@@ -199,6 +199,12 @@ model Activity {
 
   history History? @relation(fields: [historyId], references: [id], onDelete: SetNull)
   user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Equipment loan / borrow fields
+  borrowDurationDays Int?
+  expectedReturnAt   DateTime?
+  returnedAt         DateTime?
+  returnNotes        String?      @db.VarChar(255)
 }
 
 // Categories within a workspace (e.g., electronics, woodworking)

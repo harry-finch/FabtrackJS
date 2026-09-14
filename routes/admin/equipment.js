@@ -43,17 +43,82 @@ router.get(
       borrowCounts.set(act.resourceId, (borrowCounts.get(act.resourceId) || 0) + 1);
     });
 
+    // Fetch all active loans (not yet returned)
+    const activeLoansRaw = await prisma.activity.findMany({
+      where: {
+        resourceType: ResourceType.EQUIPMENT,
+        returnedAt: null,
+      },
+      include: {
+        user: true,
+        history: {
+          include: { workspace: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const equipMap = new Map(equipmentList.map((eq) => [eq.id, eq]));
+    const now = new Date();
+
+    const activeLoans = activeLoansRaw.map((act) => {
+      const eq = equipMap.get(act.resourceId);
+      const isOverdue = act.expectedReturnAt ? new Date(act.expectedReturnAt) < now : false;
+      let daysDiff = null;
+      if (act.expectedReturnAt) {
+        const diffMs = new Date(act.expectedReturnAt) - now;
+        daysDiff = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      }
+
+      return {
+        id: act.id,
+        createdAt: act.createdAt,
+        formattedDate: act.createdAt.toLocaleDateString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        borrowDurationDays: act.borrowDurationDays || null,
+        expectedReturnAt: act.expectedReturnAt,
+        formattedExpectedReturn: act.expectedReturnAt
+          ? act.expectedReturnAt.toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })
+          : "-",
+        isOverdue,
+        daysDiff,
+        user: act.user,
+        equipment: eq || null,
+        workspace:
+          act.history && act.history.workspace
+            ? act.history.workspace.name
+            : eq && eq.workspace
+            ? eq.workspace.name
+            : "-",
+      };
+    });
+
+    const activeBorrowedEquipIds = new Set(activeLoansRaw.map((a) => a.resourceId));
     const equipment = equipmentList.map((eq) => ({
       id: eq.id,
       name: eq.name,
       workspaceId: eq.workspaceId,
       workspace: eq.workspace,
       borrowCount: borrowCounts.get(eq.id) || 0,
+      isCurrentlyBorrowed: activeBorrowedEquipIds.has(eq.id),
+      currentBorrowers: activeLoans
+        .filter((l) => l.equipment && l.equipment.id === eq.id)
+        .map((l) => (l.user ? `${l.user.name} ${l.user.surname}` : `Usager #${l.user?.id}`)),
     }));
 
     res.render("admin/manage-equipment", {
       equipment,
       workspaces,
+      activeLoans,
     });
   }),
 );
@@ -206,6 +271,45 @@ router.get(
     }
 
     res.redirect(req.session.lastPage || "/admin/equipment/manage");
+  }),
+);
+
+// ******************************************************************************
+// Route to return borrowed equipment from admin panel
+// ******************************************************************************
+
+router.post(
+  "/return/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { returnNotes } = req.body;
+
+    const activity = await prisma.activity.findUnique({
+      where: { id: Number(id) },
+      include: { user: true },
+    });
+
+    if (!activity || activity.resourceType !== ResourceType.EQUIPMENT) {
+      req.session.notification = "Error: Emprunt introuvable.";
+      return res.redirect("/admin/equipment/manage");
+    }
+
+    await prisma.activity.update({
+      where: { id: Number(id) },
+      data: {
+        returnedAt: new Date(),
+        returnNotes: returnNotes && returnNotes.trim() ? returnNotes.trim() : null,
+      },
+    });
+
+    const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
+    const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;
+    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `usager #${activity.userId}`;
+
+    logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par l'admin ${req.session.username}).`);
+    req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;
+
+    res.redirect(req.headers.referer || "/admin/equipment/manage");
   }),
 );
 

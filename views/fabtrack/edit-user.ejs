@@ -55,6 +55,11 @@
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
                                     <%= user.usertype ? user.usertype.name : 'Usager' %>
                                 </span>
+                                <% if (typeof userActiveLoans !== 'undefined' && userActiveLoans.length > 0) { %>
+                                    <a href="#loans" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill text-decoration-none" style="font-size: 0.72rem;">
+                                        <i class="fa-solid fa-toolbox fa-2xs"></i> <%= userActiveLoans.length %> emprunt(s) en cours
+                                    </a>
+                                <% } %>
                             </div>
                             <p class="text-muted small mb-0"><i class="fa-regular fa-calendar-check me-1"></i><%= typeof __ !== 'undefined' ? __('profile.account_created_on') : 'Compte créé le' %> <%= user.accountCreationDate %></p>
                         </div>
@@ -874,7 +879,161 @@
                     </div>
                 </div>
 
-                <!-- 6. ATELIERS & INTÉRÊTS -->
+                <!-- 6. MATÉRIELS & ÉQUIPEMENTS EMPRUNTÉS -->
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden" id="loans">
+                    <div class="card-header bg-transparent border-0 p-0" id="headingLoans">
+                        <button class="accordion-button user-accordion-btn collapsed py-3 px-4 d-flex align-items-center justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLoans" aria-expanded="false" aria-controls="collapseLoans">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box bg-info-subtle text-info-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                    <i class="fa-solid fa-toolbox"></i>
+                                </div>
+                                <div class="text-start">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-bold mb-0">Matériels & Équipements empruntés</h6>
+                                        <% if (typeof userActiveLoans !== 'undefined' && userActiveLoans.length > 0) { %>
+                                            <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">
+                                                <i class="fa-solid fa-clock me-1"></i><%= userActiveLoans.length %> en cours
+                                            </span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill" style="font-size: 0.72rem;">
+                                                <%= typeof userLoans !== 'undefined' ? userLoans.length : 0 %> au total
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                    <p class="text-muted small mb-0">Suivi des prêts d'outils, dates d'échéance et restitution du matériel</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                    <div id="collapseLoans" class="accordion-collapse collapse" data-bs-parent="#userProfileAccordion">
+                        <div class="card-body p-4 pt-3 border-top">
+                            <!-- Section 1 : Emprunts en cours -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0 text-body d-flex align-items-center">
+                                    <i class="fa-solid fa-handshake-angle text-primary me-2"></i>
+                                    Emprunts en cours d'utilisation
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill ms-2"><%= typeof userActiveLoans !== 'undefined' ? userActiveLoans.length : 0 %></span>
+                                </h6>
+                            </div>
+
+                            <% if (typeof userActiveLoans === 'undefined' || userActiveLoans.length === 0) { %>
+                                <div class="text-center text-muted py-3 mb-4 bg-body-tertiary rounded-3">
+                                    <i class="fa-solid fa-circle-check text-success fa-lg mb-2 d-block"></i>
+                                    <span class="small">Aucun équipement ou outil actuellement emprunté par cet usager.</span>
+                                </div>
+                            <% } else { %>
+                                <div class="table-responsive border rounded-3 overflow-hidden mb-4">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">Équipement / Outil</th>
+                                                <th scope="col">Espace</th>
+                                                <th scope="col">Date d'emprunt</th>
+                                                <th scope="col">Durée convenue</th>
+                                                <th scope="col">Date limite de retour</th>
+                                                <th scope="col" class="text-center">Statut</th>
+                                                <th scope="col" class="text-end pe-3">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% userActiveLoans.forEach(function(loan) { %>
+                                            <tr class="<%= loan.isOverdue ? 'table-danger-subtle' : '' %>">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="icon-box bg-secondary-subtle text-secondary me-2 p-2 rounded-circle" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                                            <i class="fa-solid fa-toolbox fa-sm"></i>
+                                                        </div>
+                                                        <span class="fw-semibold text-body">
+                                                            <%= loan.equipment ? loan.equipment.name : ('Équipement #' + loan.id) %>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-body-secondary text-secondary border rounded-pill">
+                                                        <%= loan.workspace %>
+                                                    </span>
+                                                </td>
+                                                <td><%= loan.formattedDate %></td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark border">
+                                                        <i class="fa-regular fa-clock me-1 text-muted"></i><%= loan.borrowDurationDays ? loan.borrowDurationDays + ' jour(s)' : '-' %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <strong><%= loan.formattedExpectedReturn %></strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    <% if (loan.isOverdue) { %>
+                                                        <span class="badge bg-danger text-white rounded-pill px-2 py-1 shadow-sm">
+                                                            <i class="fa-solid fa-triangle-exclamation me-1"></i>En retard (<%= Math.abs(loan.daysDiff) %> j)
+                                                        </span>
+                                                    <% } else if (loan.daysDiff !== null) { %>
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
+                                                            <i class="fa-solid fa-check me-1"></i>Reste <%= loan.daysDiff %> j
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-info-subtle text-info rounded-pill px-2 py-1">En cours</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-end pe-3">
+                                                    <form action="/history/equipment/return/<%= loan.id %>" method="post" class="d-inline" onsubmit="return confirm('Confirmer la restitution de cet objet ?');">
+                                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 py-1 shadow-sm">
+                                                            <i class="fa-solid fa-rotate-left me-1"></i> Restituer
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } %>
+
+                            <!-- Section 2 : Historique des retours -->
+                            <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+                                <h6 class="fw-bold mb-0 text-muted small text-uppercase">
+                                    <i class="fa-solid fa-clock-rotate-left me-1"></i> Historique des emprunts restitués (<%= typeof userPastLoans !== 'undefined' ? userPastLoans.length : 0 %>)
+                                </h6>
+                            </div>
+
+                            <% if (typeof userPastLoans === 'undefined' || userPastLoans.length === 0) { %>
+                                <p class="small text-muted mb-0">Aucun emprunt passé archivé.</p>
+                            <% } else { %>
+                                <div class="table-responsive border rounded-3 overflow-hidden">
+                                    <table class="table table-sm table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">Matériel</th>
+                                                <th scope="col">Date emprunt</th>
+                                                <th scope="col">Date restitution</th>
+                                                <th scope="col">Espace</th>
+                                                <th scope="col">Remarques</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% userPastLoans.forEach(function(past) { %>
+                                            <tr>
+                                                <td class="fw-medium text-body">
+                                                    <i class="fa-solid fa-check text-success me-1"></i>
+                                                    <%= past.equipment ? past.equipment.name : ('Équipement #' + past.id) %>
+                                                </td>
+                                                <td class="text-muted small"><%= past.formattedDate %></td>
+                                                <td class="text-success small">
+                                                    <strong><%= past.formattedReturnedAt %></strong>
+                                                </td>
+                                                <td class="small text-secondary"><%= past.workspace %></td>
+                                                <td class="small text-muted"><%= past.returnNotes || '-' %></td>
+                                            </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. ATELIERS & INTÉRÊTS -->
                 <div class="card border-0 shadow-sm rounded-3 overflow-hidden" id="interests">
                     <div class="card-header bg-transparent border-0 p-0" id="headingInterests">
                         <button class="accordion-button user-accordion-btn collapsed py-3 px-4 d-flex align-items-center justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInterests" aria-expanded="false" aria-controls="collapseInterests">

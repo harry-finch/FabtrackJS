@@ -259,6 +259,23 @@
                                                     <i class="fa-solid fa-graduation-cap fa-2xs"></i> <%= entry.workshop.name %>
                                                 </span>
                                             <% } %>
+                                            <% if (entry.activeLoans && entry.activeLoans.length > 0) { %>
+                                                <% 
+                                                    const loanDetails = entry.activeLoans.map(function(l) { 
+                                                        const dueStr = l.expectedReturnAt ? ' (retour prévu: ' + new Date(l.expectedReturnAt).toLocaleDateString('fr-FR') + ')' : '';
+                                                        return l.equipmentName + dueStr; 
+                                                    }).join(', ');
+                                                %>
+                                                <% if (entry.hasOverdueLoans) { %>
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Emprunt EN RETARD : <%= loanDetails %>">
+                                                        <i class="fa-solid fa-toolbox fa-2xs"></i> <i class="fa-solid fa-clock-rotate-left fa-2xs"></i> <%= entry.activeLoans.length %> emprunt(s)
+                                                    </span>
+                                                <% } else { %>
+                                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Matériel emprunté : <%= loanDetails %>">
+                                                        <i class="fa-solid fa-toolbox fa-2xs"></i> <%= entry.activeLoans.length %> emprunt(s)
+                                                    </span>
+                                                <% } %>
+                                            <% } %>
                                         </td>
                                         <td class="text-center">
                                             <% if (isStaffRole) { %>
@@ -458,7 +475,7 @@
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Activity manager</h1>
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel"><i class="fa-solid fa-layer-group text-primary me-2"></i><%= __('kiosk.modal_activity_title') %></h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -466,12 +483,12 @@
                                 <input type='hidden' id="activityhistoryid" name='activityhistoryid' value='null' />
                                 <input type='hidden' id="activityuserid" name='activityuserid' value='null' />
                                 <input type='hidden' id="cost" name='cost' value='null' />
-                                <div class="row">
-                                    <div class="col-1 pt-3">
-                                        Use
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-2 text-secondary">
+                                        Utiliser
                                     </div>
-                                    <div class="col-8">
-                                        <div class="form-floating mb-3">
+                                    <div class="col-10">
+                                        <div class="form-floating">
                                             <select class="form-select" id="machineId" name="machineId">
                                                 <option value="" selected></option>
                                                 <% machines.forEach(function(machine) { %>
@@ -482,12 +499,12 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-1 pt-3">
-                                        Borrow
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-2 text-secondary">
+                                        Emprunter
                                     </div>
-                                    <div class="col-8">
-                                        <div class="form-floating mb-3 position-relative">
+                                    <div class="col-6">
+                                        <div class="form-floating position-relative">
                                             <input type="hidden" id="equipmentId" name="equipmentId" value="" />
                                             <input
                                                 type="text"
@@ -497,7 +514,7 @@
                                                 autocomplete="off"
                                             />
                                             <label for="equipmentSearch">
-                                                <i class="fa-solid fa-toolbox me-1 text-muted"></i> Emprunter un équipement / outil
+                                                <i class="fa-solid fa-toolbox me-1 text-muted"></i> Équipement / Outil
                                             </label>
                                             <button
                                                 type="button"
@@ -510,13 +527,36 @@
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-1 pt-3">
-                                        Get
+                                    <div class="col-4">
+                                        <div class="form-floating position-relative">
+                                            <select class="form-select" id="borrowDurationDays" name="borrowDurationDays">
+                                                <option value="1">1 jour (24h)</option>
+                                                <option value="3">3 jours</option>
+                                                <option value="7" selected>7 jours (1 sem.)</option>
+                                                <option value="14">14 jours (2 sem.)</option>
+                                                <option value="30">30 jours (1 mois)</option>
+                                            </select>
+                                            <label for="borrowDurationDays">
+                                                <i class="fa-regular fa-clock me-1 text-muted"></i> Durée d'emprunt
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="col-8">
-                                        <div class="form-floating mb-3 position-relative">
+                                </div>
+                                <div class="row mt-n2 mb-3" id="borrowReturnDateNotice" style="display: none;">
+                                    <div class="col-2"></div>
+                                    <div class="col-10">
+                                        <div class="d-flex align-items-center small text-primary bg-primary-subtle px-3 py-1 rounded-pill">
+                                            <i class="fa-solid fa-calendar-check me-2"></i>
+                                            <span>Retour attendu le : <strong id="borrowCalculatedDateText">-</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-2 text-secondary">
+                                        Consommer
+                                    </div>
+                                    <div class="col-7">
+                                        <div class="form-floating position-relative">
                                             <input type="hidden" id="consumable" name="consumable" value="" />
                                             <input
                                                 type="text"
@@ -540,7 +580,7 @@
                                         </div>
                                     </div>
                                     <div class="col-3">
-                                        <div class="form-floating mb-3">
+                                        <div class="form-floating">
                                             <input type="number" class="form-control input-group-icon" id="quantity" name="quantity" min="1" value="1" />
                                             <label for="quantity" id="quantityLabel">Quantité</label>
                                         </div>
@@ -548,8 +588,8 @@
                                 </div>
 
                                 <div class="row mb-3" id="consumableLiveCostRow" style="display: none;">
-                                    <div class="col-1"></div>
-                                    <div class="col-11">
+                                    <div class="col-2"></div>
+                                    <div class="col-10">
                                         <div class="alert alert-secondary py-2 px-3 mb-0 small d-flex justify-content-between align-items-center">
                                             <span><i class="fa-solid fa-coins text-warning me-1"></i> Total estimé à débiter : <strong id="liveCostAmount" class="text-danger">0.00 €</strong></span>
                                             <span class="text-muted" id="liveUnitPrice">0.00 € / u</span>
@@ -559,8 +599,8 @@
 
                             </div>
                             <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Save activity</button>
+                                <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal"><%= __('common.cancel') %></button>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4"><i class="fa-solid fa-check me-1"></i>Enregistrer</button>
                             </div>
                         </form>
                     </div>
