@@ -27,6 +27,7 @@ const prisma = new PrismaClient();
 // ******************************************************************************
 
 // Add security headers with helmet
+const isHttpsProduction = process.env.NODE_ENV === "production" && process.env.ENABLE_HTTPS === "true";
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -59,8 +60,12 @@ app.use(
         imgSrc: ["'self'", "data:", "https:"],
         // Allow connections
         connectSrc: ["'self'"],
+        // Do not force browser to upgrade HTTP to HTTPS on local/LAN IPs
+        upgradeInsecureRequests: isHttpsProduction ? [] : null,
       },
     },
+    // Only send HSTS header if running in real HTTPS production with a valid certificate
+    strictTransportSecurity: isHttpsProduction,
   }),
 );
 
