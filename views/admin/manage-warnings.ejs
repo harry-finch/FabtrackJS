@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Administration des avertissements et rappels de sécurité usagers" />
+        <title>Avertissements usagers - <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
+        <%- include('../includes/pagehead.html') %>
+    </head>
+    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+
+        <main class="main-container">
+            <%- include('../includes/header.html') %>
+
+            <% 
+                const activeCount = warnings.filter(w => w.active).length;
+                const resolvedCount = warnings.filter(w => !w.active).length;
+            %>
+
+            <!-- Page Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h4 class="fw-bold mb-0">Avertissements Usagers</h4>
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.72rem;">
+                                    <%= activeCount %> actif(s)
+                                </span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.72rem;">
+                                    <%= resolvedCount %> résolu(s)
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-0">Suivi des rappels aux règles, manquements et sanctions de sécurité</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="#newWarningCard" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm text-dark fw-semibold" onclick="document.getElementById('newWarningCard')?.scrollIntoView({ behavior: 'smooth' }); document.getElementById('userid')?.focus();">
+                            <i class="fa-solid fa-plus me-1"></i> Émettre un avertissement
+                        </a>
+                        <a href="/admin/warningtypes/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-tags me-1"></i> Types d'avertissements
+                        </a>
+                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-gauge me-1"></i> Panneau admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification banner -->
+            <% if (typeof notification !== 'undefined' && notification) { 
+                const isError = notification.toLowerCase().includes('error');
+                const isSuccess = notification.toLowerCase().includes('success');
+            %>
+            <div class="alert <%= isError ? 'alert-danger' : isSuccess ? 'alert-success' : 'alert-info' %> alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid <%= isError ? 'fa-triangle-exclamation' : isSuccess ? 'fa-circle-check' : 'fa-circle-info' %>"></i>
+                    <div><%= notification.replace(/^(Success:|Error:|Warning:)\s*/i, '') %></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <% } %>
+
+            <!-- Table & Filter Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-body border-0 pt-3 pb-2 px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <!-- Filters -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="text-muted small fw-semibold me-1">Filtrer :</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 active filter-btn" onclick="filterWarnings('all', this)">
+                            Tous (<%= warnings.length %>)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 filter-btn" onclick="filterWarnings('active', this)">
+                            <i class="fa-solid fa-clock me-1"></i> Actifs (<%= activeCount %>)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 filter-btn" onclick="filterWarnings('resolved', this)">
+                            <i class="fa-solid fa-check me-1"></i> Résolus (<%= resolvedCount %>)
+                        </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="input-group input-group-sm" style="max-width: 280px;">
+                        <span class="input-group-text bg-body-secondary border-end-0"><i class="fa-solid fa-search fa-sm text-muted"></i></span>
+                        <input type="text" id="warningSearch" class="form-control border-start-0" placeholder="Rechercher un usager, motif..." oninput="searchWarnings(this.value)" />
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="warningsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="ps-4" style="width: 70px;">#</th>
+                                    <th scope="col">Usager</th>
+                                    <th scope="col">Type d'avertissement</th>
+                                    <th scope="col">Date d'émission</th>
+                                    <th scope="col">Commentaires / Motif</th>
+                                    <th scope="col" class="text-center" style="width: 110px;">Statut</th>
+                                    <th scope="col" class="text-end pe-4" style="width: 140px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (warnings && warnings.length > 0) { %>
+                                    <% warnings.forEach(function(warning) { %>
+                                    <tr class="warning-row" data-status="<%= warning.active ? 'active' : 'resolved' %>" data-search="<%= (warning.user?.name + ' ' + warning.user?.surname + ' ' + warning.user?.email + ' ' + warning.warningtype?.name + ' ' + (warning.comments || '')).toLowerCase() %>">
+                                        <td class="ps-4 text-muted small">#<%= warning.id %></td>
+                                        <td>
+                                            <% if (warning.user) { %>
+                                                <div class="fw-semibold">
+                                                    <a href="/users/edit/<%= warning.user.id %>" class="text-decoration-none text-body" title="Voir la fiche usager">
+                                                        <%= warning.user.name %> <%= warning.user.surname %>
+                                                    </a>
+                                                </div>
+                                                <small class="text-muted"><%= warning.user.email %></small>
+                                            <% } else { %>
+                                                <span class="text-muted italic">Usager inconnu ou supprimé</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1">
+                                                <% if (warning.warningtype?.icon) { %>
+                                                    <i class="fa-solid <%= warning.warningtype.icon %> me-1"></i>
+                                                <% } else { %>
+                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                                                <% } %>
+                                                <%= warning.warningtype?.name || 'Avertissement' %>
+                                            </span>
+                                        </td>
+                                        <td class="small text-muted">
+                                            <%= typeof formatDateTime === 'function' ? formatDateTime(warning.createdAt) : warning.createdAt %>
+                                        </td>
+                                        <td>
+                                            <% if (warning.comments) { %>
+                                                <span class="small"><%= warning.comments %></span>
+                                            <% } else { %>
+                                                <span class="text-muted small fst-italic">Aucun commentaire</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-center">
+                                            <% if (warning.active) { %>
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                                                    <i class="fa-solid fa-clock me-1"></i> Actif
+                                                </span>
+                                            <% } else { %>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
+                                                    <i class="fa-solid fa-check me-1"></i> Résolu
+                                                </span>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <div class="btn-group btn-group-sm">
+                                                <% if (warning.active) { %>
+                                                    <a href="/admin/warnings/deactivate/<%= warning.id %>" class="btn btn-outline-success" title="Marquer comme résolu" onclick="return confirm('Marquer cet avertissement comme résolu ?');">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </a>
+                                                <% } else { %>
+                                                    <a href="/admin/warnings/activate/<%= warning.id %>" class="btn btn-outline-secondary" title="Réactiver cet avertissement" onclick="return confirm('Réactiver cet avertissement ?');">
+                                                        <i class="fa-solid fa-rotate-left"></i>
+                                                    </a>
+                                                <% } %>
+                                                <a href="/admin/warnings/delete/<%= warning.id %>" class="btn btn-outline-danger" title="Supprimer définitivement" onclick="return confirm('Supprimer définitivement cet enregistrement d\'avertissement ?');">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                <i class="fa-solid fa-shield-check fs-1 text-success mb-2"></i>
+                                                <h6 class="fw-semibold mb-1">Aucun avertissement enregistré</h6>
+                                                <small class="text-muted">Aucun usager n'a reçu d'avertissement pour le moment.</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Warning Card -->
+            <div class="card border-0 shadow-sm mb-4" id="newWarningCard">
+                <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1">
+                            <i class="fa-solid fa-plus me-1"></i> Nouveau
+                        </span>
+                        <h5 class="fw-bold mb-0">Émettre un avertissement usager</h5>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Enregistrez un rappel au règlement, un manquement ou une infraction sur le profil d'un usager</p>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/admin/warnings/create" method="POST">
+                        <div class="row g-3">
+                            <!-- Select User -->
+                            <div class="col-12 col-md-6">
+                                <label for="userid" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-user me-1 text-primary"></i> Usager concerné
+                                </label>
+                                <select class="form-select" id="userid" name="userid" required>
+                                    <option value="" disabled selected>-- Sélectionnez un usager --</option>
+                                    <% users.forEach(function(u) { %>
+                                        <option value="<%= u.id %>">
+                                            <%= u.surname %> <%= u.name %> (<%= u.email %>)
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+
+                            <!-- Select Warning Type -->
+                            <div class="col-12 col-md-6">
+                                <label for="warningtype" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i> Motif / Type d'avertissement
+                                </label>
+                                <select class="form-select" id="warningtype" name="warningtype" required>
+                                    <option value="" disabled selected>-- Sélectionnez un motif --</option>
+                                    <% warningtypes.forEach(function(wt) { %>
+                                        <option value="<%= wt.id %>">
+                                            <%= wt.name %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+
+                            <!-- Comments -->
+                            <div class="col-12">
+                                <label for="comments" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-comment-dots me-1 text-muted"></i> Commentaires / Précisions (facultatif)
+                                </label>
+                                <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Circonstances, machine concernée, consigne rappelée..."></textarea>
+                                <div class="form-text small text-muted">Ce commentaire apparaîtra sur la fiche usager et dans l'alerte e-mail éventuelle.</div>
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-end gap-2 pt-2">
+                                <button type="reset" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                    Réinitialiser
+                                </button>
+                                <button type="submit" class="btn btn-warning btn-sm rounded-pill px-4 text-dark fw-semibold shadow-sm">
+                                    <i class="fa-solid fa-paper-plane me-1"></i> Émettre l'avertissement
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                let currentStatusFilter = 'all';
+
+                function filterWarnings(status, btn) {
+                    currentStatusFilter = status;
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    if (btn) btn.classList.add('active');
+                    applyFilters();
+                }
+
+                function searchWarnings(query) {
+                    applyFilters();
+                }
+
+                function applyFilters() {
+                    const query = (document.getElementById('warningSearch')?.value || '').trim().toLowerCase();
+                    const rows = document.querySelectorAll('.warning-row');
+
+                    rows.forEach(row => {
+                        const status = row.getAttribute('data-status');
+                        const text = row.getAttribute('data-search') || '';
+
+                        const matchesStatus = (currentStatusFilter === 'all') || (status === currentStatusFilter);
+                        const matchesQuery = !query || text.includes(query);
+
+                        if (matchesStatus && matchesQuery) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                }
+            </script>
+
+            <%- include('../includes/footer.html') %>
+        </main>
+    </body>
+</html>

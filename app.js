@@ -371,7 +371,16 @@ app.use((err, req, res, next) => {
     res.status(statusCode);
     res.locals.error = req.app.get('env') === 'development' ? errorDetail : { message: errorDetail.message, status: statusCode };
     res.locals.message = errorDetail.message;
-    res.render('error');
+    res.locals.role = req.session ? req.session.role : null;
+    res.locals.loggedin = req.session ? req.session.loggedin : false;
+    res.locals.requestedPath = req.originalUrl;
+    res.locals.notification = req.session ? req.session.notification || "" : "";
+
+    if (statusCode === 404) {
+      res.render('404');
+    } else {
+      res.render('error');
+    }
   }
 });
 

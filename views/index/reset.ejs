@@ -14,7 +14,11 @@
         <%- include('../includes/light-dark.html') %>
         <main class="form-signin w-100 m-auto">
             <form action="/reset_password" method="post">
-                <img class="mb-4 app-auth-logo" src="/images/logo-fabtrack.svg" alt="FabtrackJS" width="75" height="58" />
+                <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
+                    <img class="mb-2 app-auth-logo" src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" />
+                <% } else { %>
+                    <img class="mb-2 app-auth-logo" src="/images/logo-fabtrack.svg" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" width="75" height="58" />
+                <% } %>
                 <h1 class="h3 fw-normal mb-3"><%= __('auth.reset_for_user', user.nom) %></h1>
 
                 <div class="form-floating">

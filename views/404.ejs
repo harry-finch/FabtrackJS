@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>404 - Page introuvable • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
+        <%- include('includes/pagehead.html') %>
+        <style>
+            .error-card {
+                border-radius: 1.25rem;
+                overflow: hidden;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .gif-container {
+                position: relative;
+                max-width: 440px;
+                margin: 0 auto;
+                border-radius: 1rem;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+                border: 1px solid rgba(0, 0, 0, 0.08);
+            }
+            [data-bs-theme="dark"] .gif-container {
+                border-color: rgba(255, 255, 255, 0.12);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            }
+            .gif-container img {
+                display: block;
+                width: 100%;
+                height: auto;
+                object-fit: cover;
+            }
+            .path-badge {
+                font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+                font-size: 0.85rem;
+                word-break: break-all;
+            }
+        </style>
+    </head>
+    <body class="d-flex justify-content-center align-items-center min-vh-100 bg-body-tertiary py-4">
+        <%- include('includes/light-dark.html') %>
+
+        <main class="main-container w-100 px-3" style="max-width: 680px;">
+            <!-- Top Branding -->
+            <div class="text-center mb-3">
+                <a href="/" class="text-decoration-none">
+                    <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
+                        <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
+                    <% } else { %>
+                        <img src="/images/logo-fabtrack.svg" alt="FabtrackJS" width="60" height="46" class="app-auth-logo" />
+                    <% } %>
+                </a>
+            </div>
+
+            <!-- 404 Hero Card -->
+            <div class="card border-0 shadow-lg error-card bg-body">
+                <div class="card-body p-4 p-md-5 text-center">
+                    
+                    <!-- Top Pill -->
+                    <div class="mb-3">
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1.5 fw-semibold">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i> Erreur 404 • Page introuvable
+                        </span>
+                    </div>
+
+                    <!-- 404 Animated GIF -->
+                    <div class="gif-container mb-4">
+                        <img src="/images/404.gif" alt="Erreur 404 - Animation" />
+                    </div>
+
+                    <!-- Title & Explanation -->
+                    <h2 class="fw-bold mb-2 text-body">
+                        Oups ! Cette page s'est égarée...
+                    </h2>
+                    <p class="text-secondary mb-3" style="font-size: 0.98rem; line-height: 1.5;">
+                        La page que vous recherchez n'existe pas, a été déplacée ou son lien est incorrect.
+                    </p>
+
+                    <% if (typeof requestedPath !== 'undefined' && requestedPath) { %>
+                    <div class="mb-4">
+                        <span class="path-badge bg-body-secondary text-secondary px-2.5 py-1 rounded-pill border">
+                            <i class="fa-solid fa-link me-1 text-muted"></i> <%= requestedPath %>
+                        </span>
+                    </div>
+                    <% } %>
+
+                    <!-- Action Navigation Buttons -->
+                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 pt-2">
+                        <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.assign('/')" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Page précédente
+                        </button>
+
+                        <a href="/fabtrack" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2">
+                            <i class="fa-solid fa-desktop me-1"></i> Kiosque Fabtrack
+                        </a>
+
+                        <% if (typeof role !== 'undefined' && role === 'admin') { %>
+                        <a href="/admin" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2">
+                            <i class="fa-solid fa-screwdriver-wrench me-1"></i> Panneau admin
+                        </a>
+                        <% } %>
+
+                        <a href="/" class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                            <i class="fa-solid fa-house me-1"></i> Accueil
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card Footer Help Note -->
+                <div class="card-footer bg-body-tertiary border-0 py-3 text-center">
+                    <small class="text-muted">
+                        Un problème avec un équipement ou une machine ? 
+                        <a href="/report-issue" class="text-decoration-none text-primary fw-semibold ms-1">
+                            <i class="fa-solid fa-wrench me-1"></i>Signaler un incident
+                        </a>
+                    </small>
+                </div>
+            </div>
+
+            <!-- Page Footer -->
+            <%- include('includes/footer.html') %>
+        </main>
+    </body>
+</html>

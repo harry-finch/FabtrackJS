@@ -29,7 +29,7 @@
         aria-atomic="true"
     >
         <div class="d-flex">
-            <div class="toast-body"><%= notification %></div>
+            <div class="toast-body"><%= typeof notification !== 'undefined' ? notification : '' %></div>
             <button
                 type="button"
                 class="btn-close btn-close-white me-2 m-auto"
