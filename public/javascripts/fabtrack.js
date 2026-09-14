@@ -19,6 +19,49 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
   var names = data.userlist;
   var allowedChars = new RegExp(/^[a-zA-Z\s]+$/);
 
+  const charterWarningRow = document.getElementById("charterWarningRow");
+  const charterProfileBtn = document.getElementById("charterProfileBtn");
+  const charterWarningMsg = document.getElementById("charterWarningMsg");
+  const registerSubmitBtn = document.getElementById("registerSubmitBtn");
+
+  function setCharterStatus(user) {
+    if (!user) {
+      if (charterWarningRow) charterWarningRow.style.display = "none";
+      if (registerSubmitBtn) {
+        registerSubmitBtn.disabled = false;
+        registerSubmitBtn.classList.remove("btn-secondary", "opacity-50");
+        registerSubmitBtn.classList.add("btn-primary");
+        registerSubmitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i> ' + (window.kioskRegisterBtnText || "S'enregistrer");
+      }
+      return;
+    }
+
+    if (user.termsAccepted === false) {
+      if (charterWarningRow) charterWarningRow.style.display = "flex";
+      if (charterProfileBtn) charterProfileBtn.href = "/users/edit/" + user.id;
+      if (charterWarningMsg) {
+        charterWarningMsg.textContent = `${user.fullname} n'a pas encore validé la charte d'utilisation du fablab. L'inscription au lab est bloquée.`;
+      }
+      if (registerSubmitBtn) {
+        if (!window.kioskRegisterBtnText) {
+          window.kioskRegisterBtnText = registerSubmitBtn.innerText.trim();
+        }
+        registerSubmitBtn.disabled = true;
+        registerSubmitBtn.classList.remove("btn-primary");
+        registerSubmitBtn.classList.add("btn-secondary", "opacity-50");
+        registerSubmitBtn.innerHTML = '<i class="fa-solid fa-ban me-1"></i> Charte non signée (inscription bloquée)';
+      }
+    } else {
+      if (charterWarningRow) charterWarningRow.style.display = "none";
+      if (registerSubmitBtn) {
+        registerSubmitBtn.disabled = false;
+        registerSubmitBtn.classList.remove("btn-secondary", "opacity-50");
+        registerSubmitBtn.classList.add("btn-primary");
+        registerSubmitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i> ' + (window.kioskRegisterBtnText || "S'enregistrer");
+      }
+    }
+  }
+
   autocomplete({
     input: nameInput,
     minLength: 1,
@@ -33,14 +76,27 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     },
     render: function (item, value) {
       var itemElement = document.createElement("div");
+      itemElement.className = "d-flex align-items-center justify-content-between";
+
+      var nameSpan = document.createElement("span");
       if (allowedChars.test(value)) {
         var regex = new RegExp(value, "gi");
-        itemElement.innerHTML = item.fullname.replace(regex, function (match) {
+        nameSpan.innerHTML = item.fullname.replace(regex, function (match) {
           return `<strong>${match}</strong>`;
         });
       } else {
-        itemElement.textContent = item.fullname;
+        nameSpan.textContent = item.fullname;
       }
+      itemElement.appendChild(nameSpan);
+
+      if (item.termsAccepted === false) {
+        var badge = document.createElement("span");
+        badge.className = "badge bg-warning text-dark border border-warning-subtle rounded-pill ms-2 px-2 py-1";
+        badge.style.fontSize = "0.7rem";
+        badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>Charte non signée';
+        itemElement.appendChild(badge);
+      }
+
       return itemElement;
     },
     onSelect: function (item) {
@@ -51,9 +107,33 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       nameInput.value = item.fullname;
       document.getElementById("userid").value = item.id;
       document.getElementById("urlprofile").href = "/users/edit/" + item.id;
+      setCharterStatus(item);
+      nameInput.dispatchEvent(new Event("change"));
       console.log(item.projects);
     },
   });
+
+  nameInput.addEventListener("input", () => {
+    const currentUserId = Number(document.getElementById("userid").value);
+    const currentUser = names.find((u) => u.id === currentUserId);
+    if (!currentUser || currentUser.fullname.toLowerCase() !== nameInput.value.trim().toLowerCase()) {
+      document.getElementById("userid").value = "null";
+      setCharterStatus(null);
+    }
+  });
+
+  const kioskForm = document.querySelector('form[action="/history/create"]');
+  if (kioskForm) {
+    kioskForm.addEventListener("submit", (e) => {
+      const selectedId = Number(document.getElementById("userid").value);
+      const selectedUser = names.find((u) => u.id === selectedId);
+      if (selectedUser && selectedUser.termsAccepted === false) {
+        e.preventDefault();
+        setCharterStatus(selectedUser);
+        alert(`Impossible d'inscrire ${selectedUser.fullname} : la charte d'utilisation doit être validée avant d'accéder au lab.`);
+      }
+    });
+  }
 
   // Project documentation search autocomplete
   var docInput = document.getElementById("documentation");

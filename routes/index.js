@@ -14,16 +14,7 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 const router = express.Router();
-
-// Nodemailer config
-const transporter = nodemailer.createTransport({
-  host: process.env.HOST,
-  port: Number(process.env.PORT),
-  auth: {
-    user: process.env.USR,
-    pass: process.env.PASSWD,
-  },
-});
+const mailService = require("../services/mailService.js");
 
 const saltRounds = 10;
 
@@ -74,16 +65,11 @@ router.post(
       // Notify user about admin approval requirement
       req.session.notification = "Warning: Your account needs to be approved by an administrator before you can log in.";
 
-      // Send notification email to admin
-      const notif = await transporter.sendMail({
-        from: process.env.MAILFROM,
-        to: process.env.ADMIN,
-        subject: "FabtrackJS: new staff account created",
-        text: `User ${username} (${mail}) has registered an account on Fabtrack.`,
-      });
-
-      // DEBUG: Etherreal link to email
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
+      // Send notification email to admin asynchronously
+      const hostUrl = `${req.protocol}://${req.get("host")}`;
+      mailService
+        .sendStaffRegisteredAlert({ username, email: mail, hostUrl })
+        .catch((err) => console.error("[routes/index/create-account] Failed to send staff alert email:", err));
 
       res.redirect("/login");
     } catch (e) {
@@ -124,15 +110,10 @@ router.post(
       data: { pwdToken: token, tokenExpiry: expiresAt },
     });
 
-    const notif = await transporter.sendMail({
-      from: process.env.MAILFROM,
-      to: mail,
-      subject: "Password Reset",
-      html: `<a href="${process.env.HOSTURL}/reset/${token}">Reset Password</a>`,
-    });
-
-    // DEBUG: Etherreal link to email
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
+    const hostUrl = `${req.protocol}://${req.get("host")}`;
+    mailService
+      .sendPasswordResetEmail({ email: mail, token, hostUrl })
+      .catch((err) => console.error("[routes/index/reset] Failed to send password reset email:", err));
 
     req.session.notification = "Success: Check your email to reset your password.";
     res.redirect("/login");

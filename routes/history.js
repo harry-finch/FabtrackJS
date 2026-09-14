@@ -59,6 +59,20 @@ router.post(
       return res.redirect("/fabtrack");
     }
 
+    const targetUser = await prisma.user.findUnique({
+      where: { id: parsedUserId },
+    });
+
+    if (!targetUser) {
+      req.session.notification = "Error: Utilisateur introuvable.";
+      return res.redirect("/fabtrack");
+    }
+
+    if (!targetUser.termsAccepted) {
+      req.session.notification = `Warning: ${targetUser.name} ${targetUser.surname} n'a pas encore signé la charte d'utilisation et ne peut pas accéder au lab.`;
+      return res.redirect("/fabtrack");
+    }
+
     const cleanRepairObject = repairObject && repairObject.trim() ? repairObject.trim() : null;
     let parsedWorkshopId = null;
     if (workshopId && workshopId !== "null" && workshopId !== "") {

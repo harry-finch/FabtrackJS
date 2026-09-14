@@ -76,6 +76,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row" id="charterWarningRow" style="display: none;">
+                        <div class="col-12">
+                            <div class="alert alert-warning border border-warning-subtle d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 py-2 px-3 rounded-3 shadow-sm" role="alert" id="charterWarningAlert">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fs-4 text-warning"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                                    <div>
+                                        <div class="fw-bold text-body">Charte d'utilisation non signée</div>
+                                        <small class="text-body-secondary" id="charterWarningMsg">Cet usager n'a pas encore validé la charte du fablab. L'inscription au lab est bloquée tant que la charte n'est pas acceptée.</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a id="charterProfileBtn" href="" class="btn btn-sm btn-outline-warning rounded-pill">
+                                        <i class="fa-solid fa-user-pen me-1"></i> Valider sur la fiche usager
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-8" id="documentationCol">
                             <div class="form-floating mb-3 d-grid d-flex">
@@ -172,7 +190,7 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit">
+                            <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit" id="registerSubmitBtn">
                                 <i class="fa-solid fa-check me-1"></i> <%= __('kiosk.btn_register') %>
                             </button>
                         </div>

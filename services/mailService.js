@@ -357,6 +357,106 @@ class MailService {
       html,
     });
   }
+
+  /**
+   * Sends the charter agreement email to a newly registered user or when resent.
+   */
+  async sendAgreementEmail({ user, token, hostUrl: customHostUrl }) {
+    if (!user || !user.email) {
+      return { skipped: true, reason: "No user email" };
+    }
+
+    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+    const agreementToken = token || user.token;
+    const agreementUrl = `${hostUrl}/agreement/${agreementToken}`;
+
+    const contentHtml = `
+      <p>Bonjour <strong>${user.name}</strong>,</p>
+      <p>Votre compte a bien été créé sur la plateforme <strong>FabtrackJS</strong> du Fablab.</p>
+      <p>Pour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.</p>
+      
+      <div style="background-color: #f8fafc; border-left: 4px solid #112970; padding: 14px 18px; margin: 18px 0; border-radius: 4px; font-size: 13px; color: #334155;">
+        <strong>Important :</strong> L'accès aux équipements et le pointage d'entrée au Fablab restent bloqués tant que la charte n'a pas été acceptée.
+      </div>
+      
+      <p>Cliquez sur le bouton ci-dessous pour lire et valider la charte :</p>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: "Validation de la charte d'utilisation du Fablab",
+      badgeText: "Charte Fablab",
+      badgeColor: "#112970",
+      contentHtml,
+      ctaUrl: agreementUrl,
+      ctaText: "Signer la charte d'utilisation",
+    });
+
+    return await this.sendMail({
+      to: user.email,
+      subject: "Fablab : Signature requise de la charte d'utilisation",
+      html,
+    });
+  }
+
+  /**
+   * Sends an alert when a new staff member registers and awaits approval.
+   */
+  async sendStaffRegisteredAlert({ username, email, hostUrl: customHostUrl }) {
+    const settings = await settingsService.getSettings();
+    const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN || "admin@example.com";
+    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+
+    const contentHtml = `
+      <p>Un nouveau membre du staff s'est inscrit et attend votre validation pour pouvoir se connecter :</p>
+      <ul>
+        <li><strong>Identifiant :</strong> ${username}</li>
+        <li><strong>Email :</strong> ${email}</li>
+      </ul>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: "Nouveau compte animateur / staff à valider",
+      badgeText: "Nouveau Staff",
+      badgeColor: "#3b82f6",
+      contentHtml,
+      ctaUrl: `${hostUrl}/admin/staff/manage`,
+      ctaText: "Gérer les membres du staff",
+    });
+
+    return await this.sendMail({
+      to: adminEmail,
+      subject: `[Staff Fablab] Nouveau compte staff créé : ${username}`,
+      html,
+    });
+  }
+
+  /**
+   * Sends password reset email.
+   */
+  async sendPasswordResetEmail({ email, token, hostUrl: customHostUrl }) {
+    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+    const resetUrl = `${hostUrl}/reset/${token}`;
+
+    const contentHtml = `
+      <p>Vous avez demandé la réinitialisation de votre mot de passe pour la plateforme FabtrackJS.</p>
+      <p>Ce lien est valable pendant 10 minutes :</p>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: "Réinitialisation de votre mot de passe",
+      badgeText: "Sécurité",
+      badgeColor: "#64748b",
+      contentHtml,
+      ctaUrl: resetUrl,
+      ctaText: "Réinitialiser mon mot de passe",
+    });
+
+    return await this.sendMail({
+      to: email,
+      subject: "FabtrackJS : Réinitialisation de mot de passe",
+      html,
+    });
+  }
 }
 
 module.exports = new MailService();

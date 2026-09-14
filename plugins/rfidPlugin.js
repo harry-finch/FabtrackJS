@@ -112,6 +112,22 @@ module.exports = {
         };
       } else {
         // --- CHECK-IN ---
+        if (!user.termsAccepted) {
+          logger.logThat(`RFID Check-in refused: ${user.name} ${user.surname} (RFID: ${cleanRfid}) - terms not accepted`);
+          return {
+            success: false,
+            code: "TERMS_NOT_ACCEPTED",
+            rfid: cleanRfid,
+            user: {
+              id: user.id,
+              name: user.name,
+              surname: user.surname,
+              type: user.usertype ? user.usertype.name : "",
+            },
+            message: `Accès refusé : ${user.name} ${user.surname} n'a pas encore validé la charte d'utilisation. Veuillez signer la charte avant d'accéder au lab.`,
+          };
+        }
+
         const arrivalTime = new Date();
         const newVisit = await prisma.history.create({
           data: {

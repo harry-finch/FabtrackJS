@@ -93,7 +93,12 @@ router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
 
   let userlist = [];
   users.forEach(function (user) {
-    userlist.push({ fullname: user.name + " " + user.surname, id: user.id, projects: JSON.stringify(user.projects) });
+    userlist.push({
+      fullname: user.name + " " + user.surname,
+      id: user.id,
+      termsAccepted: !!user.termsAccepted,
+      projects: JSON.stringify(user.projects),
+    });
   });
 
   let projectlist = [];

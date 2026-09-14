@@ -149,6 +149,39 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-start">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="termsAccepted" name="termsAccepted" value="true" <%= user.termsAccepted ? 'checked' : '' %>>
+                                <div>
+                                    <label class="form-check-label fw-bold" for="termsAccepted">
+                                        <i class="fa-solid fa-file-contract text-primary me-1"></i> Charte d'utilisation du lab
+                                        <% if (user.termsAccepted) { %>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2">
+                                                <i class="fa-solid fa-check me-1"></i>Signée
+                                            </span>
+                                        <% } else { %>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill ms-2">
+                                                <i class="fa-solid fa-clock me-1"></i>En attente de signature
+                                            </span>
+                                        <% } %>
+                                    </label>
+                                    <div class="form-text small text-muted">
+                                        L'usager doit avoir validé la charte pour pouvoir s'inscrire et accéder au lab. Cochez cette case si l'usager l'a validée sur place.
+                                    </div>
+                                </div>
+                            </div>
+                            <% if (!user.termsAccepted) { %>
+                            <div>
+                                <a href="/users/resend/<%= user.id %>" class="btn btn-sm btn-outline-warning rounded-pill" title="Renvoyer l'e-mail avec le lien de signature">
+                                    <i class="fa-solid fa-paper-plane me-1"></i> Renvoyer l'e-mail de charte
+                                </a>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
                 <div class="row g-2 mb-4">
                     <div class="col-sm-6">
                         <button class="btn btn-primary w-100 py-2 rounded-pill shadow-sm" type="submit">

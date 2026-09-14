@@ -3,7 +3,7 @@ const moment = require("moment");
 const { PrismaClient } = require("@prisma/client");
 const logger = require("../utilities/simpleLogger.js");
 const { v4: uuidv4 } = require("uuid");
-const nodemailer = require("nodemailer");
+const mailService = require("../services/mailService.js");
 
 const asyncHandler = require("../middleware/asyncHandler.js");
 const clearNotification = require("../middleware/clearNotification.js");
@@ -16,16 +16,6 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 router.use(isLoggedIn); // Ensure user is logged in
-
-// Nodemailer config
-const transporter = nodemailer.createTransport({
-  host: process.env.HOST,
-  port: Number(process.env.PORT),
-  auth: {
-    user: process.env.USR,
-    pass: process.env.PASSWD,
-  },
-});
 
 // Helper Functions
 function formatDateTime(date) {
@@ -91,20 +81,15 @@ router.post(
 
       logger.logThat(`User ${user.name} ${user.surname} created by ${req.session.username}`);
 
-      // Send notification email to user
-      const notif = await transporter.sendMail({
-        from: process.env.MAILFROM,
-        to: process.env.ADMIN,
-        subject: "Fablab registration: please agree to our terms and conditions",
-        text: `<a href="${process.env.HOSTURL}/agreement/${token}">I agree to the terms and conditions!</a>`,
-      });
+      // Send agreement email to user asynchronously without blocking HTTP response
+      const hostUrl = `${req.protocol}://${req.get("host")}`;
+      mailService
+        .sendAgreementEmail({ user, token, hostUrl })
+        .catch((err) => console.error("[routes/users/create] Failed to send agreement email:", err));
 
-      // DEBUG: Etherreal link to email
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
+      req.session.notification = `Warning: L'usager ${user.name} ${user.surname} a été créé. Il doit signer la charte d'utilisation reçue par e-mail avant de pouvoir s'enregistrer au lab.`;
 
-      req.session.notification = "Warning: User needs to agree to the terms and conditions before accessing the lab.";
-
-      res.redirect("/users/manage");
+      res.redirect("/fabtrack");
     } catch (e) {
       console.error("Error creating user:", e);
       let errorMsg = "Error: Unable to create user. Please try again.";
@@ -116,7 +101,7 @@ router.post(
         }
       }
       req.session.notification = errorMsg;
-      res.redirect(req.session.lastPage || "/users/manage");
+      res.redirect(req.session.lastPage || "/fabtrack");
     }
   }),
 );
@@ -385,7 +370,7 @@ router.post(
     }
 
     const { id } = req.params;
-    const { name, surname, email, usertype, birthyear, comments, isExpert, rfid, newsletter } = req.body;
+    const { name, surname, email, usertype, birthyear, comments, isExpert, rfid, newsletter, termsAccepted } = req.body;
     const cleanRfid = rfid && rfid.trim() ? rfid.trim() : null;
 
     try {
@@ -401,6 +386,7 @@ router.post(
           isExpert: isExpert === "true" || isExpert === "on" || isExpert === true,
           rfid: cleanRfid,
           newsletter: newsletter === "true" || newsletter === "on" || newsletter === true,
+          termsAccepted: termsAccepted === "true" || termsAccepted === "on" || termsAccepted === true,
         },
       });
 
@@ -590,20 +576,18 @@ router.get(
       where: { id: Number(id) },
     });
 
-    // Send notification email to admin
-    const notif = await transporter.sendMail({
-      from: process.env.MAILFROM,
-      to: process.env.ADMIN,
-      subject: "Fablab registration: please agree to our terms and conditions",
-      html: `<a href="${process.env.HOSTURL}/agreement/${user.token}">I agree to the terms and conditions!</a>`,
-    });
+    if (!user) {
+      req.session.notification = "Error: Utilisateur introuvable.";
+      return res.redirect(req.session.lastPage || "/users/manage");
+    }
 
-    // DEBUG: Etherreal link to email
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(notif));
-    console.log("Last page is: %s", req.session.lastPage);
+    const hostUrl = `${req.protocol}://${req.get("host")}`;
+    mailService
+      .sendAgreementEmail({ user, token: user.token, hostUrl })
+      .catch((err) => console.error("[routes/users/resend] Failed to send agreement email:", err));
 
-    req.session.notification = `Success: User ${user.name} ${user.surname} has been notified.`;
-    res.redirect(req.session.lastPage);
+    req.session.notification = `Success: L'e-mail avec le lien de signature a été envoyé à ${user.name} ${user.surname} (${user.email}).`;
+    res.redirect(req.session.lastPage || "/users/manage");
   }),
 );
 
