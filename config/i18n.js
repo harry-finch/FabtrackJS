@@ -30,7 +30,7 @@ function configureI18n() {
     directory: LOCALES_DIR,
     queryParameter: "lang",
     cookie: "fabtrack_lang",
-    autoReload: true,
+    autoReload: process.env.NODE_ENV !== "test" && process.env.JEST_WORKER_ID === undefined,
     updateFiles: false,
     syncFiles: false,
     objectNotation: true,

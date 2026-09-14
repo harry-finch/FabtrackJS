@@ -11,7 +11,9 @@ lerna-debug.log*
 .DS_Store
 
 # Test files
-test*
+test*.js
+test*.tmp
+!tests/
 
 # Zed directory
 .zed
