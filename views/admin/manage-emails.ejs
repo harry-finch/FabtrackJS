@@ -169,7 +169,14 @@
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
                                         <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Usager</span>
-                                        <span class="small text-muted">Lien d'activation personnalisé</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" onclick="scrollToAgreementTemplate()">
+                                                <i class="fa-solid fa-pen me-1"></i> Modifier
+                                            </button>
+                                            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement">
+                                                <i class="fa-solid fa-eye me-1"></i> Aperçu
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -201,6 +208,103 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW: User Charter Email Template Customization -->
+                <div class="card border-0 shadow-sm mb-4" id="agreementTemplateCard">
+                    <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
+                                    <i class="fa-solid fa-file-signature me-1"></i> Modèle d'e-mail
+                                </span>
+                                <h5 class="fw-bold mb-0">E-mail de création d'usager & Signature de la Charte</h5>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement" onclick="updateLivePreview()">
+                                <i class="fa-solid fa-eye me-1"></i> Aperçu du rendu
+                            </button>
+                        </div>
+                        <p class="text-muted small mt-1 mb-0">Personnalisez l'objet, le texte et le bouton du message envoyé aux usagers créés pour valider la charte d'utilisation du lab</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <!-- Subject -->
+                            <div class="col-12 col-md-6">
+                                <label for="mail_user_agreement_subject" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-heading me-1 text-primary"></i> Objet de l'e-mail
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="mail_user_agreement_subject"
+                                    name="mail_user_agreement_subject"
+                                    value="<%= settings.mail_user_agreement_subject || 'Fablab : Signature requise de la charte d\'utilisation' %>"
+                                    placeholder="Fablab : Signature requise de la charte d'utilisation"
+                                    required
+                                />
+                                <div class="form-text small text-muted">Sujet visible dans la boîte de réception de l'usager.</div>
+                            </div>
+
+                            <!-- Title in Header -->
+                            <div class="col-12 col-md-6">
+                                <label for="mail_user_agreement_title" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-font me-1 text-primary"></i> Titre principal dans l'e-mail
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="mail_user_agreement_title"
+                                    name="mail_user_agreement_title"
+                                    value="<%= settings.mail_user_agreement_title || 'Validation de la charte d\'utilisation du Fablab' %>"
+                                    placeholder="Validation de la charte d'utilisation du Fablab"
+                                />
+                                <div class="form-text small text-muted">Titre affiché au-dessus du message dans le corps de l'e-mail.</div>
+                            </div>
+
+                            <!-- Body Text -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                                    <label for="mail_user_agreement_body" class="form-label fw-semibold small mb-0">
+                                        <i class="fa-solid fa-paragraph me-1 text-primary"></i> Corps du message
+                                    </label>
+                                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                                        <small class="text-muted me-1">Insérer une variable :</small>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{name}')" title="Prénom de l'usager">{name}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{surname}')" title="Nom de l'usager">{surname}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{fullname}')" title="Prénom et nom">{fullname}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{email}')" title="Email de l'usager">{email}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{lab_name}')" title="Nom du Fablab">{lab_name}</button>
+                                    </div>
+                                </div>
+                                <textarea
+                                    class="form-control"
+                                    id="mail_user_agreement_body"
+                                    name="mail_user_agreement_body"
+                                    rows="5"
+                                    placeholder="Bonjour {name}, ..."
+                                ><%= settings.mail_user_agreement_body || "Bonjour {name},\n\nVotre compte a bien été créé sur la plateforme {lab_name} du Fablab.\n\nPour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.\n\nCliquez sur le bouton ci-dessous pour lire et valider la charte :" %></textarea>
+                                <div class="form-text small text-muted">
+                                    Séparez vos paragraphes par un saut de ligne. Les variables (ex: <code>{name}</code>) seront remplacées automatiquement lors de l'envoi.
+                                </div>
+                            </div>
+
+                            <!-- CTA Button Text -->
+                            <div class="col-12 col-md-6">
+                                <label for="mail_user_agreement_cta_text" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-square-check me-1 text-primary"></i> Texte du bouton d'action (Call to Action)
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="mail_user_agreement_cta_text"
+                                    name="mail_user_agreement_cta_text"
+                                    value="<%= settings.mail_user_agreement_cta_text || 'Signer la charte d\'utilisation' %>"
+                                    placeholder="Signer la charte d'utilisation"
+                                />
+                                <div class="form-text small text-muted">Intitulé du bouton principal dirigeant vers la validation de la charte.</div>
                             </div>
                         </div>
                     </div>
@@ -483,6 +587,137 @@
                     </div>
                 </div>
             </div>
+
+            <!-- MODAL 4: Preview Agreement Email -->
+            <div class="modal fade" id="modalPreviewAgreement" tabindex="-1" aria-labelledby="modalPreviewAgreementLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content shadow-lg border-0">
+                        <div class="modal-header border-0 pb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="fa-solid fa-file-signature fa-sm"></i>
+                                </div>
+                                <h6 class="modal-title fw-bold" id="modalPreviewAgreementLabel">Aperçu en direct : E-mail de signature de charte</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="text-muted small mb-2 d-flex align-items-center justify-content-between">
+                                <span><i class="fa-solid fa-circle-info me-1 text-primary"></i> Simulation avec un usager exemple (<strong>Camille Martin</strong>)</span>
+                                <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill">Aperçu dynamique</span>
+                            </div>
+                            <div class="border rounded-3 p-4 bg-white text-dark shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                                    <span class="fw-bold fs-5"><%= settings.platform_name || 'FabtrackJS' %></span>
+                                    <span class="badge bg-white text-dark fw-bold text-uppercase px-2 py-1 rounded-pill">Charte Fablab</span>
+                                </div>
+                                <h5 class="fw-bold mb-3 text-dark" id="previewAgreementTitle">Validation de la charte d'utilisation du Fablab</h5>
+                                <div class="text-secondary small mb-3" id="previewAgreementBody" style="line-height: 1.6;">
+                                    <!-- Dynamic content updated via JS -->
+                                </div>
+                                <div class="alert alert-light border border-secondary-subtle p-3 rounded-2 small text-muted mb-3">
+                                    <strong>Important :</strong> L'accès aux équipements et le pointage d'entrée au Fablab restent bloqués tant que la charte n'a pas été acceptée.
+                                </div>
+                                <div class="text-center pt-2">
+                                    <span class="btn btn-sm rounded-pill text-white px-4 py-2" id="previewAgreementCta" style="background-color: #112970; font-weight: 600;">
+                                        Signer la charte d'utilisation
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function scrollToAgreementTemplate() {
+                    const target = document.getElementById("agreementTemplateCard");
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                        target.classList.add("border", "border-primary", "shadow");
+                        setTimeout(() => {
+                            target.classList.remove("border", "border-primary", "shadow");
+                        }, 1800);
+                        const subjectInput = document.getElementById("mail_user_agreement_subject");
+                        if (subjectInput) {
+                            subjectInput.focus();
+                        }
+                    }
+                }
+
+                function insertVar(tag) {
+                    const textarea = document.getElementById("mail_user_agreement_body");
+                    if (!textarea) return;
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const text = textarea.value;
+                    textarea.value = text.substring(0, start) + tag + text.substring(end);
+                    textarea.focus();
+                    textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+                    updateLivePreview();
+                }
+
+                function updateLivePreview() {
+                    const titleInput = document.getElementById("mail_user_agreement_title");
+                    const bodyInput = document.getElementById("mail_user_agreement_body");
+                    const ctaInput = document.getElementById("mail_user_agreement_cta_text");
+
+                    const previewTitle = document.getElementById("previewAgreementTitle");
+                    const previewBody = document.getElementById("previewAgreementBody");
+                    const previewCta = document.getElementById("previewAgreementCta");
+
+                    const sampleUser = {
+                        name: "Camille",
+                        surname: "Martin",
+                        fullname: "Camille Martin",
+                        email: "camille.martin@sorbonne-universite.fr",
+                        lab_name: "<%= settings.platform_name || 'FabtrackJS' %>"
+                    };
+
+                    const replaceSample = (str) => {
+                        if (!str) return "";
+                        return str
+                            .replace(/\{name\}|\{\{name\}\}/gi, sampleUser.name)
+                            .replace(/\{surname\}|\{\{surname\}\}/gi, sampleUser.surname)
+                            .replace(/\{fullname\}|\{\{fullname\}\}/gi, sampleUser.fullname)
+                            .replace(/\{email\}|\{\{email\}\}/gi, sampleUser.email)
+                            .replace(/\{lab_name\}|\{\{lab_name\}\}/gi, sampleUser.lab_name)
+                            .replace(/\{link\}|\{\{link\}\}/gi, "https://fablab.example.org/agreement/sample-token-123");
+                    };
+
+                    if (previewTitle && titleInput) {
+                        previewTitle.textContent = replaceSample(titleInput.value) || "Validation de la charte d'utilisation du Fablab";
+                    }
+
+                    if (previewBody && bodyInput) {
+                        const raw = bodyInput.value || "";
+                        const formatted = replaceSample(raw)
+                            .split("\n\n")
+                            .map(p => `<p class="mb-2">${p.replace(/\n/g, "<br>")}</p>`)
+                            .join("");
+                        previewBody.innerHTML = formatted;
+                    }
+
+                    if (previewCta && ctaInput) {
+                        previewCta.textContent = replaceSample(ctaInput.value) || "Signer la charte d'utilisation";
+                    }
+                }
+
+                document.addEventListener("DOMContentLoaded", () => {
+                    const titleInput = document.getElementById("mail_user_agreement_title");
+                    const bodyInput = document.getElementById("mail_user_agreement_body");
+                    const ctaInput = document.getElementById("mail_user_agreement_cta_text");
+
+                    if (titleInput) titleInput.addEventListener("input", updateLivePreview);
+                    if (bodyInput) bodyInput.addEventListener("input", updateLivePreview);
+                    if (ctaInput) ctaInput.addEventListener("input", updateLivePreview);
+
+                    updateLivePreview();
+                });
+            </script>
 
             <%- include('../includes/footer.html') %>
         </main>

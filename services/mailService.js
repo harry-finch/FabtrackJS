@@ -366,34 +366,62 @@ class MailService {
       return { skipped: true, reason: "No user email" };
     }
 
+    const settings = await settingsService.getSettings();
+
+    if (settings.mail_notif_user_agreement === "false") {
+      return { skipped: true, reason: "User agreement email disabled in settings" };
+    }
+
     const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
     const agreementToken = token || user.token;
     const agreementUrl = `${hostUrl}/agreement/${agreementToken}`;
+    const labName = settings.platform_name || "FabtrackJS";
+
+    const replaceVariables = (str) => {
+      if (!str) return "";
+      return str
+        .replace(/\{name\}|\{\{name\}\}/gi, user.name || "")
+        .replace(/\{surname\}|\{\{surname\}\}/gi, user.surname || "")
+        .replace(/\{fullname\}|\{\{fullname\}\}/gi, `${user.name || ""} ${user.surname || ""}`.trim())
+        .replace(/\{email\}|\{\{email\}\}/gi, user.email || "")
+        .replace(/\{lab_name\}|\{\{lab_name\}\}/gi, labName)
+        .replace(/\{link\}|\{\{link\}\}/gi, agreementUrl);
+    };
+
+    const subject = replaceVariables(settings.mail_user_agreement_subject || "Fablab : Signature requise de la charte d'utilisation");
+    const title = replaceVariables(settings.mail_user_agreement_title || "Validation de la charte d'utilisation du Fablab");
+    const rawBody = settings.mail_user_agreement_body || 
+      "Bonjour {name},\n\nVotre compte a bien été créé sur la plateforme {lab_name} du Fablab.\n\nPour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.\n\nCliquez sur le bouton ci-dessous pour lire et valider la charte :";
+    
+    const formattedBodyHtml = replaceVariables(rawBody)
+      .split("\n\n")
+      .map((p) => `<p style="margin-bottom: 12px;">${p.replace(/\n/g, "<br>")}</p>`)
+      .join("");
+
+    const ctaText = replaceVariables(settings.mail_user_agreement_cta_text || "Signer la charte d'utilisation");
 
     const contentHtml = `
-      <p>Bonjour <strong>${user.name}</strong>,</p>
-      <p>Votre compte a bien été créé sur la plateforme <strong>FabtrackJS</strong> du Fablab.</p>
-      <p>Pour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.</p>
+      <div style="font-size: 14px; line-height: 1.6; color: #334155;">
+        ${formattedBodyHtml}
+      </div>
       
       <div style="background-color: #f8fafc; border-left: 4px solid #112970; padding: 14px 18px; margin: 18px 0; border-radius: 4px; font-size: 13px; color: #334155;">
         <strong>Important :</strong> L'accès aux équipements et le pointage d'entrée au Fablab restent bloqués tant que la charte n'a pas été acceptée.
       </div>
-      
-      <p>Cliquez sur le bouton ci-dessous pour lire et valider la charte :</p>
     `;
 
     const html = this.renderEmailLayout({
-      title: "Validation de la charte d'utilisation du Fablab",
+      title,
       badgeText: "Charte Fablab",
       badgeColor: "#112970",
       contentHtml,
       ctaUrl: agreementUrl,
-      ctaText: "Signer la charte d'utilisation",
+      ctaText,
     });
 
     return await this.sendMail({
       to: user.email,
-      subject: "Fablab : Signature requise de la charte d'utilisation",
+      subject,
       html,
     });
   }

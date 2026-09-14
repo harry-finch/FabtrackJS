@@ -79,6 +79,20 @@ router.post(
     updates.mail_notif_machine_issue =
       req.body.mail_notif_machine_issue === "true" || req.body.mail_notif_machine_issue === "on" ? "true" : "false";
 
+    // User Agreement Email Template Customization
+    if (req.body.mail_user_agreement_subject !== undefined) {
+      updates.mail_user_agreement_subject = req.body.mail_user_agreement_subject.trim();
+    }
+    if (req.body.mail_user_agreement_title !== undefined) {
+      updates.mail_user_agreement_title = req.body.mail_user_agreement_title.trim();
+    }
+    if (req.body.mail_user_agreement_body !== undefined) {
+      updates.mail_user_agreement_body = req.body.mail_user_agreement_body.trim();
+    }
+    if (req.body.mail_user_agreement_cta_text !== undefined) {
+      updates.mail_user_agreement_cta_text = req.body.mail_user_agreement_cta_text.trim();
+    }
+
     await settingsService.updateSettings(updates);
 
     req.session.notification = "Success: Configuration des e-mails et notifications enregistrée.";
