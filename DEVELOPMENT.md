@@ -17,7 +17,11 @@ Welcome to the **FabtrackJS** development guide. This document serves as a compr
 9. [Email & Notification Subsystem](#9-email--notification-subsystem)
 10. [File Uploads with Multer](#10-file-uploads-with-multer)
 11. [UI & Templating Guidelines (EJS & Bootstrap 5)](#11-ui--templating-guidelines-ejs--bootstrap-5)
-12. [AI Agent Verification & Troubleshooting Checklist](#12-ai-agent-verification--troubleshooting-checklist)
+12. [Input Validation Architecture (Zod & Middleware)](#12-input-validation-architecture-zod--middleware)
+13. [Equipment Loan Lifecycle & Restitution](#13-equipment-loan-lifecycle--restitution)
+14. [Platform Bug & Feedback Reporting Workflow](#14-platform-bug--feedback-reporting-workflow)
+15. [Automated Testing Suite (npm test)](#15-automated-testing-suite-npm-test)
+16. [AI Agent Verification & Troubleshooting Checklist](#16-ai-agent-verification--troubleshooting-checklist)
 
 ---
 
@@ -28,6 +32,8 @@ FabtrackJS is built on Node.js and Express with a layered architecture:
 - **Data Access Layer**: MySQL accessed exclusively via **Prisma ORM** (`@prisma/client`).
 - **Service Layer (`services/`)**: Encapsulates business logic, external API integrations, email dispatching, internationalization, date formatting, and system settings.
 - **Routing Layer (`routes/`)**: Automatically discovered and recursively mounted based on filesystem structure.
+- **Validation Layer (`schemas/` & `middleware/validate.js`)**: Strictly parses, type-coerces, and sanitizes incoming HTTP payloads using **Zod**.
+- **Testing Layer (`tests/`)**: Automated test suite with **Jest** and **Supertest** covering unit schemas and full-stack integration workflows.
 - **Extensibility Layer (`plugins/` & `core/HookManager.js`)**: Decoupled feature modules hook into system lifecycle events without mutating core controllers.
 - **Localization Layer (`locales/`, `config/i18n.js`, `services/i18nService.js`)**: Dynamic multi-language catalog with CSV export/import and automated language creation.
 - **Presentation Layer (`views/`)**: Server-side rendered EJS templates styled with Bootstrap 5, FontAwesome 6, and custom modern CSS variables supporting dark/light modes.
@@ -54,7 +60,8 @@ FabtrackJS/
 │   ├── checkAdmin.js             # Protects admin routes (requires role === 'admin')
 │   ├── checkSession.js           # Protects staff routes (requires loggedin === true)
 │   ├── clearNotification.js      # Resets session flash notification after rendering
-│   └── cacheHelper.js            # Helper to invalidate reference data cache
+│   ├── cacheHelper.js            # Helper to invalidate reference data cache
+│   └── validate.js               # Zod request validation middleware (body, params, query)
 ├── plugins/                      # Self-contained feature plugins
 │   ├── bookstackPlugin.js        # BookStack wiki documentation sync
 │   ├── repairCafePlugin.js       # Repair café event tracking & resolution
@@ -70,6 +77,7 @@ FabtrackJS/
 ├── routes/                       # Express routes (auto-loaded dynamically)
 │   ├── admin/                    # Admin management endpoints (/admin/*)
 │   │   ├── emails.js             # SMTP settings & notification toggles
+│   │   ├── equipment.js          # Equipment catalog, loan supervision, & restitution
 │   │   ├── machines.js           # Machine catalog & history views
 │   │   ├── settings.js           # Platform branding, i18n, & general configuration
 │   │   ├── staff.js              # Staff permissions & account management
@@ -77,7 +85,18 @@ FabtrackJS/
 │   ├── fabtrack.js               # Visitor kiosk check-in / check-out interface
 │   ├── report-issue.js           # Public responsive machine issue reporting
 │   ├── users.js                  # User profile and history management
-│   └── index.js                  # Auth, language switcher (/change-language/:lang)
+│   └── index.js                  # Auth, bug reporting (/report-bug), language switcher
+├── schemas/                      # Modular Zod input validation schemas
+│   ├── user.schema.js            # User creation, editing, balance & warning schemas
+│   ├── equipment.schema.js       # Equipment creation, editing, & borrowing schemas
+│   ├── history.schema.js         # Kiosk check-in/out, activity, and borrow sessions
+│   ├── bug.schema.js             # Platform bug & feedback report schema
+│   ├── consumable.schema.js      # Consumable stock & consumption schemas
+│   ├── auth.schema.js            # Login, registration, & password reset schemas
+│   ├── issue.schema.js           # Machine breakdown report schema
+│   ├── warning.schema.js         # Disciplinary warning schema
+│   ├── api.schema.js             # RFID scanning & internal API schemas
+│   └── index.js                  # Central schema export hub
 ├── scripts/
 │   └── i18n-csv.js               # CLI script for npm run i18n:export & i18n:import
 ├── services/                     # Business logic services (singletons)
@@ -88,6 +107,20 @@ FabtrackJS/
 │   ├── bookstackService.js       # BookStack REST API integration
 │   ├── repairCafeService.js      # Repair café statistics & operations
 │   └── workshopService.js        # Workshop completion & machine unlocking
+├── tests/                        # Automated Jest + Supertest test suite
+│   ├── helpers/
+│   │   ├── testDb.js             # Database setup, fixture helpers, & cleanup
+│   │   └── authHelper.js         # Authenticated session generator for Supertest
+│   ├── integration/              # Full-stack HTTP route and database workflow tests
+│   │   ├── userCreation.test.js  # User registration & duplicate email validation
+│   │   ├── balance.test.js       # User credit top-up, debit, & transaction rules
+│   │   ├── charterAndKiosk.test.js # Charter acceptance & kiosk admission
+│   │   ├── equipmentBorrow.test.js # Equipment loan creation, return dates, & restitution
+│   │   ├── validationMiddleware.test.js # Zod redirection, flash toasts, & API 400s
+│   │   └── bugReport.test.js     # Bug report submission & admin email alert
+│   └── unit/                     # Fast isolated unit tests
+│       ├── validation.test.js    # Schema unit validation, coercion, & edge cases
+│       └── rfidPlugin.test.js    # RFID scanner hooks & check-in/out logic
 ├── uploads/                      # Uploaded files (logos, favicons, issue photos)
 │   └── issues/                   # Machine breakdown photos
 ├── utilities/
@@ -95,11 +128,11 @@ FabtrackJS/
 ├── views/                        # EJS templates
 │   ├── admin/                    # Admin views (manage-*.ejs, view-machine.ejs)
 │   ├── fabtrack/                 # Kiosk & user profile views (index.ejs, edit-user.ejs)
-│   ├── includes/                 # Common partials (header.html, pagehead.html, footer.html)
+│   ├── includes/                 # Common partials (header.html, bug-report-modal.html, ...)
 │   ├── public/                   # Public unauthenticated views (report-issue.ejs)
 │   └── index/                    # Auth views (login.ejs, register.ejs, reset.ejs)
 ├── app.js                        # Express app initialization, middleware, routes loader
-├── package.json                  # Dependencies and scripts (i18n:export, i18n:import)
+├── package.json                  # Dependencies, test runner, and scripts
 ├── translations.csv              # Single-file translation spreadsheet (UTF-8 BOM)
 └── .env                          # Local environment variables
 ```
@@ -369,29 +402,182 @@ FabtrackJS uses server-side rendered EJS templates.
 
 ---
 
-## 12. AI Agent Verification & Troubleshooting Checklist
+---
+
+## 12. Input Validation Architecture (Zod & Middleware)
+
+FabtrackJS uses [Zod](https://zod.dev/) for centralized, strictly typed request validation across both web forms and internal API routes via [middleware/validate.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/middleware/validate.js).
+
+### Directory & Schema Organization (`schemas/`)
+Validation schemas are modularized by domain in the `schemas/` directory and exported via `schemas/index.js`:
+- `user.schema.js`: User creation (`createUserSchema`), profile updates (`updateUserSchema`), balance modifications (`creditSchema`).
+- `equipment.schema.js`: Equipment inventory creation/editing (`createEquipmentSchema`) and borrow sessions (`borrowEquipmentSchema`).
+- `history.schema.js`: Kiosk check-in/out (`rfidScanSchema`, `createVisitSchema`), activity logs, and loan restitution.
+- `bug.schema.js`: Platform bug and feedback report submissions (`bugReportSchema`).
+- `consumable.schema.js`: Stock replenishment, edits, and project consumption.
+- `auth.schema.js`: Staff login (`loginSchema`), registration (`registerSchema`), and password resets.
+- `issue.schema.js`: Public machine breakdown reports (`reportIssueSchema`).
+- `warning.schema.js`: Disciplinary warnings (`createWarningSchema`).
+- `api.schema.js`: RFID hardware scanners and AJAX endpoints.
+
+### Middleware Helper Usage:
+```javascript
+const { validateBody, validateParams, validateQuery } = require("../../middleware/validate.js");
+const { createEquipmentSchema } = require("../../schemas/equipment.schema.js");
+
+// Applied to an Express route:
+router.post(
+  "/equipment/create",
+  validateBody(createEquipmentSchema, {
+    redirectUrl: "/admin/equipment",
+    defaultMessage: "Erreur dans le formulaire d'équipement."
+  }),
+  asyncHandler(async (req, res) => {
+    // req.body is now strictly validated, trimmed, and type-coerced!
+  })
+);
+```
+
+### Dual Error Handling Behavior:
+- **Web Forms (`POST` from HTML forms)**:
+  When validation fails, `validateBody` automatically formats errors using `formatZodErrors`, populates `req.session.notification = "Error: " + formattedErrors`, and redirects back (either to `options.redirectUrl` or `req.header('Referer')`).
+- **REST / API Calls (`/api/*` or requests with `Accept: application/json`)**:
+  Returns a standard HTTP `400 Bad Request` JSON payload:
+  ```json
+  {
+    "success": false,
+    "message": "Validation error",
+    "errors": [
+      { "field": "email", "message": "Email invalide" }
+    ]
+  }
+  ```
+
+### Design Guidelines for Schemas:
+- **Coerce Numbers & Dates**: HTML forms submit strings. Always use `z.coerce.number()` or `z.coerce.date()` where numeric or temporal values are required.
+- **Trim Strings**: Use `.trim()` on text fields to strip leading and trailing whitespace.
+- **Defensive Against NaN**: In balance calculations, always enforce `z.coerce.number().refine(n => !isNaN(n), { message: "Montant invalide" })`.
+
+---
+
+## 13. Equipment Loan Lifecycle & Restitution
+
+FabtrackJS provides end-to-end tracking for borrowed equipment (power tools, electronic instruments, accessories).
+
+### Loan Flow:
+1. **Borrowing Session**:
+   - In the visitor kiosk (`/fabtrack`), when adding an activity modal (`views/includes/activity-modal.html`), the user selects an equipment item.
+   - The user or mediator specifies a loan duration (`borrowDays`, default: 7 days).
+   - Submitted to `POST /fabtrack/history` with `type: "BORROW"`.
+   - Validated via `createBorrowSessionSchema`.
+   - Controller computes expected return timestamp: `dateExpectedReturn = new Date(Date.now() + borrowDays * 86400000)`.
+2. **Kiosk Visual Alert**:
+   - In the active visitor list, users who currently hold unreturned equipment display a distinct hand-holding box icon (`fa-solid fa-hand-holding-box text-warning`) with an interactive tooltip.
+3. **User Profile Section (`/users/edit/:id#loans`)**:
+   - Displays complete active and past equipment loans.
+   - Active loans feature an overdue badge if `dateExpectedReturn < new Date()`.
+   - A quick restitution button triggers a confirmation modal (`views/fabtrack/edit-user.ejs`).
+4. **Admin Equipment Supervision (`/admin/equipment`)**:
+   - The equipment management table features dedicated KPI cards (Total items, In circulation, Overdue).
+   - "Restituer" icon action button with confirmation modal triggers immediate return.
+5. **Restitution Action**:
+   - Route `POST /users/return-equipment/:historyId` or `POST /admin/equipment/return/:historyId`.
+   - Updates the `History` entry: sets `dateEnd = new Date()`.
+   - Marks the equipment as returned and removes kiosk alerts immediately.
+
+---
+
+## 14. Platform Bug & Feedback Reporting Workflow
+
+FabtrackJS features an integrated bug and improvement reporting mechanism accessible to all users and administrators.
+
+### Architectural Workflow:
+1. **Trigger & Modal**:
+   - Accessible from the top header navigation bar (`fa-solid fa-bug`) and user dropdown menu via [views/includes/bug-report-modal.html](file:///Users/mugen/Documents/01_Projets/FabtrackJS/views/includes/bug-report-modal.html).
+   - Automatically pre-fills the reporter's name and email if logged in, and attaches `window.location.href` to trace the exact page where the issue occurred.
+2. **Endpoint & Validation**:
+   - Route: `POST /report-bug` in [routes/index.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/routes/index.js).
+   - Validated via `bugReportSchema` in [schemas/bug.schema.js](file:///Users/mugen/Documents/01_Projets/FabtrackJS/schemas/bug.schema.js):
+     - `category`: `"bug" | "ui" | "feature"`
+     - `description`: String (minimum 10 characters)
+     - `userEmail`: Valid email format
+     - `currentUrl`: Optional string
+3. **Email Dispatch**:
+   - Calls `mailService.sendBugReportAlert(bugData)`.
+   - Formats a branded HTML email layout including category badge, user message, page URL, and reporter contact details.
+   - Respects notification setting `mail_notif_bug_report`.
+
+---
+
+## 15. Automated Testing Suite (npm test)
+
+FabtrackJS includes an automated test suite based on [Jest](https://jestjs.io/) and [Supertest](https://github.com/ladjs/supertest).
+
+### Test Directory Structure:
+```
+tests/
+├── helpers/
+│   ├── testDb.js             # Database setup, fixture creation, & transactional teardown
+│   └── authHelper.js         # Supertest authenticated session mock generator
+├── integration/              # Full HTTP request / database integration tests
+│   ├── userCreation.test.js  # Account provisioning & duplicate email prevention
+│   ├── balance.test.js       # Credit top-up, debit, and transaction isolation
+│   ├── charterAndKiosk.test.js # Safety charter agreement & kiosk check-in access
+│   ├── equipmentBorrow.test.js # Borrow sessions, expected return dates, & restitution
+│   ├── validationMiddleware.test.js # Zod redirection, flash toasts, & API 400 responses
+│   └── bugReport.test.js     # Bug reporting validation & admin email dispatch
+└── unit/                     # Isolated unit tests
+    ├── validation.test.js    # Schema validation, type coercion, and edge case assertions
+    └── rfidPlugin.test.js    # RFID badge hook lifecycle and admission rules
+```
+
+### Running Tests:
+```bash
+# Execute the entire test suite sequentially
+npm test
+
+# Run a specific test suite
+npx jest tests/integration/equipmentBorrow.test.js
+
+# Run tests matching a specific description
+npx jest -t "restitution"
+```
+
+### Writing Integration Tests Guidelines:
+- **Clean Database Fixtures**: Always use helpers in `tests/helpers/testDb.js` (`createTestUser`, `createTestEquipment`, etc.) and ensure records are cleaned up in `afterAll()` or `afterEach()`.
+- **Authenticate with Supertest**: Use `createAuthenticatedAgent(app, { role: 'admin' })` from `tests/helpers/authHelper.js` to simulate logged-in sessions without manual cookie handling.
+- **Force Exit & Open Handles**: Jest runs with `--detectOpenHandles --forceExit` in `package.json` to handle Prisma database pools and asynchronous background tasks cleanly.
+
+---
+
+## 16. AI Agent Verification & Troubleshooting Checklist
 
 Before concluding any coding task, an AI agent must perform the following validation steps:
 
-1. **Verify JavaScript Syntax**:
+1. **Run Automated Test Suite**:
+   ```bash
+   npm test
+   ```
+   Ensure all test suites pass with 0 failures before deploying or committing changes.
+2. **Verify JavaScript Syntax**:
    ```bash
    node -c path/to/modifiedFile.js
    ```
-2. **Verify EJS Compilation**:
+3. **Verify EJS Compilation**:
    Validate templates without running the full browser:
    ```bash
    node -e 'const ejs = require("ejs"); const fs = require("fs"); ejs.compile(fs.readFileSync("views/path/to/view.ejs", "utf8"), { filename: "views/path/to/view.ejs" });'
    ```
-3. **Verify Database Sync**:
+4. **Verify Database Sync**:
    If `prisma/schema.prisma` was modified:
    ```bash
    npx prisma db push
    ```
-4. **Test Route Discovery & App Boot**:
+5. **Test Route Discovery & App Boot**:
    Ensure no unhandled exceptions during initialization:
    ```bash
    node -e 'require("./app.js"); console.log("App boots successfully");'
    ```
-5. **Git Hygiene**:
+6. **Git Hygiene**:
    Run `git status` to verify that no temporary or unintended test artifacts remain unstaged or untracked.
 

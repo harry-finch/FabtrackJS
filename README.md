@@ -15,6 +15,7 @@ FabtrackJS is a modern, open-source platform designed to track user activity, pr
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [Automated Testing](#automated-testing)
 - [Architecture & Tech Stack](#architecture--tech-stack)
 - [Maintainers & License](#maintainers--license)
 
@@ -45,6 +46,11 @@ I built the first two thirds of this version in 2023 with little to no AI-help. 
   - Pre-selection support via QR codes (`/report-issue/:machineId`).
   - Integrated directly into the machine's administrative history (`/admin/machines/view/:id#issues`).
   - Admin intervention workflow: mark as resolved with technical notes, reopen, or delete.
+- **Equipment Loans & Restitution Tracking** (`/admin/equipment` & user profiles):
+  - Loan duration configuration in days (default 7 days) with automated calculation of expected return dates.
+  - Kiosk visual badge indicators (`fa-hand-holding-box`) alerting staff when a checked-in user holds unreturned equipment.
+  - User profile loan section (`/users/edit/:id#loans`) with quick restitution confirmation modal.
+  - Centralized admin supervision table displaying active loans, borrower names, checkout timestamps, overdue status highlights, and one-click return confirmation.
 
 ### 📦 Consumables & Stock Management
 - Consumable inventory tracking with custom units (grams, meters, liters, units).
@@ -65,7 +71,14 @@ I built the first two thirds of this version in 2023 with little to no AI-help. 
   - Staff registration requests.
   - User safety charter & agreement activation links.
   - Machine breakdown & incident alerts.
+  - Platform bug & feedback reports.
 - Live visual previews of email templates in the admin interface.
+
+### 🐛 Platform Bug & Feedback Reporting
+- Direct reporting modal accessible from any page via the top navigation bar (`fa-bug`) and user dropdown menu.
+- Categorized submissions (Bug / Defect, UI / Ergonomics, Feature Request).
+- Automatic capture of the current page URL and user contact information.
+- Sends instant structured HTML alert emails directly to the system administrator.
 
 ### 🌐 Internationalization (i18n) & Dynamic Translation
 - Native multilingual support with dynamic locale detection.
@@ -133,6 +146,7 @@ Centralized management of the SMTP delivery server with live testing and customi
 
 FabtrackJS implements rigorous security practices:
 
+- **Strict Schema-Based Input Validation**: All form submissions and API endpoints are strictly validated and sanitized using [Zod](https://zod.dev/) schemas (`schemas/`). Features automatic type coercion, whitespace trimming, email normalization, and strict NaN protection on balance transactions. Form submissions redirect back with user-friendly flash error toasts, while API calls receive standard `400 Bad Request` JSON payloads (`middleware/validate.js`).
 - **HTTP Security Headers**: Enforced with [Helmet](https://helmetjs.github.io/) including Content Security Policy (CSP), frame protection, and HSTS.
 - **Password Security**: Strong bcrypt password hashing (10 salt rounds) for staff accounts.
 - **Role-Based Access Control (RBAC)**: Distinct permissions for `admin`, `staff`, and `user` (mediator) with dedicated route protection middleware (`isAdmin`, `isAuthenticated`).
@@ -246,6 +260,31 @@ Access the application in your browser at `http://localhost:3000`.
 
 ---
 
+## Automated Testing
+
+FabtrackJS includes a comprehensive automated test suite powered by [Jest](https://jestjs.io/) and [Supertest](https://github.com/ladjs/supertest), covering both unit logic and end-to-end integration flows.
+
+```bash
+# Run the entire test suite
+npm test
+
+# Run a specific integration or unit test file
+npx jest tests/integration/equipmentBorrow.test.js
+npx jest tests/unit/validation.test.js
+```
+
+### Test Coverage Highlights
+- **User Creation & Duplicate Protection**: Account provisioning, default charter state, unique email enforcement (`tests/integration/userCreation.test.js`).
+- **Balance & Transaction Logic**: User balance top-ups, debiting, and zero/negative balance handling (`tests/integration/balance.test.js`).
+- **Safety Charter & Kiosk Access**: Access rules, badge scan enforcement, and charter agreement workflows (`tests/integration/charterAndKiosk.test.js`).
+- **Equipment Borrowing & Restitution**: Loan creation with loan duration, expected return dates, user profile restitution, and admin supervision (`tests/integration/equipmentBorrow.test.js`).
+- **Input Validation Middleware**: Zod form redirection with flash errors, API 400 responses, and NaN prevention (`tests/integration/validationMiddleware.test.js`).
+- **Bug Reporting Flow**: Submission validation and administrative email dispatch (`tests/integration/bugReport.test.js`).
+- **RFID Scanner Plugin & Hooks**: Badge check-in, check-out, and charter status enforcement (`tests/unit/rfidPlugin.test.js`).
+- **Zod Schema Unit Tests**: Schema isolation, type coercion, and edge case input sanitization (`tests/unit/validation.test.js`).
+
+---
+
 ## Architecture & Tech Stack
 
 | Layer | Technology |
@@ -254,6 +293,8 @@ Access the application in your browser at `http://localhost:3000`.
 | **Framework** | Express.js |
 | **Database** | MySQL |
 | **ORM** | Prisma ORM (v5.22+) |
+| **Input Validation** | Zod (v4) + Custom Validation Middleware |
+| **Testing Suite** | Jest + Supertest |
 | **Template Engine** | EJS |
 | **CSS & Components** | Bootstrap 5, FontAwesome 6 |
 | **Authentication** | Express Session + Bcrypt |
@@ -261,7 +302,7 @@ Access the application in your browser at `http://localhost:3000`.
 | **Date & Time** | Moment.js + Centralized DateService |
 | **File Uploads** | Multer |
 | **Email Delivery** | Nodemailer |
-| **Security** | Helmet, CSRF/Honeypot, CSP |
+| **Security** | Helmet, CSRF/Honeypot, CSP, Zod Sanitization |
 
 ---
 
