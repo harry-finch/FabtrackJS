@@ -200,16 +200,6 @@
                         <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
                         <span class="small"><%= typeof __ !== 'undefined' ? __('nav.admin_panel') : 'Panneau d\'administration' %></span>
                     </a>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin/settings">
-                        <i class="fa-solid fa-sliders text-info fa-sm" style="width: 16px;"></i>
-                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.general_settings') : 'Configuration générale' %></span>
-                    </a>
-                    <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin/ue">
-                        <i class="fa-solid fa-graduation-cap text-danger fa-sm" style="width: 16px;"></i>
-                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.ue_billing') : 'UE & Facturation Sorbonne' %></span>
-                    </a>
-                    <% } %>
                     <% } %>
                 </div>
 
