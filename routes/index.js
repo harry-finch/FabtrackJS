@@ -10,6 +10,7 @@ const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody } = require("../middleware/validate.js");
 const { loginSchema, registerStaffSchema } = require("../schemas/auth.schema.js");
+const { reportBugSchema } = require("../schemas/bug.schema.js");
 const i18nService = require("../services/i18nService.js");
 
 dotenv.config();
@@ -275,5 +276,40 @@ router.get("/change-language/:lang", (req, res) => {
   const referer = req.headers.referer || "/fabtrack";
   res.redirect(referer);
 });
+
+// ******************************************************************************
+// Route to report a bug or suggest a platform fix
+// ******************************************************************************
+
+router.post(
+  "/report-bug",
+  validateBody(reportBugSchema, {
+    redirectUrl: (req) => req.headers.referer || "/fabtrack",
+  }),
+  asyncHandler(async (req, res) => {
+    const { title, category, description, pageUrl, severity, reporterName, reporterEmail } = req.body;
+    const finalReporterName = reporterName || (req.session && req.session.username) || null;
+    const hostUrl = `${req.protocol}://${req.get("host")}`;
+
+    try {
+      await mailService.sendBugReportAlert({
+        title,
+        category,
+        description,
+        pageUrl,
+        severity,
+        reporterName: finalReporterName,
+        reporterEmail,
+        hostUrl,
+      });
+      req.session.notification = "Success: Merci ! Votre signalement a bien été transmis à l'administrateur.";
+    } catch (err) {
+      console.error("[POST /report-bug] Erreur lors de l'envoi du signalement:", err);
+      req.session.notification = "Error: Impossible d'envoyer le signalement par e-mail.";
+    }
+
+    res.redirect(req.headers.referer || "/fabtrack");
+  }),
+);
 
 module.exports = router;

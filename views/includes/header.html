@@ -114,6 +114,11 @@
             <i class="fa-solid fa-triangle-exclamation fa-sm"></i>
         </a>
 
+        <!-- Bug / Issue Reporting Button for Platform -->
+        <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalReportBug" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Signaler un bug ou une amélioration" aria-label="Signaler un bug">
+            <i class="fa-solid fa-bug fa-sm"></i>
+        </button>
+
         <% if (typeof role !== 'undefined' && role === 'admin' && (typeof currentPath === 'undefined' || !currentPath.startsWith('/admin'))) { %>
         <a href="/admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>">
             <i class="fa-solid fa-screwdriver-wrench fa-sm"></i>
@@ -186,6 +191,10 @@
                         <i class="fa-solid fa-triangle-exclamation text-danger fa-sm" style="width: 16px;"></i>
                         <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.report_issue') : 'Signaler une panne machine' %></span>
                     </a>
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-warning" href="#" data-bs-toggle="modal" data-bs-target="#modalReportBug">
+                        <i class="fa-solid fa-bug text-warning fa-sm" style="width: 16px;"></i>
+                        <span class="small fw-semibold">Signaler un bug / correction</span>
+                    </a>
                     <% if (role === "admin") { %>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin">
                         <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
@@ -220,3 +229,5 @@
 
 <h2 class="mb-1 text-center fw-bold"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
 <h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>
+
+<%- include('bug-report-modal.html') %>

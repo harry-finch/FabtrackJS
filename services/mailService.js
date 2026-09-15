@@ -485,6 +485,58 @@ class MailService {
       html,
     });
   }
+
+  /**
+   * Sends an automated alert email to administrator when a bug or platform issue is reported.
+   */
+  async sendBugReportAlert({ title, category, description, pageUrl, reporterName, reporterEmail, severity, hostUrl: customHostUrl }) {
+    const { settings, adminRecipient } = await this.getTransporter();
+    const adminEmail = settings.mail_admin_recipient || settings.admin_email || adminRecipient;
+    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+
+    const reporter = reporterName
+      ? `${reporterName}${reporterEmail ? ` (${reporterEmail})` : ""}`
+      : (reporterEmail || "Médiateur / Utilisateur");
+    const dateStr = new Date().toLocaleString("fr-FR");
+
+    const severityColors = {
+      Faible: "#10b981",
+      Moyenne: "#f59e0b",
+      Élevée: "#ea580c",
+      Critique: "#ef4444",
+    };
+    const badgeColor = severityColors[severity] || "#f59e0b";
+
+    const contentHtml = `
+      <p>Un nouveau problème ou une suggestion d'amélioration a été signalé sur la plateforme Fabtrack :</p>
+      <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 16px 0;">
+        <p style="margin: 0 0 8px 0;"><strong>&#128392; Objet :</strong> ${title}</p>
+        <p style="margin: 0 0 8px 0;"><strong>&#128193; Catégorie :</strong> ${category}</p>
+        <p style="margin: 0 0 8px 0;"><strong>&#9888; Gravité :</strong> <span style="display: inline-block; background-color: ${badgeColor}; color: #ffffff; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">${severity}</span></p>
+        <p style="margin: 0 0 8px 0;"><strong>&#128100; Signalé par :</strong> ${reporter}</p>
+        <p style="margin: 0 0 8px 0;"><strong>&#128197; Date :</strong> ${dateStr}</p>
+        ${pageUrl ? `<p style="margin: 0 0 8px 0;"><strong>&#128279; Page concernée :</strong> <a href="${pageUrl}" target="_blank" style="color: #2563eb; word-break: break-all;">${pageUrl}</a></p>` : ""}
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 12px 0;" />
+        <p style="margin: 0 0 4px 0;"><strong>&#128221; Description du problème :</strong></p>
+        <p style="margin: 0; white-space: pre-wrap; font-family: monospace; background: #ffffff; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">${description}</p>
+      </div>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: `Signalement de bug : ${title}`,
+      badgeText: `Plateforme - ${category}`,
+      badgeColor,
+      contentHtml,
+      ctaUrl: pageUrl || `${hostUrl}/fabtrack`,
+      ctaText: "Accéder à la plateforme",
+    });
+
+    return await this.sendMail({
+      to: adminEmail,
+      subject: `[Bug Fabtrack] ${title} (${category} - ${severity})`,
+      html,
+    });
+  }
 }
 
 module.exports = new MailService();

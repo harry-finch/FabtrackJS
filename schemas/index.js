@@ -7,4 +7,5 @@ module.exports = {
   ...require("./api.schema"),
   ...require("./equipment.schema"),
   ...require("./consumable.schema"),
+  ...require("./bug.schema"),
 };

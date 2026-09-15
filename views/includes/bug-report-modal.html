@@ -1,0 +1,122 @@
+<!-- Modal to report platform bug or improvement -->
+<div class="modal fade" id="modalReportBug" tabindex="-1" aria-labelledby="modalReportBugLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <form action="/report-bug" method="post" id="formReportBug">
+                <div class="modal-header border-0 pb-0">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-warning-subtle text-warning p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                            <i class="fa-solid fa-bug"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="modalReportBugLabel">
+                                Signaler un bug ou une amélioration
+                            </h5>
+                            <small class="text-muted">Un e-mail détaillé sera automatiquement envoyé à l'administrateur</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+
+                <div class="modal-body pt-3">
+                    <input type="hidden" name="pageUrl" id="bugReportPageUrl" value="">
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-8">
+                            <label for="bugTitle" class="form-label fw-semibold small">
+                                Objet du signalement <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="bugTitle"
+                                name="title"
+                                placeholder="ex: Erreur lors de l'enregistrement, bouton inactif..."
+                                required
+                                minlength="3"
+                            >
+                        </div>
+                        <div class="col-md-4">
+                            <label for="bugCategory" class="form-label fw-semibold small">Catégorie</label>
+                            <select class="form-select" id="bugCategory" name="category">
+                                <option value="Bug / Dysfonctionnement" selected>Bug / Dysfonctionnement</option>
+                                <option value="Suggestion / Amélioration">Suggestion / Amélioration</option>
+                                <option value="Problème d'affichage">Problème d'affichage</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="bugSeverity" class="form-label fw-semibold small">Niveau de gravité</label>
+                            <select class="form-select" id="bugSeverity" name="severity">
+                                <option value="Faible">Faible (gêne mineure)</option>
+                                <option value="Moyenne" selected>Moyenne (fonctionnalité dégradée)</option>
+                                <option value="Élevée">Élevée (action importante bloquée)</option>
+                                <option value="Critique">Critique (plateforme indisponible)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="bugReporterEmail" class="form-label fw-semibold small">
+                                Votre e-mail (facultatif)
+                            </label>
+                            <input
+                                type="email"
+                                class="form-control"
+                                id="bugReporterEmail"
+                                name="reporterEmail"
+                                placeholder="Pour être recontacté si besoin"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bugDescription" class="form-label fw-semibold small">
+                            Description détaillée <span class="text-danger">*</span>
+                        </label>
+                        <textarea
+                            class="form-control"
+                            id="bugDescription"
+                            name="description"
+                            rows="4"
+                            placeholder="Décrivez ce qui s'est produit, les étapes pour reproduire le bug ou vos suggestions de correction..."
+                            required
+                            minlength="5"
+                        ></textarea>
+                    </div>
+
+                    <div class="p-2 px-3 bg-body-secondary rounded-3 small d-flex align-items-center justify-content-between text-muted">
+                        <div class="d-flex align-items-center gap-2 text-truncate">
+                            <i class="fa-solid fa-link fa-xs"></i>
+                            <span class="text-truncate">Page concernée : <strong id="bugPageUrlDisplay">-</strong></span>
+                        </div>
+                        <span class="badge bg-body border text-muted">Auto-détecté</span>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 text-dark fw-semibold" id="btnSubmitBug">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Envoyer à l'administrateur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modalEl = document.getElementById("modalReportBug");
+        if (modalEl) {
+            modalEl.addEventListener("show.bs.modal", function () {
+                const currentUrl = window.location.href;
+                const hiddenInput = document.getElementById("bugReportPageUrl");
+                const displayEl = document.getElementById("bugPageUrlDisplay");
+                if (hiddenInput) hiddenInput.value = currentUrl;
+                if (displayEl) displayEl.textContent = window.location.pathname + window.location.search;
+            });
+        }
+    });
+</script>
