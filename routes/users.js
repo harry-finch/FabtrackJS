@@ -9,6 +9,8 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
+const { validateBody } = require("../middleware/validate.js");
+const { createUserSchema, updateUserSchema } = require("../schemas/user.schema.js");
 const dateService = require("../services/dateService.js");
 const { isNull } = require("util");
 
@@ -23,7 +25,7 @@ function formatDateTime(date) {
 }
 
 function removeDuplicates(array) {
-  return Array.from(new Set(array.map(JSON.stringify))).map(JSON.parse);
+  return array.filter((item, index) => array.indexOf(item) === index);
 }
 
 // ******************************************************************************
@@ -53,6 +55,7 @@ router.get(
 router.post(
   "/create",
   clearNotification,
+  validateBody(createUserSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     if (req.session.role === "staff") {
       req.session.notification = "Warning: L'enregistrement d'un nouvel utilisateur doit être fait par un médiateur.";
@@ -420,6 +423,7 @@ router.get(
 router.post(
   "/update/:id",
   clearNotification,
+  validateBody(updateUserSchema, { redirectUrl: (req) => `/users/edit/${req.params.id}` }),
   asyncHandler(async (req, res) => {
     if (req.session.role === "staff") {
       req.session.notification = "Warning: La modification d'un profil est réservée aux médiateurs.";

@@ -4,6 +4,8 @@ const router = express.Router();
 const asyncHandler = require("../middleware/asyncHandler.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const logger = require("../utilities/simpleLogger.js");
+const { validateBody } = require("../middleware/validate.js");
+const { createWarningSchema } = require("../schemas/warning.schema.js");
 
 router.use(isLoggedIn);
 
@@ -38,6 +40,7 @@ router.get(
 
 router.post(
   "/create",
+  validateBody(createWarningSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { userid, warningtype, comments } = req.body;
 

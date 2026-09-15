@@ -9,6 +9,8 @@ const mailService = require("../services/mailService.js");
 const settingsService = require("../services/settingsService.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const logger = require("../utilities/simpleLogger.js");
+const { validateBody } = require("../middleware/validate.js");
+const { reportIssueSchema } = require("../schemas/issue.schema.js");
 
 const router = express.Router();
 
@@ -95,6 +97,9 @@ router.get(
 router.post(
   "/",
   upload.single("photo"),
+  validateBody(reportIssueSchema, {
+    redirectUrl: (req) => (req.body && req.body.machineId ? `/report-issue?machineId=${req.body.machineId}` : "/report-issue"),
+  }),
   asyncHandler(async (req, res) => {
     const { machineId, description, reporterName, reporterEmail } = req.body;
 

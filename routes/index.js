@@ -8,6 +8,8 @@ const dotenv = require("dotenv");
 const isAuthenticated = require("../middleware/checkSession.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
+const { validateBody } = require("../middleware/validate.js");
+const { loginSchema, registerStaffSchema } = require("../schemas/auth.schema.js");
 const i18nService = require("../services/i18nService.js");
 
 dotenv.config();
@@ -42,6 +44,7 @@ router.get("/register", clearNotification, (req, res) => res.render("index/regis
 
 router.post(
   "/create-account",
+  validateBody(registerStaffSchema, { redirectUrl: "/register" }),
   asyncHandler(async (req, res) => {
     const { username, password, mail, honeypot } = req.body;
 
@@ -176,6 +179,7 @@ router.post(
 
 router.post(
   "/auth",
+  validateBody(loginSchema, { redirectUrl: "/login" }),
   asyncHandler(async (req, res) => {
     const { username, password } = req.body;
     const user = await prisma.staff.findUnique({ where: { name: username } });

@@ -14,6 +14,8 @@ const prisma = new PrismaClient();
 const logger = require("../utilities/simpleLogger.js");
 const hookManager = require("../core/HookManager.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
+const { validateBody } = require("../middleware/validate.js");
+const { rfidScanSchema } = require("../schemas/api.schema.js");
 
 // ******************************************************************************
 // Route returning a list of all staff members (admin only)
@@ -131,6 +133,7 @@ router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
 router.post(
   "/rfid/scan",
   isLoggedIn,
+  validateBody(rfidScanSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     if (!hookManager.isPluginEnabled("rfid")) {
       return res.status(403).json({ success: false, error: "Le plugin RFID n'est pas activé." });

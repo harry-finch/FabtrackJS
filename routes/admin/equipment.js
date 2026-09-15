@@ -5,6 +5,9 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { validateBody } = require("../../middleware/validate.js");
+const { addEquipmentSchema, updateEquipmentSchema } = require("../../schemas/equipment.schema.js");
+const { returnEquipmentSchema } = require("../../schemas/history.schema.js");
 
 router.use(isAdmin);
 
@@ -129,6 +132,7 @@ router.get(
 
 router.post(
   "/create",
+  validateBody(addEquipmentSchema, { redirectUrl: "/admin/equipment/manage" }),
   asyncHandler(async (req, res) => {
     const { name, workspaceId } = req.body;
 
@@ -175,6 +179,7 @@ router.post(
 
 router.post(
   "/update",
+  validateBody(updateEquipmentSchema, { redirectUrl: "/admin/equipment/manage" }),
   asyncHandler(async (req, res) => {
     const { id, name, workspaceId } = req.body;
 
@@ -280,6 +285,7 @@ router.get(
 
 router.post(
   "/return/:id",
+  validateBody(returnEquipmentSchema, { redirectUrl: "/admin/equipment/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { returnNotes } = req.body;

@@ -4,6 +4,14 @@ var router = express.Router();
 const asyncHandler = require("../middleware/asyncHandler.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const { invalidateCache } = require("../middleware/cacheHelper.js");
+const { validateBody } = require("../middleware/validate.js");
+const {
+  createVisitSchema,
+  creditSchema,
+  activitySchema,
+  returnEquipmentSchema,
+  updateCommentSchema,
+} = require("../schemas/history.schema.js");
 
 router.use(isLoggedIn);
 
@@ -51,6 +59,7 @@ async function consumeItem(consumableId, quantity) {
 
 router.post(
   "/create",
+  validateBody(createVisitSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId, unregisteredUeName, unregisteredUeContact, repairObject, workshopId } = req.body;
 
@@ -354,6 +363,7 @@ router.post(
 
 router.post(
   "/update-comment",
+  validateBody(updateCommentSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
   asyncHandler(async (req, res) => {
     if (req.session.role === "staff") {
       req.session.notification = "Warning: La modification des commentaires est réservée aux médiateurs.";
@@ -431,6 +441,7 @@ router.get(
 
 router.post(
   "/activity",
+  validateBody(activitySchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     if (req.session.role === "staff") {
       req.session.notification = "Warning: Les ajouts d'activités sont réservés aux médiateurs.";
@@ -577,6 +588,7 @@ router.get(
 
 router.post(
   "/credit",
+  validateBody(creditSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { userid, money } = req.body;
 
@@ -596,6 +608,7 @@ router.post(
 
 router.post(
   "/equipment/return/:id",
+  validateBody(returnEquipmentSchema, { redirectUrl: (req) => req.headers.referer || "/fabtrack" }),
   asyncHandler(async (req, res) => {
     if (req.session.role === "staff") {
       req.session.notification = "Warning: La restitution de matériel est réservée aux médiateurs.";
