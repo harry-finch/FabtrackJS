@@ -8,4 +8,5 @@ module.exports = {
   ...require("./equipment.schema"),
   ...require("./consumable.schema"),
   ...require("./bug.schema"),
+  ...require("./setup.schema"),
 };

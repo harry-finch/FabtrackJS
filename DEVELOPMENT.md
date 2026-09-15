@@ -21,7 +21,8 @@ Welcome to the **FabtrackJS** development guide. This document serves as a compr
 13. [Equipment Loan Lifecycle & Restitution](#13-equipment-loan-lifecycle--restitution)
 14. [Platform Bug & Feedback Reporting Workflow](#14-platform-bug--feedback-reporting-workflow)
 15. [Automated Testing Suite (npm test)](#15-automated-testing-suite-npm-test)
-16. [AI Agent Verification & Troubleshooting Checklist](#16-ai-agent-verification--troubleshooting-checklist)
+16. [Platform Setup & Installation Architecture](#16-platform-setup--installation-architecture)
+17. [AI Agent Verification & Troubleshooting Checklist](#17-ai-agent-verification--troubleshooting-checklist)
 
 ---
 
@@ -84,6 +85,7 @@ FabtrackJS/
 │   │   └── ...                   # Consumables, workshops, categories, etc.
 │   ├── fabtrack.js               # Visitor kiosk check-in / check-out interface
 │   ├── report-issue.js           # Public responsive machine issue reporting
+│   ├── setup.js                  # First-run guided web setup wizard (/setup)
 │   ├── users.js                  # User profile and history management
 │   └── index.js                  # Auth, bug reporting (/report-bug), language switcher
 ├── schemas/                      # Modular Zod input validation schemas
@@ -96,11 +98,14 @@ FabtrackJS/
 │   ├── issue.schema.js           # Machine breakdown report schema
 │   ├── warning.schema.js         # Disciplinary warning schema
 │   ├── api.schema.js             # RFID scanning & internal API schemas
+│   ├── setup.schema.js           # Setup wizard validation schema
 │   └── index.js                  # Central schema export hub
 ├── scripts/
-│   └── i18n-csv.js               # CLI script for npm run i18n:export & i18n:import
+│   ├── i18n-csv.js               # CLI script for npm run i18n:export & i18n:import
+│   └── setup.js                  # Interactive terminal setup tool (npm run setup)
 ├── services/                     # Business logic services (singletons)
 │   ├── settingsService.js        # Persistent platform settings (cached)
+│   ├── setupService.js           # Unified installation & database bootstrapping
 │   ├── dateService.js            # Centralized date/time formatting & moment locales
 │   ├── i18nService.js            # CSV spreadsheet import/export & dynamic language engine
 │   ├── mailService.js            # Nodemailer transport & HTML layout rendering
@@ -117,7 +122,8 @@ FabtrackJS/
 │   │   ├── charterAndKiosk.test.js # Charter acceptance & kiosk admission
 │   │   ├── equipmentBorrow.test.js # Equipment loan creation, return dates, & restitution
 │   │   ├── validationMiddleware.test.js # Zod redirection, flash toasts, & API 400s
-│   │   └── bugReport.test.js     # Bug report submission & admin email alert
+│   │   ├── bugReport.test.js     # Bug report submission & admin email alert
+│   │   └── setup.test.js         # Installation wizard & route protection tests
 │   └── unit/                     # Fast isolated unit tests
 │       ├── validation.test.js    # Schema unit validation, coercion, & edge cases
 │       └── rfidPlugin.test.js    # RFID scanner hooks & check-in/out logic
@@ -130,6 +136,7 @@ FabtrackJS/
 │   ├── fabtrack/                 # Kiosk & user profile views (index.ejs, edit-user.ejs)
 │   ├── includes/                 # Common partials (header.html, bug-report-modal.html, ...)
 │   ├── public/                   # Public unauthenticated views (report-issue.ejs)
+│   ├── setup/                    # Setup wizard views (index.ejs)
 │   └── index/                    # Auth views (login.ejs, register.ejs, reset.ejs)
 ├── app.js                        # Express app initialization, middleware, routes loader
 ├── package.json                  # Dependencies, test runner, and scripts
@@ -550,7 +557,41 @@ npx jest -t "restitution"
 
 ---
 
-## 16. AI Agent Verification & Troubleshooting Checklist
+## 16. Platform Setup & Installation Architecture
+
+FabtrackJS provides a unified setup workflow available as both a web wizard (`/setup`) and a terminal CLI script (`npm run setup`).
+
+### Core Setup Service (`services/setupService.js`)
+All installation logic is centralized in `setupService` to ensure 100% consistency across web and CLI:
+- **Installation Detection (`checkIsInstalled()`)**:
+  Verifies that at least one `Staff` member with role `"admin"` exists and the `SystemSetting` key `platform_installed === "true"`.
+- **Essential Reference Seeding (`seedEssentialReferenceData(tx, lang)`)**:
+  Populates baseline `usertype` (Étudiant, Enseignant, etc.), `projecttype` (Personnel, Académique, etc.), and `warningtype` records without injecting mock user data.
+- **Transactional Execution (`runSetup(config)`)**:
+  Within a single Prisma transaction:
+  1. Hashes the administrator password with bcrypt (`saltRounds = 10`).
+  2. Creates or updates the administrator `Staff` record (`role: "admin", approved: true`).
+  3. Writes platform settings (`platform_name`, `default_language`, `currency_symbol`, `admin_email`, `platform_installed`).
+  4. Creates user-specified `Workspace` records and links the admin's `lastWorkspaceId`.
+  5. Seeds reference tables.
+  6. Flushes settings memory cache.
+
+### Web Setup Wizard (`routes/setup.js` & `views/setup/index.ejs`)
+- **Auto-Redirection**: If `isInstalled` is `false`, any unauthenticated page request is automatically redirected to `/setup` by middleware in `app.js`.
+- **Multi-Step Guided Form**:
+  - Step 1: Admin Account (Username, Email, Password, Confirmation).
+  - Step 2: Platform & Localization (Name, Subtitle, Language, Currency).
+  - Step 3: Workspaces (Interactive tag adder + quick presets).
+  - Step 4: Review & Final Confirmation.
+- **Route Protection**: Once installed, subsequent `GET /setup` requests redirect to `/login` and `POST /setup` requests are rejected with `403 Forbidden`.
+
+### Interactive CLI Tool (`scripts/setup.js` & `npm run setup`)
+- Interactive terminal prompts with sensible defaults using `readline/promises`.
+- Non-interactive flag support (`--quick` or `-y`) for continuous integration (CI) and automated container deployments.
+
+---
+
+## 17. AI Agent Verification & Troubleshooting Checklist
 
 Before concluding any coding task, an AI agent must perform the following validation steps:
 

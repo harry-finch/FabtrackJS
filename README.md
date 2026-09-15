@@ -229,14 +229,35 @@ FabtrackJS features an extensible plugin architecture built on an asynchronous h
    PASSWD="smtp-password"
    ```
 
-4. **Initialize Database Schema with Prisma**:
+4. **Deploy Database Schema**:
    ```bash
    # Push schema directly to your MySQL database
    npx prisma db push
-
-   # Seed initial reference data and admin account
-   npx prisma db seed
    ```
+
+5. **Initialize & Configure FabtrackJS**:
+
+   You can initialize your platform using either of two simplified methods:
+
+   - **Method A: Interactive CLI Setup (Recommended)**:
+     Run the interactive command in your terminal:
+     ```bash
+     npm run setup
+     ```
+     This will guide you step-by-step to configure your administrator account, platform name, language, currency, and custom workspaces.
+
+   - **Method B: Web Installation Wizard (`/setup`)**:
+     Start the platform server:
+     ```bash
+     npm start   # or npm run dev
+     ```
+     When opening `http://localhost:3000` in your browser, FabtrackJS will automatically redirect you to the guided **Web Setup Wizard** (`/setup`) with a modern multi-step interface.
+
+   - **Method C: Quick Demo / Development Seed**:
+     If you just want a pre-filled demonstration database with mock users and activity history:
+     ```bash
+     npx prisma db seed
+     ```
 
 ---
 

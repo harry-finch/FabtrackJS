@@ -15,6 +15,7 @@ const settingsService = require("./services/settingsService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
 const i18n = require("./config/i18n");
+const setupService = require("./services/setupService");
 loadPlugins();
 
 dotenv.config();
@@ -102,6 +103,25 @@ app.use(async (req, res, next) => {
   try {
     const settings = await settingsService.getSettings();
     res.locals.settings = settings;
+
+    // Check platform installation status
+    let isInstalled = settings.platform_installed === "true";
+    if (!isInstalled) {
+      isInstalled = await setupService.checkIsInstalled();
+    }
+    res.locals.isPlatformInstalled = isInstalled;
+
+    const isSetupRoute = req.path.startsWith("/setup");
+    const isStaticOrAsset =
+      req.path.startsWith("/stylesheets") ||
+      req.path.startsWith("/javascripts") ||
+      req.path.startsWith("/images") ||
+      req.path.startsWith("/uploads") ||
+      req.path.includes("favicon");
+
+    if (!isInstalled && !isSetupRoute && !isStaticOrAsset) {
+      return res.redirect("/setup");
+    }
 
     // Internationalization (i18n) setup
     const supportedLocales = i18nService.getAvailableLocales();
