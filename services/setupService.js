@@ -1,8 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcrypt");
+const { prisma } = require("../utilities/db");
+const bcrypt = require("bcryptjs");
 const settingsService = require("./settingsService");
-
-const prisma = new PrismaClient();
 
 class SetupService {
   /**

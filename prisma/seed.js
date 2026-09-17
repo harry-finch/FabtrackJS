@@ -1,8 +1,6 @@
-const { PrismaClient, ResourceType, ConsumableStatus } = require("@prisma/client");
-const bcrypt = require("bcrypt");
+const { prisma, ResourceType, ConsumableStatus } = require("../utilities/db");
+const bcrypt = require("bcryptjs");
 const { faker } = require("@faker-js/faker");
-
-const prisma = new PrismaClient();
 
 async function main() {
   console.log("Seeding database...");

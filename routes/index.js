@@ -1,8 +1,8 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const nodemailer = require("nodemailer");
-const { PrismaClient } = require("@prisma/client");
+const { prisma } = require("../utilities/db");
 const dotenv = require("dotenv");
 
 const isAuthenticated = require("../middleware/checkSession.js");
@@ -15,7 +15,6 @@ const i18nService = require("../services/i18nService.js");
 
 dotenv.config();
 
-const prisma = new PrismaClient();
 const router = express.Router();
 const mailService = require("../services/mailService.js");
 
