@@ -56,6 +56,7 @@ class MailService {
       }
 
       logger.logThat(`Email envoyé avec succès à ${to} : "${subject}"`);
+      console.log(`[MailService] Message-ID: ${info.messageId}`);
       return { success: true, messageId: info.messageId, previewUrl };
     } catch (error) {
       console.error("[MailService] Failed to send email:", error.message);
