@@ -400,14 +400,23 @@ class MailService {
 
     const ctaText = replaceVariables(settings.mail_user_agreement_cta_text || "Signer la charte d'utilisation");
 
+    const noticeText = settings.mail_user_agreement_notice && settings.mail_user_agreement_notice.trim()
+      ? replaceVariables(settings.mail_user_agreement_notice.trim())
+      : "";
+
+    const noticeHtml = noticeText
+      ? `
+      <div style="background-color: #f8fafc; border-left: 4px solid #112970; padding: 14px 18px; margin: 18px 0; border-radius: 4px; font-size: 13px; color: #334155;">
+        ${noticeText}
+      </div>
+      `
+      : "";
+
     const contentHtml = `
       <div style="font-size: 14px; line-height: 1.6; color: #334155;">
         ${formattedBodyHtml}
       </div>
-      
-      <div style="background-color: #f8fafc; border-left: 4px solid #112970; padding: 14px 18px; margin: 18px 0; border-radius: 4px; font-size: 13px; color: #334155;">
-        <strong>Important :</strong> L'accès aux équipements et le pointage d'entrée au Fablab restent bloqués tant que la charte n'a pas été acceptée.
-      </div>
+      ${noticeHtml}
     `;
 
     const html = this.renderEmailLayout({

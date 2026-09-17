@@ -33,6 +33,7 @@ const DEFAULT_SETTINGS = {
   mail_user_agreement_title: "Validation de la charte d'utilisation du Fablab",
   mail_user_agreement_body: "Bonjour {name},\n\nVotre compte a bien été créé sur la plateforme {lab_name} du Fablab.\n\nPour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.\n\nCliquez sur le bouton ci-dessous pour lire et valider la charte :",
   mail_user_agreement_cta_text: "Signer la charte d'utilisation",
+  mail_user_agreement_notice: "",
   // BookStack Wiki Plugin settings
   plugin_bookstack_enabled: "true",
   bookstack_url: "https://wiki.fablab.sorbonne-universite.fr/BookStack/",

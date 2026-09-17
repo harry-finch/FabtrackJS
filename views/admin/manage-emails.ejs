@@ -306,6 +306,22 @@
                                 />
                                 <div class="form-text small text-muted">Intitulé du bouton principal dirigeant vers la validation de la charte.</div>
                             </div>
+
+                            <!-- Optional Notice / Warning Banner -->
+                            <div class="col-12 col-md-6">
+                                <label for="mail_user_agreement_notice" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-circle-info me-1 text-primary"></i> Encadré d'information ou avertissement (optionnel)
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="mail_user_agreement_notice"
+                                    name="mail_user_agreement_notice"
+                                    value="<%= typeof settings.mail_user_agreement_notice !== 'undefined' ? settings.mail_user_agreement_notice : '' %>"
+                                    placeholder="Laissez vide pour supprimer cet encadré"
+                                />
+                                <div class="form-text small text-muted">Affiche un encadré mis en avant sous le message. Laissez vide pour ne pas afficher d'encadré.</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -615,8 +631,8 @@
                                 <div class="text-secondary small mb-3" id="previewAgreementBody" style="line-height: 1.6;">
                                     <!-- Dynamic content updated via JS -->
                                 </div>
-                                <div class="alert alert-light border border-secondary-subtle p-3 rounded-2 small text-muted mb-3">
-                                    <strong>Important :</strong> L'accès aux équipements et le pointage d'entrée au Fablab restent bloqués tant que la charte n'a pas été acceptée.
+                                <div class="alert alert-light border border-secondary-subtle p-3 rounded-2 small text-muted mb-3" id="previewAgreementNotice" style="<%= settings.mail_user_agreement_notice && settings.mail_user_agreement_notice.trim() ? '' : 'display: none;' %>">
+                                    <%= settings.mail_user_agreement_notice || '' %>
                                 </div>
                                 <div class="text-center pt-2">
                                     <span class="btn btn-sm rounded-pill text-white px-4 py-2" id="previewAgreementCta" style="background-color: #112970; font-weight: 600;">
@@ -664,10 +680,12 @@
                     const titleInput = document.getElementById("mail_user_agreement_title");
                     const bodyInput = document.getElementById("mail_user_agreement_body");
                     const ctaInput = document.getElementById("mail_user_agreement_cta_text");
+                    const noticeInput = document.getElementById("mail_user_agreement_notice");
 
                     const previewTitle = document.getElementById("previewAgreementTitle");
                     const previewBody = document.getElementById("previewAgreementBody");
                     const previewCta = document.getElementById("previewAgreementCta");
+                    const previewNotice = document.getElementById("previewAgreementNotice");
 
                     const sampleUser = {
                         name: "Camille",
@@ -704,16 +722,29 @@
                     if (previewCta && ctaInput) {
                         previewCta.textContent = replaceSample(ctaInput.value) || "Signer la charte d'utilisation";
                     }
+
+                    if (previewNotice && noticeInput) {
+                        const val = noticeInput.value.trim();
+                        if (val) {
+                            previewNotice.textContent = replaceSample(val);
+                            previewNotice.style.display = "";
+                        } else {
+                            previewNotice.textContent = "";
+                            previewNotice.style.display = "none";
+                        }
+                    }
                 }
 
                 document.addEventListener("DOMContentLoaded", () => {
                     const titleInput = document.getElementById("mail_user_agreement_title");
                     const bodyInput = document.getElementById("mail_user_agreement_body");
                     const ctaInput = document.getElementById("mail_user_agreement_cta_text");
+                    const noticeInput = document.getElementById("mail_user_agreement_notice");
 
                     if (titleInput) titleInput.addEventListener("input", updateLivePreview);
                     if (bodyInput) bodyInput.addEventListener("input", updateLivePreview);
                     if (ctaInput) ctaInput.addEventListener("input", updateLivePreview);
+                    if (noticeInput) noticeInput.addEventListener("input", updateLivePreview);
 
                     updateLivePreview();
                 });

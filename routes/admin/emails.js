@@ -92,6 +92,9 @@ router.post(
     if (req.body.mail_user_agreement_cta_text !== undefined) {
       updates.mail_user_agreement_cta_text = req.body.mail_user_agreement_cta_text.trim();
     }
+    if (req.body.mail_user_agreement_notice !== undefined) {
+      updates.mail_user_agreement_notice = req.body.mail_user_agreement_notice.trim();
+    }
 
     await settingsService.updateSettings(updates);
 
