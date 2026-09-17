@@ -10,10 +10,8 @@
 
 const readline = require("readline/promises");
 const { stdin: input, stdout: output } = require("process");
-const { PrismaClient } = require("@prisma/client");
+const { prisma } = require("../utilities/db");
 const setupService = require("../services/setupService");
-
-const prisma = new PrismaClient();
 
 const BANNER = `
 ============================================================
