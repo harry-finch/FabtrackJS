@@ -97,4 +97,38 @@ describe("Integration: User Creation Flow (POST /users/create)", () => {
     const count = await prisma.user.count({ where: { email: existingEmail } });
     expect(count).toBe(1);
   });
+
+  test("3. Resends charter agreement email via GET /users/resend/:id", async () => {
+    const resendEmail = `resend_test_${Date.now()}${TEST_EMAIL_DOMAIN}`;
+
+    // Create user
+    await agent
+      .post("/users/create")
+      .type("form")
+      .send({
+        newname: "TestResend",
+        newsurname: "Martin",
+        newemail: resendEmail,
+        newusertype: usertypeId,
+      });
+
+    const user = await prisma.user.findUnique({ where: { email: resendEmail } });
+    expect(user).not.toBeNull();
+
+    mailService.sendAgreementEmail.mockClear();
+
+    // Call resend route
+    const resendRes = await agent.get(`/users/resend/${user.id}`);
+    expect(resendRes.status).toBe(302);
+
+    // Verify mailService was called with force: true
+    expect(mailService.sendAgreementEmail).toHaveBeenCalledTimes(1);
+    expect(mailService.sendAgreementEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user: expect.objectContaining({ email: resendEmail }),
+        force: true,
+      })
+    );
+  });
 });
+

@@ -361,14 +361,14 @@ class MailService {
   /**
    * Sends the charter agreement email to a newly registered user or when resent.
    */
-  async sendAgreementEmail({ user, token, hostUrl: customHostUrl }) {
+  async sendAgreementEmail({ user, token, hostUrl: customHostUrl, force = false }) {
     if (!user || !user.email) {
       return { skipped: true, reason: "No user email" };
     }
 
     const settings = await settingsService.getSettings();
 
-    if (settings.mail_notif_user_agreement === "false") {
+    if (!force && settings.mail_notif_user_agreement === "false") {
       return { skipped: true, reason: "User agreement email disabled in settings" };
     }
 

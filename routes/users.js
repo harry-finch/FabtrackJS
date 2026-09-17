@@ -642,12 +642,26 @@ router.get(
       return res.redirect(req.session.lastPage || "/users/manage");
     }
 
-    const hostUrl = `${req.protocol}://${req.get("host")}`;
-    mailService
-      .sendAgreementEmail({ user, token: user.token, hostUrl })
-      .catch((err) => console.error("[routes/users/resend] Failed to send agreement email:", err));
+    if (!user.email || !user.email.trim()) {
+      req.session.notification = "Error: Cet usager ne possède pas d'adresse e-mail valide.";
+      return res.redirect(req.session.lastPage || "/users/manage");
+    }
 
-    req.session.notification = `Success: L'e-mail avec le lien de signature a été envoyé à ${user.name} ${user.surname} (${user.email}).`;
+    const hostUrl = `${req.protocol}://${req.get("host")}`;
+    const result = await mailService.sendAgreementEmail({
+      user,
+      token: user.token,
+      hostUrl,
+      force: true,
+    });
+
+    if (result && result.skipped) {
+      req.session.notification = `Warning: L'envoi a été ignoré (${result.reason}).`;
+    } else if (result && result.success === false) {
+      req.session.notification = `Error: Échec de l'envoi de l'e-mail de charte (${result.error || "Erreur SMTP"}).`;
+    } else {
+      req.session.notification = `Success: L'e-mail avec le lien de signature a été envoyé à ${user.name} ${user.surname} (${user.email}).`;
+    }
     res.redirect(req.session.lastPage || "/users/manage");
   }),
 );
