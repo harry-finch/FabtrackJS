@@ -2,6 +2,11 @@ const nodemailer = require("nodemailer");
 const settingsService = require("./settingsService.js");
 const logger = require("../utilities/simpleLogger.js");
 
+function sanitizeLineEndings(str) {
+  if (!str || typeof str !== "string") return "";
+  return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
 class MailService {
   /**
    * Builds a nodemailer transporter based on platform settings and environment fallback.
@@ -34,18 +39,30 @@ class MailService {
   }
 
   /**
-   * Base method to send an email with error isolation.
+   * Base method to send an email with error isolation and strict CRLF/CR sanitization.
    */
   async sendMail({ to, subject, html, text }) {
     try {
       const { transporter, from } = await this.getTransporter();
 
+      const cleanHtml = sanitizeLineEndings(html);
+      const cleanText = text
+        ? sanitizeLineEndings(text)
+        : cleanHtml
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+            .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, "")
+            .replace(/<br\s*\/?>/gi, "\n")
+            .replace(/<\/p>/gi, "\n\n")
+            .replace(/<[^>]+>/g, "")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim();
+
       const mailOptions = {
         from,
         to,
-        subject,
-        html,
-        text: text || html.replace(/<[^>]*>?/gm, ""),
+        subject: subject ? subject.replace(/[\r\n]+/g, " ").trim() : "",
+        html: cleanHtml,
+        text: cleanText,
       };
 
       const info = await transporter.sendMail(mailOptions);
@@ -394,15 +411,16 @@ class MailService {
     const rawBody = settings.mail_user_agreement_body || 
       "Bonjour {name},\n\nVotre compte a bien été créé sur la plateforme {lab_name} du Fablab.\n\nPour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.\n\nCliquez sur le bouton ci-dessous pour lire et valider la charte :";
     
-    const formattedBodyHtml = replaceVariables(rawBody)
-      .split("\n\n")
+    const cleanRawBody = sanitizeLineEndings(replaceVariables(rawBody));
+    const formattedBodyHtml = cleanRawBody
+      .split(/\n\s*\n/)
       .map((p) => `<p style="margin-bottom: 12px;">${p.replace(/\n/g, "<br>")}</p>`)
       .join("");
 
     const ctaText = replaceVariables(settings.mail_user_agreement_cta_text || "Signer la charte d'utilisation");
 
     const noticeText = settings.mail_user_agreement_notice && settings.mail_user_agreement_notice.trim()
-      ? replaceVariables(settings.mail_user_agreement_notice.trim())
+      ? sanitizeLineEndings(replaceVariables(settings.mail_user_agreement_notice.trim()))
       : "";
 
     const noticeHtml = noticeText

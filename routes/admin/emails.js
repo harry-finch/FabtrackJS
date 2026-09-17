@@ -87,13 +87,13 @@ router.post(
       updates.mail_user_agreement_title = req.body.mail_user_agreement_title.trim();
     }
     if (req.body.mail_user_agreement_body !== undefined) {
-      updates.mail_user_agreement_body = req.body.mail_user_agreement_body.trim();
+      updates.mail_user_agreement_body = req.body.mail_user_agreement_body.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
     }
     if (req.body.mail_user_agreement_cta_text !== undefined) {
       updates.mail_user_agreement_cta_text = req.body.mail_user_agreement_cta_text.trim();
     }
     if (req.body.mail_user_agreement_notice !== undefined) {
-      updates.mail_user_agreement_notice = req.body.mail_user_agreement_notice.trim();
+      updates.mail_user_agreement_notice = req.body.mail_user_agreement_notice.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
     }
 
     await settingsService.updateSettings(updates);
