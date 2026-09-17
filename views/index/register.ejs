@@ -13,7 +13,7 @@
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
         <%- include('../includes/light-dark.html') %>
         <main class="form-signin w-100 m-auto">
-            <form action="/create-account" method="post">
+            <form action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/create-account" method="post">
                 <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
                     <img class="mb-2 app-auth-logo" src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" />
                 <% } else { %>
@@ -46,7 +46,7 @@
                 <input type="text" name="honeypot" style="display: none;" autocomplete="off">
 
                 <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.create_account') %></button>
-                <p class="mt-2 text-center"><small><a href="../login"><%= __('auth.i_have_account') %></a></small></p>
+                <p class="mt-2 text-center"><small><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/login"><%= __('auth.i_have_account') %></a></small></p>
             </form>
 
             <%- include('../includes/footer.html') %>

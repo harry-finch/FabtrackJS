@@ -13,7 +13,7 @@
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
         <%- include('../includes/light-dark.html') %>
         <main class="form-signin w-100 m-auto">
-            <form action="/auth" method="post">
+            <form action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/auth" method="post">
                 <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
                     <img class="mb-2 app-auth-logo" src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" />
                 <% } else { %>
@@ -35,7 +35,7 @@
                     <label class="form-check-label" for="rememberMe"> <%= __('auth.remember_me') %> </label>
                 </div>
                 <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.signin_btn') %></button>
-                <p class="mt-2 text-center"><small><a href="../register"><%= __('auth.create_account') %></a> | <a href="../forgot"><%= __('auth.forgot_password') %></a></small></p>
+                <p class="mt-2 text-center"><small><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/register"><%= __('auth.create_account') %></a> | <a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/forgot"><%= __('auth.forgot_password') %></a></small></p>
 
             </form>
 
