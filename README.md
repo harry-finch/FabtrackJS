@@ -16,6 +16,7 @@ FabtrackJS is a modern, open-source platform designed to track user activity, pr
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Automated Testing](#automated-testing)
+- [Reverse Proxy & Production Deployment (Nginx)](#reverse-proxy--production-deployment-nginx)
 - [Architecture & Tech Stack](#architecture--tech-stack)
 - [Maintainers & License](#maintainers--license)
 
@@ -184,9 +185,9 @@ FabtrackJS features an extensible plugin architecture built on an asynchronous h
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18.x or v20.x recommended)
+- [Node.js](https://nodejs.org/) (v18.x, v20.x, or v22.x)
 - [npm](https://www.npmjs.com/) (v9 or higher)
-- [MySQL](https://www.mysql.com/) server (v5.7, v8.0 or MariaDB equivalent)
+- [MySQL](https://www.mysql.com/) server (v5.7, v8.0 or MariaDB 10.3+)
 - Git
 
 ---
@@ -203,20 +204,24 @@ FabtrackJS features an extensible plugin architecture built on an asynchronous h
    ```bash
    npm install
    ```
+   *(A `postinstall` script automatically generates the Prisma Client without requiring manual intervention).*
 
 3. **Configure environment variables**:
    Create a `.env` file in the root directory (or copy `.env.example` if available):
    ```env
-   # Database connection string
+   # Database connection string (MySQL or MariaDB)
    DATABASE_URL="mysql://username:password@localhost:3306/fabtrack"
 
    # Session Secret & Expiration (milliseconds)
    SECRET="your-strong-random-session-secret"
    SESSION_DURATION=86400000
 
-   # Server Port
+   # Server Port & Base URL
    PORT=3000
    HOSTURL="http://localhost:3000"
+
+   # Reverse Proxy Subpath (Optional, e.g. if deployed under /fabtrack/)
+   # APP_BASE_PATH="/fabtrack"
 
    # Default Admin Email (fallback)
    ADMIN="admin@example.com"
@@ -230,10 +235,23 @@ FabtrackJS features an extensible plugin architecture built on an asynchronous h
    ```
 
 4. **Deploy Database Schema**:
-   ```bash
-   # Push schema directly to your MySQL database
-   npx prisma db push
-   ```
+   Depending on your operating system:
+
+   - **Standard Environments (Linux, macOS, Windows)**:
+     ```bash
+     npx prisma db push
+     ```
+
+   - **Systems without precompiled Prisma Rust engines (NetBSD, OpenBSD, FreeBSD)**:  
+     Prisma Client runs in 100% pure JavaScript/WASM, but the schema CLI engine is unavailable for NetBSD. You can import the pre-generated DDL SQL schema directly:
+     ```bash
+     # Using MySQL client
+     mysql -u username -p database_name < prisma/schema.sql
+
+     # Or using MariaDB client
+     mariadb -u username -p database_name < prisma/schema.sql
+     ```
+     *(You can also push schema remotely from your development machine: `DATABASE_URL="mysql://user:pass@remote-ip:3306/fabtrack" npx prisma db push`)*.
 
 5. **Initialize & Configure FabtrackJS**:
 
@@ -306,24 +324,114 @@ npx jest tests/unit/validation.test.js
 
 ---
 
+## Reverse Proxy & Production Deployment (Nginx)
+
+FabtrackJS is production-ready to run behind a reverse proxy such as Nginx. It includes:
+- `trust proxy` enabled in Express (`app.set("trust proxy", 1)`) to properly detect HTTPS and client IP addresses.
+- Isolated session cookie name (`fabtrack.sid`) to prevent collisions with other Express applications running on the same domain.
+- Dynamic `<base href>` driven by `APP_BASE_PATH` in `.env` for subpath deployments.
+
+### Strategy 1: Dedicated Subdomain (Recommended)
+This is the standard and cleanest deployment approach:
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name fabtrack.example.com;
+
+    ssl_certificate /etc/ssl/certs/example.crt;
+    ssl_certificate_key /etc/ssl/private/example.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### Strategy 2: Dedicated HTTPS Port (e.g. `:8443`)
+If you share a single hostname with other applications and cannot create a subdomain:
+```nginx
+server {
+    listen 8443 ssl http2;
+    server_name server.example.com;
+
+    ssl_certificate /etc/ssl/certs/example.crt;
+    ssl_certificate_key /etc/ssl/private/example.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### Strategy 3: Subpath (e.g. `https://server.example.com/fabtrack/`)
+1. In your `.env`, set:
+   ```env
+   APP_BASE_PATH="/fabtrack"
+   ```
+2. In your Nginx configuration:
+   ```nginx
+   location = /fabtrack {
+       return 301 https://$host/fabtrack/;
+   }
+
+   location /fabtrack/ {
+       proxy_pass http://127.0.0.1:3000/;
+
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
+       proxy_set_header Host $host;
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+       proxy_set_header X-Forwarded-Prefix /fabtrack;
+
+       proxy_set_header Accept-Encoding "";
+       proxy_redirect ~^/(.*) /fabtrack/$1;
+       proxy_cookie_path / /fabtrack/;
+
+       sub_filter_types text/html text/css text/javascript application/javascript application/json;
+       sub_filter_once off;
+       sub_filter 'href="/' 'href="/fabtrack/';
+       sub_filter 'src="/' 'src="/fabtrack/';
+       sub_filter 'action="/' 'action="/fabtrack/';
+   }
+   ```
+
+---
+
 ## Architecture & Tech Stack
 
 | Layer | Technology |
 |---|---|
-| **Runtime** | Node.js |
-| **Framework** | Express.js |
-| **Database** | MySQL |
-| **ORM** | Prisma ORM (v5.22+) |
+| **Runtime** | Node.js (v18, v20, v22) |
+| **Framework** | Express.js (v4.22+) |
+| **Database** | MySQL 5.7+ / 8.0+ / MariaDB 10.3+ |
+| **ORM** | Prisma ORM (v7.10+) via `@prisma/adapter-mariadb` (pure JS/WASM engine) |
 | **Input Validation** | Zod (v4) + Custom Validation Middleware |
-| **Testing Suite** | Jest + Supertest |
+| **Testing Suite** | Jest + Supertest (46 tests, 9 suites) |
 | **Template Engine** | EJS |
 | **CSS & Components** | Bootstrap 5, FontAwesome 6 |
-| **Authentication** | Express Session + Bcrypt |
+| **Authentication** | Express Session + bcryptjs (pure JS Blowfish, zero native compile) |
 | **Localization (i18n)** | node-i18n + Dynamic CSV Engine |
 | **Date & Time** | Moment.js + Centralized DateService |
-| **File Uploads** | Multer |
+| **File Uploads** | Multer (v2.4+) |
 | **Email Delivery** | Nodemailer |
-| **Security** | Helmet, CSRF/Honeypot, CSP, Zod Sanitization |
+| **Security** | Helmet, CSRF/Honeypot, CSP, Zod Sanitization, 0 npm audit CVEs |
 
 ---
 

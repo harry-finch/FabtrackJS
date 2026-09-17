@@ -22,7 +22,9 @@ Welcome to the **FabtrackJS** development guide. This document serves as a compr
 14. [Platform Bug & Feedback Reporting Workflow](#14-platform-bug--feedback-reporting-workflow)
 15. [Automated Testing Suite (npm test)](#15-automated-testing-suite-npm-test)
 16. [Platform Setup & Installation Architecture](#16-platform-setup--installation-architecture)
-17. [AI Agent Verification & Troubleshooting Checklist](#17-ai-agent-verification--troubleshooting-checklist)
+17. [Reverse Proxy & Production Deployment Architecture](#17-reverse-proxy--production-deployment-architecture)
+18. [Package Upgrades, bcryptjs & Security Audit](#18-package-upgrades-bcryptjs--security-audit)
+19. [AI Agent Verification & Troubleshooting Checklist](#19-ai-agent-verification--troubleshooting-checklist)
 
 ---
 
@@ -148,17 +150,43 @@ FabtrackJS/
 
 ## 3. Database & Prisma ORM Workflow
 
+### Prisma v7 Architecture & MariaDB Adapter
+FabtrackJS uses **Prisma v7** with the official `@prisma/adapter-mariadb` driver adapter:
+- **Zero Rust Query Engine at Runtime**: The legacy Rust-based `query-engine` binary has been replaced by a WebAssembly / TypeScript query compiler. The application runs in 100% pure JavaScript/WASM, guaranteeing native cross-platform execution on macOS, Linux, and BSD variants (including NetBSD).
+- **Prisma Configuration (`prisma.config.js`)**: Prisma 7 uses `defineConfig` to declare the datasource URL, migrations directory, and custom seeds:
+  ```javascript
+  const { defineConfig, env } = require("prisma/config");
+  module.exports = defineConfig({
+    schema: "prisma/schema.prisma",
+    datasource: { url: env("DATABASE_URL") },
+  });
+  ```
+- **Connection Pooling & Singleton (`utilities/db.js`)**:
+  To prevent connection pool exhaustion across multiple modules, all database queries go through `utilities/db.js`. It maintains a singleton MariaDB pool (`connectionLimit: 20`, `acquireTimeout: 30000`) and intercepts `@prisma/client` instantiation via `AutoPrismaClient`:
+  ```javascript
+  const { prisma } = require("../utilities/db");
+  ```
+
 ### Modifying the Database Schema
 1. Edit [prisma/schema.prisma](file:///Users/mugen/Documents/01_Projets/FabtrackJS/prisma/schema.prisma).
 2. Apply changes and regenerate the Prisma Client:
    ```bash
    npx prisma db push
    ```
-   > **Note for AI Agents**: `npx prisma db push` is preferred over migrations in this development environment as it directly synchronizes MySQL tables and immediately regenerates `./node_modules/@prisma/client`.
-3. Verify the generated client by running a lightweight Node test script if needed.
+3. **Deploying on Systems without Precompiled Rust Engines (NetBSD / OpenBSD / FreeBSD)**:
+   While the Prisma Client runtime is pure JS/WASM, the developer CLI commands (`prisma db push`, `prisma migrate`) require `schema-engine` for which Prisma does not distribute precompiled binaries on NetBSD.
+   - **Bypassing `prisma generate`**: `prisma.config.js` automatically sets `PRISMA_SCHEMA_ENGINE_BINARY="/dev/null"` on Unix systems if not set, allowing `prisma generate` to compile the JS client in ~100 ms without network downloads.
+   - **Schema DDL Generation**: Always keep [prisma/schema.sql](file:///Users/mugen/Documents/01_Projets/FabtrackJS/prisma/schema.sql) synchronized using:
+     ```bash
+     npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > prisma/schema.sql
+     ```
+   - On NetBSD, apply schema changes directly via standard SQL:
+     ```bash
+     mysql -u username -p database_name < prisma/schema.sql
+     ```
 
 ### Key Prisma Models Reference
-- **`Staff`**: Authenticated managers/mediators (`name`, `email`, `password` (bcrypt), `role: "admin"|"staff"|"user"`, `approved: Boolean`).
+- **`Staff`**: Authenticated managers/mediators (`name`, `email`, `password` (bcryptjs), `role: "admin"|"staff"|"user"`, `approved: Boolean`).
 - **`User`**: Fablab visitors and participants.
 - **`Machine`**: Fablab machinery. Linked to `MachineType`, `Location`, `Access`, `Category`, and `issues: MachineIssue[]`.
 - **`MachineIssue`**: Breakdown reports (`machineId`, `description`, `photoPath`, `reporterName`, `reporterEmail`, `status: "OPEN"|"RESOLVED"`, `resolvedAt`, `resolutionNotes`).
@@ -591,7 +619,58 @@ All installation logic is centralized in `setupService` to ensure 100% consisten
 
 ---
 
-## 17. AI Agent Verification & Troubleshooting Checklist
+---
+
+## 17. Reverse Proxy & Production Deployment Architecture
+
+FabtrackJS is engineered to operate seamlessly behind reverse proxies (Nginx, Caddy, Apache, HAProxy).
+
+### Key Architectural Provisions
+1. **Trust Proxy (`app.js`)**:
+   `app.set("trust proxy", 1);` enables Express to trust the `X-Forwarded-Proto`, `X-Forwarded-For`, and `X-Forwarded-Host` headers set by upstream proxies, ensuring accurate client IP logging and secure HTTPS cookie behavior.
+2. **Session Cookie Scoping & Isolation**:
+   The session cookie is named `fabtrack.sid` (instead of default `connect.sid`). This prevents session conflicts when other Express applications are hosted on the same domain or IP.
+3. **Dynamic Base Path (`views/includes/pagehead.html`)**:
+   The HTML `<base href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" />` adapts dynamically. Setting `APP_BASE_PATH="/fabtrack"` in `.env` ensures relative links and assets resolve to `/fabtrack/` when deployed in a subpath.
+
+### Production Nginx Deployment Topologies
+- **Topology A: Subdomain (Recommended)**:
+  `proxy_pass http://127.0.0.1:3000;` at `location /` with WebSocket upgrade headers. Zero URL rewriting needed.
+- **Topology B: Dedicated Port (e.g. `:8443`)**:
+  Ideal when a single hostname hosts multiple services and no wildcard DNS is available. Serves FabtrackJS at root `/` of that port with full isolation.
+- **Topology C: Subpath (`/fabtrack/`)**:
+  Requires `APP_BASE_PATH="/fabtrack"` in `.env`, `proxy_pass http://127.0.0.1:3000/;` (with trailing slash), `proxy_redirect ~^/(.*) /fabtrack/$1;`, `proxy_cookie_path / /fabtrack/;`, and Nginx `sub_filter` to rewrite absolute root references (`href="/`, `src="/`, `action="/`).
+
+---
+
+## 18. Package Upgrades, bcryptjs & Security Audit
+
+### 100% Pure JavaScript Portability: `bcryptjs`
+- Replaced native C++ `bcrypt` with `bcryptjs` (`^3.0.3`).
+- **Why**: Native `node-gyp` compilation on specialized platforms (e.g. NetBSD with older GCC defaults) failed due to `std::string_view` (C++17) requirements.
+- `bcryptjs` runs in pure JS without requiring Python, C++ compilers, or `node-gyp-build`. It uses identical Blowfish salts (`$2a$`, `$2b$`) and is 100% backward compatible with existing password hashes in the database.
+
+### File Upload Modernization: `multer@^2.4.0`
+- Upgraded from vulnerable `1.4.5-lts.2` to `multer@^2.4.0`.
+- Resolves upstream stream DoS vulnerabilities (CVEs) while preserving full compatibility with `diskStorage` (issue photos) and `memoryStorage` (logo and favicon processing).
+
+### Zero Vulnerability Security Audit (`npm audit`)
+- Using `overrides` in `package.json` to enforce patched transitive dependencies:
+  ```json
+  "overrides": {
+    "tar": "^7.5.22",
+    "qs": "^6.16.0",
+    "test-exclude": "^8.0.0",
+    "deepmerge-ts": "^8.0.2",
+    "mariadb": "^3.4.7",
+    "mysql2": "^3.24.4"
+  }
+  ```
+- Result: **0 vulnerabilities** reported by `npm audit`.
+
+---
+
+## 19. AI Agent Verification & Troubleshooting Checklist
 
 Before concluding any coding task, an AI agent must perform the following validation steps:
 
@@ -613,12 +692,19 @@ Before concluding any coding task, an AI agent must perform the following valida
    If `prisma/schema.prisma` was modified:
    ```bash
    npx prisma db push
+   # And update the SQL schema script:
+   npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > prisma/schema.sql
    ```
 5. **Test Route Discovery & App Boot**:
    Ensure no unhandled exceptions during initialization:
    ```bash
    node -e 'require("./app.js"); console.log("App boots successfully");'
    ```
-6. **Git Hygiene**:
+6. **Security Audit Verification**:
+   ```bash
+   npm audit
+   ```
+   Ensure 0 high/critical vulnerabilities exist.
+7. **Git Hygiene**:
    Run `git status` to verify that no temporary or unintended test artifacts remain unstaged or untracked.
 
