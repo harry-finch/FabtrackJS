@@ -4,9 +4,11 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const logger = require("morgan");
 const dotenv = require("dotenv");
+dotenv.config();
+
+const { prisma } = require("./utilities/db");
 const createError = require("http-errors");
 const helmet = require("helmet");
-const { PrismaClient } = require("@prisma/client");
 const fs = require("fs");
 
 const loadPlugins = require("./core/pluginLoader");
@@ -18,10 +20,7 @@ const i18n = require("./config/i18n");
 const setupService = require("./services/setupService");
 loadPlugins();
 
-dotenv.config();
-
 const app = express();
-const prisma = new PrismaClient();
 
 // ******************************************************************************
 // Middleware Setup

@@ -12,38 +12,40 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.6.0",
-    "@prisma/client": "^5.22.0",
-    "bcrypt": "^5.1.1",
-    "bootstrap": "^5.3.3",
+    "@prisma/adapter-mariadb": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "bcrypt": "^6.0.0",
+    "bootstrap": "^5.3.8",
     "cookie-parser": "^1.4.7",
     "debug": "^4.4.0",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.6.1",
     "ejs": "^3.1.10",
-    "express": "^4.21.2",
+    "express": "^4.22.3",
     "express-session": "^1.18.1",
-    "helmet": "^8.0.0",
+    "helmet": "^8.3.0",
     "http-errors": "^2.0.0",
     "i18n": "^0.15.4",
-    "moment": "^2.30.1",
+    "moment": "^2.31.0",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "1.4.5-lts.2",
     "node-fetch": "^2.7.0",
-    "nodemailer": "^10.0.3",
+    "nodemailer": "^10.0.10",
     "nodemon": "^3.1.9",
     "randomized-string": "^2.0.1",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "uuid": "^11.1.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "jest": "^30.5.1",
-    "prisma": "^5.22.0",
+    "prisma": "^7.10.0",
     "supertest": "^7.2.2"
   },
   "overrides": {
     "tar": "^7.5.22",
-    "qs": "^6.16.0"
+    "qs": "^6.16.0",
+    "test-exclude": "^8.0.0"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
