@@ -8,6 +8,7 @@
     "i18n:export": "node scripts/i18n-csv.js export",
     "i18n:import": "node scripts/i18n-csv.js import",
     "setup": "node scripts/setup.js",
+    "postinstall": "prisma generate",
     "test": "jest --runInBand --detectOpenHandles --forceExit"
   },
   "dependencies": {
