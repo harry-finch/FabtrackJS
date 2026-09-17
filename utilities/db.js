@@ -14,8 +14,8 @@ function getSharedPool() {
     if (!url.searchParams.has("connectionLimit")) {
       url.searchParams.set("connectionLimit", "20");
     }
-    if (!url.searchParams.has("idleTimeout")) {
-      url.searchParams.set("idleTimeout", "5");
+    if (!url.searchParams.has("acquireTimeout")) {
+      url.searchParams.set("acquireTimeout", "30000");
     }
     sharedPool = mariadb.createPool(url.toString());
     if (process.env.NODE_ENV !== "production") {

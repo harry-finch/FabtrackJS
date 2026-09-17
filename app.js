@@ -82,8 +82,12 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use("/uploads", express.static(uploadsDir));
 
+// Enable trust proxy when behind Nginx / reverse proxy
+app.set("trust proxy", 1);
+
 app.use(
   session({
+    name: "fabtrack.sid", // Avoid session collision with other apps on the same domain
     secret: process.env.SECRET || "fabtrack-secret-key-2024",
     resave: false,
     saveUninitialized: true,
@@ -102,6 +106,11 @@ app.use(async (req, res, next) => {
   try {
     const settings = await settingsService.getSettings();
     res.locals.settings = settings;
+
+    // Configurable base URL for reverse proxy subpaths (e.g. /fabtrack/)
+    const rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");
+    res.locals.baseUrl = rawBasePath ? `/${rawBasePath}/` : "/";
+    res.locals.basePath = rawBasePath ? `/${rawBasePath}` : "";
 
     // Check platform installation status
     let isInstalled = settings.platform_installed === "true";
