@@ -80,25 +80,25 @@ router.get("/list/all-projects", isAdmin, async (req, res) => {
 // Route to get users and projects in dictionary format (main fabtrack page)
 // ******************************************************************************
 
-router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      surname: true,
-      termsAccepted: true,
-      projects: {
-        select: {
-          id: true,
-          url: true,
-          projecttypeId: true,
-          teachingUnitId: true,
-          unregisteredUeName: true,
-          unregisteredUeContact: true,
+router.get(
+  "/list/autocomplete-lists",
+  isLoggedIn,
+  asyncHandler(async (req, res) => {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        termsAccepted: true,
+        projects: {
+          select: {
+            id: true,
+            userId: true,
+            projectId: true,
+          },
         },
       },
-    },
-  });
+    });
   const projects = await prisma.project.findMany({
     where: { active: true },
     select: {
@@ -149,7 +149,8 @@ router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
   let data = { userlist, projectlist, userprojectlist };
 
   res.json(data);
-});
+  }),
+);
 
 // ******************************************************************************
 // RFID Plugin Endpoints

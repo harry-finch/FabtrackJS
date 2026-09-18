@@ -86,4 +86,16 @@ describe("Integration: Charter Signature & Kiosk Access Blocking", () => {
     expect(visits[0].departure).toBeNull();
     expect(visits[0].comments).toBe("Arrivée valide au lab");
   });
+
+  test("4. Returns valid JSON autocomplete data from GET /api/list/autocomplete-lists", async () => {
+    const res = await adminAgent.get("/api/list/autocomplete-lists");
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toMatch(/json/);
+    expect(res.body).toHaveProperty("userlist");
+    expect(res.body).toHaveProperty("projectlist");
+    expect(res.body).toHaveProperty("userprojectlist");
+    expect(Array.isArray(res.body.userlist)).toBe(true);
+    expect(Array.isArray(res.body.projectlist)).toBe(true);
+    expect(Array.isArray(res.body.userprojectlist)).toBe(true);
+  });
 });
