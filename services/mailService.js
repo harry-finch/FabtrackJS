@@ -150,6 +150,33 @@ class MailService {
   }
 
   /**
+   * Sanitizes line endings to prevent Bare LF / Bare CR SMTP issues.
+   */
+  sanitizeLineEndings(str) {
+    return sanitizeLineEndings(str);
+  }
+
+  /**
+   * Resolves the canonical public base URL for platform emails.
+   * Priority:
+   * 1. process.env.HOSTURL or process.env.APP_URL (explicit canonical URL configured in .env)
+   * 2. customHostUrl (passed by caller if not localhost)
+   * 3. Default fallback to http://localhost:3000
+   */
+  resolveBaseUrl(customHostUrl) {
+    if (process.env.HOSTURL && process.env.HOSTURL.trim()) {
+      return process.env.HOSTURL.trim().replace(/\/+$/, "");
+    }
+    if (process.env.APP_URL && process.env.APP_URL.trim()) {
+      return process.env.APP_URL.trim().replace(/\/+$/, "");
+    }
+    if (customHostUrl && typeof customHostUrl === "string" && customHostUrl.trim()) {
+      return customHostUrl.trim().replace(/\/+$/, "");
+    }
+    return "http://localhost:3000";
+  }
+
+  /**
    * Sends an automated alert when a consumable reaches or drops below its reorder threshold.
    */
   async sendLowStockAlert(consumable, newStock) {
@@ -159,7 +186,7 @@ class MailService {
       return { skipped: true, reason: "Notification disabled in settings" };
     }
 
-    const hostUrl = process.env.HOSTURL || "http://localhost:3000";
+    const hostUrl = this.resolveBaseUrl();
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
     const unitStr = consumable.unit || "unités";
     const isOutOfStock = newStock <= 0;
@@ -217,7 +244,7 @@ class MailService {
       return { skipped: true, reason: "Notification disabled in settings" };
     }
 
-    const hostUrl = process.env.HOSTURL || "http://localhost:3000";
+    const hostUrl = this.resolveBaseUrl();
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
     const author = staffUsername || "Médiateur Fablab";
     const warningName = (warningtype && warningtype.name) ? warningtype.name : "Avertissement";
@@ -282,7 +309,7 @@ class MailService {
       return { skipped: true, reason: "Notification disabled in settings" };
     }
 
-    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:3000";
+    const hostUrl = this.resolveBaseUrl(customHostUrl);
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
     const reporter = issue.reporterName
       ? `${issue.reporterName}${issue.reporterEmail ? ` (${issue.reporterEmail})` : ""}`
@@ -348,7 +375,7 @@ class MailService {
    * Sends an immediate test email to verify SMTP configuration.
    */
   async sendTestEmail(targetEmail) {
-    const hostUrl = process.env.HOSTURL || "http://localhost:3000";
+    const hostUrl = this.resolveBaseUrl();
     const dateStr = new Date().toLocaleString("fr-FR");
 
     const contentHtml = `
@@ -390,7 +417,7 @@ class MailService {
       return { skipped: true, reason: "User agreement email disabled in settings" };
     }
 
-    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+    const hostUrl = this.resolveBaseUrl(customHostUrl);
     const agreementToken = token || user.token;
     const agreementUrl = `${hostUrl}/agreement/${agreementToken}`;
     const labName = settings.platform_name || "FabtrackJS";
@@ -460,7 +487,7 @@ class MailService {
   async sendStaffRegisteredAlert({ username, email, hostUrl: customHostUrl }) {
     const settings = await settingsService.getSettings();
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN || "admin@example.com";
-    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+    const hostUrl = this.resolveBaseUrl(customHostUrl);
 
     const contentHtml = `
       <p>Un nouveau membre du staff s'est inscrit et attend votre validation pour pouvoir se connecter :</p>
@@ -490,7 +517,7 @@ class MailService {
    * Sends password reset email.
    */
   async sendPasswordResetEmail({ email, token, hostUrl: customHostUrl }) {
-    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+    const hostUrl = this.resolveBaseUrl(customHostUrl);
     const resetUrl = `${hostUrl}/reset/${token}`;
 
     const contentHtml = `
@@ -520,7 +547,7 @@ class MailService {
   async sendBugReportAlert({ title, category, description, pageUrl, reporterName, reporterEmail, severity, hostUrl: customHostUrl }) {
     const { settings, adminRecipient } = await this.getTransporter();
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || adminRecipient;
-    const hostUrl = customHostUrl || process.env.HOSTURL || "http://localhost:8080";
+    const hostUrl = this.resolveBaseUrl(customHostUrl);
 
     const reporter = reporterName
       ? `${reporterName}${reporterEmail ? ` (${reporterEmail})` : ""}`
