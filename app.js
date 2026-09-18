@@ -62,7 +62,11 @@ app.use(
         // Allow images from all sources
         imgSrc: ["'self'", "data:", "https:"],
         // Allow connections
-        connectSrc: ["'self'"],
+        connectSrc: [
+          "'self'",
+          "https://cdn.jsdelivr.net",
+          "https://cdnjs.cloudflare.com",
+        ],
         // Do not force browser to upgrade HTTP to HTTPS on local/LAN IPs
         upgradeInsecureRequests: isHttpsProduction ? [] : null,
       },
@@ -116,7 +120,14 @@ app.use(async (req, res, next) => {
     res.locals.settings = settings;
 
     // Configurable base URL for reverse proxy subpaths (e.g. /fabtrack/)
-    const rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");
+    let rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");
+    if (!rawBasePath && process.env.HOSTURL) {
+      try {
+        const u = new URL(process.env.HOSTURL);
+        const p = u.pathname.replace(/^\/|\/$/g, "");
+        if (p) rawBasePath = p;
+      } catch (e) {}
+    }
     res.locals.baseUrl = rawBasePath ? `/${rawBasePath}/` : "/";
     res.locals.basePath = rawBasePath ? `/${rawBasePath}` : "";
 

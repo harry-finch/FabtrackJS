@@ -1,4 +1,7 @@
 <base href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" />
+<script>
+    window.__APP_BASE_PATH__ = "<%= typeof basePath !== 'undefined' && basePath ? basePath : '' %>" || (window.location.pathname.startsWith('/fabtrack') ? '/fabtrack' : '');
+</script>
 
 <script src="javascripts/color-mode-toggler.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment/2.29.4/moment.min.js"></script>

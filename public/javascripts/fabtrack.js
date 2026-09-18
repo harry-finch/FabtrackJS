@@ -11,8 +11,19 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
 (async () => {
   // Fetch the needed data from the API
-  const response = await fetch("/api/list/autocomplete-lists");
-  const data = await response.json();
+  const apiBase = window.__APP_BASE_PATH__ || (window.location.pathname.startsWith("/fabtrack") ? "/fabtrack" : "");
+  let data = { userlist: [], projectlist: [], userprojectlist: [] };
+  try {
+    const response = await fetch(`${apiBase}/api/list/autocomplete-lists`);
+    if (!response.ok) {
+      console.error(`[Fabtrack] Échec du chargement des listes d'autocomplétion (HTTP ${response.status})`);
+      return;
+    }
+    data = await response.json();
+  } catch (err) {
+    console.error("[Fabtrack] Erreur lors de la récupération des listes:", err);
+    return;
+  }
 
   // User search autocomplete
   var nameInput = document.getElementById("name");
@@ -259,8 +270,9 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     }
 
     try {
+      const apiBase = window.__APP_BASE_PATH__ || (window.location.pathname.startsWith("/fabtrack") ? "/fabtrack" : "");
       const uId = userId || Number(document.getElementById("userid").value) || "";
-      const res = await fetch(`/api/bookstack/check-doc?projectId=${projectId}&userId=${uId}`);
+      const res = await fetch(`${apiBase}/api/bookstack/check-doc?projectId=${projectId}&userId=${uId}`);
       if (!res.ok) return;
       const data = await res.json();
 
