@@ -12,6 +12,14 @@ const prisma = new PrismaClient();
 const logger = require("../../utilities/simpleLogger.js");
 
 // ******************************************************************************
+// Route redirecting /admin/staff to /admin/staff/manage
+// ******************************************************************************
+
+router.get("/", (req, res) => {
+  res.redirect("/admin/staff/manage");
+});
+
+// ******************************************************************************
 // Route to manage staff accounts (Admin Only)
 // ******************************************************************************
 
