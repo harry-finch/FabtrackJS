@@ -82,16 +82,41 @@ router.get("/list/all-projects", isAdmin, async (req, res) => {
 
 router.get("/list/autocomplete-lists", isLoggedIn, async (req, res) => {
   const users = await prisma.user.findMany({
-    relationLoadStrategy: "join",
-    include: {
-      usertype: true,
-      projects: true,
+    select: {
+      id: true,
+      name: true,
+      surname: true,
+      termsAccepted: true,
+      projects: {
+        select: {
+          id: true,
+          url: true,
+          projecttypeId: true,
+          teachingUnitId: true,
+          unregisteredUeName: true,
+          unregisteredUeContact: true,
+        },
+      },
     },
   });
   const projects = await prisma.project.findMany({
     where: { active: true },
+    select: {
+      id: true,
+      url: true,
+      projecttypeId: true,
+      teachingUnitId: true,
+      unregisteredUeName: true,
+      unregisteredUeContact: true,
+    },
   });
-  const userprojects = await prisma.userProject.findMany();
+  const userprojects = await prisma.userProject.findMany({
+    select: {
+      id: true,
+      userId: true,
+      projectId: true,
+    },
+  });
 
   let userlist = [];
   users.forEach(function (user) {

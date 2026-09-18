@@ -25,14 +25,6 @@ router.get(
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/fabtrack";
 
-    const allUsers = await prisma.user.findMany({
-      relationLoadStrategy: "join",
-      include: {
-        usertype: true,
-        projects: true,
-      },
-    });
-
     const consumables = await prisma.consumable.findMany({
       include: {
         category: true,
@@ -166,7 +158,6 @@ router.get(
     });
 
     res.render("fabtrack/index", {
-      users: allUsers,
       history,
       consumables,
       teachingUnits,

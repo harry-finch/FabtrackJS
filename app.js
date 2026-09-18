@@ -17,17 +17,20 @@ const settingsService = require("./services/settingsService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
 const i18n = require("./config/i18n");
-const setupService = require("./services/setupService");
-loadPlugins();
+const compression = require("compression");
+const isProduction = process.env.NODE_ENV === "production";
 
 const app = express();
+
+// Enable Gzip/Deflate compression for all responses
+app.use(compression());
 
 // ******************************************************************************
 // Middleware Setup
 // ******************************************************************************
 
 // Add security headers with helmet
-const isHttpsProduction = process.env.NODE_ENV === "production" && process.env.ENABLE_HTTPS === "true";
+const isHttpsProduction = isProduction && process.env.ENABLE_HTTPS === "true";
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -73,14 +76,19 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+
+const staticOptions = {
+  maxAge: isProduction ? "7d" : 0,
+  etag: true,
+};
+app.use(express.static(path.join(__dirname, "public"), staticOptions));
 
 // Ensure uploads directory exists and is statically accessible
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-app.use("/uploads", express.static(uploadsDir));
+app.use("/uploads", express.static(uploadsDir, staticOptions));
 
 // Enable trust proxy when behind Nginx / reverse proxy
 app.set("trust proxy", 1);
@@ -321,6 +329,9 @@ app.use(loadCache);
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+if (isProduction) {
+  app.enable("view cache");
+}
 
 // ******************************************************************************
 // Dynamic Route Loading
