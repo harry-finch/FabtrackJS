@@ -120,14 +120,7 @@ app.use(async (req, res, next) => {
     res.locals.settings = settings;
 
     // Configurable base URL for reverse proxy subpaths (e.g. /fabtrack/)
-    let rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");
-    if (!rawBasePath && process.env.HOSTURL) {
-      try {
-        const u = new URL(process.env.HOSTURL);
-        const p = u.pathname.replace(/^\/|\/$/g, "");
-        if (p) rawBasePath = p;
-      } catch (e) {}
-    }
+    const rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");
     res.locals.baseUrl = rawBasePath ? `/${rawBasePath}/` : "/";
     res.locals.basePath = rawBasePath ? `/${rawBasePath}` : "";
 

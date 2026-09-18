@@ -1,6 +1,16 @@
 <base href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" />
 <script>
-    window.__APP_BASE_PATH__ = "<%= typeof basePath !== 'undefined' && basePath ? basePath : '' %>" || (window.location.pathname.startsWith('/fabtrack') ? '/fabtrack' : '');
+    window.getAppBaseUrl = function(endpoint) {
+        var base = "";
+        try {
+            if (document.baseURI) {
+                var p = new URL(document.baseURI).pathname.replace(/\/+$/, "");
+                if (p && p !== "/") base = p;
+            }
+        } catch (e) {}
+        var clean = (endpoint || "").replace(/^\/+/, "");
+        return base ? base + "/" + clean : "/" + clean;
+    };
 </script>
 
 <script src="javascripts/color-mode-toggler.js"></script>

@@ -103,8 +103,8 @@
     });
 
     try {
-      const apiBase = window.__APP_BASE_PATH__ || (window.location.pathname.startsWith("/fabtrack") ? "/fabtrack" : "");
-      const response = await fetch(`${apiBase}/api/rfid/scan`, {
+      const rfidUrl = window.getAppBaseUrl ? window.getAppBaseUrl("api/rfid/scan") : "/api/rfid/scan";
+      const response = await fetch(rfidUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

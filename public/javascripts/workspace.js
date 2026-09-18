@@ -6,9 +6,9 @@ Array.from(workspaceLinks).forEach((link) => {
     event.preventDefault(); // Prevent default link behavior
 
     const selectedWorkspaceId = link.dataset.workspaceid;
-    const apiBase = window.__APP_BASE_PATH__ || (window.location.pathname.startsWith("/fabtrack") ? "/fabtrack" : "");
+    const switchUrl = window.getAppBaseUrl ? window.getAppBaseUrl("fabtrack/switchworkspace") : "/fabtrack/switchworkspace";
 
-    fetch(`${apiBase}/fabtrack/switchworkspace`, {
+    fetch(switchUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
