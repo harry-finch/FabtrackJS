@@ -111,6 +111,11 @@
         const modalEl = document.getElementById("modalReportBug");
         if (modalEl) {
             modalEl.addEventListener("show.bs.modal", function () {
+                const bugBtnSpan = document.querySelector('[data-bs-target="#modalReportBug"]')?.closest('[data-bs-toggle="tooltip"]');
+                if (bugBtnSpan && typeof bootstrap !== "undefined" && bootstrap.Tooltip) {
+                    const tooltipInstance = bootstrap.Tooltip.getInstance(bugBtnSpan);
+                    if (tooltipInstance) tooltipInstance.hide();
+                }
                 const currentUrl = window.location.href;
                 const hiddenInput = document.getElementById("bugReportPageUrl");
                 const displayEl = document.getElementById("bugPageUrlDisplay");

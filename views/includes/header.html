@@ -115,9 +115,12 @@
         </a>
 
         <!-- Bug / Issue Reporting Button for Platform -->
-        <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalReportBug" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Signaler un bug ou une amélioration" aria-label="Signaler un bug">
-            <i class="fa-solid fa-bug fa-sm"></i>
-        </button>
+        <% const reportBugTooltip = typeof __ !== 'undefined' ? __('nav.report_bug') : 'Signaler un bug ou une amélioration'; %>
+        <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= reportBugTooltip %>" title="<%= reportBugTooltip %>">
+            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalReportBug" aria-label="<%= reportBugTooltip %>" onclick="const t = bootstrap.Tooltip.getInstance(this.parentElement); if (t) t.hide();">
+                <i class="fa-solid fa-bug fa-sm"></i>
+            </button>
+        </span>
 
         <% if (typeof role !== 'undefined' && role === 'admin' && (typeof currentPath === 'undefined' || !currentPath.startsWith('/admin'))) { %>
         <a href="/admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>">
@@ -193,7 +196,7 @@
                     </a>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-warning" href="#" data-bs-toggle="modal" data-bs-target="#modalReportBug">
                         <i class="fa-solid fa-bug text-warning fa-sm" style="width: 16px;"></i>
-                        <span class="small fw-semibold">Signaler un bug / correction</span>
+                        <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.report_bug') : 'Signaler un bug ou une amélioration' %></span>
                     </a>
                     <% if (role === "admin") { %>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin">
