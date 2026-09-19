@@ -1,5 +1,5 @@
 html {
-    background-color: var(--bs-body-bg);
+    background-color: var(--bs-body-tertiary-bg);
     color-scheme: light dark;
 }
 
@@ -13,9 +13,14 @@ html {
 
 html,
 body {
-    height: 100%;
+    min-height: 100%;
     font-size: 0.9375rem;
     letter-spacing: -0.006em;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--bs-body-tertiary-bg);
 }
 
 h1, .h1 { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.02em; }
