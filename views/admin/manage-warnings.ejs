@@ -124,7 +124,11 @@
                                         <td>
                                             <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1">
                                                 <% if (warning.warningtype?.icon) { %>
-                                                    <i class="fa-solid <%= warning.warningtype.icon %> me-1"></i>
+                                                    <% if (warning.warningtype.icon.includes('<')) { %>
+                                                        <%- warning.warningtype.icon %>
+                                                    <% } else { %>
+                                                        <i class="fa-solid <%= warning.warningtype.icon %> me-1"></i>
+                                                    <% } %>
                                                 <% } else { %>
                                                     <i class="fa-solid fa-triangle-exclamation me-1"></i>
                                                 <% } %>

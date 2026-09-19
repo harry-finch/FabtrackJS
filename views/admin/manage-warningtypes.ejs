@@ -44,6 +44,20 @@
                 </div>
             </div>
 
+            <!-- Notifications -->
+            <% if (locals.notification) { 
+                const isError = notification.toLowerCase().startsWith('error');
+                const isSuccess = notification.toLowerCase().startsWith('success');
+            %>
+            <div class="alert <%= isError ? 'alert-danger' : isSuccess ? 'alert-success' : 'alert-info' %> alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid <%= isError ? 'fa-triangle-exclamation' : isSuccess ? 'fa-circle-check' : 'fa-circle-info' %>"></i>
+                    <div><%= notification.replace(/^(Success:|Error:|Warning:)\s*/i, '') %></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <% } %>
+
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -89,30 +103,168 @@
             </div>
 
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
                     <h5 class="fw-bold mb-0" id="formTitle">
                         <i class="fa-solid fa-triangle-exclamation text-warning-emphasis me-2"></i>Create new warning type
                     </h5>
+                    <p class="text-muted small mb-0 mt-1">Définissez un motif, son icône Font Awesome et sa couleur distinctive</p>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form action="/admin/warningtypes/create" method="post" id="warningTypeForm">
-                        <div class="row">
-                            <input type='hidden' id="warningtypeid" name='warningtypeid' value='' />
-                            <div class="col-12">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="name" name="name" placeholder="Name" required />
-                                    <label for="name">Name</label>
+                        <input type="hidden" id="warningtypeid" name="warningtypeid" value="" />
+                        <input type="hidden" id="icon" name="icon" value='<i class="fa-solid fa-triangle-exclamation" style="color: #dc3545"></i>' />
+
+                        <!-- Name field -->
+                        <div class="form-floating mb-4">
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Ex: Consignes de sécurité non respectées" required oninput="updatePreview()" />
+                            <label for="name">Nom du motif d'avertissement</label>
+                        </div>
+
+                        <!-- Icon Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted text-uppercase mb-2" style="letter-spacing: 0.5px;">
+                                <i class="fa-solid fa-icons me-1 text-primary"></i> 1. Choisir une icône
+                            </label>
+
+                            <div class="d-flex flex-wrap gap-2 mb-2" id="iconGrid">
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3 active" data-icon="fa-triangle-exclamation" style="width: 76px; height: 68px;" title="Alerte générale" onclick="selectIcon('fa-triangle-exclamation')">
+                                    <i class="fa-solid fa-triangle-exclamation fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Alerte</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-shield-halved" style="width: 76px; height: 68px;" title="Sécurité" onclick="selectIcon('fa-shield-halved')">
+                                    <i class="fa-solid fa-shield-halved fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Sécurité</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-circle-exclamation" style="width: 76px; height: 68px;" title="Attention" onclick="selectIcon('fa-circle-exclamation')">
+                                    <i class="fa-solid fa-circle-exclamation fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Attention</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-ban" style="width: 76px; height: 68px;" title="Interdiction" onclick="selectIcon('fa-ban')">
+                                    <i class="fa-solid fa-ban fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Interdit</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-fire" style="width: 76px; height: 68px;" title="Feu / Chaleur / Laser" onclick="selectIcon('fa-fire')">
+                                    <i class="fa-solid fa-fire fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Laser / Feu</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-bolt" style="width: 76px; height: 68px;" title="Électricité" onclick="selectIcon('fa-bolt')">
+                                    <i class="fa-solid fa-bolt fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Électrique</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-skull-crossbones" style="width: 76px; height: 68px;" title="Produits toxiques / Chimie" onclick="selectIcon('fa-skull-crossbones')">
+                                    <i class="fa-solid fa-skull-crossbones fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Chimique</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-wrench" style="width: 76px; height: 68px;" title="Mauvaise manipulation outil" onclick="selectIcon('fa-wrench')">
+                                    <i class="fa-solid fa-wrench fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Outillage</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-hammer" style="width: 76px; height: 68px;" title="Dégradation matériel" onclick="selectIcon('fa-hammer')">
+                                    <i class="fa-solid fa-hammer fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Matériel</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-broom" style="width: 76px; height: 68px;" title="Nettoyage et rangement du poste" onclick="selectIcon('fa-broom')">
+                                    <i class="fa-solid fa-broom fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Ménage</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-glasses" style="width: 76px; height: 68px;" title="Port des lunettes / EPI" onclick="selectIcon('fa-glasses')">
+                                    <i class="fa-solid fa-glasses fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Lunettes</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-mask" style="width: 76px; height: 68px;" title="Port du masque" onclick="selectIcon('fa-mask')">
+                                    <i class="fa-solid fa-mask fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Masque</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-money-bill-wave" style="width: 76px; height: 68px;" title="Paiement / Facturation" onclick="selectIcon('fa-money-bill-wave')">
+                                    <i class="fa-solid fa-money-bill-wave fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Facturation</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-clock" style="width: 76px; height: 68px;" title="Retard / Horaires" onclick="selectIcon('fa-clock')">
+                                    <i class="fa-solid fa-clock fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Horaires</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-user-slash" style="width: 76px; height: 68px;" title="Suspension d'accès" onclick="selectIcon('fa-user-slash')">
+                                    <i class="fa-solid fa-user-slash fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Accès</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary icon-btn d-flex flex-column align-items-center justify-content-center p-2 rounded-3" data-icon="fa-bell" style="width: 76px; height: 68px;" title="Rappel consigne" onclick="selectIcon('fa-bell')">
+                                    <i class="fa-solid fa-bell fs-4 mb-1"></i>
+                                    <span style="font-size: 0.65rem;" class="text-truncate w-100 text-center">Consigne</span>
+                                </button>
+                            </div>
+
+                            <div class="row align-items-center g-2 mt-1" style="max-width: 420px;">
+                                <div class="col-auto">
+                                    <label for="customIconInput" class="small text-muted mb-0">Autre icône Font Awesome :</label>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                        <input type="text" class="form-control" id="customIconInput" placeholder="Ex: fa-gear, fa-robot" oninput="onCustomIconInput(this.value)" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-floating mb-3">
-                                    <textarea class="form-control" id="icon" name="icon" style="height: 100px"></textarea>
-                                    <label for="icon">Icon (HTML / FontAwesome icon tag)</label>
+
+                        <!-- Color Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted text-uppercase mb-2" style="letter-spacing: 0.5px;">
+                                <i class="fa-solid fa-palette me-1 text-primary"></i> 2. Choisir une couleur
+                            </label>
+
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <div class="d-flex align-items-center gap-2" id="colorPresets">
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#dc3545" style="width: 32px; height: 32px; background-color: #dc3545; border: 3px solid #212529; cursor: pointer;" title="Rouge alerte (#dc3545)" onclick="selectColor('#dc3545')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#fd7e14" style="width: 32px; height: 32px; background-color: #fd7e14; border: 3px solid transparent; cursor: pointer;" title="Orange vif (#fd7e14)" onclick="selectColor('#fd7e14')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#ffc107" style="width: 32px; height: 32px; background-color: #ffc107; border: 3px solid transparent; cursor: pointer;" title="Ambre / Jaune (#ffc107)" onclick="selectColor('#ffc107')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#d63384" style="width: 32px; height: 32px; background-color: #d63384; border: 3px solid transparent; cursor: pointer;" title="Rose / Magenta (#d63384)" onclick="selectColor('#d63384')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#6f42c1" style="width: 32px; height: 32px; background-color: #6f42c1; border: 3px solid transparent; cursor: pointer;" title="Violet (#6f42c1)" onclick="selectColor('#6f42c1')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#0d6efd" style="width: 32px; height: 32px; background-color: #0d6efd; border: 3px solid transparent; cursor: pointer;" title="Bleu (#0d6efd)" onclick="selectColor('#0d6efd')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#0dcaf0" style="width: 32px; height: 32px; background-color: #0dcaf0; border: 3px solid transparent; cursor: pointer;" title="Cyan (#0dcaf0)" onclick="selectColor('#0dcaf0')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#198754" style="width: 32px; height: 32px; background-color: #198754; border: 3px solid transparent; cursor: pointer;" title="Vert (#198754)" onclick="selectColor('#198754')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#495057" style="width: 32px; height: 32px; background-color: #495057; border: 3px solid transparent; cursor: pointer;" title="Gris sombre (#495057)" onclick="selectColor('#495057')"></button>
+                                </div>
+
+                                <div class="vr d-none d-sm-block" style="height: 28px;"></div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <label for="customColorPicker" class="small text-muted mb-0">Couleur libre :</label>
+                                    <input type="color" class="form-control form-control-color border-0 p-0 shadow-sm" id="customColorPicker" value="#dc3545" title="Choisir une nuance sur-mesure" style="width: 32px; height: 32px; cursor: pointer; border-radius: 50%;" oninput="selectColor(this.value, true)" />
+                                    <span id="colorHexText" class="small font-monospace text-muted">#dc3545</span>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Live Preview Card -->
+                        <div class="card bg-body-tertiary border rounded-3 p-3 mb-4 shadow-sm">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-eye me-1 text-primary"></i> Aperçu en direct du badge
+                                </span>
+                                <span class="badge bg-secondary-subtle text-secondary small rounded-pill">Rendu usager & kiosque</span>
+                            </div>
+                            <div class="p-2">
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-2 fs-6 shadow-sm d-inline-flex align-items-center gap-2" id="previewBadge">
+                                    <span id="previewIconHolder" class="fs-5"><i class="fa-solid fa-triangle-exclamation" style="color: #dc3545"></i></span>
+                                    <span id="previewName" class="fw-semibold">Nom du motif</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Advanced HTML Toggle (Backwards compatibility & fine control) -->
+                        <div class="mb-4">
+                            <button class="btn btn-link btn-sm text-decoration-none text-muted p-0" type="button" data-bs-toggle="collapse" data-bs-target="#advancedHtmlCollapse" aria-expanded="false" aria-controls="advancedHtmlCollapse">
+                                <i class="fa-solid fa-code me-1"></i> Mode avancé : voir / modifier le code HTML brut
+                            </button>
+                            <div class="collapse mt-2" id="advancedHtmlCollapse">
+                                <div class="card card-body bg-body-tertiary p-3 border rounded-3">
+                                    <label for="rawHtmlTextarea" class="form-label small text-muted fw-semibold">Code HTML généré</label>
+                                    <textarea class="form-control font-monospace small" id="rawHtmlTextarea" rows="2" oninput="onRawHtmlInput(this.value)"></textarea>
+                                    <div class="form-text small text-muted">Vous pouvez éditer directement la balise HTML si vous souhaitez un style ou une structure particulière.</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-flex gap-2">
                             <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
                                 Create new warning type
@@ -128,10 +280,145 @@
             <%- include('../includes/footer.html') %>
 
         <script>
+          let selectedIcon = "fa-triangle-exclamation";
+          let selectedColor = "#dc3545";
+
           const elements = document.querySelectorAll('[id^="edit-"]');
           elements.forEach(function(element){
             element.addEventListener("click", editItem);
           });
+
+          function selectIcon(iconClass, isCustom = false) {
+            selectedIcon = iconClass.trim();
+            if (!selectedIcon.startsWith("fa-")) {
+              selectedIcon = "fa-" + selectedIcon;
+            }
+
+            // Update button states
+            document.querySelectorAll("#iconGrid .icon-btn").forEach(btn => {
+              if (btn.dataset.icon === selectedIcon) {
+                btn.classList.add("active", "border-primary", "bg-primary-subtle", "text-primary");
+                btn.classList.remove("btn-outline-secondary");
+              } else {
+                btn.classList.remove("active", "border-primary", "bg-primary-subtle", "text-primary");
+                btn.classList.add("btn-outline-secondary");
+              }
+            });
+
+            if (!isCustom) {
+              const customInput = document.getElementById("customIconInput");
+              if (customInput) customInput.value = "";
+            }
+
+            updatePreview();
+          }
+
+          function onCustomIconInput(value) {
+            if (value && value.trim().length > 0) {
+              selectIcon(value.trim(), true);
+            } else {
+              selectIcon("fa-triangle-exclamation", false);
+            }
+          }
+
+          function selectColor(colorHex, isCustom = false) {
+            selectedColor = colorHex;
+
+            // Highlight matching preset button
+            document.querySelectorAll("#colorPresets .color-btn").forEach(btn => {
+              if (btn.dataset.color.toLowerCase() === colorHex.toLowerCase()) {
+                btn.style.borderColor = "#212529";
+                btn.style.transform = "scale(1.15)";
+              } else {
+                btn.style.borderColor = "transparent";
+                btn.style.transform = "scale(1)";
+              }
+            });
+
+            // Update custom picker and hex text
+            const picker = document.getElementById("customColorPicker");
+            if (picker && !isCustom) picker.value = colorHex;
+
+            const hexText = document.getElementById("colorHexText");
+            if (hexText) hexText.innerText = colorHex;
+
+            updatePreview();
+          }
+
+          function updatePreview() {
+            const nameInput = document.getElementById("name");
+            const previewName = document.getElementById("previewName");
+            const previewIconHolder = document.getElementById("previewIconHolder");
+            const iconHidden = document.getElementById("icon");
+            const rawTextarea = document.getElementById("rawHtmlTextarea");
+
+            const displayName = (nameInput && nameInput.value.trim().length > 0) ? nameInput.value.trim() : "Nom du motif";
+            if (previewName) previewName.innerText = displayName;
+
+            // Build standard HTML tag
+            const generatedHtml = `<i class="fa-solid ${selectedIcon}" style="color: ${selectedColor}"></i>`;
+
+            if (previewIconHolder) {
+              previewIconHolder.innerHTML = generatedHtml;
+            }
+
+            if (iconHidden) {
+              iconHidden.value = generatedHtml;
+            }
+
+            if (rawTextarea && document.activeElement !== rawTextarea) {
+              rawTextarea.value = generatedHtml;
+            }
+          }
+
+          function onRawHtmlInput(htmlValue) {
+            const iconHidden = document.getElementById("icon");
+            if (iconHidden) iconHidden.value = htmlValue;
+
+            const previewIconHolder = document.getElementById("previewIconHolder");
+            if (previewIconHolder) previewIconHolder.innerHTML = htmlValue;
+
+            // Attempt to parse icon and color from custom input
+            parseAndApplyIconHtml(htmlValue, false);
+          }
+
+          function parseAndApplyIconHtml(htmlString, syncRaw = true) {
+            if (!htmlString) return;
+
+            // 1. Extract icon class
+            const iconMatch = htmlString.match(/fa-([a-z0-9-]+)/i);
+            if (iconMatch) {
+              const matchedIcon = iconMatch[0].toLowerCase();
+              // Exclude generic prefix matches
+              if (!["fa-solid", "fa-regular", "fa-duotone", "fa-brands", "fa-sm", "fa-lg", "fa-2x"].includes(matchedIcon)) {
+                selectedIcon = matchedIcon;
+
+                // Check if it exists in grid
+                const matchingBtn = document.querySelector(`#iconGrid [data-icon="${matchedIcon}"]`);
+                if (matchingBtn) {
+                  selectIcon(matchedIcon, false);
+                } else {
+                  const customInput = document.getElementById("customIconInput");
+                  if (customInput) customInput.value = matchedIcon;
+                  selectIcon(matchedIcon, true);
+                }
+              }
+            }
+
+            // 2. Extract color
+            const colorMatch = htmlString.match(/color:\s*([#a-zA-Z0-9]+)/i);
+            if (colorMatch && colorMatch[1]) {
+              selectedColor = colorMatch[1];
+              selectColor(selectedColor, true);
+            }
+
+            if (syncRaw) {
+              const rawTextarea = document.getElementById("rawHtmlTextarea");
+              if (rawTextarea) rawTextarea.value = htmlString;
+              const iconHidden = document.getElementById("icon");
+              if (iconHidden) iconHidden.value = htmlString;
+            }
+          }
 
           function editItem(event) {
             if (event) event.preventDefault();
@@ -142,7 +429,8 @@
             document.getElementById("name").value = this.dataset.name;
 
             const decodedIcon = this.dataset.description.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-            document.getElementById("icon").value = decodedIcon;
+            parseAndApplyIconHtml(decodedIcon, true);
+            updatePreview();
 
             document.getElementById("submitBtn").innerText = "Update warning type";
             document.getElementById("cancelEditBtn").style.display = "inline-block";
@@ -156,10 +444,17 @@
             document.getElementById("warningTypeForm").action = "/admin/warningtypes/create";
             document.getElementById("warningtypeid").value = "";
             document.getElementById("name").value = "";
-            document.getElementById("icon").value = "";
+            
+            selectIcon("fa-triangle-exclamation", false);
+            selectColor("#dc3545", false);
+            updatePreview();
+
             document.getElementById("submitBtn").innerText = "Create new warning type";
             document.getElementById("cancelEditBtn").style.display = "none";
           }
+
+          // Initial preview setup on page load
+          updatePreview();
         </script>
 
     </body>
