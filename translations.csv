@@ -158,7 +158,7 @@ nav.logout,Déconnexion,Log Out
 nav.mediator,Médiateur,Mediator
 nav.navigation,Navigation,Navigation
 nav.profile,Mon Profil,My Profile
-nav.report_bug,Signaler un bug ou une amélioration,Report Bug or Improvement
+nav.report_bug,Signaler un bug,Report a Bug
 nav.report_issue,Signaler une panne,Report Issue
 nav.switch_language,Changer de langue,Switch Language
 nav.switch_workspace,Changer d'espace,Switch Workspace
