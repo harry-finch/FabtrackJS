@@ -162,6 +162,36 @@
                         </div>
                     </div>
 
+                    <!-- Sorbonne Projects Plugin Card -->
+                    <div class="col">
+                        <div class="card card-dashboard h-100 border-0 shadow-sm <%= (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) ? '' : 'plugin-disabled' %>">
+                            <div class="card-body d-flex flex-column p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-box <%= (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) ? 'bg-primary-subtle text-primary' : 'bg-body-secondary text-secondary-emphasis' %> me-2">
+                                        <i class="fa-solid fa-landmark"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <h6 class="fw-bold mb-0 text-truncate">Projets Sorbonne</h6>
+                                            <% if (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) { %>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.65rem;">UFR</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.65rem;"><i class="fa-solid fa-power-off me-1"></i>Désactivé</span>
+                                            <% } %>
+                                        </div>
+                                        <small class="text-muted text-truncate">Entités & Facturation</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary small flex-grow-1">Suivi des consommations par entité/UFR et règlements</p>
+                                <div class="pt-2 mt-auto">
+                                    <a href="/admin/sorbonne" class="btn <%= (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) ? 'btn-outline-primary' : 'btn-outline-secondary' %> btn-sm w-100 rounded-pill">
+                                        <%= (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) ? 'Projets Sorbonne' : 'Projets Sorbonne (Désactivé)' %> <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- BookStack Plugin Card -->
                     <div class="col">
                         <div class="card card-dashboard h-100 border-0 shadow-sm <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? '' : 'plugin-disabled' %>">

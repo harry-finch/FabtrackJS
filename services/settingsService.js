@@ -46,6 +46,9 @@ const DEFAULT_SETTINGS = {
   // Workshop Plugin settings
   plugin_workshop_enabled: "true",
   workshop_projecttype_name: "Atelier",
+  // Sorbonne Projects Plugin settings
+  plugin_sorbonne_enabled: "true",
+  sorbonne_projecttype_name: "Sorbonne",
 };
 
 let cache = null;

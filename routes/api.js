@@ -108,6 +108,7 @@ router.get(
       teachingUnitId: true,
       unregisteredUeName: true,
       unregisteredUeContact: true,
+      sorbonneEntity: true,
     },
   });
   const userprojects = await prisma.userProject.findMany({
@@ -117,6 +118,9 @@ router.get(
       projectId: true,
     },
   });
+
+  const sorbonneService = require("../services/sorbonneService.js");
+  const sorbonneEntities = await sorbonneService.getDistinctEntities();
 
   let userlist = [];
   users.forEach(function (user) {
@@ -137,6 +141,7 @@ router.get(
       teachingUnitId: project.teachingUnitId,
       unregisteredUeName: project.unregisteredUeName,
       unregisteredUeContact: project.unregisteredUeContact,
+      sorbonneEntity: project.sorbonneEntity,
       group: "all",
     });
   });
@@ -146,9 +151,23 @@ router.get(
     userprojectlist.push({ id: userproject.id, userid: userproject.userId, projectid: userproject.projectId });
   });
 
-  let data = { userlist, projectlist, userprojectlist };
+  let data = { userlist, projectlist, userprojectlist, sorbonneEntities };
 
   res.json(data);
+  }),
+);
+
+// ******************************************************************************
+// Endpoint to fetch Sorbonne Entities / UFR for autocomplete
+// ******************************************************************************
+
+router.get(
+  "/sorbonne/entities",
+  isLoggedIn,
+  asyncHandler(async (req, res) => {
+    const sorbonneService = require("../services/sorbonneService.js");
+    const entities = await sorbonneService.getDistinctEntities();
+    res.json(entities);
   }),
 );
 

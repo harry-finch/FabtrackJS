@@ -202,6 +202,7 @@
               <h5 class="fw-bold mb-0 ms-1">Gestion des Plugins</h5>
             </div>
             <div class="card-body px-4 pt-2 pb-4">
+              <input type="hidden" name="plugin_settings_submitted" value="true">
               <p class="text-muted small mb-3">
                 Activez ou désactivez les fonctionnalités spécifiques selon le contexte de votre fablab. Les
                 modifications prennent effet immédiatement.
@@ -214,14 +215,16 @@
                   const isBookstack = plugin.id === 'bookstack';
                   const isRepairCafe = plugin.id === 'repaircafe';
                   const isWorkshop = plugin.id === 'workshop';
+                  const isSorbonne = plugin.id === 'sorbonne';
                   let isChecked = plugin.enabled;
                   if (isUe) isChecked = (settings.plugin_ue_enabled !== 'false');
                   if (isRfid) isChecked = (settings.plugin_rfid_enabled !== 'false');
                   if (isBookstack) isChecked = (settings.plugin_bookstack_enabled !== 'false');
                   if (isRepairCafe) isChecked = (settings.plugin_repaircafe_enabled !== 'false');
                   if (isWorkshop) isChecked = (settings.plugin_workshop_enabled !== 'false');
-                  const themeColor = isUe ? 'danger' : (isRfid ? 'info' : (isBookstack ? 'primary' : (isRepairCafe ? 'warning' : (isWorkshop ? 'success' : 'secondary'))));
-                  const iconClass = isUe ? 'fa-graduation-cap' : (isRfid ? 'fa-id-card' : (isBookstack ? 'fa-book' : (isRepairCafe ? 'fa-wrench' : (isWorkshop ? 'fa-chalkboard-user' : 'fa-plug'))));
+                  if (isSorbonne) isChecked = (settings.plugin_sorbonne_enabled !== 'false');
+                  const themeColor = isUe ? 'danger' : (isRfid ? 'info' : (isBookstack ? 'primary' : (isRepairCafe ? 'warning' : (isWorkshop ? 'success' : (isSorbonne ? 'primary' : 'secondary')))));
+                  const iconClass = isUe ? 'fa-graduation-cap' : (isRfid ? 'fa-id-card' : (isBookstack ? 'fa-book' : (isRepairCafe ? 'fa-wrench' : (isWorkshop ? 'fa-chalkboard-user' : (isSorbonne ? 'fa-landmark' : 'fa-plug')))));
                 %>
                   <% 
                     let configUrl = '';
@@ -229,6 +232,7 @@
                     else if (isBookstack) configUrl = '/admin/bookstack';
                     else if (isRepairCafe) configUrl = '/admin/repair-cafe';
                     else if (isWorkshop) configUrl = '/admin/workshops/manage';
+                    else if (isSorbonne) configUrl = '/admin/sorbonne';
                   %>
                   <div class="col-12">
                     <div class="p-3 border rounded-3 bg-body <%= !isChecked ? 'plugin-card-disabled' : '' %>" id="plugin_card_<%= plugin.id %>">
@@ -254,6 +258,8 @@
                                 <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">Repair Café</span>
                               <% } else if (isWorkshop) { %>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Ateliers & Badges</span>
+                              <% } else if (isSorbonne) { %>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Entités & UFR</span>
                               <% } %>
                               <% if (configUrl) { %>
                                 <a href="<%= configUrl %>" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ms-1" style="font-size: 0.72rem;">
@@ -278,7 +284,7 @@
                         </div>
                       </div>
 
-                      <% if (isRepairCafe || isWorkshop || isUe) { 
+                      <% if (isRepairCafe || isWorkshop || isUe || isSorbonne) { 
                         let settingKey = '';
                         let defaultVal = '';
                         let labelText = '';
@@ -298,6 +304,11 @@
                           defaultVal = settings.ue_projecttype_name || 'Academic';
                           labelText = 'Type de projet associé';
                           helpText = 'Déclenche la sélection des UE Sorbonne Université et la facturation consolidée.';
+                        } else if (isSorbonne) {
+                          settingKey = 'sorbonne_projecttype_name';
+                          defaultVal = settings.sorbonne_projecttype_name || 'Sorbonne';
+                          labelText = 'Type de projet associé';
+                          helpText = 'Déclenche le champ "Entité ou UFR" avec autocomplétion et suivi de la facturation des consommables.';
                         }
                       %>
                         <div class="mt-3 pt-3 border-top">

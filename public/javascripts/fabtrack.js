@@ -215,6 +215,13 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
         projectTypeEl.value = item.type;
         checkAcademicProjectType();
         checkRepairCafeProjectType();
+        if (typeof checkSorbonneProjectType === "function") {
+          checkSorbonneProjectType();
+        }
+      }
+      const sorbonneInput = document.getElementById("sorbonneEntity");
+      if (sorbonneInput) {
+        sorbonneInput.value = item.sorbonneEntity || "";
       }
       const ueSelect = document.getElementById("teachingUnitId");
       const unregisteredRow = document.getElementById("unregisteredUeRow");
@@ -467,6 +474,76 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     updateDynamicProjectFields();
   }
 
+  const sorbonneRow = document.getElementById("sorbonneRow");
+  const sorbonneInput = document.getElementById("sorbonneEntity");
+
+  function checkSorbonneProjectType() {
+    if (!projectTypeSelect || !sorbonneRow) return;
+    const isPluginEnabled = window.sorbonneConfig ? window.sorbonneConfig.enabled : false;
+    if (!isPluginEnabled) {
+      sorbonneRow.style.display = "none";
+      if (sorbonneInput) {
+        sorbonneInput.removeAttribute("required");
+        sorbonneInput.value = "";
+      }
+      return;
+    }
+    const selectedOpt = projectTypeSelect.options[projectTypeSelect.selectedIndex];
+    const selectedText = selectedOpt ? (selectedOpt.text || "").trim().toLowerCase() : "";
+    const configuredName = (window.sorbonneConfig && window.sorbonneConfig.projectTypeName)
+      ? window.sorbonneConfig.projectTypeName.trim().toLowerCase()
+      : "sorbonne";
+
+    const isSorbonne =
+      selectedOpt &&
+      (selectedText === configuredName ||
+        selectedText.includes("sorbonne"));
+
+    if (isSorbonne) {
+      sorbonneRow.style.display = "";
+      if (sorbonneInput) sorbonneInput.setAttribute("required", "required");
+    } else {
+      sorbonneRow.style.display = "none";
+      if (sorbonneInput) {
+        sorbonneInput.removeAttribute("required");
+        sorbonneInput.value = "";
+      }
+    }
+  }
+
+  // Autocomplete for Sorbonne Entities/UFR
+  if (sorbonneInput && typeof autocomplete === "function") {
+    let sorbonneEntities = data.sorbonneEntities || [];
+    autocomplete({
+      input: sorbonneInput,
+      showOnFocus: true,
+      minLength: 0,
+      emptyMsg: "Nouvelle entité / UFR",
+      fetch: function (text, callback) {
+        text = text.toLowerCase().trim();
+        const matches = sorbonneEntities.filter(function (candidate) {
+          return candidate.toLowerCase().includes(text);
+        });
+        callback(matches.map((name) => ({ label: name, value: name })));
+      },
+      render: function (item, value) {
+        const div = document.createElement("div");
+        div.className = "autocomplete-item py-1 px-2";
+        if (value && allowedChars.test(value)) {
+          const regex = new RegExp(value, "gi");
+          div.innerHTML = '<i class="fa-solid fa-landmark me-2 text-primary"></i>' +
+            item.label.replace(regex, (match) => '<strong>' + match + '</strong>');
+        } else {
+          div.innerHTML = '<i class="fa-solid fa-landmark me-2 text-primary"></i>' + item.label;
+        }
+        return div;
+      },
+      onSelect: function (item) {
+        sorbonneInput.value = item.value;
+      },
+    });
+  }
+
   if (ueSelect) {
     ueSelect.addEventListener("change", checkUnregisteredUe);
   }
@@ -475,12 +552,14 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     projectTypeSelect.addEventListener("change", () => {
       checkAcademicProjectType();
       updateDynamicProjectFields();
+      checkSorbonneProjectType();
     });
   }
 
   // Initial check on load
   checkAcademicProjectType();
   updateDynamicProjectFields();
+  checkSorbonneProjectType();
 })();
 
 const activityManager = document.getElementById("activityManager");

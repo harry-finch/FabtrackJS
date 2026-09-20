@@ -75,6 +75,7 @@ model Project {
   teachingUnitId        Int?
   unregisteredUeName    String?       @db.VarChar(255)
   unregisteredUeContact String?       @db.VarChar(255)
+  sorbonneEntity        String?       @db.VarChar(255)
   createdAt             DateTime      @default(now())
   active         Boolean       @default(true)
 
@@ -149,6 +150,7 @@ model History {
   teachingUnitId        Int?
   unregisteredUeName    String?       @db.VarChar(255)
   unregisteredUeContact String?       @db.VarChar(255)
+  sorbonneEntity        String?       @db.VarChar(255)
   comments              String?       @db.VarChar(255)
   workspaceId    Int?
 
@@ -204,6 +206,11 @@ model Activity {
   expectedReturnAt   DateTime?
   returnedAt         DateTime?
   returnNotes        String?      @db.VarChar(255)
+
+  // Sorbonne / Project billing settlement fields
+  settled   Boolean   @default(false)
+  settledAt DateTime?
+  settledBy String?   @db.VarChar(255)
 }
 
 // Categories within a workspace (e.g., electronics, woodworking)

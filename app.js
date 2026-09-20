@@ -12,6 +12,7 @@ const helmet = require("helmet");
 const fs = require("fs");
 
 const loadPlugins = require("./core/pluginLoader");
+loadPlugins();
 const hookManager = require("./core/HookManager");
 const settingsService = require("./services/settingsService");
 const dateService = require("./services/dateService");
@@ -214,6 +215,11 @@ app.use(async (req, res, next) => {
     hookManager.setPluginEnabled("workshop", isWorkshopEnabled);
     res.locals.isPluginWorkshopEnabled = isWorkshopEnabled;
     res.locals.workshopProjectTypeName = settings.workshop_projecttype_name || "Atelier";
+
+    const isSorbonneEnabled = settings.plugin_sorbonne_enabled !== "false";
+    hookManager.setPluginEnabled("sorbonne", isSorbonneEnabled);
+    res.locals.isPluginSorbonneEnabled = isSorbonneEnabled;
+    res.locals.sorbonneProjectTypeName = settings.sorbonne_projecttype_name || "Sorbonne";
 
     // Apply dynamic session timeout if configured
     if (req.session && req.session.cookie) {

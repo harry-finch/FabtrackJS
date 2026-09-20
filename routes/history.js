@@ -61,7 +61,7 @@ router.post(
   "/create",
   validateBody(createVisitSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
-    let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId, unregisteredUeName, unregisteredUeContact, repairObject, workshopId } = req.body;
+    let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId, unregisteredUeName, unregisteredUeContact, repairObject, workshopId, sorbonneEntity } = req.body;
 
     const parsedUserId = Number(userid);
     if (!parsedUserId || isNaN(parsedUserId)) {
@@ -84,6 +84,7 @@ router.post(
     }
 
     const cleanRepairObject = repairObject && repairObject.trim() ? repairObject.trim() : null;
+    const cleanSorbonneEntity = sorbonneEntity && sorbonneEntity.trim() ? sorbonneEntity.trim() : null;
     let parsedWorkshopId = null;
     if (workshopId && workshopId !== "null" && workshopId !== "") {
       const num = Number(workshopId);
@@ -159,6 +160,7 @@ router.post(
               teachingUnitId: parsedTeachingUnitId,
               unregisteredUeName: parsedUnregisteredUeName,
               unregisteredUeContact: parsedUnregisteredUeContact,
+              sorbonneEntity: cleanSorbonneEntity,
             },
           });
           projectid = project.id;
@@ -189,6 +191,32 @@ router.post(
           });
         } catch (e) {
           console.error("Error updating project unregistered UE:", e);
+        }
+      }
+
+      // Update project sorbonneEntity if provided
+      if (cleanSorbonneEntity && projectid && projectid !== "null" && projectid !== "") {
+        try {
+          await prisma.project.update({
+            where: { id: Number(projectid) },
+            data: {
+              sorbonneEntity: cleanSorbonneEntity,
+            },
+          });
+        } catch (e) {
+          console.error("Error updating project sorbonneEntity:", e);
+        }
+      }
+
+      // Inherit sorbonneEntity for history entry if not directly provided
+      let resolvedSorbonneEntity = cleanSorbonneEntity;
+      if (!resolvedSorbonneEntity && projectid && projectid !== "null" && projectid !== "") {
+        const existingProj = await prisma.project.findUnique({
+          where: { id: Number(projectid) },
+          select: { sorbonneEntity: true },
+        });
+        if (existingProj && existingProj.sorbonneEntity) {
+          resolvedSorbonneEntity = existingProj.sorbonneEntity;
         }
       }
 
@@ -226,6 +254,7 @@ router.post(
           teachingUnitId: parsedTeachingUnitId,
           unregisteredUeName: parsedUnregisteredUeName,
           unregisteredUeContact: parsedUnregisteredUeContact,
+          sorbonneEntity: resolvedSorbonneEntity,
           comments: comments || null,
           workspaceId: activeWorkspaceId,
           repairObject: cleanRepairObject,
@@ -499,13 +528,21 @@ router.post(
       if (consumed) {
         const totalPrice = Number((Number(consumed.cost) * qty).toFixed(2));
 
-        // Check if this history entry is associated with a Teaching Unit (UE)
+        // Check if this history entry is associated with a Teaching Unit (UE) or a Sorbonne Project
         let isCoveredByUe = false;
         let ueInfo = null;
+        let isCoveredBySorbonne = false;
+        let sorbonneEntityName = null;
+
         if (histId) {
           const histEntry = await prisma.history.findUnique({
             where: { id: histId },
-            include: { teachingUnit: true },
+            include: {
+              teachingUnit: true,
+              userproject: {
+                include: { project: true },
+              },
+            },
           });
           if (histEntry) {
             if (histEntry.teachingUnit) {
@@ -519,11 +556,21 @@ router.post(
                 isUnregistered: true,
               };
             }
+
+            if (histEntry.sorbonneEntity) {
+              isCoveredBySorbonne = true;
+              sorbonneEntityName = histEntry.sorbonneEntity;
+            } else if (histEntry.userproject && histEntry.userproject.project && histEntry.userproject.project.sorbonneEntity) {
+              isCoveredBySorbonne = true;
+              sorbonneEntityName = histEntry.userproject.project.sorbonneEntity;
+            }
           }
         }
 
-        // Decrement user balance ONLY if NOT covered by a Teaching Unit (UE)
-        if (usrId && !isCoveredByUe) {
+        const isCovered = isCoveredByUe || isCoveredBySorbonne;
+
+        // Decrement user balance ONLY if NOT covered by UE or Sorbonne Project
+        if (usrId && !isCovered) {
           await prisma.user.update({
             where: { id: usrId },
             data: { balance: { decrement: totalPrice } },
@@ -541,7 +588,9 @@ router.post(
         });
         recordedCount++;
 
-        if (isCoveredByUe) {
+        if (isCoveredBySorbonne) {
+          req.session.notification = `Success: Activité enregistrée. Prise en charge Projet Sorbonne (${sorbonneEntityName}) : solde usager non débité (${totalPrice.toFixed(2)} € facturables à l'entité).`;
+        } else if (isCoveredByUe) {
           if (ueInfo && ueInfo.isUnregistered) {
             req.session.notification = `Success: Activité enregistrée. Prise en charge UE non-enregistrée (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € en attente de régularisation).`;
           } else {

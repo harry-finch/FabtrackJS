@@ -68,6 +68,7 @@ CREATE TABLE `Project` (
     `teachingUnitId` INTEGER NULL,
     `unregisteredUeName` VARCHAR(255) NULL,
     `unregisteredUeContact` VARCHAR(255) NULL,
+    `sorbonneEntity` VARCHAR(255) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `active` BOOLEAN NOT NULL DEFAULT true,
 
@@ -140,6 +141,7 @@ CREATE TABLE `History` (
     `teachingUnitId` INTEGER NULL,
     `unregisteredUeName` VARCHAR(255) NULL,
     `unregisteredUeContact` VARCHAR(255) NULL,
+    `sorbonneEntity` VARCHAR(255) NULL,
     `comments` VARCHAR(255) NULL,
     `workspaceId` INTEGER NULL,
     `repairObject` VARCHAR(255) NULL,
@@ -173,6 +175,9 @@ CREATE TABLE `Activity` (
     `expectedReturnAt` DATETIME(3) NULL,
     `returnedAt` DATETIME(3) NULL,
     `returnNotes` VARCHAR(255) NULL,
+    `settled` BOOLEAN NOT NULL DEFAULT false,
+    `settledAt` DATETIME(3) NULL,
+    `settledBy` VARCHAR(255) NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

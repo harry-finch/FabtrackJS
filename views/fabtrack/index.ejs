@@ -180,6 +180,19 @@
                         </div>
                     </div>
                     <% } %>
+
+                    <% if (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) { %>
+                    <div class="row" id="sorbonneRow" style="display: none;">
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="sorbonneEntity" name="sorbonneEntity" placeholder="ex: UFR de Physique, LIP6, UFR 929..." autocomplete="off">
+                                <label for="sorbonneEntity">
+                                    <i class="fa-solid fa-landmark text-primary me-1"></i> Entité ou UFR de rattachement
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
                     <div class="row">
                         <div class="col">
                             <div class="form-floating mb-3">
@@ -825,6 +838,10 @@
             window.ueConfig = {
                 enabled: <%= (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) ? 'true' : 'false' %>,
                 projectTypeName: "<%= typeof ueProjectTypeName !== 'undefined' ? ueProjectTypeName : 'Academic' %>"
+            };
+            window.sorbonneConfig = {
+                enabled: <%= (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) ? 'true' : 'false' %>,
+                projectTypeName: "<%= typeof sorbonneProjectTypeName !== 'undefined' ? sorbonneProjectTypeName : 'Sorbonne' %>"
             };
         </script>
 

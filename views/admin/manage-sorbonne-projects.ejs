@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Gestion des Projets Sorbonne et Facturation par Entité/UFR" />
+    <title><%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %> - Projets Sorbonne</title>
+
+    <%- include('../includes/pagehead.html') %>
+    <style>
+      .kpi-card {
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+      }
+    </style>
+  </head>
+
+  <body class="bg-body-tertiary py-4">
+    <%- include('../includes/light-dark.html') %>
+
+    <main class="main-container">
+      <%- include('../includes/header.html') %>
+
+      <!-- Page Header -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fa-solid fa-landmark"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0">Projets Sorbonne & Facturation</h4>
+                <% if (typeof isPluginSorbonneEnabled !== 'undefined' && !isPluginSorbonneEnabled) { %>
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill" style="font-size: 0.72rem;">
+                    <i class="fa-solid fa-power-off me-1"></i>Plugin désactivé
+                  </span>
+                <% } else { %>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
+                    <i class="fa-solid fa-landmark me-1"></i>Sorbonne Université
+                  </span>
+                <% } %>
+              </div>
+              <p class="text-muted small mb-0">Rattachement par Entité / UFR, suivi des consommables engagés et règlement des facturations</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
+            </a>
+            <a href="/admin/sorbonne/export-csv?entity=<%= encodeURIComponent(selectedEntity) %>&status=<%= encodeURIComponent(selectedStatus) %>&startDate=<%= encodeURIComponent(startDate) %>&endDate=<%= encodeURIComponent(endDate) %>" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+              <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disabled notice banner -->
+      <% if (typeof isPluginSorbonneEnabled !== 'undefined' && !isPluginSorbonneEnabled) { %>
+      <div class="alert alert-secondary border-0 shadow-sm rounded-3 d-flex align-items-center justify-content-between mb-4 px-4 py-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="icon-box bg-secondary-subtle text-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 1.1rem;">
+            <i class="fa-solid fa-power-off"></i>
+          </div>
+          <div>
+            <div class="fw-semibold small">Plugin Projets Sorbonne actuellement désactivé</div>
+            <div class="text-muted small">Le champ d'entité/UFR et le suivi associé sont inactifs sur la borne d'accueil. Vous pouvez réactiver le plugin dans la <a href="/admin/settings" class="alert-link">configuration générale</a>.</div>
+          </div>
+        </div>
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1"><i class="fa-solid fa-power-off me-1"></i>Plugin Désactivé</span>
+      </div>
+      <% } %>
+
+      <!-- KPI Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+          <div class="card kpi-card h-100 shadow-sm border-0 <%= pendingTotalCost > 0 ? 'bg-warning-subtle' : 'bg-body-secondary' %>">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small <%= pendingTotalCost > 0 ? 'text-warning-emphasis' : 'text-muted' %> fw-semibold text-uppercase">Encours à régler</span>
+                <i class="fa-solid fa-clock <%= pendingTotalCost > 0 ? 'text-warning' : 'text-muted' %> fs-5"></i>
+              </div>
+              <div class="fs-4 fw-bold <%= pendingTotalCost > 0 ? 'text-warning-emphasis' : 'text-body' %>">
+                <%= pendingTotalCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %>
+              </div>
+              <div class="small <%= pendingTotalCost > 0 ? 'text-warning-emphasis' : 'text-muted' %>">à facturer aux entités / UFR</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="card kpi-card h-100 shadow-sm border-0 bg-success-subtle">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-success-emphasis fw-semibold text-uppercase">Total Réglé</span>
+                <i class="fa-solid fa-circle-check text-success fs-5"></i>
+              </div>
+              <div class="fs-4 fw-bold text-success-emphasis">
+                <%= settledTotalCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %>
+              </div>
+              <div class="small text-success-emphasis">factures / consommations soldées</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="card kpi-card h-100 shadow-sm border-0 bg-body-secondary">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted fw-semibold text-uppercase">Entités / UFR</span>
+                <i class="fa-solid fa-landmark text-primary fs-5"></i>
+              </div>
+              <div class="fs-4 fw-bold text-primary"><%= activeEntitiesCount %></div>
+              <div class="small text-muted">structures répertoriées</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="card kpi-card h-100 shadow-sm border-0 bg-body-secondary">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted fw-semibold text-uppercase">Volume Total</span>
+                <i class="fa-solid fa-coins text-secondary fs-5"></i>
+              </div>
+              <div class="fs-4 fw-bold text-body">
+                <%= grandTotalCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %>
+              </div>
+              <div class="small text-muted"><%= activities.length %> consommation(s) enregistrée(s)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Form -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+          <form method="GET" action="/admin/sorbonne" class="row g-2 align-items-center">
+            <div class="col-md-4 col-sm-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-body-secondary border-0"><i class="fa-solid fa-landmark"></i></span>
+                <select name="entity" class="form-select border-0 bg-body-secondary">
+                  <option value="all" <%= selectedEntity === 'all' ? 'selected' : '' %>>Toutes les entités / UFR</option>
+                  <% entities.forEach(function(e) { %>
+                    <option value="<%= e %>" <%= selectedEntity.toLowerCase() === e.toLowerCase() ? 'selected' : '' %>><%= e %></option>
+                  <% }); %>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-body-secondary border-0"><i class="fa-solid fa-filter"></i></span>
+                <select name="status" class="form-select border-0 bg-body-secondary">
+                  <option value="all" <%= selectedStatus === 'all' ? 'selected' : '' %>>Tous les statuts</option>
+                  <option value="pending" <%= selectedStatus === 'pending' ? 'selected' : '' %>>À régler uniquement</option>
+                  <option value="settled" <%= selectedStatus === 'settled' ? 'selected' : '' %>>Réglé uniquement</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+              <input type="date" name="startDate" value="<%= startDate %>" class="form-control form-control-sm border-0 bg-body-secondary" title="Date de début">
+            </div>
+
+            <div class="col-md-2 col-sm-4">
+              <input type="date" name="endDate" value="<%= endDate %>" class="form-control form-control-sm border-0 bg-body-secondary" title="Date de fin">
+            </div>
+
+            <div class="col-md-1 col-sm-4 d-flex gap-1">
+              <button type="submit" class="btn btn-primary btn-sm rounded-pill w-100" title="Appliquer les filtres">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+              <% if (selectedEntity !== 'all' || selectedStatus !== 'all' || startDate || endDate) { %>
+                <a href="/admin/sorbonne" class="btn btn-outline-secondary btn-sm rounded-pill" title="Réinitialiser">
+                  <i class="fa-solid fa-xmark"></i>
+                </a>
+              <% } %>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Action banner for single entity batch settlement -->
+      <% if (selectedEntity !== 'all') { %>
+        <% const currentEntitySummary = entitySummary.find(s => s.entity.toLowerCase() === selectedEntity.toLowerCase()); %>
+        <% if (currentEntitySummary && currentEntitySummary.pendingCost > 0) { %>
+        <div class="alert alert-warning border-0 shadow-sm rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 px-4 py-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-box bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+              <div class="fw-bold">Règlement groupé pour « <%= currentEntitySummary.entity %> »</div>
+              <div class="small text-muted">
+                Encours en attente : <strong><%= currentEntitySummary.pendingCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %></strong> (<%= currentEntitySummary.pendingCount %> consommation(s))
+              </div>
+            </div>
+          </div>
+          <form method="POST" action="/admin/sorbonne/settle-entity" onsubmit="return confirm('Confirmez-vous le règlement de toutes les consommations en attente pour <%= currentEntitySummary.entity %> ?');">
+            <input type="hidden" name="entity" value="<%= currentEntitySummary.entity %>">
+            <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+              <i class="fa-solid fa-check-double me-1"></i> Tout marquer comme réglé pour cette entité
+            </button>
+          </form>
+        </div>
+        <% } %>
+      <% } %>
+
+      <!-- Nav Tabs -->
+      <ul class="nav nav-tabs mb-3" id="sorbonneTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active fw-semibold" id="tab-log" data-bs-toggle="tab" data-bs-target="#panel-log" type="button" role="tab">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> Journal des consommations (<%= activities.length %>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-semibold" id="tab-summary" data-bs-toggle="tab" data-bs-target="#panel-summary" type="button" role="tab">
+            <i class="fa-solid fa-chart-pie me-1"></i> Synthèse par Entité / UFR (<%= entitySummary.length %>)
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="sorbonneTabsContent">
+        <!-- TAB 1: CONSUMPTIONS LOG -->
+        <div class="tab-pane fade show active" id="panel-log" role="tabpanel">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3 text-nowrap" style="width: 100px;">Date</th>
+                      <th style="max-width: 140px;">Entité / UFR</th>
+                      <th style="max-width: 150px;">Projet</th>
+                      <th style="max-width: 140px;">Usager</th>
+                      <th style="max-width: 150px;">Consommable</th>
+                      <th class="text-end text-nowrap" style="width: 80px;">Quantité</th>
+                      <th class="text-end text-nowrap" style="width: 85px;">Total</th>
+                      <th class="text-center text-nowrap" style="width: 105px;">Statut</th>
+                      <th class="text-end pe-3 text-nowrap" style="width: 90px;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (activities.length === 0) { %>
+                    <tr>
+                      <td colspan="9" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-inbox fa-2x mb-2 d-block opacity-50"></i>
+                        Aucune consommation trouvée pour ces critères de recherche.
+                      </td>
+                    </tr>
+                    <% } %>
+                    <% activities.forEach(function(act) { %>
+                    <tr class="<%= act.settled ? 'table-light text-muted' : '' %>">
+                      <td class="ps-3 text-nowrap small">
+                        <%= act.formattedDate %>
+                      </td>
+                      <td class="text-truncate" style="max-width: 140px;">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill text-truncate d-inline-block" style="max-width: 100%;" title="<%= act.sorbonneEntity %>">
+                          <i class="fa-solid fa-landmark me-1"></i><%= act.sorbonneEntity %>
+                        </span>
+                      </td>
+                      <td class="small text-truncate" style="max-width: 150px;">
+                        <% if (act.projectUrl && act.projectUrl !== 'N/A') { %>
+                          <% if (act.projectUrl.startsWith('http')) { %>
+                            <a href="<%= act.projectUrl %>" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="<%= act.projectUrl %>">
+                              <%= act.projectUrl.length > 25 ? act.projectUrl.substring(0, 22) + '...' : act.projectUrl %>
+                              <i class="fa-solid fa-arrow-up-right-from-square ms-1 small"></i>
+                            </a>
+                          <% } else { %>
+                            <span class="text-truncate d-inline-block" style="max-width: 100%;" title="<%= act.projectUrl %>"><%= act.projectUrl %></span>
+                          <% } %>
+                        <% } else { %>
+                          <span class="text-muted fst-italic">Sans titre</span>
+                        <% } %>
+                      </td>
+                      <td class="small" style="max-width: 140px;">
+                        <div class="fw-semibold text-truncate" title="<%= act.userName %>"><%= act.userName %></div>
+                        <% if (act.userEmail) { %>
+                          <div class="text-muted text-truncate" style="font-size: 0.74rem;" title="<%= act.userEmail %>"><%= act.userEmail %></div>
+                        <% } %>
+                      </td>
+                      <td class="small text-truncate" style="max-width: 150px;">
+                        <span class="fw-medium text-truncate d-inline-block" style="max-width: 100%;" title="<%= act.consumableName %>"><%= act.consumableName %></span>
+                      </td>
+                      <td class="text-end small text-nowrap">
+                        <%= act.quantity %> <%= act.consumableUnit %>
+                      </td>
+                      <td class="text-end fw-bold small text-nowrap">
+                        <%= act.totalCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %>
+                      </td>
+                      <td class="text-center text-nowrap">
+                        <% if (act.settled) { %>
+                          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1" title="Réglé le <%= act.settledAtFormatted %> par <%= act.settledBy || 'Staff' %>">
+                            <i class="fa-solid fa-circle-check me-1"></i>Réglé
+                          </span>
+                          <% if (act.settledBy) { %>
+                            <div class="text-muted" style="font-size: 0.72rem;"><%= act.settledBy %></div>
+                          <% } %>
+                        <% } else { %>
+                          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
+                            <i class="fa-solid fa-clock me-1"></i>À régler
+                          </span>
+                        <% } %>
+                      </td>
+                      <td class="text-end pe-3 text-nowrap">
+                        <form method="POST" action="/admin/sorbonne/toggle-settled/<%= act.id %>" class="d-inline">
+                          <% if (act.settled) { %>
+                            <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill px-2 py-0" style="font-size: 0.78rem;" title="Basculer vers Non réglé">
+                              <i class="fa-solid fa-rotate-left me-1"></i>Annuler
+                            </button>
+                          <% } else { %>
+                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-2 py-0" style="font-size: 0.78rem;" title="Marquer comme réglé">
+                              <i class="fa-solid fa-check me-1"></i>Régler
+                            </button>
+                          <% } %>
+                        </form>
+                      </td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: ENTITY SUMMARY -->
+        <div class="tab-pane fade" id="panel-summary" role="tabpanel">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Entité / UFR</th>
+                      <th class="text-center">Projets</th>
+                      <th class="text-center">Usagers</th>
+                      <th class="text-center">Consommations</th>
+                      <th class="text-end">Encours à régler</th>
+                      <th class="text-end">Total Réglé</th>
+                      <th class="text-end">Volume Total</th>
+                      <th class="text-end pe-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (entitySummary.length === 0) { %>
+                    <tr>
+                      <td colspan="8" class="text-center text-muted py-4">
+                        Aucune synthèse disponible.
+                      </td>
+                    </tr>
+                    <% } %>
+                    <% entitySummary.forEach(function(st) { %>
+                    <tr>
+                      <td class="ps-3 fw-bold text-primary">
+                        <i class="fa-solid fa-landmark me-2 text-primary opacity-75"></i><%= st.entity %>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-body-secondary text-body rounded-pill"><%= st.projectsCount %></span>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-body-secondary text-body rounded-pill"><%= st.usersCount %></span>
+                      </td>
+                      <td class="text-center">
+                        <%= st.totalCount %>
+                        <% if (st.pendingCount > 0) { %>
+                          <span class="badge bg-warning text-dark rounded-pill ms-1" title="<%= st.pendingCount %> en attente"><%= st.pendingCount %></span>
+                        <% } %>
+                      </td>
+                      <td class="text-end fw-bold <%= st.pendingCost > 0 ? 'text-warning-emphasis' : 'text-muted' %>">
+                        <%= st.pendingCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %>
+                      </td>
+                      <td class="text-end text-success fw-semibold">
+                        <%= st.settledCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %>
+                      </td>
+                      <td class="text-end fw-bold">
+                        <%= st.totalCost.toFixed(2) %> <%= typeof currencySymbol !== 'undefined' ? currencySymbol : '€' %>
+                      </td>
+                      <td class="text-end pe-3 text-nowrap">
+                        <div class="d-inline-flex gap-1">
+                          <a href="/admin/sorbonne?entity=<%= encodeURIComponent(st.entity) %>" class="btn btn-outline-primary btn-sm rounded-pill px-2 py-0" style="font-size: 0.78rem;" title="Voir le détail">
+                            <i class="fa-solid fa-list me-1"></i>Filtrer
+                          </a>
+                          <% if (st.pendingCost > 0) { %>
+                          <form method="POST" action="/admin/sorbonne/settle-entity" class="d-inline" onsubmit="return confirm('Confirmez-vous le règlement de toutes les consommations en attente pour <%= st.entity %> ?');">
+                            <input type="hidden" name="entity" value="<%= st.entity %>">
+                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-2 py-0" style="font-size: 0.78rem;" title="Tout solder">
+                              <i class="fa-solid fa-check-double me-1"></i>Solder
+                            </button>
+                          </form>
+                          <% } %>
+                        </div>
+                      </td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <%- include('../includes/footer.html') %>
+  </body>
+</html>

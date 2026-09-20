@@ -79,6 +79,10 @@ router.get(
   clearNotification,
   asyncHandler(async (req, res) => {
     const settings = await settingsService.getSettings();
+    const loadPlugins = require("../../core/pluginLoader.js");
+    if (hookManager.getAllPlugins().length === 0) {
+      loadPlugins();
+    }
     const plugins = hookManager.getAllPlugins();
     const projecttypes = await prisma.projecttype.findMany({ orderBy: { name: "asc" } });
 
@@ -148,26 +152,32 @@ router.post(
       updates.platform_favicon_path = "/uploads/" + req.files["favicon"][0].filename;
     }
 
-    // Plugins management
-    const isUeEnabled = req.body.plugin_ue_enabled === "true" || req.body.plugin_ue_enabled === "on";
-    updates.plugin_ue_enabled = isUeEnabled ? "true" : "false";
-    hookManager.setPluginEnabled("ue", isUeEnabled);
+    // Plugins management - ONLY process if the plugins section was present in the submitted form
+    if (req.body.plugin_settings_submitted === "true") {
+      const isUeEnabled = req.body.plugin_ue_enabled === "true" || req.body.plugin_ue_enabled === "on";
+      updates.plugin_ue_enabled = isUeEnabled ? "true" : "false";
+      hookManager.setPluginEnabled("ue", isUeEnabled);
 
-    const isRfidEnabled = req.body.plugin_rfid_enabled === "true" || req.body.plugin_rfid_enabled === "on";
-    updates.plugin_rfid_enabled = isRfidEnabled ? "true" : "false";
-    hookManager.setPluginEnabled("rfid", isRfidEnabled);
+      const isRfidEnabled = req.body.plugin_rfid_enabled === "true" || req.body.plugin_rfid_enabled === "on";
+      updates.plugin_rfid_enabled = isRfidEnabled ? "true" : "false";
+      hookManager.setPluginEnabled("rfid", isRfidEnabled);
 
-    const isBookstackEnabled = req.body.plugin_bookstack_enabled === "true" || req.body.plugin_bookstack_enabled === "on";
-    updates.plugin_bookstack_enabled = isBookstackEnabled ? "true" : "false";
-    hookManager.setPluginEnabled("bookstack", isBookstackEnabled);
+      const isBookstackEnabled = req.body.plugin_bookstack_enabled === "true" || req.body.plugin_bookstack_enabled === "on";
+      updates.plugin_bookstack_enabled = isBookstackEnabled ? "true" : "false";
+      hookManager.setPluginEnabled("bookstack", isBookstackEnabled);
 
-    const isRepairCafeEnabled = req.body.plugin_repaircafe_enabled === "true" || req.body.plugin_repaircafe_enabled === "on";
-    updates.plugin_repaircafe_enabled = isRepairCafeEnabled ? "true" : "false";
-    hookManager.setPluginEnabled("repaircafe", isRepairCafeEnabled);
+      const isRepairCafeEnabled = req.body.plugin_repaircafe_enabled === "true" || req.body.plugin_repaircafe_enabled === "on";
+      updates.plugin_repaircafe_enabled = isRepairCafeEnabled ? "true" : "false";
+      hookManager.setPluginEnabled("repaircafe", isRepairCafeEnabled);
 
-    const isWorkshopEnabled = req.body.plugin_workshop_enabled === "true" || req.body.plugin_workshop_enabled === "on";
-    updates.plugin_workshop_enabled = isWorkshopEnabled ? "true" : "false";
-    hookManager.setPluginEnabled("workshop", isWorkshopEnabled);
+      const isWorkshopEnabled = req.body.plugin_workshop_enabled === "true" || req.body.plugin_workshop_enabled === "on";
+      updates.plugin_workshop_enabled = isWorkshopEnabled ? "true" : "false";
+      hookManager.setPluginEnabled("workshop", isWorkshopEnabled);
+
+      const isSorbonneEnabled = req.body.plugin_sorbonne_enabled === "true" || req.body.plugin_sorbonne_enabled === "on";
+      updates.plugin_sorbonne_enabled = isSorbonneEnabled ? "true" : "false";
+      hookManager.setPluginEnabled("sorbonne", isSorbonneEnabled);
+    }
 
     // Associated project type names for plugins
     if (req.body.repaircafe_projecttype_name !== undefined) {
@@ -179,12 +189,17 @@ router.post(
     if (req.body.ue_projecttype_name !== undefined) {
       updates.ue_projecttype_name = req.body.ue_projecttype_name.trim() || "Academic";
     }
+    if (req.body.sorbonne_projecttype_name !== undefined) {
+      updates.sorbonne_projecttype_name = req.body.sorbonne_projecttype_name.trim() || "Sorbonne";
+    }
 
     await settingsService.updateSettings(updates);
 
     // Automatically ensure project types exist in the database
     await repairCafeService.ensureProjectType();
     await workshopService.ensureProjectType();
+    const sorbonneService = require("../../services/sorbonneService");
+    await sorbonneService.ensureProjectType();
     if (updates.ue_projecttype_name) {
       const existingUe = await prisma.projecttype.findFirst({
         where: { name: { equals: updates.ue_projecttype_name } },

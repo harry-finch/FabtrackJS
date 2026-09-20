@@ -18,6 +18,7 @@ const createVisitSchema = z.object({
   unregisteredUeContact: z.string().trim().optional().nullable(),
   repairObject: z.string().trim().optional().nullable(),
   workshopId: z.string().optional().nullable(),
+  sorbonneEntity: z.string().trim().max(255).optional().nullable(),
 });
 
 const creditSchema = z.object({
