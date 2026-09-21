@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Importation groupée d'historique et de séances d'enseignement" />
+  <title><%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %> - Import Enseignements (CSV)</title>
+
+  <%- include('../includes/pagehead.html') %>
+  <style>
+    .dropzone-box {
+      border: 2px dashed var(--bs-border-color);
+      border-radius: 1rem;
+      background-color: var(--bs-tertiary-bg);
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+    }
+    .dropzone-box:hover, .dropzone-box.dragover {
+      border-color: var(--bs-primary);
+      background-color: var(--bs-primary-subtle);
+    }
+    .table-scrollable {
+      max-height: 480px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+
+<body class="d-flex justify-content-center bg-body-tertiary py-4">
+  <%- include('../includes/light-dark.html') %>
+
+  <main class="main-container">
+    <%- include('../includes/header.html') %>
+
+    <!-- Page Header -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+            <i class="fa-solid fa-file-arrow-up"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <h4 class="fw-bold mb-0">Import de Séances & Enseignements</h4>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Format CSV</span>
+            </div>
+            <p class="text-muted small mb-0">Enregistrez d'un coup les présences d'un cours ou atelier avec création automatique des étudiants</p>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a href="/admin/history/template" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+            <i class="fa-solid fa-file-excel me-1"></i> Télécharger le modèle CSV
+          </a>
+          <a href="/admin/view-history" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Retour à l'historique
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étape 1 : Formulaire de téléversement et valeurs par défaut -->
+    <div class="card border-0 shadow-sm mb-4" id="uploadStepCard">
+      <div class="card-header bg-transparent border-0 pt-4 px-4">
+        <h5 class="fw-bold mb-1"><i class="fa-solid fa-1 me-2 text-primary"></i> 1. Sélectionner le fichier CSV et configurer la séance</h5>
+        <p class="text-muted small mb-0">
+          Les informations ci-dessous seront appliquées aux étudiants dont les colonnes ne sont pas explicitement définies dans le fichier CSV.
+        </p>
+      </div>
+      <div class="card-body p-4">
+        <form id="csvUploadForm" enctype="multipart/form-data">
+          <!-- Zone de glisser-déposer pour le fichier CSV -->
+          <div class="dropzone-box p-4 text-center mb-4" id="dropzoneBox">
+            <input type="file" id="csvFileInput" name="csv_file" accept=".csv,text/csv,text/plain" class="d-none" required />
+            <div id="dropzonePrompt">
+              <i class="fa-solid fa-cloud-arrow-up text-primary fs-1 mb-2"></i>
+              <h6 class="fw-bold mb-1">Glissez votre fichier CSV ici ou cliquez pour parcourir</h6>
+              <p class="text-muted small mb-2">Colonnes requises : <code>nom</code>, <code>prenom</code>, <code>email</code> (séparateur virgule ou point-virgule)</p>
+              <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="document.getElementById('csvFileInput').click();">
+                <i class="fa-solid fa-folder-open me-1"></i> Choisir un fichier CSV
+              </button>
+            </div>
+            <div id="fileSelectedDisplay" class="d-none">
+              <i class="fa-solid fa-file-csv text-success fs-2 mb-2"></i>
+              <div class="fw-bold text-success" id="selectedFileName">mon_fichier.csv</div>
+              <small class="text-muted" id="selectedFileSize">0 Ko</small>
+              <div class="mt-2">
+                <button type="button" class="btn btn-sm btn-link text-danger p-0" id="btnRemoveFile">
+                  <i class="fa-solid fa-trash me-1"></i> Changer de fichier
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Réglages par défaut de la séance -->
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="default_date" class="form-label small fw-semibold"><i class="fa-solid fa-calendar-day me-1 text-primary"></i> Date de la séance</label>
+              <input type="date" class="form-control" id="default_date" name="default_date" value="<%= todayDate %>" required>
+              <small class="text-muted">Utilisée si la colonne <code>date</code> est vide.</small>
+            </div>
+            <div class="col-md-4">
+              <label for="default_arrival" class="form-label small fw-semibold"><i class="fa-solid fa-clock me-1 text-primary"></i> Heure d'arrivée</label>
+              <input type="time" class="form-control" id="default_arrival" name="default_arrival" value="14:00" required>
+              <small class="text-muted">Utilisée si la colonne <code>arrivee</code> est vide.</small>
+            </div>
+            <div class="col-md-4">
+              <label for="default_departure" class="form-label small fw-semibold"><i class="fa-solid fa-clock-rotate-left me-1 text-primary"></i> Heure de départ</label>
+              <input type="time" class="form-control" id="default_departure" name="default_departure" value="17:00">
+              <small class="text-muted">Optionnelle (colonne <code>depart</code>).</small>
+            </div>
+
+            <div class="col-md-4">
+              <label for="default_project_type" class="form-label small fw-semibold"><i class="fa-solid fa-diagram-project me-1 text-primary"></i> Type de projet</label>
+              <select class="form-select" id="default_project_type" name="default_project_type">
+                <% projecttypes.forEach(function(pt) { %>
+                  <option value="<%= pt.name %>" <%= (pt.name.toLowerCase() === 'academic' || pt.name.toLowerCase() === 'enseignement') ? 'selected' : '' %>><%= pt.name %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="default_workspace_id" class="form-label small fw-semibold"><i class="fa-solid fa-building me-1 text-primary"></i> Espace du Fablab</label>
+              <select class="form-select" id="default_workspace_id" name="default_workspace_id">
+                <option value="">-- Aucun espace spécifique --</option>
+                <% workspaces.forEach(function(ws) { %>
+                  <option value="<%= ws.id %>"><%= ws.name %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="default_usertype_id" class="form-label small fw-semibold"><i class="fa-solid fa-user-tag me-1 text-primary"></i> Typologie des nouveaux usagers</label>
+              <select class="form-select" id="default_usertype_id" name="default_usertype_id">
+                <% usertypes.forEach(function(ut) { %>
+                  <option value="<%= ut.id %>" <%= ut.name.toLowerCase().includes('étudiant') || ut.name.toLowerCase().includes('etudiant') ? 'selected' : '' %>><%= ut.name %></option>
+                <% }); %>
+              </select>
+              <small class="text-muted">Attribuée aux comptes créés automatiquement.</small>
+            </div>
+
+            <div class="col-12 mt-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="acceptTerms" name="accept_terms" checked>
+                <label class="form-check-label small" for="acceptTerms">
+                  <strong>Charte réputée signée :</strong> Valider automatiquement la charte d'utilisation pour les nouveaux étudiants dans le cadre de cet enseignement encadré.
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" id="btnAnalyzeCsv">
+              <i class="fa-solid fa-magnifying-glass-chart me-2"></i> Analyser et prévisualiser le fichier
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Spinner d'analyse -->
+    <div id="analysisSpinner" class="card border-0 shadow-sm p-5 text-center my-4 d-none">
+      <div class="spinner-border text-primary mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+      <h6 class="fw-bold mb-1">Analyse du fichier CSV en cours...</h6>
+      <p class="text-muted small mb-0">Contrôle des concordances usagers, détection des homonymes et validation des horaires.</p>
+    </div>
+
+    <!-- Étape 2 : Prévisualisation & Validation des données -->
+    <div class="card border-0 shadow-sm mb-4 d-none" id="previewStepCard">
+      <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+          <h5 class="fw-bold mb-1"><i class="fa-solid fa-2 me-2 text-success"></i> 2. Prévisualisation & Contrôle des concordances</h5>
+          <p class="text-muted small mb-0">Vérifiez les données avant de lancer l'enregistrement définitif dans l'historique.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="btnBackToUpload">
+            <i class="fa-solid fa-rotate-left me-1"></i> Modifier le fichier
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-4">
+        <!-- Badges KPI récapitulatifs -->
+        <div class="row g-2 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle text-center">
+              <div class="fs-4 fw-bold text-success" id="kpiReadyCount">0</div>
+              <small class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i> Lignes prêtes</small>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-primary-subtle border border-primary-subtle text-center">
+              <div class="fs-4 fw-bold text-primary" id="kpiExistingCount">0</div>
+              <small class="text-primary fw-semibold"><i class="fa-solid fa-user-check me-1"></i> Usagers existants</small>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-info-subtle border border-info-subtle text-center">
+              <div class="fs-4 fw-bold text-info" id="kpiNewCount">0</div>
+              <small class="text-info fw-semibold"><i class="fa-solid fa-user-plus me-1"></i> Nouveaux usagers</small>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle text-center">
+              <div class="fs-4 fw-bold text-warning" id="kpiWarningCount">0</div>
+              <small class="text-warning fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i> Avertissements</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau interactif de prévisualisation -->
+        <div class="table-responsive table-scrollable border rounded-3 mb-4">
+          <table class="table table-hover align-middle mb-0" id="previewTable">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center" style="width: 50px;">Ligne</th>
+                <th>Étudiant (Nom & Prénom)</th>
+                <th>E-mail</th>
+                <th>Statut Usager</th>
+                <th>Créneau</th>
+                <th>Projet / UE</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody">
+              <!-- Rempli dynamiquement en JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Barre de confirmation -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-3 border-top">
+          <div class="small text-muted" id="previewNoticeText">
+            <i class="fa-solid fa-circle-info me-1 text-primary"></i> Les nouveaux comptes seront automatiquement créés lors de la confirmation.
+          </div>
+          <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-semibold shadow-sm" id="btnConfirmImport">
+            <i class="fa-solid fa-check me-2"></i> Confirmer et importer l'historique
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étape 3 : Résultat du traitement -->
+    <div class="card border-0 shadow-sm p-4 text-center d-none" id="resultCard">
+      <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 64px; height: 64px; font-size: 2rem;">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h4 class="fw-bold text-success mb-2">Importation terminée avec succès !</h4>
+      <p class="text-muted fs-6 mb-4" id="resultMessageText">Toutes les visites et usagers ont été enregistrés.</p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="/admin/view-history" class="btn btn-primary rounded-pill px-4">
+          <i class="fa-solid fa-clock-rotate-left me-2"></i> Consulter l'historique
+        </a>
+        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" id="btnImportAnother">
+          <i class="fa-solid fa-plus me-2"></i> Importer un autre fichier
+        </button>
+      </div>
+    </div>
+
+    <%- include('../includes/footer.html') %>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const dropzoneBox = document.getElementById('dropzoneBox');
+      const csvFileInput = document.getElementById('csvFileInput');
+      const dropzonePrompt = document.getElementById('dropzonePrompt');
+      const fileSelectedDisplay = document.getElementById('fileSelectedDisplay');
+      const selectedFileName = document.getElementById('selectedFileName');
+      const selectedFileSize = document.getElementById('selectedFileSize');
+      const btnRemoveFile = document.getElementById('btnRemoveFile');
+
+      const btnAnalyzeCsv = document.getElementById('btnAnalyzeCsv');
+      const uploadStepCard = document.getElementById('uploadStepCard');
+      const analysisSpinner = document.getElementById('analysisSpinner');
+      const previewStepCard = document.getElementById('previewStepCard');
+      const resultCard = document.getElementById('resultCard');
+
+      const previewTableBody = document.getElementById('previewTableBody');
+      const kpiReadyCount = document.getElementById('kpiReadyCount');
+      const kpiExistingCount = document.getElementById('kpiExistingCount');
+      const kpiNewCount = document.getElementById('kpiNewCount');
+      const kpiWarningCount = document.getElementById('kpiWarningCount');
+
+      const btnConfirmImport = document.getElementById('btnConfirmImport');
+      const btnBackToUpload = document.getElementById('btnBackToUpload');
+      const btnImportAnother = document.getElementById('btnImportAnother');
+      const resultMessageText = document.getElementById('resultMessageText');
+
+      let currentAnalysisData = null;
+
+      // Gestion du Drag & Drop
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzoneBox.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzoneBox.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzoneBox.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzoneBox.classList.remove('dragover');
+        });
+      });
+
+      dropzoneBox.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          csvFileInput.files = files;
+          handleFileChosen(files[0]);
+        }
+      });
+
+      csvFileInput.addEventListener('change', () => {
+        if (csvFileInput.files.length > 0) {
+          handleFileChosen(csvFileInput.files[0]);
+        }
+      });
+
+      function handleFileChosen(file) {
+        selectedFileName.textContent = file.name;
+        selectedFileSize.textContent = (file.size / 1024).toFixed(1) + ' Ko';
+        dropzonePrompt.classList.add('d-none');
+        fileSelectedDisplay.classList.remove('d-none');
+      }
+
+      btnRemoveFile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        csvFileInput.value = '';
+        dropzonePrompt.classList.remove('d-none');
+        fileSelectedDisplay.classList.add('d-none');
+      });
+
+      // Analyse du fichier CSV (Étape 1 -> Étape 2)
+      btnAnalyzeCsv.addEventListener('click', async () => {
+        if (!csvFileInput.files || csvFileInput.files.length === 0) {
+          alert('Veuillez d\'abord sélectionner un fichier CSV.');
+          return;
+        }
+
+        const formData = new FormData(document.getElementById('csvUploadForm'));
+
+        uploadStepCard.classList.add('d-none');
+        analysisSpinner.classList.remove('d-none');
+        previewStepCard.classList.add('d-none');
+
+        try {
+          let previewUrl = '/admin/history/preview';
+          if (window.location && window.location.pathname) {
+            const currentPath = window.location.pathname.replace(/\/import\/?$/, '');
+            previewUrl = `${currentPath}/preview`;
+          } else if (window.getAppBaseUrl) {
+            previewUrl = window.getAppBaseUrl('admin/history/preview');
+          }
+
+          const response = await fetch(previewUrl, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData,
+          });
+
+          const res = await response.json();
+          if (!response.ok || !res.success) {
+            throw new Error(res.message || 'Impossible d\'analyser le fichier CSV.');
+          }
+
+          currentAnalysisData = res.data;
+          renderPreview(res.data);
+
+          analysisSpinner.classList.add('d-none');
+          previewStepCard.classList.remove('d-none');
+        } catch (err) {
+          analysisSpinner.classList.add('d-none');
+          uploadStepCard.classList.remove('d-none');
+          alert('Erreur lors de l\'analyse : ' + err.message);
+        }
+      });
+
+      // Rendu du tableau de prévisualisation
+      function renderPreview(data) {
+        kpiReadyCount.textContent = data.readyCount;
+        kpiExistingCount.textContent = data.existingUsersCount;
+        kpiNewCount.textContent = data.newUsersCount;
+        kpiWarningCount.textContent = data.homonymWarningCount;
+
+        previewTableBody.innerHTML = '';
+
+        data.items.forEach(item => {
+          const tr = document.createElement('tr');
+          if (!item.isValid) {
+            tr.classList.add('table-danger');
+          } else if (item.userStatus === 'HOMONYM_WARNING') {
+            tr.classList.add('table-warning');
+          }
+
+          // Badge Statut Usager
+          let userStatusBadge = '';
+          if (item.userStatus === 'EXISTING_USER') {
+            userStatusBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"><i class="fa-solid fa-user-check me-1"></i> Compte existant</span>';
+          } else if (item.userStatus === 'HOMONYM_WARNING') {
+            userStatusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" title="${item.warnings.join(' | ')}"><i class="fa-solid fa-triangle-exclamation me-1"></i> Homonyme (${item.homonymEmail})</span>`;
+          } else {
+            userStatusBadge = '<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill"><i class="fa-solid fa-user-plus me-1"></i> Nouveau compte</span>';
+          }
+
+          // Badge Statut Ligne
+          let rowStatusBadge = '';
+          if (item.isValid) {
+            rowStatusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa-solid fa-check me-1"></i> Prêt</span>';
+          } else {
+            rowStatusBadge = `<span class="badge bg-danger text-white rounded-pill" title="${item.errors.join(', ')}"><i class="fa-solid fa-xmark me-1"></i> Erreur</span>`;
+          }
+
+          tr.innerHTML = `
+            <td class="text-center text-muted small">${item.rowNum}</td>
+            <td><strong>${escapeHtml(item.surname)}</strong> ${escapeHtml(item.name)}</td>
+            <td><code>${escapeHtml(item.email)}</code></td>
+            <td>${userStatusBadge}</td>
+            <td><span class="small">${item.date} (${item.displayArrival} - ${item.displayDeparture})</span></td>
+            <td><span class="small text-muted">${escapeHtml(item.projectName || item.projectTypeName)}</span></td>
+            <td>${rowStatusBadge}</td>
+          `;
+
+          previewTableBody.appendChild(tr);
+        });
+
+        btnConfirmImport.disabled = data.readyCount === 0;
+      }
+
+      // Confirmation de l'import (Étape 2 -> Étape 3)
+      btnConfirmImport.addEventListener('click', async () => {
+        if (!currentAnalysisData || !currentAnalysisData.items || currentAnalysisData.readyCount === 0) {
+          alert('Aucune donnée valide à importer.');
+          return;
+        }
+
+        if (!confirm(`Confirmez-vous l'enregistrement de ${currentAnalysisData.readyCount} visite(s) dans l'historique ?`)) {
+          return;
+        }
+
+        btnConfirmImport.disabled = true;
+        btnConfirmImport.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Enregistrement en cours...';
+
+        try {
+          let executeUrl = '/admin/history/execute';
+          if (window.location && window.location.pathname) {
+            const currentPath = window.location.pathname.replace(/\/import\/?$/, '');
+            executeUrl = `${currentPath}/execute`;
+          } else if (window.getAppBaseUrl) {
+            executeUrl = window.getAppBaseUrl('admin/history/execute');
+          }
+
+          const payload = {
+            items: currentAnalysisData.items,
+            options: {
+              defaultUserTypeId: document.getElementById('default_usertype_id')?.value,
+              acceptTerms: document.getElementById('acceptTerms')?.checked,
+            },
+          };
+
+          const response = await fetch(executeUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const res = await response.json();
+          if (!response.ok || !res.success) {
+            throw new Error(res.message || 'Échec de l\'enregistrement.');
+          }
+
+          resultMessageText.textContent = res.message;
+          previewStepCard.classList.add('d-none');
+          resultCard.classList.remove('d-none');
+        } catch (err) {
+          alert('Erreur lors de l\'importation : ' + err.message);
+          btnConfirmImport.disabled = false;
+          btnConfirmImport.innerHTML = '<i class="fa-solid fa-check me-2"></i> Confirmer et importer l\'historique';
+        }
+      });
+
+      btnBackToUpload.addEventListener('click', () => {
+        previewStepCard.classList.add('d-none');
+        uploadStepCard.classList.remove('d-none');
+      });
+
+      btnImportAnother.addEventListener('click', () => {
+        resultCard.classList.add('d-none');
+        csvFileInput.value = '';
+        dropzonePrompt.classList.remove('d-none');
+        fileSelectedDisplay.classList.add('d-none');
+        uploadStepCard.classList.remove('d-none');
+      });
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    });
+  </script>
+</body>
+</html>
