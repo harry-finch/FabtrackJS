@@ -860,16 +860,36 @@
                     btnSubmit.disabled = true;
 
                     try {
-                        const url = window.getAppBaseUrl ? window.getAppBaseUrl("admin/statistics/ai-query") : "/admin/statistics/ai-query";
+                        let url = "/admin/statistics/ai-query";
+                        if (window.location && window.location.pathname) {
+                            const currentPath = window.location.pathname.replace(/\/+$/, "");
+                            url = `${currentPath}/ai-query`;
+                        } else if (window.getAppBaseUrl) {
+                            url = window.getAppBaseUrl("admin/statistics/ai-query");
+                        }
+
                         const res = await fetch(url, {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Accept": "application/json",
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
                             body: JSON.stringify({ question: q }),
                         });
 
-                        const data = await res.json();
+                        let data;
+                        const contentType = res.headers.get("content-type") || "";
+                        if (contentType.includes("application/json")) {
+                            data = await res.json();
+                        } else {
+                            const rawText = await res.text();
+                            const snippet = rawText.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+                            throw new Error(`Réponse inattendue (${res.status}) : ${snippet || "Page HTML retournée au lieu de JSON"}. Pensez à redémarrer le serveur Node.`);
+                        }
+
                         if (!res.ok || !data.success) {
-                            throw new Error(data.error || "Erreur lors du traitement de votre question.");
+                            throw new Error(data.error || data.message || "Erreur lors du traitement de votre question.");
                         }
 
                         renderAiResults(data);

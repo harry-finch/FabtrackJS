@@ -119,4 +119,38 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
   });
+
+  test("8. POST /admin/settings saves AI provider and keys", async () => {
+    const res = await adminAgent
+      .post("/admin/settings")
+      .field("ai_provider", "gemini")
+      .field("ai_gemini_api_key", "AIzaSySecretTestKey")
+      .field("ai_gemini_model", "gemini-1.5-flash");
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain("/admin/settings");
+
+    const current = await settingsService.getSettings();
+    expect(current.ai_provider).toBe("gemini");
+    expect(current.ai_gemini_api_key).toBe("AIzaSySecretTestKey");
+    expect(current.ai_gemini_model).toBe("gemini-1.5-flash");
+  });
+
+  test("9. POST /admin/settings/ai/test-connection works with valid mock", async () => {
+    const spy = jest.spyOn(aiQueryService, "callProvider").mockResolvedValue('{"status":"OK"}');
+
+    const res = await adminAgent
+      .post("/admin/settings/ai/test-connection")
+      .send({
+        ai_provider: "gemini",
+        ai_gemini_api_key: "AIzaSyFakeKey",
+        ai_gemini_model: "gemini-1.5-flash",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toContain("Google Gemini");
+
+    spy.mockRestore();
+  });
 });

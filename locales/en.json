@@ -250,6 +250,9 @@
     "system_badge": "System",
     "title": "General Settings",
     "upload_favicon": "Upload a favicon (.ico, .png, .svg):",
-    "upload_logo": "Upload a new image (PNG, JPG, SVG, WebP — max 3 MB):"
+    "upload_logo": "Upload a new image (PNG, JPG, SVG, WebP — max 3 MB):",
+    "section_ai": "Artificial Intelligence",
+    "section_ai_title": "Natural Language Statistical Queries (Text-to-SQL)",
+    "ai_desc": "Allows administrators to query the database using natural language (e.g., 'How many users visited only once?') from the statistics page. Only the database schema is sent to the model: no personal data is transmitted."
   }
 }

@@ -227,6 +227,9 @@ settings.system_badge,Système,System
 settings.title,Configuration générale,General Settings
 settings.upload_favicon,"Téléverser un favicon (.ico, .png, .svg) :","Upload a favicon (.ico, .png, .svg):"
 settings.upload_logo,"Téléverser une nouvelle image (PNG, JPG, SVG, WebP — max 3 Mo) :","Upload a new image (PNG, JPG, SVG, WebP — max 3 MB):"
+settings.section_ai,Intelligence Artificielle,Artificial Intelligence
+settings.section_ai_title,Requêtes Statistiques en Langage Naturel (Text-to-SQL),Natural Language Statistical Queries (Text-to-SQL)
+settings.ai_desc,"Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien d'usagers ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée.","Allows administrators to query the database using natural language (e.g., 'How many users visited only once?') from the statistics page. Only the database schema is sent to the model: no personal data is transmitted."
 users_manage.col_actions,Actions,Actions
 users_manage.col_charter,Charte,Charter
 users_manage.col_email,Adresse e-mail,Email

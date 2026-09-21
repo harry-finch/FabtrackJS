@@ -414,8 +414,17 @@ app.use((err, req, res, next) => {
   }
 
   // Respond appropriately based on request type (API/web)
-  if (req.xhr || req.headers.accept === 'application/json') {
-    res.status(statusCode).json({ error: errorDetail });
+  const isApiOrJson = Boolean(
+    req.xhr ||
+    (req.headers.accept && req.headers.accept.includes("application/json")) ||
+    (req.headers["content-type"] && req.headers["content-type"].includes("application/json")) ||
+    req.is("json") ||
+    req.path.startsWith("/api/") ||
+    req.path.includes("/ai/")
+  );
+
+  if (isApiOrJson) {
+    res.status(statusCode).json({ error: errorDetail, message: errorDetail.message, success: false });
   } else {
     res.status(statusCode);
     res.locals.error = req.app.get('env') === 'development' ? errorDetail : { message: errorDetail.message, status: statusCode };

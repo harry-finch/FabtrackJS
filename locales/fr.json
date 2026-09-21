@@ -250,6 +250,9 @@
     "system_badge": "Système",
     "title": "Configuration générale",
     "upload_favicon": "Téléverser un favicon (.ico, .png, .svg) :",
-    "upload_logo": "Téléverser une nouvelle image (PNG, JPG, SVG, WebP — max 3 Mo) :"
+    "upload_logo": "Téléverser une nouvelle image (PNG, JPG, SVG, WebP — max 3 Mo) :",
+    "section_ai": "Intelligence Artificielle",
+    "section_ai_title": "Requêtes Statistiques en Langage Naturel (Text-to-SQL)",
+    "ai_desc": "Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien d'usagers ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée."
   }
 }

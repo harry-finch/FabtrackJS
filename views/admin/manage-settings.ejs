@@ -73,7 +73,7 @@
         </div>
 
         <!-- Main Form for Settings -->
-        <form action="/admin/settings" method="post" enctype="multipart/form-data" id="settingsForm">
+        <form method="post" enctype="multipart/form-data" id="settingsForm">
 
           <!-- 1. IDENTITÉ VISUELLE & BRANDING -->
           <div class="card border-0 shadow-sm mb-4">
@@ -524,15 +524,15 @@
             <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
-                  <i class="fa-solid fa-wand-magic-sparkles me-1"></i> <%= typeof __ !== 'undefined' ? __('settings.section_ai') : 'Intelligence Artificielle' %>
+                  <i class="fa-solid fa-wand-magic-sparkles me-1"></i> <%= (typeof __ !== 'undefined' && __('settings.section_ai') !== 'settings.section_ai') ? __('settings.section_ai') : 'Intelligence Artificielle' %>
                 </span>
-                <h5 class="fw-bold mb-0 ms-1"><%= typeof __ !== 'undefined' ? __('settings.section_ai_title') : 'Requêtes Statistiques en Langage Naturel (Text-to-SQL)' %></h5>
+                <h5 class="fw-bold mb-0 ms-1"><%= (typeof __ !== 'undefined' && __('settings.section_ai_title') !== 'settings.section_ai_title') ? __('settings.section_ai_title') : 'Requêtes Statistiques en Langage Naturel (Text-to-SQL)' %></h5>
               </div>
               <div id="aiConnectionStatusBadge"></div>
             </div>
             <div class="card-body px-4 pt-2 pb-4">
               <p class="text-muted small mb-3">
-                <%= typeof __ !== 'undefined' ? __('settings.ai_desc') : "Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien d'usagers ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée." %>
+                <%= (typeof __ !== 'undefined' && __('settings.ai_desc') !== 'settings.ai_desc') ? __('settings.ai_desc') : "Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien d'usagers ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée." %>
               </p>
 
               <div class="row g-3">
@@ -842,14 +842,35 @@
               ai_local_api_key: document.getElementById('ai_local_api_key')?.value || '',
             };
 
-            const testUrl = window.getAppBaseUrl ? window.getAppBaseUrl('admin/settings/ai/test-connection') : '/admin/settings/ai/test-connection';
+            // URL adaptative selon le chemin de la page ou la base de l'app
+            let testUrl = '/admin/settings/ai/test-connection';
+            if (window.location && window.location.pathname) {
+              const currentPath = window.location.pathname.replace(/\/+$/, '');
+              testUrl = `${currentPath}/ai/test-connection`;
+            } else if (window.getAppBaseUrl) {
+              testUrl = window.getAppBaseUrl('admin/settings/ai/test-connection');
+            }
+
             const response = await fetch(testUrl, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
               body: JSON.stringify(payload),
             });
 
-            const data = await response.json();
+            let data;
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              data = await response.json();
+            } else {
+              const rawText = await response.text();
+              const snippet = rawText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+              throw new Error(`Réponse inattendue (${response.status}) : ${snippet || 'Page HTML retournée au lieu de JSON'}. Pensez à redémarrer le serveur Node (ex: pm2 restart all).`);
+            }
+
             if (response.ok && data.success) {
               if (aiNotice) {
                 aiNotice.innerHTML = '<span class="text-success fw-semibold"><i class="fa-solid fa-check-circle me-1"></i> ' + data.message + '</span>';
@@ -858,7 +879,7 @@
                 aiStatusBadge.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa-solid fa-circle-check me-1"></i> En ligne</span>';
               }
             } else {
-              throw new Error(data.message || 'Échec du test de connexion.');
+              throw new Error(data.message || data.error?.message || 'Échec du test de connexion.');
             }
           } catch (err) {
             if (aiNotice) {
