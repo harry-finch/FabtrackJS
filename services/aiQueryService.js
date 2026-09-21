@@ -6,95 +6,130 @@ const SAFE_SCHEMA_PROMPT = `
 Vous êtes un expert MySQL / MariaDB pour l'application FabtrackJS (gestion de Fablab).
 Votre rôle est de traduire les questions des administrateurs en requêtes SQL valides, sécurisées et performantes en lecture seule.
 
-SCHÉMA DES TABLES AUTORISÉES DANS MARIADB :
+ATTENTION CRITIQUE : RESPECTEZ SCRUPULEUSEMENT LES NOMS EXACTS DES TABLES ET DES COLONNES CI-DESSOUS (LA CASSE DES TABLES EST IMPORTANTE SOUS LINUX/MARIADB).
+
+SCHÉMA DES TABLES MARIADB :
 
 1. Table \`User\` (Usagers du Fablab) :
    - id (INT, PRIMARY KEY)
    - name (VARCHAR) : Prénom de l'usager
    - surname (VARCHAR) : Nom de famille
    - email (VARCHAR)
-   - usertypeId (INT) : Référence à UserType(id)
+   - usertypeId (INT) : Référence à Usertype(id) (ATTENTION : table = Usertype)
    - createdAt (DATETIME) : Date d'inscription
-   - birthYear (INT) : Année de naissance
+   - birthYear (INT, NULL) : Année de naissance
    - balance (DECIMAL) : Solde financier du compte en euros
-   - termsAccepted (BOOLEAN) : Charte acceptée ou non
-   - isExpert (BOOLEAN) : Statut expert bénévole
-   - deletedAt (DATETIME, NULL) : Date de suppression / archivage (si non NULL, compte supprimé)
+   - termsAccepted (BOOLEAN) : Charte acceptée (1=oui, 0=non)
+   - isExpert (BOOLEAN) : Statut bénévole / expert
+   - deletedAt (DATETIME, NULL) : Date d'archivage si supprimé
 
-2. Table \`UserType\` (Typologies d'usagers) :
+2. Table \`Usertype\` (Typologies d'usagers, ex: "Étudiant", "Personnel", "Enseignant-Chercheur", "Externe") :
    - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Libellé (ex. "Étudiant", "Personnel", "Enseignant-Chercheur", "Externe")
+   - name (VARCHAR) : Libellé de la typologie
 
-3. Table \`History\` (Visites et présences au Fablab) :
+3. Table \`Project\` (Projets réalisés dans le Fablab) :
    - id (INT, PRIMARY KEY)
-   - userId (INT, NULL) : Référence à User(id)
-   - createdAt (DATETIME) : Date et heure d'arrivée / enregistrement de la visite
-   - departureDate (DATETIME, NULL) : Date et heure de départ
-   - workspaceId (INT, NULL) : Référence à Workspace(id)
-   - projectTypeId (INT, NULL) : Référence à ProjectType(id)
-   - projectId (INT, NULL) : Référence à Project(id)
+   - url (VARCHAR) : Titre ou lien du projet
+   - projecttypeId (INT) : Référence à Projecttype(id) (ATTENTION : projecttypeId tout en minuscules)
    - teachingUnitId (INT, NULL) : Référence à TeachingUnit(id)
-   - unregisteredUeName (VARCHAR, NULL) : Nom d'UE non enregistrée
-   - sorbonneEntity (VARCHAR, NULL) : Nom de l'entité/UFR Sorbonne rattachée
-   - repairObject (VARCHAR, NULL) : Objet apporté en Repair Café
-   - repairStatus (VARCHAR, NULL) : "REPAIRED", "PARTIALLY_REPAIRED", "NOT_REPAIRED"
+   - sorbonneEntity (VARCHAR, NULL) : Entité / UFR Sorbonne
+   - createdAt (DATETIME)
+   - active (BOOLEAN)
 
-4. Table \`Activity\` (Activités machines et consommations de matière lors d'une visite) :
+4. Table \`Projecttype\` (Types de projets, ex: "Personnel", "Academic", "Sorbonne", "Repair Café", "Atelier") :
    - id (INT, PRIMARY KEY)
-   - historyId (INT) : Référence à History(id)
-   - machineId (INT, NULL) : Référence à Machine(id)
-   - consumableId (INT, NULL) : Référence à Consumable(id)
-   - quantity (INT) : Quantité consommée (ou 1 pour une session machine)
-   - cost (DECIMAL) : Montant en euros de la consommation
-   - settled (BOOLEAN) : Pour les projets Sorbonne, indique si la consommation a été réglée
+   - name (VARCHAR) : Nom du type de projet
+
+5. Table \`UserProject\` (Liaison N-à-N entre Usagers et Projets - TRÈS IMPORTANT : il n'y a PAS de colonne userId dans Project !) :
+   - id (INT, PRIMARY KEY)
+   - userId (INT) : Référence à User(id)
+   - projectId (INT) : Référence à Project(id)
+   COMMENT LIER UN UTILISATEUR À SES PROJETS :
+   \`User\` u 
+   JOIN \`UserProject\` up ON up.userId = u.id 
+   JOIN \`Project\` p ON up.projectId = p.id 
+   JOIN \`Projecttype\` pt ON p.projecttypeId = pt.id
+
+6. Table \`History\` (Visites et enregistrements de présence au Fablab) :
+   - id (INT, PRIMARY KEY)
+   - arrival (DATETIME) : Date et heure d'arrivée (ATTENTION : colonne = arrival, PAS createdAt !)
+   - departure (DATETIME, NULL) : Date et heure de départ (ATTENTION : colonne = departure !)
+   - userId (INT) : Référence à User(id)
+   - userprojectId (INT, NULL) : Référence à UserProject(id)
+   - teachingUnitId (INT, NULL) : Référence à TeachingUnit(id)
+   - sorbonneEntity (VARCHAR, NULL) : Entité Sorbonne rattachée à la visite
+   - workspaceId (INT, NULL) : Référence à Workspace(id)
+   - repairObject (VARCHAR, NULL) : Objet apporté en Repair Café
+   - repairStatus (VARCHAR, NULL) : Statut Repair Café ("PENDING", "REPAIRED", "PARTIALLY_REPAIRED", "NOT_REPAIRED")
+   - workshopId (INT, NULL) : Référence à Workshop(id)
+
+7. Table \`Activity\` (Utilisation de machines ou consommables enregistrée lors d'une visite) :
+   - id (INT, PRIMARY KEY)
+   - createdAt (DATETIME) : Date de l'activité
+   - historyId (INT, NULL) : Référence à History(id)
+   - userId (INT, NULL) : Référence à User(id)
+   - resourceId (INT) : ID de la Machine ou du Consumable
+   - resourceType (ENUM: 'MACHINE', 'EQUIPMENT', 'CONSUMABLE')
+   - quantity (INT, NULL) : Quantité consommée (pour un consommable)
+   - settled (BOOLEAN) : Règlement effectué pour Sorbonne (1=oui, 0=non)
    - settledAt (DATETIME, NULL) : Date du règlement
 
-5. Table \`Machine\` (Parc de machines du Fablab) :
+8. Table \`Machine\` (Parc des machines) :
    - id (INT, PRIMARY KEY)
    - name (VARCHAR) : Nom de la machine
-   - typeId (INT) : Référence à MachineType(id)
-   - locationId (INT) : Référence à Location(id)
-   - categoryId (INT) : Référence à Category(id)
-   - active (BOOLEAN) : 1 si active, 0 si désactivée
-   - brand (VARCHAR), model (VARCHAR)
+   - machinetypeId (INT) : Référence à MachineType(id) (ATTENTION : machinetypeId)
+   - categoryId (INT, NULL) : Référence à Category(id)
+   - locationId (INT, NULL) : Référence à Location(id)
+   - make (VARCHAR) : Marque / Fabricant
+   - model (VARCHAR) : Modèle
+   - accessId (INT) : Niveau d'accès requis
 
-6. Table \`MachineType\` : id, name (ex. "Imprimante 3D", "Découpeuse Laser", "Fraiseuse CNC")
-7. Table \`Location\` : id, name (ex. "Atelier Principal", "Salle Électronique")
-8. Table \`Category\` : id, name (ex. "Fabrication Numérique", "Électronique")
+9. Table \`MachineType\` : id, name (ex: "Imprimante 3D", "Découpeuse Laser", "Fraiseuse CNC")
+10. Table \`Consumable\` : id, name, cost (DECIMAL, prix unitaire), stock (INT), unit (VARCHAR), categoryId
+11. Table \`Workspace\` : id, name, location
+12. Table \`TeachingUnit\` : id, code, name, department, responsibleEmail
+13. Table \`Category\` : id, name, workspaceId
+14. Table \`Location\` : id, name, description
+15. Table \`MachineIssue\` : id, machineId, description, status ('OPEN', 'RESOLVED'), createdAt, resolvedAt
 
-9. Table \`Consumable\` (Matières et consommables) :
-   - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Nom du matériau (ex. "PLA Blanc", "Contreplaqué 3mm")
-   - quantity (INT) : Stock restant
-   - unit (VARCHAR) : Unité (ex. "g", "m", "unité", "plaque")
-   - unitPrice (DECIMAL) : Prix unitaire
+EXEMPLES DE REQUÊTES TYPES :
+- Répartition des utilisateurs (par type) ayant fait un projet personnel :
+  SELECT ut.name AS user_type, COUNT(DISTINCT u.id) AS user_count
+  FROM \`User\` u
+  JOIN \`Usertype\` ut ON u.usertypeId = ut.id
+  JOIN \`UserProject\` up ON up.userId = u.id
+  JOIN \`Project\` p ON up.projectId = p.id
+  JOIN \`Projecttype\` pt ON p.projecttypeId = pt.id
+  WHERE pt.name LIKE '%Personnel%' OR pt.name LIKE '%Personal%'
+  GROUP BY ut.id, ut.name
+  ORDER BY user_count DESC;
 
-10. Table \`Project\` (Projets réalisés) :
-    - id (INT, PRIMARY KEY)
-    - name (VARCHAR) : Titre du projet
-    - projectTypeId (INT) : Référence à ProjectType(id)
-    - userId (INT) : Propriétaire (User.id)
-    - sorbonneEntity (VARCHAR, NULL) : Entité Sorbonne rattachée
-    - active (BOOLEAN) : 1 si actif
+- Usagers enregistrés venus une seule fois au fablab :
+  SELECT COUNT(*) AS total
+  FROM (
+    SELECT userId FROM \`History\` WHERE userId IS NOT NULL GROUP BY userId HAVING COUNT(*) = 1
+  ) AS single_visitors;
 
-11. Table \`ProjectType\` : id, name (ex. "Personnel", "Académique", "Sorbonne", "Prototypage")
-12. Table \`Workspace\` : id, name, location
-13. Table \`TeachingUnit\` : id, code, name
-14. Table \`MachineIssue\` : id, machineId, description, status ('OPEN' | 'RESOLVED'), createdAt, resolvedAt
+- Top 5 des machines les plus utilisées :
+  SELECT m.name AS machine_name, COUNT(a.id) AS usage_count
+  FROM \`Activity\` a
+  JOIN \`Machine\` m ON a.resourceId = m.id AND a.resourceType = 'MACHINE'
+  GROUP BY m.id, m.name
+  ORDER BY usage_count DESC
+  LIMIT 5;
 
 RÈGLES ABSOLUES POUR LA REQUÊTE SQL :
-1. STRICTEMENT EN LECTURE SEULE : Utilisez UNIQUEMENT des requêtes commençant par SELECT (ou WITH ... SELECT). Aucun INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, REPLACE, etc.
+1. STRICTEMENT EN LECTURE SEULE : Utilisez UNIQUEMENT SELECT (ou WITH ... SELECT). Aucun INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, REPLACE.
 2. INTERDICTION FORMELLE d'accéder aux tables Staff ou SystemSetting.
-3. Toujours utiliser les noms exacts des tables avec des majuscules ou backticks : \`User\`, \`History\`, \`Activity\`, \`Machine\`, \`Consumable\`, \`Project\`, etc.
-4. Pour compter les usagers venus une seule fois : sous-requête groupant par userId avec HAVING COUNT(*) = 1.
-5. Toujours ajouter une clause LIMIT 200 à la fin si la requête n'est pas une agrégation retournant une seule ligne.
-6. Ne jamais insérer de point-virgule multiple ou plusieurs instructions.
+3. Toujours utiliser les noms exacts des tables avec des majuscules ou backticks : \`User\`, \`Usertype\`, \`Project\`, \`Projecttype\`, \`UserProject\`, \`History\`, \`Activity\`, \`Machine\`, \`Consumable\`.
+4. Toujours ajouter une clause LIMIT 200 à la fin si la requête n'est pas une agrégation retournant une seule ligne.
+5. Ne jamais insérer de point-virgule multiple ou plusieurs requêtes.
 
 FORMAT DE RÉPONSE OBLIGATOIRE :
-Vous devez répondre UNIQUEMENT par un objet JSON valide sans texte avant ni après, ayant la structure exacte suivante :
+Répondre UNIQUEMENT par un objet JSON valide sans Markdown ni texte additionnel :
 {
   "sql": "SELECT ...",
-  "explanation": "Explication claire en 1 ou 2 phrases en français de ce que la requête calcule",
+  "explanation": "Explication claire en 1 ou 2 phrases en français",
   "chartType": "kpi" | "bar" | "line" | "pie" | "doughnut" | "table",
   "title": "Titre synthétique du résultat",
   "xKey": "nom_colonne_pour_les_libelles_ou_null",
@@ -584,16 +619,40 @@ class AiQueryService {
     console.log(`[AI Query] Question received: "${question.trim()}" (Provider: ${config.provider})`);
 
     // 1. Appel du LLM
-    const rawAiResponse = await this.callProvider(config.provider, config, messages);
+    let rawAiResponse = await this.callProvider(config.provider, config, messages);
 
     // 2. Parsing JSON
-    const aiParsed = this.parseJsonResponse(rawAiResponse);
+    let aiParsed = this.parseJsonResponse(rawAiResponse);
 
     // 3. Pare-feu de validation SQL
-    const sanitizedSql = this.validateAndSanitizeSql(aiParsed.sql);
+    let sanitizedSql = this.validateAndSanitizeSql(aiParsed.sql);
 
-    // 4. Exécution en base de données MariaDB
-    const { rows, durationMs } = await this.executeSafeQuery(sanitizedSql);
+    // 4. Exécution en base de données MariaDB avec tentative d'auto-correction en cas d'erreur de schéma
+    let rows;
+    let durationMs;
+    try {
+      const execResult = await this.executeSafeQuery(sanitizedSql);
+      rows = execResult.rows;
+      durationMs = execResult.durationMs;
+    } catch (dbErr) {
+      console.warn(`[AI Query Self-Correction] First SQL execution failed: ${dbErr.message}. Retrying with error feedback...`);
+      const retryMessages = [
+        ...messages,
+        { role: "assistant", content: rawAiResponse },
+        {
+          role: "user",
+          content: `L'exécution SQL a échoué avec l'erreur MariaDB suivante : "${dbErr.message}".
+Veuillez corriger la requête SQL pour respecter exactement le schéma fourni (attention aux noms exacts de tables et de colonnes, et rappelez-vous que Project n'a pas de userId, le lien avec User se fait via UserProject).
+Répondez UNIQUEMENT avec le JSON corrigé.`,
+        },
+      ];
+      rawAiResponse = await this.callProvider(config.provider, config, retryMessages);
+      aiParsed = this.parseJsonResponse(rawAiResponse);
+      sanitizedSql = this.validateAndSanitizeSql(aiParsed.sql);
+      const execResult = await this.executeSafeQuery(sanitizedSql);
+      rows = execResult.rows;
+      durationMs = execResult.durationMs;
+    }
 
     // 5. Détection et construction de la visualisation
     const visualization = this.buildVisualization(rows, aiParsed);

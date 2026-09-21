@@ -151,13 +151,13 @@
                     <% } else { %>
                         <!-- Barre de saisie de question -->
                         <form id="aiQueryForm" class="mb-3" onsubmit="return false;">
-                            <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
-                                <span class="input-group-text bg-body border-0 ps-3 text-primary">
-                                    <i class="fa-solid fa-sparkles"></i>
+                            <div class="input-group shadow-sm rounded-pill border bg-body p-1">
+                                <span class="input-group-text bg-transparent border-0 ps-3 text-primary">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
                                 </span>
-                                <input type="text" id="aiQuestionInput" class="form-control bg-body border-0 fs-6 py-3" placeholder="Ex : Combien d'utilisateurs enregistrés ne sont venus au fablab qu'une seule fois ?" autocomplete="off">
-                                <button class="btn btn-primary px-4 fw-semibold rounded-pill m-1 d-flex align-items-center gap-2" id="btnSubmitAiQuery" type="button">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="aiQuestionInput" class="form-control bg-transparent border-0 py-2 fs-6" placeholder="Ex : Combien d'utilisateurs enregistrés ne sont venus au fablab qu'une seule fois ?" autocomplete="off">
+                                <button class="btn btn-primary rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-medium shadow-none" id="btnSubmitAiQuery" type="button">
+                                    <i class="fa-solid fa-paper-plane"></i>
                                     <span>Poser la question</span>
                                 </button>
                             </div>
@@ -193,7 +193,7 @@
                         </div>
 
                         <!-- État d'erreur -->
-                        <div id="aiErrorContainer" class="alert alert-danger border-danger-subtle d-flex align-items-center gap-3 my-3" style="display: none;">
+                        <div id="aiErrorContainer" class="alert alert-danger border-danger-subtle align-items-center gap-3 my-3 d-none">
                             <i class="fa-solid fa-triangle-exclamation fs-3"></i>
                             <div class="flex-grow-1">
                                 <strong class="d-block mb-1">Impossible de traiter la requête</strong>
@@ -854,7 +854,8 @@
                     }
 
                     // Reset affichages
-                    errorContainer.style.display = "none";
+                    errorContainer.classList.add("d-none");
+                    errorContainer.classList.remove("d-flex");
                     resultContainer.style.display = "none";
                     loadingContainer.style.display = "block";
                     btnSubmit.disabled = true;
@@ -895,7 +896,8 @@
                         renderAiResults(data);
                     } catch (err) {
                         errorMessage.textContent = err.message;
-                        errorContainer.style.display = "flex";
+                        errorContainer.classList.remove("d-none");
+                        errorContainer.classList.add("d-flex");
                     } finally {
                         loadingContainer.style.display = "none";
                         btnSubmit.disabled = false;
@@ -904,6 +906,8 @@
 
                 // Rendu des résultats
                 function renderAiResults(data) {
+                    errorContainer.classList.add("d-none");
+                    errorContainer.classList.remove("d-flex");
                     currentData = data;
                     resultTitle.textContent = data.title || "Résultats";
                     countBadge.textContent = `${data.rowCount} ligne(s)`;
