@@ -405,6 +405,11 @@ router.get(
       topConsumableDetails,
     };
 
+    const aiQueryService = require("../../services/aiQueryService");
+    const aiConfig = await aiQueryService.getConfig();
+    const isAiConfigured = Boolean(aiConfig.provider && aiConfig.provider !== "none");
+    const aiProviderLabel = aiQueryService.getProviderLabel(aiConfig.provider);
+
     res.render("admin/manage-statistics", {
       workspaces,
       selectedWorkspaceId,
@@ -414,7 +419,34 @@ router.get(
       kpis,
       chartData,
       workspaceStats,
+      aiConfig,
+      isAiConfigured,
+      aiProviderLabel,
     });
+  }),
+);
+
+// ******************************************************************************
+// POST /admin/statistics/ai-query: Process natural language database query
+// ******************************************************************************
+
+router.post(
+  "/ai-query",
+  express.json(),
+  asyncHandler(async (req, res) => {
+    const { question } = req.body;
+    if (!question || typeof question !== "string" || !question.trim()) {
+      return res.status(400).json({ success: false, error: "Veuillez poser une question." });
+    }
+
+    const aiQueryService = require("../../services/aiQueryService");
+    try {
+      const result = await aiQueryService.processNaturalLanguageQuery(question);
+      res.json(result);
+    } catch (err) {
+      console.error(`[AI Query Controller] ${err.message}`);
+      res.status(400).json({ success: false, error: err.message });
+    }
   }),
 );
 

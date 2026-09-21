@@ -519,6 +519,145 @@
             </div>
           </div>
 
+          <!-- 6. INTELLIGENCE ARTIFICIELLE & REQUÊTES EN LANGAGE NATUREL -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                  <i class="fa-solid fa-wand-magic-sparkles me-1"></i> <%= typeof __ !== 'undefined' ? __('settings.section_ai') : 'Intelligence Artificielle' %>
+                </span>
+                <h5 class="fw-bold mb-0 ms-1"><%= typeof __ !== 'undefined' ? __('settings.section_ai_title') : 'Requêtes Statistiques en Langage Naturel (Text-to-SQL)' %></h5>
+              </div>
+              <div id="aiConnectionStatusBadge"></div>
+            </div>
+            <div class="card-body px-4 pt-2 pb-4">
+              <p class="text-muted small mb-3">
+                <%= typeof __ !== 'undefined' ? __('settings.ai_desc') : "Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien d'usagers ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée." %>
+              </p>
+
+              <div class="row g-3">
+                <!-- Choix du fournisseur -->
+                <div class="col-12 col-md-6">
+                  <div class="form-floating">
+                    <select class="form-select" id="ai_provider" name="ai_provider">
+                      <option value="none" <%= (!settings.ai_provider || settings.ai_provider === 'none') ? 'selected' : '' %>>Désactivé (Aucun moteur d'IA)</option>
+                      <option value="openai" <%= settings.ai_provider === 'openai' ? 'selected' : '' %>>OpenAI (ChatGPT / GPT-4o / GPT-4o-mini)</option>
+                      <option value="gemini" <%= settings.ai_provider === 'gemini' ? 'selected' : '' %>>Google Gemini (Gemini 1.5 Flash / Pro)</option>
+                      <option value="anthropic" <%= settings.ai_provider === 'anthropic' ? 'selected' : '' %>>Anthropic Claude (Claude 3.5 Haiku / Sonnet)</option>
+                      <option value="local" <%= settings.ai_provider === 'local' ? 'selected' : '' %>>LLM Local (Ollama / LM Studio / Compatible OpenAI)</option>
+                    </select>
+                    <label for="ai_provider"><i class="fa-solid fa-microchip me-1 text-primary"></i> Moteur d'IA actif</label>
+                  </div>
+                  <small class="text-muted">Sélectionnez le service d'IA utilisé pour traduire les questions en requêtes SQL sécurisées.</small>
+                </div>
+
+                <!-- Bouton tester la connexion -->
+                <div class="col-12 col-md-6 d-flex align-items-center">
+                  <div class="w-100 p-3 rounded-3 bg-body-tertiary border d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                      <span class="fw-semibold small d-block"><i class="fa-solid fa-satellite-dish me-1 text-secondary"></i> Test de connectivité</span>
+                      <small class="text-muted" id="aiTestNotice">Vérifie la validité de la clé API ou de l'URL locale.</small>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" id="btnTestAiConnection">
+                      <i class="fa-solid fa-bolt me-1"></i> Tester la connexion
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Paramètres OpenAI -->
+                <div class="col-12 ai-provider-panel" id="panel_openai" style="display: none;">
+                  <div class="p-3 border rounded-3 bg-body">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-brain me-1"></i> Configuration OpenAI (ChatGPT)</h6>
+                    <div class="row g-3">
+                      <div class="col-md-7">
+                        <label for="ai_openai_api_key" class="form-label small fw-semibold">Clé API OpenAI</label>
+                        <div class="input-group">
+                          <input type="password" class="form-control" id="ai_openai_api_key" name="ai_openai_api_key" value="<%= settings.ai_openai_api_key || '' %>" placeholder="sk-proj-..." autocomplete="off">
+                          <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_openai_api_key"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                        <small class="text-muted">Disponible sur <a href="https://platform.openai.com/api-keys" target="_blank" class="text-decoration-none">platform.openai.com</a>.</small>
+                      </div>
+                      <div class="col-md-5">
+                        <label for="ai_openai_model" class="form-label small fw-semibold">Modèle</label>
+                        <input type="text" class="form-control" id="ai_openai_model" name="ai_openai_model" value="<%= settings.ai_openai_model || 'gpt-4o-mini' %>" placeholder="gpt-4o-mini">
+                        <small class="text-muted">Par défaut : <code>gpt-4o-mini</code> (rapide et très économique).</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Paramètres Google Gemini -->
+                <div class="col-12 ai-provider-panel" id="panel_gemini" style="display: none;">
+                  <div class="p-3 border rounded-3 bg-body">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-gem me-1"></i> Configuration Google Gemini</h6>
+                    <div class="row g-3">
+                      <div class="col-md-7">
+                        <label for="ai_gemini_api_key" class="form-label small fw-semibold">Clé API Google Gemini</label>
+                        <div class="input-group">
+                          <input type="password" class="form-control" id="ai_gemini_api_key" name="ai_gemini_api_key" value="<%= settings.ai_gemini_api_key || '' %>" placeholder="AIzaSy..." autocomplete="off">
+                          <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_gemini_api_key"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                        <small class="text-muted">Disponible gratuitement sur <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-decoration-none">Google AI Studio</a>.</small>
+                      </div>
+                      <div class="col-md-5">
+                        <label for="ai_gemini_model" class="form-label small fw-semibold">Modèle</label>
+                        <input type="text" class="form-control" id="ai_gemini_model" name="ai_gemini_model" value="<%= settings.ai_gemini_model || 'gemini-1.5-flash' %>" placeholder="gemini-1.5-flash">
+                        <small class="text-muted">Par défaut : <code>gemini-1.5-flash</code> ou <code>gemini-2.0-flash</code>.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Paramètres Anthropic Claude -->
+                <div class="col-12 ai-provider-panel" id="panel_anthropic" style="display: none;">
+                  <div class="p-3 border rounded-3 bg-body">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-cube me-1"></i> Configuration Anthropic Claude</h6>
+                    <div class="row g-3">
+                      <div class="col-md-7">
+                        <label for="ai_anthropic_api_key" class="form-label small fw-semibold">Clé API Anthropic</label>
+                        <div class="input-group">
+                          <input type="password" class="form-control" id="ai_anthropic_api_key" name="ai_anthropic_api_key" value="<%= settings.ai_anthropic_api_key || '' %>" placeholder="sk-ant-api..." autocomplete="off">
+                          <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_anthropic_api_key"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                        <small class="text-muted">Disponible sur <a href="https://console.anthropic.com/" target="_blank" class="text-decoration-none">console.anthropic.com</a>.</small>
+                      </div>
+                      <div class="col-md-5">
+                        <label for="ai_anthropic_model" class="form-label small fw-semibold">Modèle</label>
+                        <input type="text" class="form-control" id="ai_anthropic_model" name="ai_anthropic_model" value="<%= settings.ai_anthropic_model || 'claude-3-5-haiku-20241022' %>" placeholder="claude-3-5-haiku-20241022">
+                        <small class="text-muted">Ex : <code>claude-3-5-haiku-20241022</code> ou <code>claude-3-5-sonnet-20241022</code>.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Paramètres LLM Local (Ollama / LocalAI) -->
+                <div class="col-12 ai-provider-panel" id="panel_local" style="display: none;">
+                  <div class="p-3 border rounded-3 bg-body">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-server me-1"></i> Configuration LLM Local (Ollama / LM Studio / vLLM)</h6>
+                    <div class="row g-3">
+                      <div class="col-md-5">
+                        <label for="ai_local_url" class="form-label small fw-semibold">URL de l'endpoint compatible OpenAI</label>
+                        <input type="text" class="form-control" id="ai_local_url" name="ai_local_url" value="<%= settings.ai_local_url || 'http://localhost:11434/v1' %>" placeholder="http://localhost:11434/v1">
+                        <small class="text-muted">Pour Ollama : <code>http://localhost:11434/v1</code> (v0.1.24+).</small>
+                      </div>
+                      <div class="col-md-4">
+                        <label for="ai_local_model" class="form-label small fw-semibold">Nom du modèle local</label>
+                        <input type="text" class="form-control" id="ai_local_model" name="ai_local_model" value="<%= settings.ai_local_model || 'llama3.2' %>" placeholder="llama3.2">
+                        <small class="text-muted">Ex: <code>llama3.2</code>, <code>mistral</code>, <code>qwen2.5-coder</code>.</small>
+                      </div>
+                      <div class="col-md-3">
+                        <label for="ai_local_api_key" class="form-label small fw-semibold">Clé / Jeton (optionnel)</label>
+                        <input type="password" class="form-control" id="ai_local_api_key" name="ai_local_api_key" value="<%= settings.ai_local_api_key || '' %>" placeholder="Facultatif">
+                        <small class="text-muted">Si votre proxy local exige une authentification.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
           <!-- Submit Button Bar -->
           <div class="d-flex justify-content-end align-items-center gap-3 mb-5">
             <a href="/admin" class="btn btn-outline-secondary rounded-pill px-4"><%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %></a>
@@ -623,6 +762,117 @@
           }
         });
       });
+
+      // AI Provider switcher and test connection
+      const aiProviderSelect = document.getElementById('ai_provider');
+      const aiPanels = {
+        openai: document.getElementById('panel_openai'),
+        gemini: document.getElementById('panel_gemini'),
+        anthropic: document.getElementById('panel_anthropic'),
+        local: document.getElementById('panel_local'),
+      };
+
+      function updateAiPanels() {
+        const selected = aiProviderSelect ? aiProviderSelect.value : 'none';
+        Object.keys(aiPanels).forEach((key) => {
+          if (aiPanels[key]) {
+            aiPanels[key].style.display = key === selected ? 'block' : 'none';
+          }
+        });
+      }
+
+      if (aiProviderSelect) {
+        aiProviderSelect.addEventListener('change', updateAiPanels);
+        updateAiPanels();
+      }
+
+      // Toggle password visibility for API keys
+      document.querySelectorAll('.btn-toggle-password').forEach((btn) => {
+        btn.addEventListener('click', function () {
+          const targetId = this.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          const icon = this.querySelector('i');
+          if (input) {
+            if (input.type === 'password') {
+              input.type = 'text';
+              if (icon) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+              }
+            } else {
+              input.type = 'password';
+              if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+              }
+            }
+          }
+        });
+      });
+
+      // AI Connection Test Button
+      const btnTestAi = document.getElementById('btnTestAiConnection');
+      const aiNotice = document.getElementById('aiTestNotice');
+      const aiStatusBadge = document.getElementById('aiConnectionStatusBadge');
+
+      if (btnTestAi) {
+        btnTestAi.addEventListener('click', async function () {
+          const provider = aiProviderSelect ? aiProviderSelect.value : 'none';
+          if (provider === 'none') {
+            alert("Veuillez sélectionner un fournisseur d'IA avant de tester la connexion.");
+            return;
+          }
+
+          const originalText = btnTestAi.innerHTML;
+          btnTestAi.disabled = true;
+          btnTestAi.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Test en cours...';
+          if (aiNotice) aiNotice.textContent = 'Envoi de la requête de test...';
+
+          try {
+            const payload = {
+              ai_provider: provider,
+              ai_openai_api_key: document.getElementById('ai_openai_api_key')?.value || '',
+              ai_openai_model: document.getElementById('ai_openai_model')?.value || '',
+              ai_gemini_api_key: document.getElementById('ai_gemini_api_key')?.value || '',
+              ai_gemini_model: document.getElementById('ai_gemini_model')?.value || '',
+              ai_anthropic_api_key: document.getElementById('ai_anthropic_api_key')?.value || '',
+              ai_anthropic_model: document.getElementById('ai_anthropic_model')?.value || '',
+              ai_local_url: document.getElementById('ai_local_url')?.value || '',
+              ai_local_model: document.getElementById('ai_local_model')?.value || '',
+              ai_local_api_key: document.getElementById('ai_local_api_key')?.value || '',
+            };
+
+            const testUrl = window.getAppBaseUrl ? window.getAppBaseUrl('admin/settings/ai/test-connection') : '/admin/settings/ai/test-connection';
+            const response = await fetch(testUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+            if (response.ok && data.success) {
+              if (aiNotice) {
+                aiNotice.innerHTML = '<span class="text-success fw-semibold"><i class="fa-solid fa-check-circle me-1"></i> ' + data.message + '</span>';
+              }
+              if (aiStatusBadge) {
+                aiStatusBadge.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa-solid fa-circle-check me-1"></i> En ligne</span>';
+              }
+            } else {
+              throw new Error(data.message || 'Échec du test de connexion.');
+            }
+          } catch (err) {
+            if (aiNotice) {
+              aiNotice.innerHTML = '<span class="text-danger fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + err.message + '</span>';
+            }
+            if (aiStatusBadge) {
+              aiStatusBadge.innerHTML = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill"><i class="fa-solid fa-circle-xmark me-1"></i> Erreur</span>';
+            }
+          } finally {
+            btnTestAi.disabled = false;
+            btnTestAi.innerHTML = originalText;
+          }
+        });
+      }
     </script>
 </body>
 

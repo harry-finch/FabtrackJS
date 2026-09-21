@@ -49,6 +49,17 @@ const DEFAULT_SETTINGS = {
   // Sorbonne Projects Plugin settings
   plugin_sorbonne_enabled: "true",
   sorbonne_projecttype_name: "Sorbonne",
+  // Natural Language AI Query settings
+  ai_provider: "none", // 'none' | 'openai' | 'gemini' | 'anthropic' | 'local'
+  ai_openai_api_key: process.env.OPENAI_API_KEY || "",
+  ai_openai_model: "gpt-4o-mini",
+  ai_gemini_api_key: process.env.GEMINI_API_KEY || "",
+  ai_gemini_model: "gemini-1.5-flash",
+  ai_anthropic_api_key: process.env.ANTHROPIC_API_KEY || "",
+  ai_anthropic_model: "claude-3-5-haiku-20241022",
+  ai_local_url: "http://localhost:11434/v1",
+  ai_local_model: "llama3.2",
+  ai_local_api_key: "",
 };
 
 let cache = null;

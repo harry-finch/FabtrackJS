@@ -193,6 +193,38 @@ router.post(
       updates.sorbonne_projecttype_name = req.body.sorbonne_projecttype_name.trim() || "Sorbonne";
     }
 
+    // Natural Language AI Query settings
+    if (req.body.ai_provider !== undefined) {
+      updates.ai_provider = req.body.ai_provider;
+    }
+    if (req.body.ai_openai_api_key !== undefined) {
+      updates.ai_openai_api_key = req.body.ai_openai_api_key.trim();
+    }
+    if (req.body.ai_openai_model !== undefined) {
+      updates.ai_openai_model = req.body.ai_openai_model.trim() || "gpt-4o-mini";
+    }
+    if (req.body.ai_gemini_api_key !== undefined) {
+      updates.ai_gemini_api_key = req.body.ai_gemini_api_key.trim();
+    }
+    if (req.body.ai_gemini_model !== undefined) {
+      updates.ai_gemini_model = req.body.ai_gemini_model.trim() || "gemini-1.5-flash";
+    }
+    if (req.body.ai_anthropic_api_key !== undefined) {
+      updates.ai_anthropic_api_key = req.body.ai_anthropic_api_key.trim();
+    }
+    if (req.body.ai_anthropic_model !== undefined) {
+      updates.ai_anthropic_model = req.body.ai_anthropic_model.trim() || "claude-3-5-haiku-20241022";
+    }
+    if (req.body.ai_local_url !== undefined) {
+      updates.ai_local_url = req.body.ai_local_url.trim() || "http://localhost:11434/v1";
+    }
+    if (req.body.ai_local_model !== undefined) {
+      updates.ai_local_model = req.body.ai_local_model.trim() || "llama3.2";
+    }
+    if (req.body.ai_local_api_key !== undefined) {
+      updates.ai_local_api_key = req.body.ai_local_api_key.trim();
+    }
+
     await settingsService.updateSettings(updates);
 
     // Automatically ensure project types exist in the database
@@ -284,6 +316,35 @@ router.post(
       req.session.notification = `Error: Échec de l'import des traductions : ${err.message}`;
     }
     res.redirect("/admin/settings");
+  }),
+);
+
+// ******************************************************************************
+// POST /admin/settings/ai/test-connection: Test AI provider connectivity
+// ******************************************************************************
+router.post(
+  "/ai/test-connection",
+  express.json(),
+  asyncHandler(async (req, res) => {
+    const aiQueryService = require("../../services/aiQueryService");
+    try {
+      const customConfig = {
+        provider: req.body.ai_provider,
+        openaiApiKey: req.body.ai_openai_api_key,
+        openaiModel: req.body.ai_openai_model,
+        geminiApiKey: req.body.ai_gemini_api_key,
+        geminiModel: req.body.ai_gemini_model,
+        anthropicApiKey: req.body.ai_anthropic_api_key,
+        anthropicModel: req.body.ai_anthropic_model,
+        localUrl: req.body.ai_local_url,
+        localModel: req.body.ai_local_model,
+        localApiKey: req.body.ai_local_api_key,
+      };
+      const result = await aiQueryService.testConnection(customConfig);
+      res.json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
   }),
 );
 

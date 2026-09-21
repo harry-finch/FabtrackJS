@@ -103,6 +103,179 @@
                 </div>
             </div>
 
+            <!-- MODULE D'INTERROGATION EN LANGAGE NATUREL (NL2SQL) -->
+            <div class="card border-0 shadow-sm mb-4" id="aiQueryCard">
+                <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; font-size: 1.1rem;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="fw-bold mb-0">Assistant de requêtes en langage naturel</h5>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.7rem;">IA & Base de données</span>
+                            </div>
+                            <small class="text-muted">Interrogez les données du Fablab en posant vos questions en français</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <% if (isAiConfigured) { %>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span><%= aiProviderLabel %></span>
+                            </span>
+                        <% } else { %>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span>Moteur IA non configuré</span>
+                            </span>
+                        <% } %>
+                        <a href="/admin/settings" class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Configurer les clés d'API dans les paramètres">
+                            <i class="fa-solid fa-gear me-1"></i> Configurer l'IA
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body px-4 pt-2 pb-4">
+                    <% if (!isAiConfigured) { %>
+                        <div class="p-4 rounded-3 bg-body-tertiary border text-center my-2">
+                            <i class="fa-solid fa-robot fs-1 text-secondary mb-3 d-block"></i>
+                            <h6 class="fw-bold mb-1">Activez un moteur d'IA pour interroger votre base</h6>
+                            <p class="text-muted small mb-3 mx-auto" style="max-width: 550px;">
+                                Connectez votre compte OpenAI (ChatGPT), Google Gemini, Anthropic Claude ou un LLM local (Ollama) pour poser des questions comme <em>« Combien d'usagers ne sont venus qu'une seule fois ? »</em> ou <em>« Top 5 des machines les plus utilisées »</em>.
+                            </p>
+                            <a href="/admin/settings" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
+                                <i class="fa-solid fa-gear me-1"></i> Configurer l'IA dans les paramètres
+                            </a>
+                        </div>
+                    <% } else { %>
+                        <!-- Barre de saisie de question -->
+                        <form id="aiQueryForm" class="mb-3" onsubmit="return false;">
+                            <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
+                                <span class="input-group-text bg-body border-0 ps-3 text-primary">
+                                    <i class="fa-solid fa-sparkles"></i>
+                                </span>
+                                <input type="text" id="aiQuestionInput" class="form-control bg-body border-0 fs-6 py-3" placeholder="Ex : Combien d'utilisateurs enregistrés ne sont venus au fablab qu'une seule fois ?" autocomplete="off">
+                                <button class="btn btn-primary px-4 fw-semibold rounded-pill m-1 d-flex align-items-center gap-2" id="btnSubmitAiQuery" type="button">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span>Poser la question</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Puces de suggestions de questions -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                            <span class="small text-muted fw-semibold me-1"><i class="fa-regular fa-lightbulb me-1"></i> Suggestions :</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Combien d'utilisateurs enregistrés ne sont venus au fablab qu'une seule fois ?">
+                                Usagers venus 1 seule fois
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quelles sont les 5 machines les plus utilisées de l'histoire du fablab ?">
+                                Top 5 machines
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quelle est la répartition des projets par type de projet ?">
+                                Projets par type
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quel est le montant total des consommations par entité ou UFR Sorbonne ?">
+                                Consommations Sorbonne
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Combien d'usagers ont été enregistrés par typologie d'utilisateur ?">
+                                Usagers par typologie
+                            </button>
+                        </div>
+
+                        <!-- État de chargement animé -->
+                        <div id="aiLoadingContainer" class="p-4 text-center rounded-3 bg-body-tertiary border my-3" style="display: none;">
+                            <div class="spinner-border text-primary mb-2" role="status" style="width: 2.5rem; height: 2.5rem;">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <div class="fw-semibold text-primary">Analyse de la question & génération de la requête SQL...</div>
+                            <small class="text-muted">Interrogation sécurisée de la base MariaDB et mise en forme des données...</small>
+                        </div>
+
+                        <!-- État d'erreur -->
+                        <div id="aiErrorContainer" class="alert alert-danger border-danger-subtle d-flex align-items-center gap-3 my-3" style="display: none;">
+                            <i class="fa-solid fa-triangle-exclamation fs-3"></i>
+                            <div class="flex-grow-1">
+                                <strong class="d-block mb-1">Impossible de traiter la requête</strong>
+                                <span id="aiErrorMessage" class="small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Conteneur des Résultats -->
+                        <div id="aiResultContainer" class="mt-3 p-3 rounded-3 bg-body border shadow-sm" style="display: none;">
+                            <!-- En-tête des résultats -->
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-bold mb-0 text-primary" id="aiResultTitle">Résultat de la requête</h6>
+                                        <span class="badge bg-secondary-subtle text-secondary border rounded-pill" id="aiResultCountBadge">0 ligne(s)</span>
+                                        <span class="badge bg-body-secondary text-muted rounded-pill" id="aiResultDurationBadge">0 ms</span>
+                                    </div>
+                                    <p class="small text-muted mb-0 mt-1" id="aiResultExplanation"></p>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Bascule Graphique / Tableau -->
+                                    <div class="btn-group btn-group-sm" role="group" id="aiViewToggleGroup" style="display: none;">
+                                        <button type="button" class="btn btn-outline-primary active" id="btnShowChart">
+                                            <i class="fa-solid fa-chart-column me-1"></i> Graphique
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" id="btnShowTable">
+                                            <i class="fa-solid fa-table me-1"></i> Tableau
+                                        </button>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" id="btnExportAiCsv">
+                                        <i class="fa-solid fa-download me-1"></i> Exporter CSV
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Affichage Mode KPI (Valeur unique) -->
+                            <div id="aiKpiView" class="py-4 text-center" style="display: none;">
+                                <div class="icon-box bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 64px; height: 64px; font-size: 1.8rem;">
+                                    <i class="fa-solid fa-calculator"></i>
+                                </div>
+                                <div class="display-3 fw-bold text-primary mb-1" id="aiKpiValue">0</div>
+                                <div class="fs-6 text-muted fw-semibold" id="aiKpiLabel">Total</div>
+                            </div>
+
+                            <!-- Affichage Mode Graphique Chart.js -->
+                            <div id="aiChartView" class="py-2" style="display: none;">
+                                <div style="height: 320px; position: relative;">
+                                    <canvas id="aiQueryChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Affichage Mode Tableau -->
+                            <div id="aiTableView" class="table-responsive my-2" style="display: none; max-height: 400px;">
+                                <table class="table table-hover table-sm align-middle mb-0" id="aiDataTable">
+                                    <thead class="table-light sticky-top" id="aiTableHead"></thead>
+                                    <tbody id="aiTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <!-- Accordéon détails techniques (SQL exécuté) -->
+                            <div class="mt-3 pt-2 border-top">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a class="text-decoration-none small text-muted d-flex align-items-center gap-1" data-bs-toggle="collapse" href="#aiSqlCollapse" role="button" aria-expanded="false">
+                                        <i class="fa-solid fa-code text-primary"></i>
+                                        <span>Afficher la requête SQL générée</span>
+                                        <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-pill" id="btnCopySql" style="font-size: 0.75rem;">
+                                        <i class="fa-regular fa-copy me-1"></i> Copier SQL
+                                    </button>
+                                </div>
+                                <div class="collapse mt-2" id="aiSqlCollapse">
+                                    <div class="p-3 bg-dark text-light rounded-3 small font-monospace overflow-auto" style="max-height: 180px;">
+                                        <pre class="mb-0"><code id="aiSqlCode" class="text-info"></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
             <!-- CARTES DE CHIFFRES CLÉS (KPIS) -->
             <div class="row g-3 mb-4">
                 <!-- Visites Totales -->
@@ -637,6 +810,252 @@
                     document.getElementById("endDateInput").value = end;
                 }
             });
+
+            // =========================================================================
+            // GESTION DU MODULE D'INTERROGATION EN LANGAGE NATUREL (AI QUERY)
+            // =========================================================================
+            (function() {
+                const form = document.getElementById("aiQueryForm");
+                const input = document.getElementById("aiQuestionInput");
+                const btnSubmit = document.getElementById("btnSubmitAiQuery");
+                const loadingContainer = document.getElementById("aiLoadingContainer");
+                const errorContainer = document.getElementById("aiErrorContainer");
+                const errorMessage = document.getElementById("aiErrorMessage");
+                const resultContainer = document.getElementById("aiResultContainer");
+                const resultTitle = document.getElementById("aiResultTitle");
+                const countBadge = document.getElementById("aiResultCountBadge");
+                const durationBadge = document.getElementById("aiResultDurationBadge");
+                const explanation = document.getElementById("aiResultExplanation");
+                const toggleGroup = document.getElementById("aiViewToggleGroup");
+                const btnShowChart = document.getElementById("btnShowChart");
+                const btnShowTable = document.getElementById("btnShowTable");
+                const btnExportCsv = document.getElementById("btnExportAiCsv");
+                const btnCopySql = document.getElementById("btnCopySql");
+                const sqlCode = document.getElementById("aiSqlCode");
+                const kpiView = document.getElementById("aiKpiView");
+                const kpiValue = document.getElementById("aiKpiValue");
+                const kpiLabel = document.getElementById("aiKpiLabel");
+                const chartView = document.getElementById("aiChartView");
+                const tableView = document.getElementById("aiTableView");
+                const tableHead = document.getElementById("aiTableHead");
+                const tableBody = document.getElementById("aiTableBody");
+
+                if (!input || !btnSubmit) return;
+
+                let currentData = null;
+                let aiChartInstance = null;
+
+                // Soumission de la question
+                async function submitAiQuestion(questionText) {
+                    const q = (questionText || input.value || "").trim();
+                    if (!q) {
+                        input.focus();
+                        return;
+                    }
+
+                    // Reset affichages
+                    errorContainer.style.display = "none";
+                    resultContainer.style.display = "none";
+                    loadingContainer.style.display = "block";
+                    btnSubmit.disabled = true;
+
+                    try {
+                        const url = window.getAppBaseUrl ? window.getAppBaseUrl("admin/statistics/ai-query") : "/admin/statistics/ai-query";
+                        const res = await fetch(url, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ question: q }),
+                        });
+
+                        const data = await res.json();
+                        if (!res.ok || !data.success) {
+                            throw new Error(data.error || "Erreur lors du traitement de votre question.");
+                        }
+
+                        renderAiResults(data);
+                    } catch (err) {
+                        errorMessage.textContent = err.message;
+                        errorContainer.style.display = "flex";
+                    } finally {
+                        loadingContainer.style.display = "none";
+                        btnSubmit.disabled = false;
+                    }
+                }
+
+                // Rendu des résultats
+                function renderAiResults(data) {
+                    currentData = data;
+                    resultTitle.textContent = data.title || "Résultats";
+                    countBadge.textContent = `${data.rowCount} ligne(s)`;
+                    durationBadge.textContent = `${data.durationMs} ms`;
+                    explanation.textContent = data.explanation || "";
+                    sqlCode.textContent = data.sql || "";
+
+                    // 1. Remplissage du tableau
+                    renderTable(data.columns, data.data);
+
+                    // 2. Gestion de la visualisation
+                    const viz = data.visualization || {};
+                    if (viz.isKpi) {
+                        // Mode KPI (Valeur unique)
+                        kpiValue.textContent = typeof viz.kpiValue === "number" ? viz.kpiValue.toLocaleString("fr-FR") : viz.kpiValue;
+                        kpiLabel.textContent = viz.kpiLabel || data.title;
+                        kpiView.style.display = "block";
+                        chartView.style.display = "none";
+                        tableView.style.display = "none";
+                        toggleGroup.style.display = "none";
+                    } else if (viz.chartType !== "table" && viz.chartConfig) {
+                        // Mode Graphique
+                        kpiView.style.display = "none";
+                        chartView.style.display = "block";
+                        tableView.style.display = "none";
+                        toggleGroup.style.display = "inline-flex";
+                        btnShowChart.classList.add("active");
+                        btnShowTable.classList.remove("active");
+
+                        renderChart(viz.chartConfig);
+                    } else {
+                        // Mode Tableau pur
+                        kpiView.style.display = "none";
+                        chartView.style.display = "none";
+                        tableView.style.display = "block";
+                        toggleGroup.style.display = "none";
+                    }
+
+                    resultContainer.style.display = "block";
+                    resultContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+
+                function renderChart(config) {
+                    if (aiChartInstance) {
+                        aiChartInstance.destroy();
+                        aiChartInstance = null;
+                    }
+
+                    const ctx = document.getElementById("aiQueryChart").getContext("2d");
+                    const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+                    const textColor = isDark ? "#e2e8f0" : "#334155";
+                    const gridColor = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)";
+
+                    // Adapter axes aux couleurs du thème si échelles présentes
+                    if (config.options && config.options.scales) {
+                        Object.keys(config.options.scales).forEach((axis) => {
+                            config.options.scales[axis].ticks = { color: textColor };
+                            config.options.scales[axis].grid = { color: gridColor };
+                        });
+                    }
+
+                    aiChartInstance = new Chart(ctx, config);
+                }
+
+                function renderTable(columns, rows) {
+                    tableHead.innerHTML = "";
+                    tableBody.innerHTML = "";
+
+                    if (!columns || columns.length === 0 || !rows || rows.length === 0) {
+                        tableBody.innerHTML = '<tr><td class="text-center text-muted py-3">Aucun résultat trouvé</td></tr>';
+                        return;
+                    }
+
+                    // En-têtes
+                    const trHead = document.createElement("tr");
+                    columns.forEach((col) => {
+                        const th = document.createElement("th");
+                        th.scope = "col";
+                        th.textContent = col;
+                        trHead.appendChild(th);
+                    });
+                    tableHead.appendChild(trHead);
+
+                    // Données
+                    rows.forEach((row) => {
+                        const tr = document.createElement("tr");
+                        columns.forEach((col) => {
+                            const td = document.createElement("td");
+                            const val = row[col];
+                            td.textContent = val === null || val === undefined ? "—" : String(val);
+                            tr.appendChild(td);
+                        });
+                        tableBody.appendChild(tr);
+                    });
+                }
+
+                // Clics sur les puces de suggestions
+                document.querySelectorAll(".ai-suggestion-chip").forEach((chip) => {
+                    chip.addEventListener("click", function() {
+                        const q = this.getAttribute("data-question");
+                        input.value = q;
+                        submitAiQuestion(q);
+                    });
+                });
+
+                // Clic bouton poser la question
+                btnSubmit.addEventListener("click", () => submitAiQuestion());
+
+                // Touche Entrée dans l'input
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        submitAiQuestion();
+                    }
+                });
+
+                // Bascule Graphique / Tableau
+                btnShowChart.addEventListener("click", () => {
+                    btnShowChart.classList.add("active");
+                    btnShowTable.classList.remove("active");
+                    chartView.style.display = "block";
+                    tableView.style.display = "none";
+                });
+
+                btnShowTable.addEventListener("click", () => {
+                    btnShowTable.classList.add("active");
+                    btnShowChart.classList.remove("active");
+                    chartView.style.display = "none";
+                    tableView.style.display = "block";
+                });
+
+                // Copier la requête SQL
+                btnCopySql.addEventListener("click", () => {
+                    if (!sqlCode.textContent) return;
+                    navigator.clipboard.writeText(sqlCode.textContent).then(() => {
+                        const original = btnCopySql.innerHTML;
+                        btnCopySql.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i> Copié !';
+                        setTimeout(() => (btnCopySql.innerHTML = original), 2000);
+                    });
+                });
+
+                // Export CSV
+                btnExportCsv.addEventListener("click", () => {
+                    if (!currentData || !currentData.data || currentData.data.length === 0) {
+                        alert("Aucune donnée à exporter.");
+                        return;
+                    }
+
+                    const cols = currentData.columns;
+                    let csv = "\uFEFF" + cols.join(";") + "\r\n";
+
+                    currentData.data.forEach((row) => {
+                        const line = cols.map((c) => {
+                            let val = row[c] === null || row[c] === undefined ? "" : String(row[c]);
+                            if (val.includes(";") || val.includes('"') || val.includes("\n")) {
+                                val = `"${val.replace(/"/g, '""')}"`;
+                            }
+                            return val;
+                        });
+                        csv += line.join(";") + "\r\n";
+                    });
+
+                    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `fabtrack_requete_ia_${Date.now()}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            })();
         </script>
     </body>
 </html>
