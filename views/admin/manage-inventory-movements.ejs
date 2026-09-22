@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Suivi des mouvements d'inventaire et des rebuts" />
+    <meta name="author" content="FabtrackJS" />
+    <title>Mouvements d'inventaire & Rebuts - Fabtrack</title>
+
+    <%- include('../includes/pagehead.html') %>
+  </head>
+
+  <body class="bg-body-tertiary py-4">
+    <%- include('../includes/light-dark.html') %>
+
+    <main class="main-container">
+      <%- include('../includes/header.html') %>
+
+      <!-- Page Header -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fa-solid fa-dolly"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0">Mouvements d'inventaire & Sorties</h4>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">
+                  <%= total %> enregistrement(s)
+                </span>
+              </div>
+              <p class="text-muted small mb-0">Traçabilité des déstockages, casses d'outils, rebuts et maintenances</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a href="/admin/inventory/movements/export" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+              <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV
+            </a>
+            <button
+              type="button"
+              class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm fw-semibold"
+              data-bs-toggle="modal"
+              data-bs-target="#modalInventoryCheckout"
+            >
+              <i class="fa-solid fa-arrow-up-from-bracket me-1"></i> Nouvelle sortie
+            </button>
+            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-arrow-left me-1"></i> Retour admin
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+          <div class="card border-0 shadow-sm rounded-3 p-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <p class="text-muted small mb-1">Sorties ce mois-ci</p>
+                <h4 class="fw-bold mb-0 text-body"><%= stats.monthCount %></h4>
+              </div>
+              <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                <i class="fa-solid fa-calendar-days"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+          <div class="card border-0 shadow-sm rounded-3 p-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <p class="text-muted small mb-1">Casses & Dégradations</p>
+                <h4 class="fw-bold mb-0 text-danger"><%= stats.breakageCount %></h4>
+              </div>
+              <div class="icon-box bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+          <div class="card border-0 shadow-sm rounded-3 p-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <p class="text-muted small mb-1">Mises au rebut</p>
+                <h4 class="fw-bold mb-0 text-warning-emphasis"><%= stats.scrapCount %></h4>
+              </div>
+              <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                <i class="fa-solid fa-trash-can"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+          <div class="card border-0 shadow-sm rounded-3 p-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <p class="text-muted small mb-1">Outils indisponibles</p>
+                <h4 class="fw-bold mb-0 text-secondary"><%= stats.equipmentOutCount %></h4>
+              </div>
+              <div class="icon-box bg-secondary-subtle text-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                <i class="fa-solid fa-wrench"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Search Form -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+          <form action="/admin/inventory/movements" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-3 col-sm-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-layer-group text-muted"></i></span>
+                <select class="form-select" name="itemType" onchange="this.form.submit()">
+                  <option value="">Tous les types</option>
+                  <option value="CONSUMABLE" <%= itemType === 'CONSUMABLE' ? 'selected' : '' %>>Consommables</option>
+                  <option value="EQUIPMENT" <%= itemType === 'EQUIPMENT' ? 'selected' : '' %>>Outils & Équipements</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-tag text-muted"></i></span>
+                <select class="form-select" name="reason" onchange="this.form.submit()">
+                  <option value="">Tous les motifs</option>
+                  <option value="Casse" <%= reason === 'Casse' ? 'selected' : '' %>>Casse / Dégradation</option>
+                  <option value="Rebut" <%= reason === 'Rebut' ? 'selected' : '' %>>Mise au rebut / Usure</option>
+                  <option value="Maintenance" <%= reason === 'Maintenance' ? 'selected' : '' %>>Panne / Maintenance</option>
+                  <option value="Atelier" <%= reason === 'Atelier' ? 'selected' : '' %>>Utilisation atelier</option>
+                  <option value="Perte" <%= reason === 'Perte' ? 'selected' : '' %>>Perte / Vol</option>
+                  <option value="Écart" <%= reason === 'Écart' ? 'selected' : '' %>>Écart d'inventaire</option>
+                  <option value="Remise" <%= reason === 'Remise' ? 'selected' : '' %>>Remise en service</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-sm-8">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="search"
+                  value="<%= search %>"
+                  placeholder="Rechercher par article, auteur, note..."
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4 d-flex gap-1">
+              <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill">Filtrer</button>
+              <% if (itemType || reason || search) { %>
+                <a href="/admin/inventory/movements" class="btn btn-outline-secondary btn-sm rounded-pill" title="Réinitialiser les filtres">
+                  <i class="fa-solid fa-rotate-left"></i>
+                </a>
+              <% } %>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Movements Table -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" class="ps-4" style="width: 130px;">Date & Heure</th>
+                  <th scope="col" style="width: 140px;">Type</th>
+                  <th scope="col">Article concerné</th>
+                  <th scope="col" class="text-center" style="width: 140px;">Quantité / Impact</th>
+                  <th scope="col" style="width: 180px;">Motif</th>
+                  <th scope="col" style="width: 130px;">Déclarant</th>
+                  <th scope="col" class="pe-4">Notes / Contexte</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (movements.length === 0) { %>
+                  <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                      <i class="fa-solid fa-clipboard-check fa-2x mb-2 d-block opacity-50"></i>
+                      Aucun mouvement d'inventaire enregistré pour ces critères.
+                    </td>
+                  </tr>
+                <% } else { %>
+                  <% movements.forEach(function(m) { 
+                       const d = new Date(m.createdAt);
+                       const dateFmt = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                       const timeFmt = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                  %>
+                  <tr>
+                    <td class="ps-4">
+                      <div class="fw-semibold small"><%= dateFmt %></div>
+                      <div class="text-muted" style="font-size: 0.72rem;"><%= timeFmt %></div>
+                    </td>
+
+                    <td>
+                      <% if (m.itemType === 'CONSUMABLE') { %>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
+                          <i class="fa-solid fa-boxes-stacked me-1"></i> Consommable
+                        </span>
+                      <% } else { %>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                          <i class="fa-solid fa-toolbox me-1"></i> Équipement
+                        </span>
+                      <% } %>
+                    </td>
+
+                    <td>
+                      <div class="fw-semibold text-body"><%= m.itemName %></div>
+                      <div class="text-muted small">Réf: #<%= m.itemId %></div>
+                    </td>
+
+                    <td class="text-center">
+                      <% if (m.itemType === 'CONSUMABLE') { %>
+                        <div class="fw-bold text-danger">-<%= m.quantity %> <%= m.unit %></div>
+                        <% if (m.stockBefore !== null && m.stockAfter !== null) { %>
+                          <div class="text-muted" style="font-size: 0.72rem;">Stock : <%= m.stockBefore %> &rarr; <strong><%= m.stockAfter %></strong></div>
+                        <% } %>
+                      <% } else { %>
+                        <% if (m.equipmentStatusAfter === 'DECOMMISSIONED') { %>
+                          <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                            <i class="fa-solid fa-trash-can me-1"></i> Au rebut
+                          </span>
+                        <% } else if (m.equipmentStatusAfter === 'OUT_OF_SERVICE') { %>
+                          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
+                            <i class="fa-solid fa-screwdriver-wrench me-1"></i> Hors service
+                          </span>
+                        <% } else { %>
+                          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
+                            <i class="fa-solid fa-circle-check me-1"></i> En service
+                          </span>
+                        <% } %>
+                      <% } %>
+                    </td>
+
+                    <td>
+                      <% 
+                        let badgeClass = 'bg-secondary-subtle text-secondary';
+                        let iconClass = 'fa-tag';
+                        if (m.reason.includes('Casse')) {
+                          badgeClass = 'bg-danger-subtle text-danger border-danger-subtle';
+                          iconClass = 'fa-triangle-exclamation';
+                        } else if (m.reason.includes('Rebut')) {
+                          badgeClass = 'bg-warning-subtle text-warning-emphasis border-warning-subtle';
+                          iconClass = 'fa-trash-can';
+                        } else if (m.reason.includes('Maintenance') || m.reason.includes('Panne')) {
+                          badgeClass = 'bg-info-subtle text-info-emphasis border-info-subtle';
+                          iconClass = 'fa-screwdriver-wrench';
+                        } else if (m.reason.includes('Remise')) {
+                          badgeClass = 'bg-success-subtle text-success border-success-subtle';
+                          iconClass = 'fa-rotate-left';
+                        }
+                      %>
+                      <span class="badge <%= badgeClass %> border rounded-pill px-2 py-1 small">
+                        <i class="fa-solid <%= iconClass %> me-1"></i> <%= m.reason %>
+                      </span>
+                    </td>
+
+                    <td>
+                      <span class="badge bg-body-secondary text-body border rounded-pill px-2 py-1">
+                        <i class="fa-solid fa-user-shield me-1 text-muted"></i> <%= m.author %>
+                      </span>
+                    </td>
+
+                    <td class="pe-4">
+                      <% if (m.notes) { %>
+                        <span class="small text-secondary"><%= m.notes %></span>
+                      <% } else { %>
+                        <span class="text-muted small fst-italic">Aucune note</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }); %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <% if (totalPages > 1) { %>
+          <div class="card-footer bg-transparent py-3 border-0 d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page <%= currentPage %> sur <%= totalPages %> (<%= total %> mouvements)</span>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
+                <a class="page-link rounded-pill px-2 me-1" href="/admin/inventory/movements?page=<%= currentPage - 1 %>&itemType=<%= itemType %>&reason=<%= reason %>&search=<%= search %>">
+                  &laquo; Précédent
+                </a>
+              </li>
+              <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                  <a class="page-link rounded-circle mx-1 text-center" style="width: 30px; height: 30px; line-height: 16px;" href="/admin/inventory/movements?page=<%= i %>&itemType=<%= itemType %>&reason=<%= reason %>&search=<%= search %>">
+                    <%= i %>
+                  </a>
+                </li>
+              <% } %>
+              <li class="page-item <%= currentPage >= totalPages ? 'disabled' : '' %>">
+                <a class="page-link rounded-pill px-2 ms-1" href="/admin/inventory/movements?page=<%= currentPage + 1 %>&itemType=<%= itemType %>&reason=<%= reason %>&search=<%= search %>">
+                  Suivant &raquo;
+                </a>
+              </li>
+            </ul>
+          </div>
+        <% } %>
+      </div>
+
+      <%- include('../includes/footer.html') %>
+    </main>
+  </body>
+</html>

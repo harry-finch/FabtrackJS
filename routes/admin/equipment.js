@@ -111,6 +111,9 @@ router.get(
       name: eq.name,
       workspaceId: eq.workspaceId,
       workspace: eq.workspace,
+      status: eq.status || "AVAILABLE",
+      decommissionedAt: eq.decommissionedAt,
+      decommissionReason: eq.decommissionReason,
       borrowCount: borrowCounts.get(eq.id) || 0,
       isCurrentlyBorrowed: activeBorrowedEquipIds.has(eq.id),
       currentBorrowers: activeLoans

@@ -245,8 +245,9 @@ model Machine {
   location    Location?   @relation(fields: [locationId], references: [id])
   machinetype MachineType @relation(fields: [machinetypeId], references: [id])
   access      Access      @relation(fields: [accessId], references: [id])
-  category    Category?   @relation(fields: [categoryId], references: [id])
-  issues      MachineIssue[]
+  category     Category?      @relation(fields: [categoryId], references: [id])
+  issues       MachineIssue[]
+  maintenances MachineMaintenance[]
 }
 
 model MachineType {
@@ -258,11 +259,14 @@ model MachineType {
 
 // Equipment (e.g., hand tools, safety gear)
 model Equipment {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique @db.VarChar(255)
-  workspaceId Int?
+  id                 Int        @id @default(autoincrement())
+  name               String     @unique @db.VarChar(255)
+  workspaceId        Int?
+  status             String     @default("AVAILABLE") @db.VarChar(50) // AVAILABLE, OUT_OF_SERVICE, DECOMMISSIONED
+  decommissionedAt   DateTime?
+  decommissionReason String?    @db.VarChar(255)
 
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  workspace          Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 }
 
 // Consumable status enum to track stock status
@@ -371,4 +375,43 @@ model MachineIssue {
   updatedAt       DateTime  @updatedAt
 
   machine         Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+}
+
+// Maintenance operations performed on machines by staff
+model MachineMaintenance {
+  id              Int       @id @default(autoincrement())
+  machineId       Int
+  createdAt       DateTime  @default(now())
+  maintenanceDate DateTime  @default(now())
+  title           String    @db.VarChar(255) // e.g. "Changement de buse", "Changement de lentille", "Changement filtre"
+  type            String    @default("PREVENTIVE") @db.VarChar(50) // PREVENTIVE, CURATIVE, REPLACEMENT, CALIBRATION, CLEANING, OTHER
+  description     String?   @db.Text
+  operator        String    @db.VarChar(255)
+  partsReplaced   String?   @db.VarChar(255)
+  cost            Decimal?  @db.Decimal(10, 2)
+
+  machine         Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+}
+
+enum InventoryItemType {
+  CONSUMABLE
+  EQUIPMENT
+}
+
+// Track inventory movements (stock checkouts, write-offs, decommissioned tools)
+model InventoryMovement {
+  id                    Int               @id @default(autoincrement())
+  createdAt             DateTime          @default(now())
+  itemType              InventoryItemType
+  itemId                Int
+  itemName              String            @db.VarChar(255)
+  quantity              Int               @default(1)
+  unit                  String?           @db.VarChar(30)
+  reason                String            @db.VarChar(100) // CASSE, REBUT, MAINTENANCE, ATELIER, PERTE, INVENTAIRE, AUTRE
+  notes                 String?           @db.Text
+  author                String            @db.VarChar(255)
+  stockBefore           Int?
+  stockAfter            Int?
+  equipmentStatusBefore String?           @db.VarChar(50)
+  equipmentStatusAfter  String?           @db.VarChar(50)
 }

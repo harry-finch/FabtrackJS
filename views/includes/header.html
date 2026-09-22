@@ -122,7 +122,13 @@
             </button>
         </span>
 
-        <% if (typeof role !== 'undefined' && role === 'admin' && (typeof currentPath === 'undefined' || !currentPath.startsWith('/admin'))) { %>
+        <% if (typeof role !== 'undefined' && role === 'admin') { %>
+        <!-- Inventory Checkout Button for Admins -->
+        <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Sortie d'inventaire (casse, rebut...)" title="Sortie d'inventaire">
+            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout" aria-label="Sortie d'inventaire" onclick="const t = bootstrap.Tooltip.getInstance(this.parentElement); if (t) t.hide();">
+                <i class="fa-solid fa-dolly fa-sm"></i>
+            </button>
+        </span>
         <a href="/admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>">
             <i class="fa-solid fa-screwdriver-wrench fa-sm"></i>
         </a>
@@ -199,6 +205,10 @@
                         <span class="small fw-semibold"><%= (typeof __ !== 'undefined' && __('nav.report_bug') && __('nav.report_bug') !== 'nav.report_bug') ? __('nav.report_bug') : 'Signaler un bug' %></span>
                     </a>
                     <% if (role === "admin") { %>
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-warning-emphasis" href="#" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout">
+                        <i class="fa-solid fa-dolly text-warning fa-sm" style="width: 16px;"></i>
+                        <span class="small fw-semibold">Sortie d'inventaire / Rebut</span>
+                    </a>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin">
                         <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
                         <span class="small"><%= typeof __ !== 'undefined' ? __('nav.admin_panel') : 'Panneau d\'administration' %></span>
@@ -224,3 +234,4 @@
 <h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>
 
 <%- include('bug-report-modal.html') %>
+<%- include('inventory-checkout-modal.html') %>

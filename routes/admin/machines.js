@@ -7,9 +7,11 @@ const fs = require("fs");
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const isAuthenticated = require("../../middleware/checkSession.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { createMaintenanceSchema } = require("../../schemas/issue.schema.js");
 
-router.use(isAdmin);
+router.use(isAuthenticated);
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -40,6 +42,7 @@ const upload = multer({ storage: storage });
 
 router.get(
   "/manage-types",
+  isAdmin,
   clearNotification,
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/machines/manage-types";
@@ -60,6 +63,7 @@ router.get(
 
 router.get(
   "/delete-type/:id",
+  isAdmin,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -81,6 +85,7 @@ router.get(
 
 router.post(
   "/create-type",
+  isAdmin,
   asyncHandler(async (req, res) => {
     const { name } = req.body;
 
@@ -102,6 +107,7 @@ router.post(
 
 router.post(
   "/update-type",
+  isAdmin,
   asyncHandler(async (req, res) => {
     const { machinetypeid, name } = req.body;
 
@@ -159,6 +165,10 @@ function formatDateTime(date) {
   return dateService.formatDateTime(date);
 }
 
+function formatDate(date) {
+  return dateService.formatDate(date);
+}
+
 // ******************************************************************************
 // Route to view a machine's full details and usage history
 // ******************************************************************************
@@ -178,6 +188,9 @@ router.get(
         category: true,
         issues: {
           orderBy: { createdAt: "desc" },
+        },
+        maintenances: {
+          orderBy: { maintenanceDate: "desc" },
         },
       },
     });
@@ -234,13 +247,54 @@ router.get(
       formattedResolvedAt: issue.resolvedAt ? formatDateTime(issue.resolvedAt) : null,
     }));
 
+    const formattedMaintenances = (machine.maintenances || []).map((m) => ({
+      ...m,
+      formattedDate: formatDate(m.maintenanceDate),
+      formattedCreatedAt: formatDateTime(m.createdAt),
+    }));
+
     const openIssuesCount = formattedIssues.filter((i) => i.status === "OPEN").length;
+
+    // Build unified chronological event stream
+    const events = [
+      ...formattedIssues.map((i) => ({
+        eventId: `issue-${i.id}`,
+        kind: "ISSUE",
+        rawDate: i.createdAt,
+        formattedDate: i.formattedCreatedAt,
+        status: i.status,
+        author: i.reporterName || i.reporterEmail || "Usager",
+        title: "Incident / Panne signalée",
+        description: i.description,
+        photoPath: i.photoPath,
+        resolvedAt: i.resolvedAt,
+        formattedResolvedAt: i.formattedResolvedAt,
+        resolutionNotes: i.resolutionNotes,
+        original: i,
+      })),
+      ...formattedMaintenances.map((m) => ({
+        eventId: `maintenance-${m.id}`,
+        kind: "MAINTENANCE",
+        rawDate: m.maintenanceDate,
+        formattedDate: m.formattedDate,
+        status: "COMPLETED",
+        author: m.operator,
+        title: m.title,
+        type: m.type,
+        description: m.description,
+        partsReplaced: m.partsReplaced,
+        cost: m.cost,
+        original: m,
+      })),
+    ].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
 
     res.render("admin/view-machine", {
       machine,
       usageHistory,
       usageStats,
       issues: formattedIssues,
+      maintenances: formattedMaintenances,
+      events,
       openIssuesCount,
     });
   }),
@@ -308,6 +362,7 @@ router.post(
 // ******************************************************************************
 router.post(
   "/issues/:issueId/delete",
+  isAdmin,
   asyncHandler(async (req, res) => {
     const { issueId } = req.params;
     const currentIssue = await prisma.machineIssue.findUnique({
@@ -344,11 +399,121 @@ router.post(
 );
 
 // ******************************************************************************
+// POST /admin/machines/maintenance/create: Log a machine maintenance operation
+// Accessible to all logged-in staff and admins
+// ******************************************************************************
+router.post(
+  "/maintenance/create",
+  isAuthenticated,
+  asyncHandler(async (req, res) => {
+    const parsed = createMaintenanceSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const errorMsg = parsed.error.issues.map((i) => i.message).join(" ");
+      req.session.notification = `Error: ${errorMsg}`;
+      return res.redirect(req.body.machineId ? `/admin/machines/view/${req.body.machineId}#issues` : "/admin/machines/manage");
+    }
+
+    const { machineId, title, type, description, operator, partsReplaced, cost, maintenanceDate, resolveOpenIssues } = parsed.data;
+    const author = operator && operator.trim() ? operator.trim() : (req.session.username || "Staff");
+
+    const machine = await prisma.machine.findUnique({ where: { id: machineId } });
+    if (!machine) {
+      req.session.notification = "Error: Machine introuvable.";
+      return res.redirect("/admin/machines/manage");
+    }
+
+    const opDate = maintenanceDate || new Date();
+
+    const maintenance = await prisma.machineMaintenance.create({
+      data: {
+        machineId,
+        title,
+        type: type || "PREVENTIVE",
+        description: description || null,
+        operator: author,
+        partsReplaced: partsReplaced || null,
+        cost: cost !== null && cost !== undefined ? Number(cost) : null,
+        maintenanceDate: opDate,
+      },
+    });
+
+    // Automatically update lastMaintenance on machine
+    await prisma.machine.update({
+      where: { id: machineId },
+      data: {
+        lastMaintenance: opDate,
+      },
+    });
+
+    // Optionally resolve open issues if requested
+    if (resolveOpenIssues) {
+      await prisma.machineIssue.updateMany({
+        where: { machineId, status: "OPEN" },
+        data: {
+          status: "RESOLVED",
+          resolvedAt: new Date(),
+          resolutionNotes: `Résolu par l'opération de maintenance : "${title}" (${author})`,
+        },
+      });
+    }
+
+    invalidateCache(req);
+    logger.logThat(`Maintenance enregistrée sur "${machine.name}" (#${machineId}) : "${title}" par ${author}`);
+    req.session.notification = `Success: Opération de maintenance enregistrée pour "${machine.name}".`;
+
+    res.redirect(`/admin/machines/view/${machineId}#issues`);
+  }),
+);
+
+// ******************************************************************************
+// POST /admin/machines/maintenance/:maintenanceId/delete: Delete a maintenance log
+// ******************************************************************************
+router.post(
+  "/maintenance/:maintenanceId/delete",
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const { maintenanceId } = req.params;
+    const current = await prisma.machineMaintenance.findUnique({
+      where: { id: Number(maintenanceId) },
+    });
+
+    if (!current) {
+      req.session.notification = "Error: Enregistrement de maintenance introuvable.";
+      return res.redirect("/admin/machines/manage");
+    }
+
+    const targetMachineId = current.machineId;
+    await prisma.machineMaintenance.delete({
+      where: { id: Number(maintenanceId) },
+    });
+
+    // Recalculate last maintenance date from remaining records if any
+    const latestMaintenance = await prisma.machineMaintenance.findFirst({
+      where: { machineId: targetMachineId },
+      orderBy: { maintenanceDate: "desc" },
+    });
+
+    await prisma.machine.update({
+      where: { id: targetMachineId },
+      data: {
+        lastMaintenance: latestMaintenance ? latestMaintenance.maintenanceDate : null,
+      },
+    });
+
+    invalidateCache(req);
+    logger.logThat(`Maintenance #${maintenanceId} supprimée pour la machine #${targetMachineId}`);
+    req.session.notification = "Success: Enregistrement de maintenance supprimé.";
+    res.redirect(`/admin/machines/view/${targetMachineId}#issues`);
+  }),
+);
+
+// ******************************************************************************
 // Route to create a machine
 // ******************************************************************************
 
 router.post(
   "/create",
+  isAdmin,
   upload.any(),
   asyncHandler(async (req, res) => {
     const {
@@ -417,6 +582,7 @@ router.post(
 
 router.get(
   "/edit/:id",
+  isAdmin,
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -457,6 +623,7 @@ router.get(
 
 router.post(
   "/update",
+  isAdmin,
   upload.any(),
   asyncHandler(async (req, res) => {
     const {
@@ -540,6 +707,7 @@ router.post(
 
 router.get(
   "/delete/:id",
+  isAdmin,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 

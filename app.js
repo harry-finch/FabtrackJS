@@ -309,8 +309,11 @@ async function loadCache(req, res, next) {
       req.session.categories = await prisma.category.findMany({ include: { workspace: true } });
       req.session.locations = await prisma.location.findMany();
       req.session.access = await prisma.access.findMany();
-      req.session.machines = await prisma.machine.findMany();
-      req.session.equipment = await prisma.equipment.findMany({ include: { workspace: true }, orderBy: { name: "asc" } });
+      req.session.equipment = await prisma.equipment.findMany({
+        where: { status: "AVAILABLE" },
+        include: { workspace: true },
+        orderBy: { name: "asc" },
+      });
       req.session.invalidateCache = false;
     }
 

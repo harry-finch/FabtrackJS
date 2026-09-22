@@ -7,6 +7,7 @@ module.exports = {
   ...require("./api.schema"),
   ...require("./equipment.schema"),
   ...require("./consumable.schema"),
+  ...require("./inventory.schema"),
   ...require("./bug.schema"),
   ...require("./setup.schema"),
 };

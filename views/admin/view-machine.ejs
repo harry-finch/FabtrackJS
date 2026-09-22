@@ -12,6 +12,19 @@
   <body class="d-flex justify-content-center bg-body-tertiary py-4">
     <%- include('../includes/light-dark.html') %>
 
+    <%
+      const safeEvents = (typeof events !== 'undefined' && Array.isArray(events)) ? events : ((typeof locals !== 'undefined' && Array.isArray(locals.events)) ? locals.events : []);
+      const safeIssues = (typeof issues !== 'undefined' && Array.isArray(issues)) ? issues : ((typeof locals !== 'undefined' && Array.isArray(locals.issues)) ? locals.issues : []);
+      const safeMaintenances = (typeof maintenances !== 'undefined' && Array.isArray(maintenances)) ? maintenances : ((typeof locals !== 'undefined' && Array.isArray(locals.maintenances)) ? locals.maintenances : []);
+      const safeOpenIssuesCount = (typeof openIssuesCount !== 'undefined') ? openIssuesCount : ((typeof locals !== 'undefined' && typeof locals.openIssuesCount !== 'undefined') ? locals.openIssuesCount : safeIssues.filter(i => i.status === 'OPEN').length);
+      const safeFormatDate = (d) => {
+        if (!d) return '-';
+        if (typeof formatDate === 'function') return formatDate(d);
+        if (typeof locals !== 'undefined' && typeof locals.formatDate === 'function') return locals.formatDate(d);
+        try { return new Date(d).toLocaleDateString(); } catch (e) { return String(d); }
+      };
+    %>
+
     <main class="main-container">
       <%- include('../includes/header.html') %>
 
@@ -28,9 +41,9 @@
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
                   <%= machine.machinetype ? machine.machinetype.name : 'Machine' %>
                 </span>
-                <% if (openIssuesCount > 0) { %>
+                <% if (safeOpenIssuesCount > 0) { %>
                   <span class="badge bg-danger rounded-pill" style="font-size: 0.72rem;">
-                    <i class="fa-solid fa-triangle-exclamation me-1"></i> <%= openIssuesCount %> panne(s) en cours
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> <%= safeOpenIssuesCount %> panne(s) en cours
                   </span>
                 <% } %>
               </div>
@@ -38,18 +51,23 @@
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddMaintenance">
+              <i class="fa-solid fa-wrench me-1"></i> Déclarer une maintenance
+            </button>
             <a href="/report-issue/<%= machine.id %>" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ouvrir la page publique de signalement pour cette machine">
               <i class="fa-solid fa-triangle-exclamation me-1"></i> Signaler un problème
             </a>
             <a href="/admin/machines/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-arrow-left me-1"></i> Retour aux machines
             </a>
+            <% if (typeof role !== 'undefined' && role === 'admin') { %>
             <a href="/admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-pen-to-square me-1"></i> Modifier
             </a>
             <a href="/admin/machines/delete/<%= machine.id %>" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Confirmez-vous la suppression définitive de cette machine ?');">
               <i class="fa-solid fa-trash-can me-1"></i> Supprimer
             </a>
+            <% } %>
           </div>
         </div>
       </div>
@@ -102,15 +120,15 @@
                 </div>
                 <div class="col-6">
                   <strong><%= typeof __ !== 'undefined' ? __('machines.field_purchase_date') : 'Date d\'achat :' %></strong>
-                  <p class="text-secondary"><%= formatDate(machine.purchaseDate) %></p>
+                  <p class="text-secondary"><%= safeFormatDate(machine.purchaseDate) %></p>
                 </div>
                 <div class="col-6">
                   <strong><%= typeof __ !== 'undefined' ? __('machines.field_last_maintenance') : 'Dernière maintenance :' %></strong>
-                  <p class="text-secondary"><%= formatDate(machine.lastMaintenance) %></p>
+                  <p class="text-secondary"><%= safeFormatDate(machine.lastMaintenance) %></p>
                 </div>
                 <div class="col-6">
                   <strong><%= typeof __ !== 'undefined' ? __('machines.field_warranty_expiry') : 'Expiration de garantie :' %></strong>
-                  <p class="text-secondary"><%= formatDate(machine.warrantyExpiry) %></p>
+                  <p class="text-secondary"><%= safeFormatDate(machine.warrantyExpiry) %></p>
                 </div>
                 <div class="col-12">
                   <strong><%= typeof __ !== 'undefined' ? __('machines.field_documentation') : 'Documentation :' %></strong>
@@ -130,99 +148,172 @@
         </div>
       </div>
 
-      <!-- Machine Issues & Failures Section -->
+      <!-- Machine Events, Issues & Maintenance Section -->
       <div class="card shadow-sm mb-4" id="issues">
         <div class="card-header bg-body-tertiary d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
           <div class="d-flex align-items-center gap-2">
             <h5 class="mb-0">
-              <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> Incidents &amp; Pannes signalées
+              <i class="fa-solid fa-clipboard-list text-primary me-2"></i> Incidents, Pannes &amp; Maintenances
             </h5>
-            <% if (openIssuesCount > 0) { %>
+            <% if (safeOpenIssuesCount > 0) { %>
               <span class="badge bg-danger rounded-pill">
-                <%= openIssuesCount %> incident(s) en cours
+                <%= safeOpenIssuesCount %> panne(s) en cours
               </span>
             <% } else { %>
               <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
                 <i class="fa-solid fa-circle-check me-1"></i> Opérationnelle
               </span>
             <% } %>
+            <% if (safeMaintenances.length > 0) { %>
+              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill">
+                <i class="fa-solid fa-wrench me-1"></i> <%= safeMaintenances.length %> maintenance(s)
+              </span>
+            <% } %>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <a href="/report-issue/<%= machine.id %>" target="_blank" class="btn btn-danger btn-sm rounded-pill px-3">
-              <i class="fa-solid fa-camera me-1"></i> Signaler un problème (page publique)
+            <!-- Filter buttons -->
+            <div class="btn-group btn-group-sm" role="group" id="eventFilterGroup">
+              <button type="button" class="btn btn-outline-secondary active" onclick="filterMachineEvents('ALL', this)">
+                Tous (<%= safeEvents.length > 0 ? safeEvents.length : safeIssues.length %>)
+              </button>
+              <button type="button" class="btn btn-outline-secondary" onclick="filterMachineEvents('MAINTENANCE', this)">
+                <i class="fa-solid fa-wrench me-1"></i> Maintenances (<%= safeMaintenances.length %>)
+              </button>
+              <button type="button" class="btn btn-outline-secondary" onclick="filterMachineEvents('ISSUE', this)">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> Pannes (<%= safeIssues.length %>)
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddMaintenance">
+              <i class="fa-solid fa-plus me-1"></i> Déclarer une maintenance
+            </button>
+            <a href="/report-issue/<%= machine.id %>" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+              <i class="fa-solid fa-camera me-1"></i> Signaler panne
             </a>
           </div>
         </div>
 
         <div class="card-body">
-          <% if (issues.length === 0) { %>
-            <div class="text-center text-muted py-4">
+          <% const eventList = (safeEvents.length > 0) ? safeEvents : safeIssues.map(i => ({
+               eventId: `issue-${i.id}`,
+               kind: 'ISSUE',
+               formattedDate: i.formattedCreatedAt,
+               status: i.status,
+               author: i.reporterName || i.reporterEmail || 'Usager',
+               title: 'Incident / Panne signalée',
+               description: i.description,
+               photoPath: i.photoPath,
+               resolvedAt: i.resolvedAt,
+               formattedResolvedAt: i.formattedResolvedAt,
+               resolutionNotes: i.resolutionNotes,
+               original: i
+             }));
+          %>
+
+          <% if (eventList.length === 0) { %>
+            <div class="text-center text-muted py-5">
               <i class="fa-solid fa-shield-halved fa-3x mb-3 text-success opacity-75"></i>
-              <p class="mb-0 fw-semibold">Aucun incident ni panne signalée pour cette machine.</p>
-              <small class="text-secondary">Les signalements envoyés via le formulaire public apparaîtront ici automatiquement.</small>
+              <p class="mb-1 fw-semibold">Aucun incident ni opération de maintenance enregistrée pour cette machine.</p>
+              <small class="text-secondary">Les signalements de panne et opérations d'entretien (buses, lentilles, filtres...) apparaîtront ici.</small>
             </div>
           <% } else { %>
             <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
+              <table class="table table-hover align-middle mb-0" id="tableMachineEvents">
                 <thead class="table-light">
                   <tr>
-                    <th scope="col" style="width: 130px;">Statut</th>
-                    <th scope="col" style="width: 140px;">Date</th>
-                    <th scope="col" style="width: 170px;">Signalé par</th>
-                    <th scope="col">Description du problème</th>
-                    <th scope="col" class="text-center" style="width: 110px;">Photo</th>
-                    <th scope="col" class="text-end" style="width: 180px;">Actions</th>
+                    <th scope="col" style="width: 140px;">Événement</th>
+                    <th scope="col" style="width: 130px;">Date</th>
+                    <th scope="col" style="width: 170px;">Intervenant / Signalé par</th>
+                    <th scope="col">Détails &amp; Interventions</th>
+                    <th scope="col" class="text-center" style="width: 90px;">Photo</th>
+                    <th scope="col" class="text-end pe-3" style="width: 160px;">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <% issues.forEach(function(issue) { %>
-                    <tr class="<%= issue.status === 'OPEN' ? 'table-danger table-opacity-10' : '' %>">
+                  <% eventList.forEach(function(ev) { %>
+                    <tr class="event-row <%= ev.kind === 'MAINTENANCE' ? 'event-maintenance table-info-subtle' : 'event-issue ' + (ev.status === 'OPEN' ? 'table-danger-subtle' : '') %>" data-event-kind="<%= ev.kind %>">
                       <td>
-                        <% if (issue.status === 'OPEN') { %>
+                        <% if (ev.kind === 'MAINTENANCE') { %>
+                          <span class="badge bg-info text-dark border rounded-pill px-2.5 py-1">
+                            <i class="fa-solid fa-wrench me-1"></i> Maintenance
+                          </span>
+                        <% } else if (ev.status === 'OPEN') { %>
                           <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">
-                            <i class="fa-solid fa-triangle-exclamation me-1"></i> En cours
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i> Panne
                           </span>
                         <% } else { %>
                           <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
-                            <i class="fa-solid fa-check me-1"></i> Résolu
+                            <i class="fa-solid fa-check me-1"></i> Résolue
                           </span>
                         <% } %>
                       </td>
+
                       <td>
-                        <small class="fw-semibold"><%= issue.formattedCreatedAt %></small>
+                        <small class="fw-semibold"><%= ev.formattedDate %></small>
                       </td>
+
                       <td>
-                        <% if (issue.reporterName) { %>
-                          <div class="fw-semibold small"><%= issue.reporterName %></div>
-                        <% } %>
-                        <% if (issue.reporterEmail) { %>
-                          <div class="small text-muted text-truncate" style="max-width: 150px;"><%= issue.reporterEmail %></div>
-                        <% } %>
-                        <% if (!issue.reporterName && !issue.reporterEmail) { %>
-                          <span class="text-muted small">Usager (anonyme)</span>
+                        <% if (ev.kind === 'MAINTENANCE') { %>
+                          <div class="fw-semibold small"><i class="fa-solid fa-user-gear me-1 text-primary"></i> <%= ev.author %></div>
+                          <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">Staff Fablab</span>
+                        <% } else { %>
+                          <div class="fw-semibold small"><%= ev.author %></div>
+                          <% if (ev.original && ev.original.reporterEmail) { %>
+                            <div class="small text-muted text-truncate" style="max-width: 150px;"><%= ev.original.reporterEmail %></div>
+                          <% } %>
                         <% } %>
                       </td>
+
                       <td>
-                        <div class="p-2 rounded bg-body-secondary small text-break">
-                          <%= issue.description %>
-                        </div>
-                        <% if (issue.status === 'RESOLVED' && issue.resolvedAt) { %>
-                          <div class="small text-success mt-1">
-                            <i class="fa-solid fa-check-double me-1"></i> Résolu le <%= issue.formattedResolvedAt %>
-                            <% if (issue.resolutionNotes) { %>
-                              &mdash; <em><%= issue.resolutionNotes %></em>
+                        <% if (ev.kind === 'MAINTENANCE') { %>
+                          <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <span class="fw-bold text-body"><%= ev.title %></span>
+                            <% 
+                              let typeLabel = 'Préventive';
+                              let typeBadge = 'bg-primary-subtle text-primary border-primary-subtle';
+                              if (ev.type === 'CURATIVE') { typeLabel = 'Réparation'; typeBadge = 'bg-warning-subtle text-warning-emphasis border-warning-subtle'; }
+                              else if (ev.type === 'REPLACEMENT') { typeLabel = 'Remplacement pièce'; typeBadge = 'bg-info-subtle text-info-emphasis border-info-subtle'; }
+                              else if (ev.type === 'CALIBRATION') { typeLabel = 'Calibration'; typeBadge = 'bg-success-subtle text-success border-success-subtle'; }
+                              else if (ev.type === 'CLEANING') { typeLabel = 'Nettoyage'; typeBadge = 'bg-secondary-subtle text-secondary border-secondary-subtle'; }
+                            %>
+                            <span class="badge <%= typeBadge %> border rounded-pill" style="font-size: 0.68rem;"><%= typeLabel %></span>
+                            <% if (ev.cost) { %>
+                              <span class="badge bg-light text-dark border rounded-pill" style="font-size: 0.68rem;"><%= ev.cost %> €</span>
                             <% } %>
                           </div>
+                          <% if (ev.partsReplaced) { %>
+                            <div class="small text-primary mb-1">
+                              <i class="fa-solid fa-screwdriver me-1"></i> Pièces changées : <strong><%= ev.partsReplaced %></strong>
+                            </div>
+                          <% } %>
+                          <% if (ev.description) { %>
+                            <div class="p-2 rounded bg-body-secondary small text-break">
+                              <%= ev.description %>
+                            </div>
+                          <% } %>
+                        <% } else { %>
+                          <div class="p-2 rounded bg-body-secondary small text-break">
+                            <%= ev.description %>
+                          </div>
+                          <% if (ev.status === 'RESOLVED' && ev.resolvedAt) { %>
+                            <div class="small text-success mt-1">
+                              <i class="fa-solid fa-check-double me-1"></i> Résolu le <%= ev.formattedResolvedAt %>
+                              <% if (ev.resolutionNotes) { %>
+                                &mdash; <em><%= ev.resolutionNotes %></em>
+                              <% } %>
+                            </div>
+                          <% } %>
                         <% } %>
                       </td>
+
                       <td class="text-center">
-                        <% if (issue.photoPath) { %>
-                          <button type="button" class="btn btn-outline-primary btn-sm p-1 rounded" data-bs-toggle="modal" data-bs-target="#modalPhotoIssue<%= issue.id %>" title="Voir la photo">
-                            <img src="<%= issue.photoPath %>" alt="Photo incident" style="width: 48px; height: 48px; object-fit: cover;" class="rounded" />
+                        <% if (ev.photoPath) { %>
+                          <button type="button" class="btn btn-outline-primary btn-sm p-1 rounded" data-bs-toggle="modal" data-bs-target="#modalPhotoIssue<%= ev.original.id %>" title="Voir la photo">
+                            <img src="<%= ev.photoPath %>" alt="Photo incident" style="width: 44px; height: 44px; object-fit: cover;" class="rounded" />
                           </button>
 
                           <!-- Modal Photo -->
-                          <div class="modal fade" id="modalPhotoIssue<%= issue.id %>" tabindex="-1" aria-hidden="true">
+                          <div class="modal fade" id="modalPhotoIssue<%= ev.original.id %>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered modal-lg">
                               <div class="modal-content border-0 shadow-lg">
                                 <div class="modal-header">
@@ -232,7 +323,7 @@
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body p-2 text-center bg-dark rounded-bottom">
-                                  <img src="<%= issue.photoPath %>" alt="Photo de l'incident" class="img-fluid rounded" style="max-height: 80vh;" />
+                                  <img src="<%= ev.photoPath %>" alt="Photo de l'incident" class="img-fluid rounded" style="max-height: 80vh;" />
                                 </div>
                               </div>
                             </div>
@@ -241,35 +332,48 @@
                           <span class="text-muted small">-</span>
                         <% } %>
                       </td>
-                      <td class="text-end">
+
+                      <td class="text-end pe-3">
                         <div class="d-flex justify-content-end align-items-center gap-1">
-                          <% if (issue.status === 'OPEN') { %>
-                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2.5" data-bs-toggle="modal" data-bs-target="#modalResolveIssue<%= issue.id %>" title="Marquer comme résolu">
-                              <i class="fa-solid fa-check me-1"></i> Résoudre
-                            </button>
+                          <% if (ev.kind === 'MAINTENANCE') { %>
+                            <% if (typeof role !== 'undefined' && role === 'admin') { %>
+                              <form action="/admin/machines/maintenance/<%= ev.original.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Confirmez-vous la suppression de cette fiche de maintenance ?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer la maintenance">
+                                  <i class="fa-solid fa-trash-can fa-xs"></i>
+                                </button>
+                              </form>
+                            <% } %>
                           <% } else { %>
-                            <form action="/admin/machines/issues/<%= issue.id %>/status" method="POST" class="d-inline">
-                              <input type="hidden" name="status" value="OPEN" />
-                              <input type="hidden" name="machineId" value="<%= machine.id %>" />
-                              <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2" title="Rouvrir l'incident">
-                                <i class="fa-solid fa-arrow-rotate-left me-1"></i> Rouvrir
+                            <% if (ev.status === 'OPEN') { %>
+                              <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2.5" data-bs-toggle="modal" data-bs-target="#modalResolveIssue<%= ev.original.id %>" title="Marquer comme résolu">
+                                <i class="fa-solid fa-check me-1"></i> Résoudre
+                              </button>
+                            <% } else { %>
+                              <form action="/admin/machines/issues/<%= ev.original.id %>/status" method="POST" class="d-inline">
+                                <input type="hidden" name="status" value="OPEN" />
+                                <input type="hidden" name="machineId" value="<%= machine.id %>" />
+                                <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2" title="Rouvrir l'incident">
+                                  <i class="fa-solid fa-arrow-rotate-left me-1"></i> Rouvrir
+                                </button>
+                              </form>
+                            <% } %>
+
+                            <% if (typeof role !== 'undefined' && role === 'admin') { %>
+                            <form action="/admin/machines/issues/<%= ev.original.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Confirmez-vous la suppression de ce signalement ?');">
+                              <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer">
+                                <i class="fa-solid fa-trash-can fa-xs"></i>
                               </button>
                             </form>
+                            <% } %>
                           <% } %>
-
-                          <form action="/admin/machines/issues/<%= issue.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Confirmez-vous la suppression de ce signalement ?');">
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer">
-                              <i class="fa-solid fa-trash-can fa-xs"></i>
-                            </button>
-                          </form>
                         </div>
 
                         <!-- Modal Resolve Issue -->
-                        <% if (issue.status === 'OPEN') { %>
-                          <div class="modal fade" id="modalResolveIssue<%= issue.id %>" tabindex="-1" aria-hidden="true">
+                        <% if (ev.kind === 'ISSUE' && ev.status === 'OPEN') { %>
+                          <div class="modal fade" id="modalResolveIssue<%= ev.original.id %>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                               <div class="modal-content text-start border-0 shadow">
-                                <form action="/admin/machines/issues/<%= issue.id %>/status" method="POST">
+                                <form action="/admin/machines/issues/<%= ev.original.id %>/status" method="POST">
                                   <input type="hidden" name="status" value="RESOLVED" />
                                   <input type="hidden" name="machineId" value="<%= machine.id %>" />
                                   <div class="modal-header">
@@ -282,10 +386,10 @@
                                     <p class="small text-muted mb-3">
                                       L'incident sur <strong><%= machine.name %></strong> sera archivé comme résolu.
                                     </p>
-                                    <label for="resolutionNotes<%= issue.id %>" class="form-label small fw-semibold">
+                                    <label for="resolutionNotes<%= ev.original.id %>" class="form-label small fw-semibold">
                                       Notes de réparation / intervention (optionnel) :
                                     </label>
-                                    <textarea class="form-control form-control-sm" id="resolutionNotes<%= issue.id %>" name="resolutionNotes" rows="3" placeholder="Ex: Remplacement de la buse d'extrusion 0.4mm, nettoyage du plateau et réalignement. Machine à nouveau opérationnelle."></textarea>
+                                    <textarea class="form-control form-control-sm" id="resolutionNotes<%= ev.original.id %>" name="resolutionNotes" rows="3" placeholder="Ex: Remplacement de la buse d'extrusion 0.4mm, nettoyage du plateau et réalignement."></textarea>
                                   </div>
                                   <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Annuler</button>
@@ -419,6 +523,202 @@
           <i class="fa-solid fa-arrow-left me-1"></i> Back to Machines List
         </a>
       </div>
+
+      <!-- Modal: Déclarer une opération de maintenance -->
+      <div class="modal fade" id="modalAddMaintenance" tabindex="-1" aria-labelledby="modalAddMaintenanceLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content border-0 shadow-lg rounded-4">
+            <form action="/admin/machines/maintenance/create" method="POST">
+              <input type="hidden" name="machineId" value="<%= machine.id %>" />
+
+              <div class="modal-header border-0 bg-body-secondary py-3 px-4 rounded-top-4">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px; font-size: 1.15rem;">
+                    <i class="fa-solid fa-wrench"></i>
+                  </div>
+                  <div>
+                    <h5 class="modal-title fw-bold mb-0" id="modalAddMaintenanceLabel">Enregistrer une maintenance</h5>
+                    <small class="text-muted"><%= machine.name %> &bull; <%= machine.make || '' %> <%= machine.model || '' %></small>
+                  </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+              </div>
+
+              <div class="modal-body p-4">
+                <!-- Suggestions rapides -->
+                <div class="mb-3">
+                  <label class="form-label small fw-bold text-muted text-uppercase mb-2">Interventions fréquentes (clic pour remplir) :</label>
+                  <div class="d-flex flex-wrap gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Changement de buse', 'REPLACEMENT', 'Buse d\'extrusion')">
+                      <i class="fa-solid fa-bolt fa-xs me-1"></i> Changement de buse
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Changement de lentille', 'REPLACEMENT', 'Lentille focale ZnSe')">
+                      <i class="fa-solid fa-bolt fa-xs me-1"></i> Changement de lentille
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Changement de filtre', 'REPLACEMENT', 'Filtre HEPA / Charbon')">
+                      <i class="fa-solid fa-bolt fa-xs me-1"></i> Changement de filtre
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Nettoyage & alignement des miroirs', 'CLEANING', '')">
+                      <i class="fa-solid fa-bolt fa-xs me-1"></i> Alignement miroirs
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Nivellement plateau & calibration Z', 'CALIBRATION', '')">
+                      <i class="fa-solid fa-bolt fa-xs me-1"></i> Calibration plateau
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Tension courroies & lubrification axes', 'PREVENTIVE', '')">
+                      <i class="fa-solid fa-bolt fa-xs me-1"></i> Lubrification & courroies
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <!-- Intitulé -->
+                  <div class="col-md-8">
+                    <label for="maintenanceTitle" class="form-label small fw-bold">Intitulé de l'intervention <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-tag text-muted"></i></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="maintenanceTitle"
+                        name="title"
+                        placeholder="Ex: Changement de lentille 20mm, Remplacement buse 0.4..."
+                        required
+                        autocomplete="off"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Type d'entretien -->
+                  <div class="col-md-4">
+                    <label for="maintenanceType" class="form-label small fw-bold">Nature <span class="text-danger">*</span></label>
+                    <select class="form-select" id="maintenanceType" name="type">
+                      <option value="PREVENTIVE">Entretien préventif</option>
+                      <option value="CURATIVE">Réparation / Dépannage</option>
+                      <option value="REPLACEMENT" selected>Remplacement pièce</option>
+                      <option value="CALIBRATION">Calibrage & réglages</option>
+                      <option value="CLEANING">Nettoyage & graissage</option>
+                      <option value="OTHER">Autre opération</option>
+                    </select>
+                  </div>
+
+                  <!-- Date -->
+                  <div class="col-md-4">
+                    <label for="maintenanceDate" class="form-label small fw-bold">Date de réalisation <span class="text-danger">*</span></label>
+                    <% const todayStr = new Date().toISOString().split('T')[0]; %>
+                    <input type="date" class="form-control" id="maintenanceDate" name="maintenanceDate" value="<%= todayStr %>" required />
+                  </div>
+
+                  <!-- Pièces remplacées -->
+                  <div class="col-md-5">
+                    <label for="maintenanceParts" class="form-label small fw-bold">Pièces ou consommables changés</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-screwdriver text-muted"></i></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="maintenanceParts"
+                        name="partsReplaced"
+                        placeholder="Ex: Lentille ZnSe, Buse laiton 0.4mm..."
+                        autocomplete="off"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Coût estimé -->
+                  <div class="col-md-3">
+                    <label for="maintenanceCost" class="form-label small fw-bold">Coût estimé (€)</label>
+                    <div class="input-group">
+                      <input type="number" step="0.01" min="0" class="form-control" id="maintenanceCost" name="cost" placeholder="0.00" />
+                      <span class="input-group-text bg-body-secondary">€</span>
+                    </div>
+                  </div>
+
+                  <!-- Intervenant -->
+                  <div class="col-md-6">
+                    <label for="maintenanceOperator" class="form-label small fw-bold">Réalisé par (Staff)</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-user-gear text-muted"></i></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="maintenanceOperator"
+                        name="operator"
+                        value="<%= typeof username !== 'undefined' ? username : 'Staff' %>"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Description / Observations -->
+                  <div class="col-12">
+                    <label for="maintenanceDescription" class="form-label small fw-bold">Détails, mesures et observations</label>
+                    <textarea
+                      class="form-control"
+                      id="maintenanceDescription"
+                      name="description"
+                      rows="3"
+                      placeholder="Précisez le contexte de l'intervention, les réglages appliqués ou l'état de la pièce remplacée..."
+                    ></textarea>
+                  </div>
+
+                  <!-- Option clore pannes ouvertes -->
+                  <% if (safeOpenIssuesCount > 0) { %>
+                  <div class="col-12">
+                    <div class="form-check form-switch p-3 bg-warning-subtle rounded-3 border border-warning-subtle">
+                      <input class="form-check-input ms-0 me-2" type="checkbox" id="resolveOpenIssues" name="resolveOpenIssues" value="true" checked />
+                      <label class="form-check-label fw-bold text-warning-emphasis small" for="resolveOpenIssues">
+                        <i class="fa-solid fa-check-double me-1"></i> Résoudre automatiquement les <%= safeOpenIssuesCount %> panne(s) actuellement signalée(s) sur cette machine
+                      </label>
+                      <div class="small text-muted ps-4">L'enregistrement de cette maintenance marquera ces incidents comme résolus dans l'historique.</div>
+                    </div>
+                  </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="modal-footer border-0 bg-body-secondary py-3 px-4 rounded-bottom-4 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-semibold">
+                  <i class="fa-solid fa-check me-1"></i> Enregistrer l'opération
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        // Client-side event filtering between ALL, MAINTENANCE, and ISSUE
+        function filterMachineEvents(kind, btnEl) {
+          const rows = document.querySelectorAll("#tableMachineEvents tbody tr.event-row");
+          rows.forEach(row => {
+            if (kind === "ALL") {
+              row.style.display = "";
+            } else if (kind === "MAINTENANCE") {
+              row.style.display = row.classList.contains("event-maintenance") ? "" : "none";
+            } else if (kind === "ISSUE") {
+              row.style.display = row.classList.contains("event-issue") ? "" : "none";
+            }
+          });
+
+          if (btnEl && btnEl.parentElement) {
+            btnEl.parentElement.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+            btnEl.classList.add("active");
+          }
+        }
+
+        // Apply quick preset to maintenance modal
+        function applyMaintenancePreset(title, type, parts) {
+          const titleInput = document.getElementById("maintenanceTitle");
+          const typeSelect = document.getElementById("maintenanceType");
+          const partsInput = document.getElementById("maintenanceParts");
+
+          if (titleInput) titleInput.value = title;
+          if (typeSelect && type) typeSelect.value = type;
+          if (partsInput && parts) partsInput.value = parts;
+          if (titleInput) titleInput.focus();
+        }
+      </script>
 
       <%- include('../includes/footer.html') %>
     </main>

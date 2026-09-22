@@ -1,0 +1,366 @@
+<!-- Universal Inventory Checkout / Write-off Modal -->
+<div class="modal fade" id="modalInventoryCheckout" tabindex="-1" aria-labelledby="modalInventoryCheckoutLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <form id="formInventoryCheckout" action="/admin/inventory/checkout" method="POST">
+        <div class="modal-header border-0 bg-body-secondary py-3 px-4 rounded-top-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px; font-size: 1.15rem;">
+              <i class="fa-solid fa-dolly"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0" id="modalInventoryCheckoutLabel">Sortie d'inventaire</h5>
+              <small class="text-muted">Déclarer une casse, mise au rebut, panne ou sortie de stock</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Alert feedback container -->
+          <div id="checkoutAlertContainer"></div>
+
+          <!-- Type Selector: Consumable vs Equipment -->
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-uppercase text-muted mb-2">Type d'article à sortir</label>
+            <div class="btn-group w-100 shadow-sm rounded-3" role="group" id="checkoutTypeGroup">
+              <input type="radio" class="btn-check" name="itemType" id="typeConsumable" value="CONSUMABLE" checked autocomplete="off">
+              <label class="btn btn-outline-primary py-2 fw-semibold d-flex align-items-center justify-content-center gap-2" for="typeConsumable">
+                <i class="fa-solid fa-boxes-stacked"></i> Consommable (Matière / Stock)
+              </label>
+
+              <input type="radio" class="btn-check" name="itemType" id="typeEquipment" value="EQUIPMENT" autocomplete="off">
+              <label class="btn btn-outline-primary py-2 fw-semibold d-flex align-items-center justify-content-center gap-2" for="typeEquipment">
+                <i class="fa-solid fa-toolbox"></i> Outil / Équipement
+              </label>
+            </div>
+          </div>
+
+          <!-- Section Consumable Selection -->
+          <div id="sectionConsumable" class="checkout-item-section">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label for="checkoutConsumableSelect" class="form-label small fw-bold">Consommable <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-box-open text-muted"></i></span>
+                  <select class="form-select" id="checkoutConsumableSelect" name="itemId">
+                    <option value="">-- Choisir un consommable --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="checkoutQuantity" class="form-label small fw-bold">Quantité à sortir <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input type="number" class="form-control" id="checkoutQuantity" name="quantity" min="1" step="1" value="1">
+                  <span class="input-group-text bg-body-secondary" id="checkoutUnitLabel">u</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <div id="consumableStockBadge" class="small text-muted p-2 bg-body-secondary rounded-2 d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-info-circle text-primary"></i>
+                  <span>Sélectionnez un consommable pour vérifier le stock restant.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Equipment Selection -->
+          <div id="sectionEquipment" class="checkout-item-section d-none">
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="checkoutEquipmentSelect" class="form-label small fw-bold">Équipement / Outil <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-wrench text-muted"></i></span>
+                  <select class="form-select" id="checkoutEquipmentSelect" name="itemIdEquipment" disabled>
+                    <option value="">-- Choisir un outil / équipement --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold">Action sur le matériel <span class="text-danger">*</span></label>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" onclick="document.getElementById('actionDecom').checked = true; updateActionCardStyles();">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="equipmentAction" id="actionDecom" value="DECOMMISSIONED" checked>
+                        <label class="form-check-label fw-bold text-danger d-block" for="actionDecom">
+                          <i class="fa-solid fa-trash-can me-1"></i> Mise au rebut / Sortie définitive
+                        </label>
+                        <small class="text-muted d-block mt-1">Casse irréparable, perte, obsolescence. Retiré des emprunts au kiosque.</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" onclick="document.getElementById('actionOutOfService').checked = true; updateActionCardStyles();">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="equipmentAction" id="actionOutOfService" value="OUT_OF_SERVICE">
+                        <label class="form-check-label fw-bold text-warning-emphasis d-block" for="actionOutOfService">
+                          <i class="fa-solid fa-screwdriver-wrench me-1"></i> Hors service / En panne
+                        </label>
+                        <small class="text-muted d-block mt-1">En cours de réparation ou maintenance. Temporairement indisponible.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4 text-muted opacity-25">
+
+          <!-- Reason & Notes (Common) -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="checkoutReason" class="form-label small fw-bold">Motif de la sortie <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-tag text-muted"></i></span>
+                <select class="form-select" id="checkoutReason" name="reason" required>
+                  <option value="">-- Sélectionner un motif --</option>
+                  <option value="Casse / Dégradation">Casse / Dégradation</option>
+                  <option value="Mise au rebut / Usure">Mise au rebut / Usure</option>
+                  <option value="Panne / Maintenance">Panne / Maintenance</option>
+                  <option value="Utilisation interne / Atelier">Utilisation interne / Atelier Fablab</option>
+                  <option value="Perte / Vol">Perte / Vol</option>
+                  <option value="Écart d'inventaire">Écart d'inventaire</option>
+                  <option value="Autre">Autre circonstance</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="checkoutAuthor" class="form-label small fw-bold">Responsable / Déclarant</label>
+              <div class="input-group">
+                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-user-shield text-muted"></i></span>
+                <input type="text" class="form-control bg-body-secondary" id="checkoutAuthor" value="<%= typeof username !== 'undefined' ? username : 'Staff' %>" readonly>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label for="checkoutNotes" class="form-label small fw-bold">Circonstances / Notes détaillées</label>
+              <textarea class="form-control" id="checkoutNotes" name="notes" rows="2" placeholder="Précisez les circonstances de la casse, la pièce détachée défaillante, etc. (optionnel)"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0 bg-body-secondary py-3 px-4 rounded-bottom-4 d-flex justify-content-between">
+          <a href="/admin/inventory/movements" class="btn btn-link text-decoration-none text-muted small p-0">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> Voir l'historique des sorties
+          </a>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-warning rounded-pill px-4 shadow-sm fw-semibold" id="btnSubmitCheckout">
+              <i class="fa-solid fa-check me-1"></i> Valider la sortie
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let cachedInventoryItems = null;
+
+  // Load items via AJAX if not already cached
+  async function loadInventoryItems() {
+    if (cachedInventoryItems) return cachedInventoryItems;
+    try {
+      const getUrl = window.getAppBaseUrl ? window.getAppBaseUrl("admin/inventory/items") : "/admin/inventory/items";
+      const res = await fetch(getUrl);
+      if (!res.ok) throw new Error("Erreur de chargement");
+      const data = await res.json();
+      if (data.success) {
+        cachedInventoryItems = data;
+        populateDropdowns();
+      }
+    } catch (e) {
+      console.error("Failed to load inventory items:", e);
+    }
+    return cachedInventoryItems;
+  }
+
+  function populateDropdowns() {
+    if (!cachedInventoryItems) return;
+
+    const consumableSelect = document.getElementById("checkoutConsumableSelect");
+    const equipmentSelect = document.getElementById("checkoutEquipmentSelect");
+
+    // Populate Consumables
+    if (consumableSelect && consumableSelect.options.length <= 1) {
+      cachedInventoryItems.consumables.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.stock} ${c.unit})` + (c.category ? ` - ${c.category}` : "");
+        opt.dataset.stock = c.stock;
+        opt.dataset.unit = c.unit;
+        opt.dataset.name = c.name;
+        consumableSelect.appendChild(opt);
+      });
+    }
+
+    // Populate Equipment
+    if (equipmentSelect && equipmentSelect.options.length <= 1) {
+      cachedInventoryItems.equipment.forEach(eq => {
+        const opt = document.createElement("option");
+        opt.value = eq.id;
+        const statusLabel = eq.status === "AVAILABLE" ? "Disponible" : (eq.status === "OUT_OF_SERVICE" ? "Hors service" : "Au rebut");
+        opt.textContent = `${eq.name} [${statusLabel}]` + (eq.workspace ? ` (${eq.workspace})` : "");
+        opt.dataset.status = eq.status;
+        opt.dataset.name = eq.name;
+        equipmentSelect.appendChild(opt);
+      });
+    }
+  }
+
+  window.updateActionCardStyles = function() {
+    const isDecom = document.getElementById("actionDecom")?.checked;
+    const cards = document.querySelectorAll(".action-card");
+    if (cards.length >= 2) {
+      if (isDecom) {
+        cards[0].classList.add("border-danger", "bg-danger-subtle");
+        cards[1].classList.remove("border-warning", "bg-warning-subtle");
+      } else {
+        cards[0].classList.remove("border-danger", "bg-danger-subtle");
+        cards[1].classList.add("border-warning", "bg-warning-subtle");
+      }
+    }
+  };
+
+  const modalEl = document.getElementById("modalInventoryCheckout");
+  if (!modalEl) return;
+
+  // Toggle sections on itemType radio change
+  const typeRadios = document.querySelectorAll('input[name="itemType"]');
+  typeRadios.forEach(radio => {
+    radio.addEventListener("change", function() {
+      const isConsumable = this.value === "CONSUMABLE";
+      const secCons = document.getElementById("sectionConsumable");
+      const secEquip = document.getElementById("sectionEquipment");
+      const selCons = document.getElementById("checkoutConsumableSelect");
+      const selEquip = document.getElementById("checkoutEquipmentSelect");
+
+      if (isConsumable) {
+        secCons.classList.remove("d-none");
+        secEquip.classList.add("d-none");
+        selCons.disabled = false;
+        selCons.name = "itemId";
+        selEquip.disabled = true;
+        selEquip.name = "itemIdEquipment";
+      } else {
+        secCons.classList.add("d-none");
+        secEquip.classList.remove("d-none");
+        selCons.disabled = true;
+        selCons.name = "itemIdConsumable";
+        selEquip.disabled = false;
+        selEquip.name = "itemId";
+      }
+    });
+  });
+
+  // Consumable select change -> update badge and unit
+  const consumableSelect = document.getElementById("checkoutConsumableSelect");
+  if (consumableSelect) {
+    consumableSelect.addEventListener("change", function() {
+      const selected = this.options[this.selectedIndex];
+      const badge = document.getElementById("consumableStockBadge");
+      const unitLabel = document.getElementById("checkoutUnitLabel");
+      const qtyInput = document.getElementById("checkoutQuantity");
+
+      if (selected && selected.value) {
+        const stock = selected.dataset.stock;
+        const unit = selected.dataset.unit || "u";
+        unitLabel.textContent = unit;
+        badge.innerHTML = `<i class="fa-solid fa-box text-success me-1"></i> Stock actuel : <strong>${stock} ${unit}</strong>`;
+        if (Number(stock) > 0) {
+          qtyInput.max = stock;
+        }
+      } else {
+        unitLabel.textContent = "u";
+        badge.innerHTML = `<i class="fa-solid fa-info-circle text-primary me-1"></i> Sélectionnez un consommable pour vérifier le stock restant.`;
+      }
+    });
+  }
+
+  // Pre-fill on modal show
+  modalEl.addEventListener("show.bs.modal", async function(event) {
+    await loadInventoryItems();
+    updateActionCardStyles();
+
+    const triggerBtn = event.relatedTarget;
+    if (!triggerBtn) return;
+
+    const itemType = triggerBtn.dataset.itemType;
+    const itemId = triggerBtn.dataset.itemId;
+    const itemName = triggerBtn.dataset.itemName;
+    const itemStock = triggerBtn.dataset.itemStock;
+    const itemUnit = triggerBtn.dataset.itemUnit;
+
+    if (itemType === "CONSUMABLE") {
+      document.getElementById("typeConsumable").checked = true;
+      document.getElementById("typeConsumable").dispatchEvent(new Event("change"));
+      if (itemId) {
+        const sel = document.getElementById("checkoutConsumableSelect");
+        sel.value = itemId;
+        sel.dispatchEvent(new Event("change"));
+      }
+    } else if (itemType === "EQUIPMENT") {
+      document.getElementById("typeEquipment").checked = true;
+      document.getElementById("typeEquipment").dispatchEvent(new Event("change"));
+      if (itemId) {
+        const sel = document.getElementById("checkoutEquipmentSelect");
+        sel.value = itemId;
+        sel.dispatchEvent(new Event("change"));
+      }
+    }
+  });
+
+  // AJAX submission for seamless UX
+  const form = document.getElementById("formInventoryCheckout");
+  if (form) {
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btnSubmitCheckout");
+      const alertContainer = document.getElementById("checkoutAlertContainer");
+      alertContainer.innerHTML = "";
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Enregistrement...`;
+
+      const formData = new FormData(form);
+      const postUrl = window.getAppBaseUrl ? window.getAppBaseUrl("admin/inventory/checkout") : "/admin/inventory/checkout";
+
+      try {
+        const res = await fetch(postUrl, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams(formData)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alertContainer.innerHTML = `<div class="alert alert-success d-flex align-items-center mb-3"><i class="fa-solid fa-circle-check me-2 fa-lg"></i> <div>${data.message}</div></div>`;
+          setTimeout(() => {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+            // Reload to reflect stock / status changes
+            window.location.reload();
+          }, 1000);
+        } else {
+          alertContainer.innerHTML = `<div class="alert alert-danger d-flex align-items-center mb-3"><i class="fa-solid fa-triangle-exclamation me-2 fa-lg"></i> <div>${data.message || "Erreur lors de la sortie"}</div></div>`;
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-check me-1"></i> Valider la sortie`;
+        }
+      } catch (err) {
+        console.error("Submission error:", err);
+        alertContainer.innerHTML = `<div class="alert alert-danger d-flex align-items-center mb-3"><i class="fa-solid fa-triangle-exclamation me-2 fa-lg"></i> <div>Erreur de connexion au serveur.</div></div>`;
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check me-1"></i> Valider la sortie`;
+      }
+    });
+  }
+})();
+</script>
