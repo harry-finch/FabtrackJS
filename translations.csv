@@ -77,8 +77,8 @@ kiosk.expert_badge,Expert,Expert
 kiosk.field_comments,Commentaires,Comments
 kiosk.field_documentation,Lien vers la documentation du projet,Link to project documentation
 kiosk.field_name,Nom complet,Full name
-kiosk.field_project_type,Type de projet,Project type
-kiosk.kiosk_touch_mode,Mode Borne Tactile : L'inscription d'un nouvel usager et l'enregistrement d'activités/matériaux doivent être effectués par un médiateur du fablab.,Touch Kiosk Mode: Registering new users and logging activities/materials must be performed by a fablab facilitator.
+kiosk.field_project_type,Motif de la visite,Purpose of visit
+kiosk.kiosk_touch_mode,Mode Borne Tactile : L'inscription d'un nouveau contributeur et l'enregistrement d'activités/matériaux doivent être effectués par un médiateur du fablab.,Touch Kiosk Mode: Registering new users and logging activities/materials must be performed by a fablab facilitator.
 kiosk.modal_activity_title,Gestionnaire d'activités,Activity Manager
 kiosk.modal_comment_clear,Effacer,Clear
 kiosk.modal_comment_help,Laissez vide ou cliquez sur « Effacer » pour supprimer le commentaire.,Leave empty or click 'Clear' to remove this comment.

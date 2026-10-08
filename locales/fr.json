@@ -75,7 +75,7 @@
     "field_comments": "Commentaires",
     "field_documentation": "Lien vers la documentation du projet",
     "field_name": "Nom complet",
-    "field_project_type": "Type de projet",
+    "field_project_type": "Motif de la visite",
     "kiosk_touch_mode": "Mode Borne Tactile : L'inscription d'un nouveau contributeur et l'enregistrement d'activités/matériaux doivent être effectués par un médiateur du fablab.",
     "modal_activity_title": "Gestionnaire d'activités",
     "modal_comment_clear": "Effacer",

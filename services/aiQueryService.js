@@ -36,9 +36,9 @@ SCHÉMA DES TABLES MARIADB :
    - createdAt (DATETIME)
    - active (BOOLEAN)
 
-4. Table \`Projecttype\` (Types de projets, ex: "Personnel", "Academic", "Sorbonne", "Repair Café", "Atelier") :
+4. Table \`Projecttype\` (Motifs de visite / types d'activité, ex: "Personnel", "Academic", "Sorbonne", "Repair Café", "Atelier") :
    - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Nom du type de projet
+   - name (VARCHAR) : Nom du motif de la visite
 
 5. Table \`UserProject\` (Liaison N-à-N entre Usagers et Projets - TRÈS IMPORTANT : il n'y a PAS de colonne userId dans Project !) :
    - id (INT, PRIMARY KEY)

@@ -49,10 +49,10 @@ router.get(
 
       invalidateCache(req);
       logger.logThat("Projecttype " + result.name + " deleted by " + req.session.username);
-      req.session.notification = "Success: Project type " + result.name + " deleted";
+      req.session.notification = "Succès : Motif de visite « " + result.name + " » supprimé";
     } catch (error) {
       console.error("Error deleting project type:", error);
-      req.session.notification = "Error: Failed to delete project type (check linked projects)";
+      req.session.notification = "Erreur : Impossible de supprimer ce motif de visite (vérifiez les visites associées)";
     }
 
     res.redirect(req.session.lastPage || "/admin/projecttypes/manage");
@@ -75,10 +75,10 @@ router.post(
 
       invalidateCache(req);
       logger.logThat("Projecttype " + name + " created by " + req.session.username);
-      req.session.notification = "Success: Project type " + name + " created";
+      req.session.notification = "Succès : Motif de visite « " + name + " » créé";
     } catch (error) {
       console.error("Error creating project type:", error);
-      req.session.notification = "Error: Failed to create project type";
+      req.session.notification = "Erreur : Impossible de créer le motif de visite";
     }
 
     res.redirect("/admin/projecttypes/manage");
@@ -102,10 +102,10 @@ router.post(
 
       invalidateCache(req);
       logger.logThat("Project type " + name + " updated by " + req.session.username);
-      req.session.notification = "Success: Project type " + name + " updated";
+      req.session.notification = "Succès : Motif de visite « " + name + " » mis à jour";
     } catch (error) {
       console.error("Error updating project type:", error);
-      req.session.notification = "Error: Failed to update project type";
+      req.session.notification = "Erreur : Impossible de mettre à jour le motif de visite";
     }
 
     res.redirect("/admin/projecttypes/manage");

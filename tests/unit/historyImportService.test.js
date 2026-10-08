@@ -55,6 +55,12 @@ describe("Unit: HistoryImportService - CSV Parsing, Reconciliation & Import Logi
       expect(map.projectType).toBe(6);
     });
 
+    test("maps 'Motif de la visite' column header to projectType", () => {
+      const headers = ["Nom", "Prénom", "E-mail", "Motif de la visite"];
+      const map = historyImportService.mapHeaders(headers);
+      expect(map.projectType).toBe(3);
+    });
+
     test("maps English column names and synonyms", () => {
       const headers = ["last_name", "first_name", "mail", "start_time", "end_time"];
       const map = historyImportService.mapHeaders(headers);

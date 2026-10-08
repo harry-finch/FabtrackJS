@@ -289,10 +289,10 @@ router.get(
     const userTypeLabels = Array.from(userTypeMap.keys());
     const userTypeCounts = Array.from(userTypeMap.values());
 
-    // 8. Chart 4: Distribution by Project Types
+    // 8. Chart 4: Distribution by Visit Purpose (Project Types)
     const projectTypeMap = new Map();
     history.forEach((h) => {
-      let typeName = "Sans projet";
+      let typeName = "Non spécifié";
       if (h.userproject && h.userproject.project && h.userproject.project.projecttype) {
         typeName = h.userproject.project.projecttype.name;
       }

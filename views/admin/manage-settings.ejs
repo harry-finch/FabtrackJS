@@ -292,22 +292,22 @@
                         if (isRepairCafe) {
                           settingKey = 'repaircafe_projecttype_name';
                           defaultVal = settings.repaircafe_projecttype_name || 'Repair Café';
-                          labelText = 'Type de projet associé';
+                          labelText = 'Motif de la visite associé';
                           helpText = 'Déclenche le champ "Objet à réparer" et masque la documentation lors du check-in.';
                         } else if (isWorkshop) {
                           settingKey = 'workshop_projecttype_name';
                           defaultVal = settings.workshop_projecttype_name || 'Atelier';
-                          labelText = 'Type de projet associé';
+                          labelText = 'Motif de la visite associé';
                           helpText = 'Déclenche la sélection d\'ateliers et attribue automatiquement le badge et l\'habilitation correspondants.';
                         } else if (isUe) {
                           settingKey = 'ue_projecttype_name';
                           defaultVal = settings.ue_projecttype_name || 'Academic';
-                          labelText = 'Type de projet associé';
+                          labelText = 'Motif de la visite associé';
                           helpText = 'Déclenche la sélection des UE Sorbonne Université et la facturation consolidée.';
                         } else if (isSorbonne) {
                           settingKey = 'sorbonne_projecttype_name';
                           defaultVal = settings.sorbonne_projecttype_name || 'Sorbonne';
-                          labelText = 'Type de projet associé';
+                          labelText = 'Motif de la visite associé';
                           helpText = 'Déclenche le champ "Entité ou UFR" avec autocomplétion et suivi de la facturation des consommables.';
                         }
                       %>
@@ -326,7 +326,7 @@
                               <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-tag"></i></span>
                                 <input type="text" class="form-control" id="<%= settingKey %>" name="<%= settingKey %>"
-                                  value="<%= defaultVal %>" list="projecttypes_list" placeholder="Nom du type de projet"
+                                  value="<%= defaultVal %>" list="projecttypes_list" placeholder="Nom du motif de la visite"
                                   required>
                               </div>
                             </div>

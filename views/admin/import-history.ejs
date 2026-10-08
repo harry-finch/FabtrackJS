@@ -110,7 +110,7 @@
             </div>
 
             <div class="col-md-4">
-              <label for="default_project_type" class="form-label small fw-semibold"><i class="fa-solid fa-diagram-project me-1 text-primary"></i> Type de projet</label>
+              <label for="default_project_type" class="form-label small fw-semibold"><i class="fa-solid fa-diagram-project me-1 text-primary"></i> Motif de la visite</label>
               <select class="form-select" id="default_project_type" name="default_project_type">
                 <% projecttypes.forEach(function(pt) { %>
                   <option value="<%= pt.name %>" <%= (pt.name.toLowerCase() === 'academic' || pt.name.toLowerCase() === 'enseignement') ? 'selected' : '' %>><%= pt.name %></option>

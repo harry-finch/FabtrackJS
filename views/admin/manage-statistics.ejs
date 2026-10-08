@@ -172,8 +172,8 @@
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quelles sont les 5 machines les plus utilisées de l'histoire du fablab ?">
                                 Top 5 machines
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quelle est la répartition des projets par type de projet ?">
-                                Projets par type
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quelle est la répartition des visites par motif de visite ?">
+                                Visites par motif
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quel est le montant total des consommations par entité ou UFR Sorbonne ?">
                                 Consommations Sorbonne
@@ -447,14 +447,14 @@
                     </div>
                 </div>
 
-                <!-- Typologie de projets -->
+                <!-- Typologie de motifs de visite -->
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-transparent border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
                             <h6 class="fw-bold mb-0">
-                                <i class="fa-solid fa-folder-tree text-info me-2"></i>Répartition par type de projets
+                                <i class="fa-solid fa-folder-tree text-info me-2"></i>Répartition par motif de visite
                             </h6>
-                            <span class="badge bg-secondary-subtle text-secondary small">Projets</span>
+                            <span class="badge bg-secondary-subtle text-secondary small">Motifs</span>
                         </div>
                         <div class="card-body d-flex align-items-center justify-content-center">
                             <div style="height: 260px; width: 100%; position: relative;">
@@ -671,12 +671,12 @@
                 }
             });
 
-            // 4. Graphique Répartition Types de Projets
+            // 4. Graphique Répartition Motifs de Visite
             const ctxProjectTypes = document.getElementById("projectTypesChart").getContext("2d");
             new Chart(ctxProjectTypes, {
                 type: 'doughnut',
                 data: {
-                    labels: chartData.projectTypeLabels.length ? chartData.projectTypeLabels : ['Aucun projet'],
+                    labels: chartData.projectTypeLabels.length ? chartData.projectTypeLabels : ['Aucune visite'],
                     datasets: [{
                         data: chartData.projectTypeCounts.length ? chartData.projectTypeCounts : [1],
                         backgroundColor: colors.slice(2, 2 + Math.max(1, chartData.projectTypeLabels.length)),

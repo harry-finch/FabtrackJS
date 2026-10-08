@@ -75,7 +75,7 @@
     "field_comments": "Comments",
     "field_documentation": "Link to project documentation",
     "field_name": "Full name",
-    "field_project_type": "Project type",
+    "field_project_type": "Purpose of visit",
     "kiosk_touch_mode": "Touch Kiosk Mode: Registering new users and logging activities/materials must be performed by a fablab facilitator.",
     "modal_activity_title": "Activity Manager",
     "modal_comment_clear": "Clear",

@@ -629,7 +629,7 @@
                                             <th scope="col" style="width: 50px;">#</th>
                                             <th scope="col">Intitulé / Documentation</th>
                                             <th scope="col">Dernière activité</th>
-                                            <th scope="col">Type</th>
+                                            <th scope="col">Motif</th>
                                             <th scope="col" class="text-center" style="width: 90px;">Lien</th>
                                             <th scope="col" class="text-center" style="width: 120px;">Statut</th>
                                         </tr>
@@ -653,7 +653,7 @@
                                             <td>
                                                 <%
                                                 const projectType = (project.projecttype) ? project.projecttype : (projecttypes || []).find(type => type.id === project.projecttypeId);
-                                                const projectTypeName = projectType ? projectType.name : 'Projet';
+                                                const projectTypeName = projectType ? projectType.name : 'Visite';
                                                 %>
                                                 <span class="badge bg-body-secondary text-secondary-emphasis border rounded-pill"><%= projectTypeName %></span>
                                             </td>

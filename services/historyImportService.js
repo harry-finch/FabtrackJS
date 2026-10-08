@@ -107,7 +107,7 @@ class HistoryImportService {
         mapping.arrival = idx;
       } else if (["depart", "departure", "heure_depart", "fin", "end", "end_time"].includes(col)) {
         mapping.departure = idx;
-      } else if (["type_projet", "type_de_projet", "projet_type", "projecttype", "type"].includes(col)) {
+      } else if (["type_projet", "type_de_projet", "projet_type", "projecttype", "type", "motif", "motif_visite", "motif_de_visite", "motif_de_la_visite", "objet", "raison", "purpose"].includes(col)) {
         mapping.projectType = idx;
       } else if (["projet", "project", "intitule", "cours"].includes(col)) {
         mapping.projectName = idx;
