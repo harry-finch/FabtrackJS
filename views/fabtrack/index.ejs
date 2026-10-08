@@ -62,6 +62,12 @@
                             <small class="text-muted"><%= __('kiosk.register_user_subtitle') %></small>
                         </div>
                     </div>
+                    <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
+                    <!-- Workspace Indicator Badge -->
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
+                        <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
+                    </span>
+                    <% } %>
                 </div>
                 <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/create" method="post">
                     <div class="row">
@@ -214,18 +220,11 @@
 
                 <% if( Object.entries(history).length ) { %>
                 <div class="card border-0 shadow-sm mt-5 mb-4">
-                    <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="icon-box bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                                <i class="fa-solid fa-users"></i>
-                            </span>
-                            <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> <%= __('kiosk.users_present') %></h5>
-                        </div>
-
-                        <!-- Static Workspace Badge -->
-                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
-                            <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
+                    <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex align-items-center gap-2">
+                        <span class="icon-box bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
+                            <i class="fa-solid fa-users"></i>
                         </span>
+                        <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> <%= __('kiosk.users_present') %></h5>
                     </div>
 
                     <div class="card-body p-0">
@@ -640,6 +639,12 @@
                             <small class="text-muted"><%= __('kiosk.create_user_subtitle') %></small>
                         </div>
                     </div>
+                    <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
+                    <!-- Workspace Indicator Badge -->
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
+                        <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
+                    </span>
+                    <% } %>
                 </div>
                 <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/create" method="post">
                     <div class="row">
