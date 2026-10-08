@@ -9,8 +9,8 @@
 
         <%- include('../includes/pagehead.html') %>
 
-        <script src="/javascripts/autocomplete.js"></script>
-        <link rel="stylesheet" href="/stylesheets/autocomplete.css" />
+        <script src="javascripts/autocomplete.js"></script>
+        <link rel="stylesheet" href="stylesheets/autocomplete.css" />
     </head>
 
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
@@ -63,14 +63,14 @@
                         </div>
                     </div>
                 </div>
-                <form action="/history/create" method="post">
+                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/create" method="post">
                     <div class="row">
                         <div class="col-12">
                             <div class="form-floating mb-3 d-grid d-flex">
                                 <input type='hidden' id="userid" name='userid' value='null' />
                                 <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="<%= __('kiosk.field_name') %>" autocomplete="off" required />
                                 <label for="name"><%= __('kiosk.field_name') %></label>
-                                <a id="urlprofile" href="">
+                                <a id="urlprofile" href="#">
                                     <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
                                 </a>
                             </div>
@@ -87,7 +87,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <a id="charterProfileBtn" href="" class="btn btn-sm btn-outline-warning rounded-pill">
+                                    <a id="charterProfileBtn" href="#" class="btn btn-sm btn-outline-warning rounded-pill">
                                         <i class="fa-solid fa-user-pen me-1"></i> Valider sur la fiche contributeur
                                     </a>
                                 </div>
@@ -253,7 +253,7 @@
                                             <% if (isStaffRole) { %>
                                                 <span class="fw-semibold"><%= entry.user.name %> <%= entry.user.surname ? entry.user.surname.charAt(0) + '.' : '' %></span>
                                             <% } else { %>
-                                                <a href="/users/edit/<%= entry.userId %>" class="fw-semibold text-decoration-none">
+                                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= entry.userId %>" class="fw-semibold text-decoration-none">
                                                     <%= entry.user.name %> <%= entry.user.surname %>
                                                 </a>
                                             <% } %>
@@ -384,7 +384,7 @@
                                                     <i class="fa-solid fa-screwdriver-wrench me-1"></i><%= __('kiosk.btn_exit') %>
                                                 </button>
                                             <% } else { %>
-                                                <a href="/history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="<%= __('kiosk.btn_exit') %>">
+                                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="<%= __('kiosk.btn_exit') %>">
                                                     <i class="fa-solid fa-person-walking-arrow-right me-1"></i><%= __('kiosk.btn_exit') %>
                                                 </a>
                                             <% } %>
@@ -402,7 +402,7 @@
                 <div class="modal fade" id="modalComment" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCommentLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content border-0 shadow">
-                            <form action="/history/update-comment" method="post" id="formComment">
+                            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/update-comment" method="post" id="formComment">
                                 <div class="modal-header border-0 pb-0">
                                     <h5 class="modal-title fw-bold" id="modalCommentLabel">
                                         <i class="fa-solid fa-comment-dots text-primary me-2"></i><%= __('kiosk.modal_comment_title') %>
@@ -492,7 +492,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form action="/history/activity" method="post">
+                            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/activity" method="post">
                                 <input type='hidden' id="activityhistoryid" name='activityhistoryid' value='null' />
                                 <input type='hidden' id="activityuserid" name='activityuserid' value='null' />
                                 <input type='hidden' id="cost" name='cost' value='null' />
@@ -641,7 +641,7 @@
                         </div>
                     </div>
                 </div>
-                <form action="/users/create" method="post">
+                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/create" method="post">
                     <div class="row">
                         <div class="col-4">
                             <div class="form-floating mb-3">
@@ -727,7 +727,7 @@
             <div class="modal fade" id="modalRepairCheckout" tabindex="-1" aria-labelledby="modalRepairCheckoutLabel" aria-hidden="true" data-bs-backdrop="static">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow">
-                        <form action="/history/exit-repair" method="POST">
+                        <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/exit-repair" method="POST">
                             <input type="hidden" name="historyid" id="repairExitHistoryId" value="" />
                             <div class="modal-header bg-warning-subtle text-dark border-0">
                                 <h5 class="modal-title fw-bold" id="modalRepairCheckoutLabel">
@@ -845,9 +845,9 @@
             };
         </script>
 
-        <script src="/javascripts/fabtrack.js"></script>
+        <script src="javascripts/fabtrack.js"></script>
         <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
-        <script src="/javascripts/rfid-listener.js"></script>
+        <script src="javascripts/rfid-listener.js"></script>
         <% } %>
 
     </body>

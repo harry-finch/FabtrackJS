@@ -43,11 +43,11 @@
         <main class="main-container w-100 px-3" style="max-width: 680px;">
             <!-- Top Branding -->
             <div class="text-center mb-3">
-                <a href="/" class="text-decoration-none">
+                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="text-decoration-none">
                     <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
                         <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
                     <% } else { %>
-                        <img src="/images/logo-fabtrack.svg" alt="FabtrackJS" width="60" height="46" class="app-auth-logo" />
+                        <img src="images/logo-fabtrack.svg" alt="FabtrackJS" width="60" height="46" class="app-auth-logo" />
                     <% } %>
                 </a>
             </div>
@@ -65,7 +65,7 @@
 
                     <!-- 404 Animated GIF -->
                     <div class="gif-container mb-4">
-                        <img src="/images/404.gif" alt="Erreur 404 - Animation" />
+                        <img src="images/404.gif" alt="Erreur 404 - Animation" />
                     </div>
 
                     <!-- Title & Explanation -->
@@ -86,21 +86,21 @@
 
                     <!-- Action Navigation Buttons -->
                     <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 pt-2">
-                        <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.assign('/')" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
+                        <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.assign(window.getAppBaseUrl ? window.getAppBaseUrl('') : '/')" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
                             <i class="fa-solid fa-arrow-left me-1"></i> Page précédente
                         </button>
 
-                        <a href="/fabtrack" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2">
                             <i class="fa-solid fa-desktop me-1"></i> Kiosque Fabtrack
                         </a>
 
                         <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                        <a href="/admin" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2">
                             <i class="fa-solid fa-screwdriver-wrench me-1"></i> Panneau admin
                         </a>
                         <% } %>
 
-                        <a href="/" class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-sm fw-semibold">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-sm fw-semibold">
                             <i class="fa-solid fa-house me-1"></i> Accueil
                         </a>
                     </div>
@@ -110,7 +110,7 @@
                 <div class="card-footer bg-body-tertiary border-0 py-3 text-center">
                     <small class="text-muted">
                         Un problème avec un équipement ou une machine ? 
-                        <a href="/report-issue" class="text-decoration-none text-primary fw-semibold ms-1">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" class="text-decoration-none text-primary fw-semibold ms-1">
                             <i class="fa-solid fa-wrench me-1"></i>Signaler un incident
                         </a>
                     </small>

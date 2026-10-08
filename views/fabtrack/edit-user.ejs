@@ -8,7 +8,7 @@
         <title>Fabtrack - Fiche contributeur</title>
 
         <%- include('../includes/pagehead.html') %>
-        <script src="/javascripts/pagination.js"></script>
+        <script src="javascripts/pagination.js"></script>
         <style>
             .user-accordion-btn {
                 background-color: var(--bs-body-bg);
@@ -65,13 +65,13 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/fabtrack" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-desktop me-1"></i> <%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque Fabtrack' %>
                         </a>
                     </div>
                 </div>
             </div>
-            <form action="/users/update/<%= user.id %>" method="post">
+            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/update/<%= user.id %>" method="post">
                 <div class="row">
                     <div class="col-4">
                         <div class="form-floating mb-3">
@@ -179,7 +179,7 @@
                             </div>
                             <% if (!user.termsAccepted) { %>
                             <div>
-                                <a href="/users/resend/<%= user.id %>" class="btn btn-sm btn-outline-warning rounded-pill" title="Renvoyer l'e-mail avec le lien de signature">
+                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/resend/<%= user.id %>" class="btn btn-sm btn-outline-warning rounded-pill" title="Renvoyer l'e-mail avec le lien de signature">
                                     <i class="fa-solid fa-paper-plane me-1"></i> Renvoyer l'e-mail de charte
                                 </a>
                             </div>
@@ -194,7 +194,7 @@
                         </button>
                     </div>
                     <div class="col-sm-6">
-                        <a id="cancel" href="/fabtrack" class="btn btn-outline-secondary w-100 py-2 rounded-pill">
+                        <a id="cancel" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-secondary w-100 py-2 rounded-pill">
                             <%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %>
                         </a>
                     </div>
@@ -333,7 +333,7 @@
             <div class="modal fade" id="addMoney" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form action="/history/credit" method="post">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/credit" method="post">
                         <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
                         <div class="modal-header">
                             <h5 class="modal-title"><i class="fa-solid fa-money-bill-wave text-success"></i> Créditer le compte</h5>
@@ -360,7 +360,7 @@
             <div class="modal fade" id="modalAddHabilitation" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalAddHabilitationLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
-                    <form action="/users/<%= user.id %>/workshop-badge/award" method="post">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-badge/award" method="post">
                         <div class="modal-header bg-body-tertiary">
                             <h5 class="modal-title" id="modalAddHabilitationLabel">
                                 <i class="fa-solid fa-award text-warning me-2"></i> Ajouter une habilitation
@@ -491,7 +491,7 @@
                                                 <td class="small text-muted"><%= warning.createdAt %></td>
                                                 <td><%= warning.comments || '-' %></td>
                                                 <td class="text-center">
-                                                    <a href="/warning/deactivate/<%= warning.id %>" class="btn btn-outline-success btn-sm rounded-pill px-3" title="Marquer comme résolu" onclick="return confirm('Résoudre et désactiver cet avertissement ?');">
+                                                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>warning/deactivate/<%= warning.id %>" class="btn btn-outline-success btn-sm rounded-pill px-3" title="Marquer comme résolu" onclick="return confirm('Résoudre et désactiver cet avertissement ?');">
                                                         <i class="fa-solid fa-check me-1"></i> Résolu
                                                     </a>
                                                 </td>
@@ -516,7 +516,7 @@
                                         <i class="fa-solid fa-plus-circle text-warning"></i> Émettre un avertissement
                                     </h6>
                                     <p class="text-muted small mb-3">Enregistrez un rappel aux consignes ou un avertissement sur le compte du contributeur.</p>
-                                    <form action="/warning/create" method="post">
+                                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>warning/create" method="post">
                                         <input type='hidden' id="userid" name='userid' value='<%= user.id %>' />
                                         <div class="row g-3">
                                             <div class="col-md-6">
@@ -668,11 +668,11 @@
                                             </td>
                                             <td class="text-center">
                                                 <% if (project.active) { %>
-                                                    <a href="/history/project/archive/<%= project.id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Archiver ce projet">
+                                                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/archive/<%= project.id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Archiver ce projet">
                                                         <i class="fa-solid fa-box-archive fa-xs me-1"></i> Archiver
                                                     </a>
                                                 <% } else { %>
-                                                    <a href="/history/project/unarchive/<%= project.id %>" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0" title="Désarchiver ce projet">
+                                                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/unarchive/<%= project.id %>" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0" title="Désarchiver ce projet">
                                                         <i class="fa-solid fa-box-open fa-xs me-1"></i> Rétablir
                                                     </a>
                                                 <% } %>
@@ -744,7 +744,7 @@
                                                 <td><%= usage.formattedDate %></td>
                                                 <td>
                                                     <% if (usage.machine) { %>
-                                                        <a href="/admin/machines/view/<%= usage.machine.id %>" class="fw-semibold text-decoration-none">
+                                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/view/<%= usage.machine.id %>" class="fw-semibold text-decoration-none">
                                                             <%= usage.machine.name %>
                                                         </a>
                                                         <div class="small text-muted"><%= usage.machine.make %> <%= usage.machine.model %></div>
@@ -976,7 +976,7 @@
                                                     <% } %>
                                                 </td>
                                                 <td class="text-end pe-3">
-                                                    <form action="/history/equipment/return/<%= loan.id %>" method="post" class="d-inline" onsubmit="return confirm('Confirmer la restitution de cet objet ?');">
+                                                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/equipment/return/<%= loan.id %>" method="post" class="d-inline" onsubmit="return confirm('Confirmer la restitution de cet objet ?');">
                                                         <button type="submit" class="btn btn-sm btn-success rounded-circle shadow-sm" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;" data-bs-toggle="tooltip" data-bs-placement="top" title="Restituer l'équipement" aria-label="Restituer">
                                                             <i class="fa-solid fa-rotate-left"></i>
                                                         </button>
@@ -1083,7 +1083,7 @@
                                     <p class="text-muted small mb-3">
                                         Indiquez un atelier qui intéresse l'utilisateur pour le recontacter lors de la planification d'une session.
                                     </p>
-                                    <form action="/users/<%= user.id %>/workshop-interest/add" method="post" class="row g-2 align-items-center">
+                                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-interest/add" method="post" class="row g-2 align-items-center">
                                         <div class="col-md-9">
                                             <select class="form-select form-select-sm" name="workshopId" required>
                                                 <option value="" disabled selected>Sélectionner un atelier organisé par le fablab...</option>
@@ -1143,18 +1143,16 @@
                                                             <% } else { %>
                                                                 <span class="badge bg-body-secondary text-secondary border rounded-pill">Aucune</span>
                                                             <% } %>
-                                                        </td>
-                                                        <td class="text-muted small"><%= item.formattedDate %></td>
                                                         <td class="text-end pe-3">
                                                             <div class="d-inline-flex gap-1">
-                                                                <form action="/users/<%= user.id %>/workshop-badge/award" method="post" class="d-inline">
+                                                                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-badge/award" method="post" class="d-inline">
                                                                     <input type="hidden" name="workshopId" value="<%= item.workshop.id %>">
                                                                     <input type="hidden" name="removeInterest" value="true">
                                                                     <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Atelier suivi (Attribuer le badge & valider)">
                                                                         <i class="fa-solid fa-check me-1"></i> Valider
                                                                     </button>
                                                                 </form>
-                                                                <a href="/users/<%= user.id %>/workshop-interest/remove/<%= item.workshop.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Retirer l'intérêt" onclick="return confirm('Retirer l\'intérêt pour cet atelier ?');">
+                                                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-interest/remove/<%= item.workshop.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Retirer l'intérêt" onclick="return confirm('Retirer l\'intérêt pour cet atelier ?');">
                                                                     <i class="fa-solid fa-trash-can"></i>
                                                                 </a>
                                                             </div>
@@ -1196,7 +1194,7 @@
                                                         <% } %>
                                                     </div>
                                                     <div>
-                                                        <a href="/users/<%= user.id %>/workshop-badge/revoke/<%= comp.workshop.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Révoquer le badge" onclick="return confirm('Révoquer le badge pour cet atelier ?');">
+                                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-badge/revoke/<%= comp.workshop.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Révoquer le badge" onclick="return confirm('Révoquer le badge pour cet atelier ?');">
                                                             <i class="fa-solid fa-xmark"></i>
                                                         </a>
                                                     </div>
@@ -1231,7 +1229,6 @@
             </div>
 
         <%- include('../includes/footer.html') %>
-        <script src="/javascripts/main.js"></script>
         <script>
           // Call the pagination function after the table is rendered
           addPagination('historyTable', <%- JSON.stringify(tableData) %>);

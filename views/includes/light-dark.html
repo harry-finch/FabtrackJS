@@ -41,7 +41,7 @@
             <% if (typeof localesMeta !== 'undefined' && localesMeta && localesMeta.length > 0) { %>
                 <% localesMeta.forEach(function(lang) { %>
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === lang.code) ? 'active fw-bold' : '' %>" href="/change-language/<%= lang.code %>">
+                        <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === lang.code) ? 'active fw-bold' : '' %>" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>change-language/<%= lang.code %>">
                             <span><%= lang.flag %></span>
                             <span><%= lang.name %></span>
                             <% if (typeof currentLocale !== 'undefined' && currentLocale === lang.code) { %>
@@ -52,13 +52,13 @@
                 <% }); %>
             <% } else { %>
                 <li>
-                    <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'fr') ? 'active fw-bold' : '' %>" href="/change-language/fr">
+                    <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'fr') ? 'active fw-bold' : '' %>" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>change-language/fr">
                         <span>🇫🇷</span>
                         <span>Français</span>
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'en') ? 'active fw-bold' : '' %>" href="/change-language/en">
+                    <a class="dropdown-item d-flex align-items-center gap-2 <%= (typeof currentLocale !== 'undefined' && currentLocale === 'en') ? 'active fw-bold' : '' %>" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>change-language/en">
                         <span>🇬🇧</span>
                         <span>English</span>
                     </a>

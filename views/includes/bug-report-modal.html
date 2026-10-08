@@ -2,7 +2,7 @@
 <div class="modal fade" id="modalReportBug" tabindex="-1" aria-labelledby="modalReportBugLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow">
-            <form action="/report-bug" method="post" id="formReportBug">
+            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-bug" method="post" id="formReportBug">
                 <div class="modal-header border-0 pb-0">
                     <div class="d-flex align-items-center gap-2">
                         <div class="bg-warning-subtle text-warning p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">

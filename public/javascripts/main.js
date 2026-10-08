@@ -94,6 +94,20 @@
       return;
     }
 
+    // Subpath Auto-Correction for reverse proxy deployments (e.g. /fabtrack/)
+    if (window.getAppBaseUrl && href.startsWith("/") && !href.startsWith("//")) {
+      try {
+        const targetUrl = window.getAppBaseUrl(href);
+        const targetPath = new URL(targetUrl, window.location.origin).pathname;
+        if (link.pathname !== targetPath) {
+          e.preventDefault();
+          startProgressBar();
+          window.location.assign(targetUrl);
+          return;
+        }
+      } catch (err) {}
+    }
+
     // Trigger the top progress bar immediately
     startProgressBar();
 
@@ -115,6 +129,20 @@
   document.addEventListener("submit", (e) => {
     const form = e.target;
     if (form.target === "_blank" || form.getAttribute("data-no-progress")) return;
+
+    // Subpath Auto-Correction for form action in reverse proxy deployments
+    if (window.getAppBaseUrl && form.action) {
+      try {
+        const rawAction = form.getAttribute("action");
+        if (rawAction && rawAction.startsWith("/") && !rawAction.startsWith("//")) {
+          const targetAction = window.getAppBaseUrl(rawAction);
+          const targetPath = new URL(targetAction, window.location.origin).pathname;
+          if (new URL(form.action, window.location.origin).pathname !== targetPath) {
+            form.action = targetAction;
+          }
+        }
+      } catch (err) {}
+    }
 
     // Prevent duplicate accidental form submissions
     if (form.dataset.submitting === "true") {

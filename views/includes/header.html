@@ -4,7 +4,7 @@
 
     <!-- Center Logo -->
     <div class="d-flex justify-content-center">
-        <a href="#" onclick="location.assign(window.location.origin)" title="Accueil <%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>">
+        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" title="Accueil <%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>">
             <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
                 <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %> Logo" style="max-height: 54px; max-width: 200px; object-fit: contain;" class="ml-3" />
             <% } else { %>
@@ -110,7 +110,7 @@
     <!-- User Profile & Navigation Menu -->
     <div class="d-flex align-items-center justify-content-end gap-2" style="flex: 1 1 0; min-width: 0;">
         <!-- Incident Reporting Button for Mediators & Admins -->
-        <a href="/report-issue" target="_blank" class="btn btn-outline-danger btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.report_issue') %>" title="<%= __('nav.report_issue') %>">
+        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank" class="btn btn-outline-danger btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.report_issue') %>" title="<%= __('nav.report_issue') %>">
             <i class="fa-solid fa-triangle-exclamation fa-sm"></i>
         </a>
 
@@ -129,7 +129,7 @@
                 <i class="fa-solid fa-dolly fa-sm"></i>
             </button>
         </span>
-        <a href="/admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>">
+        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>">
             <i class="fa-solid fa-screwdriver-wrench fa-sm"></i>
         </a>
         <% } %>
@@ -192,11 +192,11 @@
                     <span class="text-uppercase fw-bold text-muted d-block mb-1 px-1" style="font-size: 0.68rem; letter-spacing: 0.05em;">
                         <%= typeof __ !== 'undefined' ? __('nav.navigation') : 'Navigation' %>
                     </span>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/fabtrack">
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack">
                         <i class="fa-solid fa-desktop text-primary fa-sm" style="width: 16px;"></i>
                         <span class="small"><%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque Fabtrack' %></span>
                     </a>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-danger" href="/report-issue" target="_blank">
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-danger" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank">
                         <i class="fa-solid fa-triangle-exclamation text-danger fa-sm" style="width: 16px;"></i>
                         <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.report_issue') : 'Signaler une panne machine' %></span>
                     </a>
@@ -209,7 +209,7 @@
                         <i class="fa-solid fa-dolly text-warning fa-sm" style="width: 16px;"></i>
                         <span class="small fw-semibold">Sortie d'inventaire / Rebut</span>
                     </a>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="/admin">
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin">
                         <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
                         <span class="small"><%= typeof __ !== 'undefined' ? __('nav.admin_panel') : 'Panneau d\'administration' %></span>
                     </a>
@@ -219,7 +219,7 @@
                 <hr class="dropdown-divider my-2">
 
                 <!-- LOGOUT SECTION -->
-                <a class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2" href="/logout">
+                <a class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>logout">
                     <i class="fa-solid fa-right-from-bracket fa-sm" style="width: 16px;"></i>
                     <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.logout') : 'Déconnexion' %></span>
                 </a>
@@ -228,7 +228,7 @@
     </div>
 </div>
 
-<script src="/javascripts/workspace.js"></script>
+<script src="javascripts/workspace.js"></script>
 
 <h2 class="mb-1 text-center fw-bold"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
 <h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>

@@ -125,6 +125,32 @@ app.use(async (req, res, next) => {
     res.locals.baseUrl = rawBasePath ? `/${rawBasePath}/` : "/";
     res.locals.basePath = rawBasePath ? `/${rawBasePath}` : "";
 
+    // Automatically prefix server-side redirects with the subpath in reverse proxy deployments
+    if (rawBasePath && !res.__baseRedirectPatched) {
+      res.__baseRedirectPatched = true;
+      const originalRedirect = res.redirect.bind(res);
+      res.redirect = function (url) {
+        let address = url;
+        let status = 302;
+        if (arguments.length === 2) {
+          if (typeof arguments[0] === "number") {
+            status = arguments[0];
+            address = arguments[1];
+          } else {
+            address = arguments[0];
+            status = arguments[1];
+          }
+        }
+        if (typeof address === "string" && address.startsWith("/") && !address.startsWith("//")) {
+          const prefix = `/${rawBasePath}`;
+          if (address !== prefix && !address.startsWith(`${prefix}/`)) {
+            address = `${prefix}${address}`;
+          }
+        }
+        return originalRedirect(status, address);
+      };
+    }
+
     // Check platform installation status
     let isInstalled = settings.platform_installed === "true";
     if (!isInstalled) {

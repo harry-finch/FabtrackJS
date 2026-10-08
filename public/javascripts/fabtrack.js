@@ -49,7 +49,9 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
     if (user.termsAccepted === false) {
       if (charterWarningRow) charterWarningRow.style.display = "flex";
-      if (charterProfileBtn) charterProfileBtn.href = "/users/edit/" + user.id;
+      if (charterProfileBtn) {
+        charterProfileBtn.href = window.getAppBaseUrl ? window.getAppBaseUrl("users/edit/" + user.id) : "users/edit/" + user.id;
+      }
       if (charterWarningMsg) {
         charterWarningMsg.textContent = `${user.fullname} n'a pas encore validé la charte d'utilisation du fablab. L'inscription au lab est bloquée.`;
       }
@@ -117,23 +119,38 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
       nameInput.value = item.fullname;
       document.getElementById("userid").value = item.id;
-      document.getElementById("urlprofile").href = "/users/edit/" + item.id;
+      const profileUrl = window.getAppBaseUrl ? window.getAppBaseUrl("users/edit/" + item.id) : "users/edit/" + item.id;
+      document.getElementById("urlprofile").href = profileUrl;
       setCharterStatus(item);
       nameInput.dispatchEvent(new Event("change"));
       console.log(item.projects);
     },
   });
 
+  const urlProfileEl = document.getElementById("urlprofile");
+  if (urlProfileEl) {
+    urlProfileEl.addEventListener("click", (e) => {
+      const selectedId = Number(document.getElementById("userid").value);
+      if (!selectedId || isNaN(selectedId)) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+
   nameInput.addEventListener("input", () => {
     const currentUserId = Number(document.getElementById("userid").value);
     const currentUser = names.find((u) => u.id === currentUserId);
     if (!currentUser || currentUser.fullname.toLowerCase() !== nameInput.value.trim().toLowerCase()) {
       document.getElementById("userid").value = "null";
+      if (urlProfileEl) urlProfileEl.href = "#";
       setCharterStatus(null);
     }
   });
 
-  const kioskForm = document.querySelector('form[action="/history/create"]');
+  const kioskForm =
+    document.querySelector('form[action$="/history/create"]') ||
+    document.querySelector('form[action="/history/create"]');
   if (kioskForm) {
     kioskForm.addEventListener("submit", (e) => {
       const selectedId = Number(document.getElementById("userid").value);
@@ -608,7 +625,7 @@ if (warningDeactivator) {
 
     modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Warning for ${warninguser}</h5>`;
     modalCode.innerHTML = warningcomments;
-    modalLink.href = "/warning/deactivate/" + warningid;
+    modalLink.href = window.getAppBaseUrl ? window.getAppBaseUrl("warning/deactivate/" + warningid) : "/warning/deactivate/" + warningid;
   });
 }
 
@@ -659,7 +676,7 @@ if (clearBalance) {
 
     modalTitle.innerHTML = `<i class="fa-solid fa-money-bill-wave"></i> Clear debt for ${username}</h5>`;
     modalCode.innerHTML = "User balance is " + balance + " €";
-    modalLink.href = "/history/cleardebt/" + userid;
+    modalLink.href = window.getAppBaseUrl ? window.getAppBaseUrl("history/cleardebt/" + userid) : "/history/cleardebt/" + userid;
   });
 }
 
