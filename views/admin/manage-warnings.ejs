@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Administration des avertissements et rappels de sécurité usagers" />
-        <title>Avertissements usagers - <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
+        <meta name="description" content="Administration des avertissements et rappels de sécurité contributeurs" />
+        <title>Avertissements contributeurs - <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
         <%- include('../includes/pagehead.html') %>
     </head>
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
@@ -27,7 +27,7 @@
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2">
-                                <h4 class="fw-bold mb-0">Avertissements Usagers</h4>
+                                <h4 class="fw-bold mb-0">Avertissements Contributeurs</h4>
                                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.72rem;">
                                     <%= activeCount %> actif(s)
                                 </span>
@@ -86,7 +86,7 @@
                     <!-- Search Input -->
                     <div class="input-group input-group-sm" style="max-width: 280px;">
                         <span class="input-group-text bg-body-secondary border-end-0"><i class="fa-solid fa-search fa-sm text-muted"></i></span>
-                        <input type="text" id="warningSearch" class="form-control border-start-0" placeholder="Rechercher un usager, motif..." oninput="searchWarnings(this.value)" />
+                        <input type="text" id="warningSearch" class="form-control border-start-0" placeholder="Rechercher un contributeur, motif..." oninput="searchWarnings(this.value)" />
                     </div>
                 </div>
 
@@ -96,7 +96,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col" class="ps-4" style="width: 70px;">#</th>
-                                    <th scope="col">Usager</th>
+                                    <th scope="col">Contributeur</th>
                                     <th scope="col">Type d'avertissement</th>
                                     <th scope="col">Date d'émission</th>
                                     <th scope="col">Commentaires / Motif</th>
@@ -112,13 +112,13 @@
                                         <td>
                                             <% if (warning.user) { %>
                                                 <div class="fw-semibold">
-                                                    <a href="/users/edit/<%= warning.user.id %>" class="text-decoration-none text-body" title="Voir la fiche usager">
+                                                    <a href="/users/edit/<%= warning.user.id %>" class="text-decoration-none text-body" title="Voir la fiche contributeur">
                                                         <%= warning.user.name %> <%= warning.user.surname %>
                                                     </a>
                                                 </div>
                                                 <small class="text-muted"><%= warning.user.email %></small>
                                             <% } else { %>
-                                                <span class="text-muted italic">Usager inconnu ou supprimé</span>
+                                                <span class="text-muted italic">Contributeur inconnu ou supprimé</span>
                                             <% } %>
                                         </td>
                                         <td>
@@ -180,7 +180,7 @@
                                             <div class="d-flex flex-column align-items-center justify-content-center">
                                                 <i class="fa-solid fa-shield-check fs-1 text-success mb-2"></i>
                                                 <h6 class="fw-semibold mb-1">Aucun avertissement enregistré</h6>
-                                                <small class="text-muted">Aucun usager n'a reçu d'avertissement pour le moment.</small>
+                                                <small class="text-muted">Aucun contributeur n'a reçu d'avertissement pour le moment.</small>
                                             </div>
                                         </td>
                                     </tr>
@@ -198,9 +198,9 @@
                         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1">
                             <i class="fa-solid fa-plus me-1"></i> Nouveau
                         </span>
-                        <h5 class="fw-bold mb-0">Émettre un avertissement usager</h5>
+                        <h5 class="fw-bold mb-0">Émettre un avertissement contributeur</h5>
                     </div>
-                    <p class="text-muted small mt-1 mb-0">Enregistrez un rappel au règlement, un manquement ou une infraction sur le profil d'un usager</p>
+                    <p class="text-muted small mt-1 mb-0">Enregistrez un rappel au règlement, un manquement ou une infraction sur le profil d'un contributeur</p>
                 </div>
                 <div class="card-body p-4">
                     <form action="/admin/warnings/create" method="POST">
@@ -208,10 +208,10 @@
                             <!-- Select User -->
                             <div class="col-12 col-md-6">
                                 <label for="userid" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-user me-1 text-primary"></i> Usager concerné
+                                    <i class="fa-solid fa-user me-1 text-primary"></i> Contributeur concerné
                                 </label>
                                 <select class="form-select" id="userid" name="userid" required>
-                                    <option value="" disabled selected>-- Sélectionnez un usager --</option>
+                                    <option value="" disabled selected>-- Sélectionnez un contributeur --</option>
                                     <% users.forEach(function(u) { %>
                                         <option value="<%= u.id %>">
                                             <%= u.surname %> <%= u.name %> (<%= u.email %>)
@@ -241,7 +241,7 @@
                                     <i class="fa-solid fa-comment-dots me-1 text-muted"></i> Commentaires / Précisions (facultatif)
                                 </label>
                                 <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Circonstances, machine concernée, consigne rappelée..."></textarea>
-                                <div class="form-text small text-muted">Ce commentaire apparaîtra sur la fiche usager et dans l'alerte e-mail éventuelle.</div>
+                                <div class="form-text small text-muted">Ce commentaire apparaîtra sur la fiche contributeur et dans l'alerte e-mail éventuelle.</div>
                             </div>
 
                             <div class="col-12 d-flex justify-content-end gap-2 pt-2">

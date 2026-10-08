@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Gestion des outils et équipements empruntables" />
     <meta name="author" content="FabtrackJS" />
-    <title>Manage Equipment - FabtrackJS</title>
+    <title>Fabtrack - Gestion des équipements</title>
 
     <%- include('../includes/pagehead.html') %>
   </head>
@@ -112,7 +112,7 @@
               <h5 class="fw-bold mb-0 text-body">
                 Objets actuellement en cours d'emprunt
               </h5>
-              <span class="text-muted small">Liste de tous les matériels sortis et usagers responsables</span>
+              <span class="text-muted small">Liste de tous les matériels sortis et contributeurs responsables</span>
             </div>
           </div>
           <% if (typeof activeLoans !== 'undefined' && activeLoans.length > 0) { %>
@@ -165,7 +165,7 @@
                         </a>
                         <span class="text-muted small"><%= loan.user.email %></span>
                       <% } else { %>
-                        <span class="text-muted small">Usager inconnu</span>
+                        <span class="text-muted small">Contributeur inconnu</span>
                       <% } %>
                     </td>
                     <td>

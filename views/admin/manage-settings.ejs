@@ -425,7 +425,7 @@
                     <label for="allow_self_registration"><i class="fa-solid fa-user-plus me-1 text-info-emphasis"></i>
                       Inscription en autonomie au kiosque</label>
                   </div>
-                  <small class="text-muted">Permet aux usagers de créer leur propre profil en arrivant au
+                  <small class="text-muted">Permet aux contributeurs de créer leur propre profil en arrivant au
                     fablab.</small>
                 </div>
 
@@ -440,7 +440,7 @@
                     </select>
                     <label for="date_format"><i class="fa-solid fa-calendar-days me-1 text-info-emphasis"></i> <%= typeof __ !== 'undefined' ? __('settings.field_date_format') : "Format d'affichage des dates" %></label>
                   </div>
-                  <small class="text-muted"><%= typeof __ !== 'undefined' ? __('settings.field_date_format_desc') : "Définit le format de date utilisé dans l'historique, les fiches usagers et les exports." %></small>
+                  <small class="text-muted"><%= typeof __ !== 'undefined' ? __('settings.field_date_format_desc') : "Définit le format de date utilisé dans l'historique, les fiches contributeurs et les exports." %></small>
                 </div>
               </div>
             </div>
@@ -491,7 +491,7 @@
                     </select>
                     <label for="default_language"><i class="fa-solid fa-globe me-1 text-primary"></i> <%= typeof __ !== 'undefined' ? __('settings.field_default_lang') : 'Langue par défaut du kiosque' %></label>
                   </div>
-                  <small class="text-muted">Définit la langue initiale affichée aux usagers et sur les nouvelles sessions.</small>
+                  <small class="text-muted">Définit la langue initiale affichée aux contributeurs et sur les nouvelles sessions.</small>
                 </div>
 
                 <div class="col-12 col-md-6">
@@ -532,7 +532,7 @@
             </div>
             <div class="card-body px-4 pt-2 pb-4">
               <p class="text-muted small mb-3">
-                <%= (typeof __ !== 'undefined' && __('settings.ai_desc') !== 'settings.ai_desc') ? __('settings.ai_desc') : "Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien d'usagers ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée." %>
+                <%= (typeof __ !== 'undefined' && __('settings.ai_desc') !== 'settings.ai_desc') ? __('settings.ai_desc') : "Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien de contributeurs ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée." %>
               </p>
 
               <div class="row g-3">

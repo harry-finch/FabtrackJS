@@ -129,7 +129,7 @@
             </div>
 
             <div class="col-md-4">
-              <label for="default_usertype_id" class="form-label small fw-semibold"><i class="fa-solid fa-user-tag me-1 text-primary"></i> Typologie des nouveaux usagers</label>
+              <label for="default_usertype_id" class="form-label small fw-semibold"><i class="fa-solid fa-user-tag me-1 text-primary"></i> Typologie des nouveaux contributeurs</label>
               <select class="form-select" id="default_usertype_id" name="default_usertype_id">
                 <% usertypes.forEach(function(ut) { %>
                   <option value="<%= ut.id %>" <%= ut.name.toLowerCase().includes('étudiant') || ut.name.toLowerCase().includes('etudiant') ? 'selected' : '' %>><%= ut.name %></option>
@@ -161,7 +161,7 @@
     <div id="analysisSpinner" class="card border-0 shadow-sm p-5 text-center my-4 d-none">
       <div class="spinner-border text-primary mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
       <h6 class="fw-bold mb-1">Analyse du fichier CSV en cours...</h6>
-      <p class="text-muted small mb-0">Contrôle des concordances usagers, détection des homonymes et validation des horaires.</p>
+      <p class="text-muted small mb-0">Contrôle des concordances contributeurs, détection des homonymes et validation des horaires.</p>
     </div>
 
     <!-- Étape 2 : Prévisualisation & Validation des données -->
@@ -189,13 +189,13 @@
           <div class="col-6 col-md-3">
             <div class="p-3 rounded-3 bg-primary-subtle border border-primary-subtle text-center">
               <div class="fs-4 fw-bold text-primary" id="kpiExistingCount">0</div>
-              <small class="text-primary fw-semibold"><i class="fa-solid fa-user-check me-1"></i> Usagers existants</small>
+              <small class="text-primary fw-semibold"><i class="fa-solid fa-user-check me-1"></i> Contributeurs existants</small>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="p-3 rounded-3 bg-info-subtle border border-info-subtle text-center">
               <div class="fs-4 fw-bold text-info" id="kpiNewCount">0</div>
-              <small class="text-info fw-semibold"><i class="fa-solid fa-user-plus me-1"></i> Nouveaux usagers</small>
+              <small class="text-info fw-semibold"><i class="fa-solid fa-user-plus me-1"></i> Nouveaux contributeurs</small>
             </div>
           </div>
           <div class="col-6 col-md-3">
@@ -214,7 +214,7 @@
                 <th class="text-center" style="width: 50px;">Ligne</th>
                 <th>Étudiant (Nom & Prénom)</th>
                 <th>E-mail</th>
-                <th>Statut Usager</th>
+                <th>Statut Contributeur</th>
                 <th>Créneau</th>
                 <th>Projet / UE</th>
                 <th>Statut</th>
@@ -244,7 +244,7 @@
         <i class="fa-solid fa-circle-check"></i>
       </div>
       <h4 class="fw-bold text-success mb-2">Importation terminée avec succès !</h4>
-      <p class="text-muted fs-6 mb-4" id="resultMessageText">Toutes les visites et usagers ont été enregistrés.</p>
+      <p class="text-muted fs-6 mb-4" id="resultMessageText">Toutes les visites et contributeurs ont été enregistrés.</p>
       <div class="d-flex justify-content-center gap-3">
         <a href="/admin/view-history" class="btn btn-primary rounded-pill px-4">
           <i class="fa-solid fa-clock-rotate-left me-2"></i> Consulter l'historique
@@ -397,7 +397,7 @@
             tr.classList.add('table-warning');
           }
 
-          // Badge Statut Usager
+          // Badge Statut Contributeur
           let userStatusBadge = '';
           if (item.userStatus === 'EXISTING_USER') {
             userStatusBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"><i class="fa-solid fa-user-check me-1"></i> Compte existant</span>';

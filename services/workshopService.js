@@ -105,7 +105,7 @@ class WorkshopService {
       // Non-critical if no interest existed
     }
 
-    const userName = completion.user ? `${completion.user.name} ${completion.user.surname}` : `Usager #${uId}`;
+    const userName = completion.user ? `${completion.user.name} ${completion.user.surname}` : `Contributeur #${uId}`;
     const accessText = workshop.access ? ` (Habilitation débloquée : ${workshop.access.name})` : "";
     logger.logThat(`Badge d'atelier "${workshop.name}" automatiquement attribué à ${userName}${accessText}`);
 

@@ -101,7 +101,7 @@
                                             </div>
                                             <div>
                                                 <h6 class="fw-bold mb-0">Alerte Nouvel Avertissement</h6>
-                                                <small class="text-muted">Sécurité & usagers</small>
+                                                <small class="text-muted">Sécurité & contributeurs</small>
                                             </div>
                                         </div>
                                         <div class="form-check form-switch fs-5 mb-0">
@@ -109,7 +109,7 @@
                                         </div>
                                     </div>
                                     <p class="small text-secondary mb-3 flex-grow-1">
-                                        Envoie un e-mail à l'administrateur dès qu'un avertissement (warning) est attribué à un usager, avec le motif, le commentaire et le nom du médiateur.
+                                        Envoie un e-mail à l'administrateur dès qu'un avertissement (warning) est attribué à un contributeur, avec le motif, le commentaire et le nom du médiateur.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
                                         <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
@@ -156,7 +156,7 @@
                                                 <i class="fa-solid fa-file-signature"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-0">Charte & Inscription Usager</h6>
+                                                <h6 class="fw-bold mb-0">Charte & Inscription Contributeur</h6>
                                                 <small class="text-muted">Accord CGU & accès</small>
                                             </div>
                                         </div>
@@ -165,10 +165,10 @@
                                         </div>
                                     </div>
                                     <p class="small text-secondary mb-3 flex-grow-1">
-                                        Envoie le lien d'acceptation du règlement et de la charte de sécurité lors de la création initiale d'un profil usager.
+                                        Envoie le lien d'acceptation du règlement et de la charte de sécurité lors de la création initiale d'un profil contributeur.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Usager</span>
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Contributeur</span>
                                         <div class="d-flex align-items-center gap-2">
                                             <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" onclick="scrollToAgreementTemplate()">
                                                 <i class="fa-solid fa-pen me-1"></i> Modifier
@@ -221,13 +221,13 @@
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
                                     <i class="fa-solid fa-file-signature me-1"></i> Modèle d'e-mail
                                 </span>
-                                <h5 class="fw-bold mb-0">E-mail de création d'usager & Signature de la Charte</h5>
+                                <h5 class="fw-bold mb-0">E-mail de création de contributeur & Signature de la Charte</h5>
                             </div>
                             <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement" onclick="updateLivePreview()">
                                 <i class="fa-solid fa-eye me-1"></i> Aperçu du rendu
                             </button>
                         </div>
-                        <p class="text-muted small mt-1 mb-0">Personnalisez l'objet, le texte et le bouton du message envoyé aux usagers créés pour valider la charte d'utilisation du lab</p>
+                        <p class="text-muted small mt-1 mb-0">Personnalisez l'objet, le texte et le bouton du message envoyé aux contributeurs créés pour valider la charte d'utilisation du lab</p>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
@@ -245,7 +245,7 @@
                                     placeholder="Fablab : Signature requise de la charte d'utilisation"
                                     required
                                 />
-                                <div class="form-text small text-muted">Sujet visible dans la boîte de réception de l'usager.</div>
+                                <div class="form-text small text-muted">Sujet visible dans la boîte de réception du contributeur.</div>
                             </div>
 
                             <!-- Title in Header -->
@@ -272,10 +272,10 @@
                                     </label>
                                     <div class="d-flex align-items-center gap-1 flex-wrap">
                                         <small class="text-muted me-1">Insérer une variable :</small>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{name}')" title="Prénom de l'usager">{name}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{surname}')" title="Nom de l'usager">{surname}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{name}')" title="Prénom du contributeur">{name}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{surname}')" title="Nom du contributeur">{surname}</button>
                                         <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{fullname}')" title="Prénom et nom">{fullname}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{email}')" title="Email de l'usager">{email}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{email}')" title="Email du contributeur">{email}</button>
                                         <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{lab_name}')" title="Nom du Fablab">{lab_name}</button>
                                     </div>
                                 </div>
@@ -499,7 +499,7 @@
                                 <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                                     <i class="fa-solid fa-triangle-exclamation fa-sm"></i>
                                 </div>
-                                <h6 class="modal-title fw-bold" id="modalPreviewWarningLabel">Aperçu : Alerte d'Avertissement Usager</h6>
+                                <h6 class="modal-title fw-bold" id="modalPreviewWarningLabel">Aperçu : Alerte d'Avertissement Contributeur</h6>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -509,12 +509,12 @@
                                     <span class="fw-bold fs-5">FabtrackJS</span>
                                     <span class="badge bg-danger text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Avertissement</span>
                                 </div>
-                                <h5 class="fw-bold mb-3">Nouvel avertissement usager : Jean Dupont</h5>
-                                <p class="text-secondary small mb-3">Un nouvel avertissement a été attribué à un usager de la plateforme :</p>
+                                <h5 class="fw-bold mb-3">Nouvel avertissement contributeur : Jean Dupont</h5>
+                                <p class="text-secondary small mb-3">Un nouvel avertissement a été attribué à un contributeur de la plateforme :</p>
                                 <table class="table table-bordered table-sm bg-white mb-3">
                                     <tbody>
                                         <tr>
-                                            <th class="bg-body-secondary text-muted small w-40">Usager concerné</th>
+                                            <th class="bg-body-secondary text-muted small w-40">Contributeur concerné</th>
                                             <td class="fw-bold">Jean Dupont (jean.dupont@sorbonne-universite.fr)</td>
                                         </tr>
                                         <tr>
@@ -533,7 +533,7 @@
                                 </table>
                                 <div class="text-center pt-2">
                                     <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
-                                        Consulter la fiche usager &rarr;
+                                        Consulter la fiche contributeur &rarr;
                                     </span>
                                 </div>
                             </div>
@@ -619,7 +619,7 @@
                         </div>
                         <div class="modal-body p-4">
                             <div class="text-muted small mb-2 d-flex align-items-center justify-content-between">
-                                <span><i class="fa-solid fa-circle-info me-1 text-primary"></i> Simulation avec un usager exemple (<strong>Camille Martin</strong>)</span>
+                                <span><i class="fa-solid fa-circle-info me-1 text-primary"></i> Simulation avec un contributeur exemple (<strong>Camille Martin</strong>)</span>
                                 <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill">Aperçu dynamique</span>
                             </div>
                             <div class="border rounded-3 p-4 bg-white text-dark shadow-sm">

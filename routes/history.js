@@ -272,7 +272,7 @@ router.post(
             parsedWorkshopId,
             req.session.username || "Atelier Fabtrack",
           );
-          req.session.notification = `Success: Usager enregistré à l'atelier "${attendedWorkshop.name}" ! Le badge a été automatiquement ajouté à son profil.`;
+          req.session.notification = `Success: Contributeur enregistré à l'atelier "${attendedWorkshop.name}" ! Le badge a été automatiquement ajouté à son profil.`;
         } catch (err) {
           console.error("Error awarding workshop badge during check-in:", err);
           req.session.notification = "Success: User is now in the lab (erreur lors de l'attribution du badge).";
@@ -517,7 +517,7 @@ router.post(
 
       const eqItem = await prisma.equipment.findUnique({ where: { id: Number(equipmentId) } });
       const eqName = eqItem ? eqItem.name : `#${equipmentId}`;
-      logger.logThat(`Équipement "${eqName}" emprunté par usager #${usrId} pour ${durationDays} jour(s) (retour prévu: ${expectedReturnAt.toLocaleDateString("fr-FR")}).`);
+      logger.logThat(`Équipement "${eqName}" emprunté par contributeur #${usrId} pour ${durationDays} jour(s) (retour prévu: ${expectedReturnAt.toLocaleDateString("fr-FR")}).`);
     }
 
     // 3. Consumable Usage
@@ -589,7 +589,7 @@ router.post(
         recordedCount++;
 
         if (isCoveredBySorbonne) {
-          req.session.notification = `Success: Activité enregistrée. Prise en charge Projet Sorbonne (${sorbonneEntityName}) : solde usager non débité (${totalPrice.toFixed(2)} € facturables à l'entité).`;
+          req.session.notification = `Success: Activité enregistrée. Prise en charge Projet Sorbonne (${sorbonneEntityName}) : solde contributeur non débité (${totalPrice.toFixed(2)} € facturables à l'entité).`;
         } else if (isCoveredByUe) {
           if (ueInfo && ueInfo.isUnregistered) {
             req.session.notification = `Success: Activité enregistrée. Prise en charge UE non-enregistrée (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € en attente de régularisation).`;
@@ -687,7 +687,7 @@ router.post(
 
     const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
     const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;
-    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `usager #${activity.userId}`;
+    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `contributeur #${activity.userId}`;
 
     logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par ${req.session.username}).`);
     req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;

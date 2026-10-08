@@ -90,7 +90,7 @@ router.post(
         .sendAgreementEmail({ user, token, hostUrl })
         .catch((err) => console.error("[routes/users/create] Failed to send agreement email:", err));
 
-      req.session.notification = `Warning: L'usager ${user.name} ${user.surname} a été créé. Il doit signer la charte d'utilisation reçue par e-mail avant de pouvoir s'enregistrer au lab.`;
+      req.session.notification = `Warning: Le contributeur ${user.name} ${user.surname} a été créé. Il doit signer la charte d'utilisation reçue par e-mail avant de pouvoir s'enregistrer au lab.`;
 
       res.redirect("/fabtrack");
     } catch (e) {
@@ -140,7 +140,7 @@ router.get(
   clearNotification,
   asyncHandler(async (req, res) => {
     if (req.session.role === "staff") {
-      req.session.notification = "Warning: La consultation du profil d'un usager est réservée aux médiateurs.";
+      req.session.notification = "Warning: La consultation du profil d'un contributeur est réservée aux médiateurs.";
       return res.redirect("/fabtrack");
     }
 
@@ -643,7 +643,7 @@ router.get(
     }
 
     if (!user.email || !user.email.trim()) {
-      req.session.notification = "Error: Cet usager ne possède pas d'adresse e-mail valide.";
+      req.session.notification = "Error: Ce contributeur ne possède pas d'adresse e-mail valide.";
       return res.redirect(req.session.lastPage || "/users/manage");
     }
 

@@ -263,7 +263,7 @@ router.get(
         rawDate: i.createdAt,
         formattedDate: i.formattedCreatedAt,
         status: i.status,
-        author: i.reporterName || i.reporterEmail || "Usager",
+        author: i.reporterName || i.reporterEmail || "Contributeur",
         title: "Incident / Panne signalée",
         description: i.description,
         photoPath: i.photoPath,

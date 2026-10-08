@@ -10,9 +10,9 @@ ATTENTION CRITIQUE : RESPECTEZ SCRUPULEUSEMENT LES NOMS EXACTS DES TABLES ET DES
 
 SCHÉMA DES TABLES MARIADB :
 
-1. Table \`User\` (Usagers du Fablab) :
+1. Table \`User\` (Contributeurs / Usagers du Fablab) :
    - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Prénom de l'usager
+   - name (VARCHAR) : Prénom du contributeur / usager
    - surname (VARCHAR) : Nom de famille
    - email (VARCHAR)
    - usertypeId (INT) : Référence à Usertype(id) (ATTENTION : table = Usertype)
@@ -104,7 +104,7 @@ EXEMPLES DE REQUÊTES TYPES :
   GROUP BY ut.id, ut.name
   ORDER BY user_count DESC;
 
-- Usagers enregistrés venus une seule fois au fablab :
+- Contributeurs / Usagers enregistrés venus une seule fois au fablab :
   SELECT COUNT(*) AS total
   FROM (
     SELECT userId FROM \`History\` WHERE userId IS NOT NULL GROUP BY userId HAVING COUNT(*) = 1

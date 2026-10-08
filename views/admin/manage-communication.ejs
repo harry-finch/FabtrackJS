@@ -70,7 +70,7 @@
                             <div>
                                 <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Inscrits Newsletter</small>
                                 <div class="fs-4 fw-bold mt-1 text-primary"><%= newsletterUsers.length %></div>
-                                <small class="text-muted">Usagers abonnés</small>
+                                <small class="text-muted">Contributeurs abonnés</small>
                             </div>
                             <div class="icon-box bg-primary-subtle text-primary">
                                 <i class="fa-solid fa-paper-plane"></i>
@@ -123,7 +123,7 @@
                                         ✉️ Newsletter du Fablab (<%= newsletterUsers.length %> abonnés)
                                     </option>
                                 </optgroup>
-                                <optgroup label="Par Atelier (Usagers intéressés)">
+                                <optgroup label="Par Atelier (Contributeurs intéressés)">
                                     <% workshops.forEach(function(ws) { %>
                                         <option value="workshop-<%= ws.id %>" <%= initialTarget === `workshop-${ws.id}` ? 'selected' : '' %>>
                                             🎓 Atelier : <%= ws.name %> (<%= ws.interests.length %> personne<%= ws.interests.length > 1 ? 's' : '' %> intéressée<%= ws.interests.length > 1 ? 's' : '' %>)
@@ -200,7 +200,7 @@
                         <h6 class="fw-bold mb-0">
                             <i class="fa-solid fa-users text-primary me-2"></i>3. Destinataires inclus dans la liste
                         </h6>
-                        <small class="text-muted">Décochez un usager pour l'exclure temporairement de l'envoi</small>
+                        <small class="text-muted">Décochez un contributeur pour l'exclure temporairement de l'envoi</small>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <div class="input-group input-group-sm" style="max-width: 250px;">
@@ -225,7 +225,7 @@
                                     <th style="width: 40px;" class="ps-3 text-center">
                                         <input type="checkbox" class="form-check-input" id="masterCheckbox" checked onchange="toggleSelectAll(this.checked)" />
                                     </th>
-                                    <th>Usager</th>
+                                    <th>Contributeur</th>
                                     <th>E-mail</th>
                                     <th>Type</th>
                                     <th id="dateColHeader">Date</th>

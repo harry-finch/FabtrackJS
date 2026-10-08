@@ -139,7 +139,7 @@ router.get(
 
     // CSV header with UTF-8 BOM for Microsoft Excel
     let csv = "\uFEFF";
-    csv += "Entité / UFR;Statut Règlement;Date Règlement;Réglé Par;Date Consommation;Usager;Email Usager;Projet;Consommable;Quantité;Unité;Prix Unitaire (€);Total (€)\r\n";
+    csv += "Entité / UFR;Statut Règlement;Date Règlement;Réglé Par;Date Consommation;Contributeur;Email Contributeur;Projet;Consommable;Quantité;Unité;Prix Unitaire (€);Total (€)\r\n";
 
     activities.forEach((act) => {
       const entityStr = `"${(act.sorbonneEntity || "").replace(/"/g, '""')}"`;

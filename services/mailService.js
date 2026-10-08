@@ -251,18 +251,18 @@ class MailService {
     const userFullName = `${user.name} ${user.surname}`;
 
     const contentHtml = `
-      <p>Un nouvel avertissement a été attribué à un usager de la plateforme :</p>
+      <p>Un nouvel avertissement a été attribué à un contributeur de la plateforme :</p>
       
       <table style="width: 100%; border-collapse: collapse; margin: 18px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
         <tr>
-          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Usager concerné</td>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Contributeur concerné</td>
           <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">
             ${userFullName} (${user.email || 'Email non renseigné'})
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Motif d'avertissement</td>
-          <td style="padding: 10px 14px; font-weight: 700; font-size: 13px; color: #dc3545; border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #dc3545; border-bottom: 1px solid #e2e8f0;">
             ${warningName}
           </td>
         </tr>
@@ -280,21 +280,21 @@ class MailService {
         </tr>
       </table>
 
-      <p style="margin-bottom: 0;">Cet avertissement est visible par les animateurs lors du passage de l'usager au Fablab.</p>
+      <p style="margin-bottom: 0;">Cet avertissement est visible par les animateurs lors du passage du contributeur au Fablab.</p>
     `;
 
     const html = this.renderEmailLayout({
-      title: `Nouvel avertissement usager : ${userFullName}`,
+      title: `Nouvel avertissement contributeur : ${userFullName}`,
       badgeText: "Avertissement",
       badgeColor: "#dc3545",
       contentHtml,
       ctaUrl: `${hostUrl}/users/edit/${user.id}`,
-      ctaText: "Consulter la fiche usager",
+      ctaText: "Consulter la fiche contributeur",
     });
 
     return await this.sendMail({
       to: adminEmail,
-      subject: `[Avertissement Usager] ${userFullName} - ${warningName}`,
+      subject: `[Avertissement Contributeur] ${userFullName} - ${warningName}`,
       html,
     });
   }
@@ -313,7 +313,7 @@ class MailService {
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
     const reporter = issue.reporterName
       ? `${issue.reporterName}${issue.reporterEmail ? ` (${issue.reporterEmail})` : ""}`
-      : (issue.reporterEmail || "Usager (non renseigné)");
+      : (issue.reporterEmail || "Contributeur (non renseigné)");
     const dateStr = new Date(issue.createdAt || Date.now()).toLocaleString("fr-FR");
 
     const contentHtml = `

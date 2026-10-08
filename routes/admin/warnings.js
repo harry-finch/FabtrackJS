@@ -129,7 +129,7 @@ router.post(
     const { userid, warningtype, comments } = req.body;
 
     if (!userid || !warningtype) {
-      req.session.notification = "Error: Usager et motif d'avertissement obligatoires.";
+      req.session.notification = "Error: Contributeur et motif d'avertissement obligatoires.";
       return res.redirect(req.session.lastPage || "/admin/warnings");
     }
 

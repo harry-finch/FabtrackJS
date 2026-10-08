@@ -72,7 +72,7 @@ class RepairCafeService {
     });
 
     const statusLabel = VALID_STATUSES[status].label;
-    const userFullName = updated.user ? `${updated.user.name} ${updated.user.surname}` : `Usager #${updated.userId}`;
+    const userFullName = updated.user ? `${updated.user.name} ${updated.user.surname}` : `Contributeur #${updated.userId}`;
     logger.logThat(`Sortie Repair Café enregistrée pour ${userFullName} (Objet: "${updated.repairObject || 'Non précisé'}") - Statut: ${statusLabel}`);
 
     return updated;
@@ -154,7 +154,7 @@ class RepairCafeService {
         repairObject: r.repairObject || "Objet non spécifié",
         repairStatus: r.repairStatus || "PENDING",
         repairNotes: r.repairNotes || "",
-        userFullName: r.user ? `${r.user.name} ${r.user.surname}` : "Usager inconnu",
+        userFullName: r.user ? `${r.user.name} ${r.user.surname}` : "Contributeur inconnu",
         userEmail: r.user ? r.user.email : "",
         workspaceName: r.workspace ? r.workspace.name : "Fablab",
         statusInfo: VALID_STATUSES[r.repairStatus] || VALID_STATUSES.PENDING,

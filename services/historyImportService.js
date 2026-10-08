@@ -482,7 +482,7 @@ class HistoryImportService {
     }
 
     logger.logThat(
-      `Importation CSV d'historique exécutée par ${sessionUser} : ${createdHistoriesCount} visites créées, ${createdUsersCount} nouveaux usagers créés.`
+      `Importation CSV d'historique exécutée par ${sessionUser} : ${createdHistoriesCount} visites créées, ${createdUsersCount} nouveaux contributeurs créés.`
     );
 
     return {

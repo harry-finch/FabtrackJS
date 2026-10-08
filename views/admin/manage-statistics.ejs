@@ -142,7 +142,7 @@
                             <i class="fa-solid fa-robot fs-1 text-secondary mb-3 d-block"></i>
                             <h6 class="fw-bold mb-1">Activez un moteur d'IA pour interroger votre base</h6>
                             <p class="text-muted small mb-3 mx-auto" style="max-width: 550px;">
-                                Connectez votre compte OpenAI (ChatGPT), Google Gemini, Anthropic Claude ou un LLM local (Ollama) pour poser des questions comme <em>« Combien d'usagers ne sont venus qu'une seule fois ? »</em> ou <em>« Top 5 des machines les plus utilisées »</em>.
+                                Connectez votre compte OpenAI (ChatGPT), Google Gemini, Anthropic Claude ou un LLM local (Ollama) pour poser des questions comme <em>« Combien de contributeurs ne sont venus qu'une seule fois ? »</em> ou <em>« Top 5 des machines les plus utilisées »</em>.
                             </p>
                             <a href="/admin/settings" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
                                 <i class="fa-solid fa-gear me-1"></i> Configurer l'IA dans les paramètres
@@ -167,7 +167,7 @@
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                             <span class="small text-muted fw-semibold me-1"><i class="fa-regular fa-lightbulb me-1"></i> Suggestions :</span>
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Combien d'utilisateurs enregistrés ne sont venus au fablab qu'une seule fois ?">
-                                Usagers venus 1 seule fois
+                                Contributeurs venus 1 seule fois
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quelles sont les 5 machines les plus utilisées de l'histoire du fablab ?">
                                 Top 5 machines
@@ -178,8 +178,8 @@
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Quel est le montant total des consommations par entité ou UFR Sorbonne ?">
                                 Consommations Sorbonne
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Combien d'usagers ont été enregistrés par typologie d'utilisateur ?">
-                                Usagers par typologie
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ai-suggestion-chip" data-question="Combien de contributeurs ont été enregistrés par typologie d'utilisateur ?">
+                                Contributeurs par typologie
                             </button>
                         </div>
 
@@ -428,14 +428,14 @@
                 </div>
             </div>
 
-            <!-- GRAPHIQUES SECTION 2: RÉPARTITIONS TYPES D'USAGERS ET DE PROJETS -->
+            <!-- GRAPHIQUES SECTION 2: RÉPARTITIONS TYPES DE CONTRIBUTEURS ET DE PROJETS -->
             <div class="row g-3 mb-4">
                 <!-- Typologie d'utilisateurs -->
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-transparent border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
                             <h6 class="fw-bold mb-0">
-                                <i class="fa-solid fa-users text-success me-2"></i>Répartition par type d'usagers
+                                <i class="fa-solid fa-users text-success me-2"></i>Répartition par type de contributeurs
                             </h6>
                             <span class="badge bg-secondary-subtle text-secondary small">Profils</span>
                         </div>
@@ -646,12 +646,12 @@
                 }
             });
 
-            // 3. Graphique Répartition Types d'Usagers
+            // 3. Graphique Répartition Types de Contributeurs
             const ctxUserTypes = document.getElementById("userTypesChart").getContext("2d");
             new Chart(ctxUserTypes, {
                 type: 'doughnut',
                 data: {
-                    labels: chartData.userTypeLabels.length ? chartData.userTypeLabels : ['Aucun usager'],
+                    labels: chartData.userTypeLabels.length ? chartData.userTypeLabels : ['Aucun contributeur'],
                     datasets: [{
                         data: chartData.userTypeCounts.length ? chartData.userTypeCounts : [1],
                         backgroundColor: colors.slice(0, Math.max(1, chartData.userTypeLabels.length)),

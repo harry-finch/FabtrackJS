@@ -266,7 +266,7 @@ class BookstackService {
         success: true,
         isUpToDate: true,
         reason: "first_visit",
-        message: "Première visite de l'usager : documentation considérée à jour.",
+        message: "Première visite du contributeur : documentation considérée à jour.",
         projectUrl: project.url,
       };
     }
@@ -398,7 +398,7 @@ class BookstackService {
         id: p.id,
         url: p.url,
         projectType: p.projecttype ? p.projecttype.name : "Projet",
-        userFullName: primaryUser ? `${primaryUser.name} ${primaryUser.surname}` : "Usager non associé",
+        userFullName: primaryUser ? `${primaryUser.name} ${primaryUser.surname}` : "Contributeur non associé",
         userCount: p.users.length,
         lastVisitDate: latestArrival,
         docUpdatedAt,

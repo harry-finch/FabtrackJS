@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="" />
         <meta name="author" content="Stéphane Muller" />
-        <title>Fabtrack administration panel</title>
+        <title>Fabtrack - Gestion des contributeurs</title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
@@ -25,12 +25,12 @@
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2">
-                                <h4 class="fw-bold mb-0">Gestion des usagers</h4>
+                                <h4 class="fw-bold mb-0">Gestion des contributeurs</h4>
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
                                     <%= users.length %> inscrits
                                 </span>
                             </div>
-                            <p class="text-muted small mb-0">Adhérents, usagers réguliers et chartes d'utilisation</p>
+                            <p class="text-muted small mb-0">Adhérents, contributeurs réguliers et chartes d'utilisation</p>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
@@ -47,7 +47,7 @@
                     <div class="card h-100 shadow-sm border-0 bg-body-secondary">
                         <div class="card-body p-3 d-flex align-items-center justify-content-between">
                             <div>
-                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Total usagers</small>
+                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Total contributeurs</small>
                                 <div class="fs-4 fw-bold mt-1"><%= users.length %></div>
                             </div>
                             <div class="icon-box bg-primary-subtle text-primary">
@@ -160,7 +160,7 @@
                                 <% }); %>
                                 <tr id="noUsersRow" style="display: none;">
                                     <td colspan="6" class="text-center py-4 text-muted">
-                                        <i class="fa-solid fa-circle-info me-1"></i> Aucun usager ne correspond à la recherche.
+                                        <i class="fa-solid fa-circle-info me-1"></i> Aucun contributeur ne correspond à la recherche.
                                     </td>
                                 </tr>
                             </tbody>

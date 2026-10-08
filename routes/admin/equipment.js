@@ -118,7 +118,7 @@ router.get(
       isCurrentlyBorrowed: activeBorrowedEquipIds.has(eq.id),
       currentBorrowers: activeLoans
         .filter((l) => l.equipment && l.equipment.id === eq.id)
-        .map((l) => (l.user ? `${l.user.name} ${l.user.surname}` : `Usager #${l.user?.id}`)),
+        .map((l) => (l.user ? `${l.user.name} ${l.user.surname}` : `Contributeur #${l.user?.id}`)),
     }));
 
     res.render("admin/manage-equipment", {
@@ -313,7 +313,7 @@ router.post(
 
     const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
     const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;
-    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `usager #${activity.userId}`;
+    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `contributeur #${activity.userId}`;
 
     logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par l'admin ${req.session.username}).`);
     req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;

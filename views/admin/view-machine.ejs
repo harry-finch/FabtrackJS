@@ -199,7 +199,7 @@
                kind: 'ISSUE',
                formattedDate: i.formattedCreatedAt,
                status: i.status,
-               author: i.reporterName || i.reporterEmail || 'Usager',
+               author: i.reporterName || i.reporterEmail || 'Contributeur',
                title: 'Incident / Panne signalée',
                description: i.description,
                photoPath: i.photoPath,
@@ -434,7 +434,7 @@
             </div>
             <div class="col-md-4">
               <div class="border rounded p-3 text-center bg-body-secondary">
-                <div class="small text-muted text-uppercase fw-semibold mb-1">Usagers uniques</div>
+                <div class="small text-muted text-uppercase fw-semibold mb-1">Contributeurs uniques</div>
                 <div class="fs-4 fw-bold text-success"><%= usageStats.uniqueUsers %></div>
               </div>
             </div>
