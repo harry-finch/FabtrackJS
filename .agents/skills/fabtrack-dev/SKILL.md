@@ -102,3 +102,26 @@ git pull
 npm install --omit=dev   # Only if package.json dependencies changed
 pm2 restart fabtrack     # Or the appropriate systemd/process manager
 ```
+
+---
+
+## 6. Terminology Convention: `projecttype` (Backend/DB) vs « Motif de la visite » (UI/Front-end)
+
+A deliberate distinction exists between the database/backend domain model and the user-facing interface:
+
+- **In the Database, ORM & Backend Routes**:
+  - Prisma model: `Projecttype` (table `Projecttype`, foreign key `Project.projecttypeId`).
+  - Routes & controllers: `/admin/projecttypes`, `req.body.projecttype`, `projecttypeid`.
+  - Service functions & seeds: maintain `projecttype` identifiers.
+  - **Reason**: Preserves database stability, zero-downtime production deployment, and avoids risky cascading schema/table renames.
+
+- **In the User Interface (UI), Translations & CSVs**:
+  - French label: **« Motif de la visite »** (singular), **« Motifs de la visite »** (plural), or **« Motif »** (table headers).
+  - English label: **« Purpose of visit »** (`kiosk.field_project_type`).
+  - Flash notifications: e.g. *"Succès : Motif de visite créé"*.
+  - Admin tiles & menus: *"Motifs de visite"*.
+  - CSV Import/Export: accepts `motif`, `motif_visite`, `motif_de_visite`, `motif_de_la_visite` while keeping legacy `type_projet` support.
+  - **Reason**: Users visit a fablab for diverse reasons (open desk, workshop, repair café, academic course, personal exploration, etc.), not solely for "projects".
+
+**Rule for developers & AI agents**: When writing queries, API routes, or backend logic, always use `projecttype`. When rendering views, forms, flash messages, charts, or documentation for users, always write **« Motif de la visite »**.
+

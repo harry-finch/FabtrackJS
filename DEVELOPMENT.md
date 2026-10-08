@@ -191,6 +191,11 @@ FabtrackJS uses **Prisma v7** with the official `@prisma/adapter-mariadb` driver
 - **`Machine`**: Fablab machinery. Linked to `MachineType`, `Location`, `Access`, `Category`, and `issues: MachineIssue[]`.
 - **`MachineIssue`**: Breakdown reports (`machineId`, `description`, `photoPath`, `reporterName`, `reporterEmail`, `status: "OPEN"|"RESOLVED"`, `resolvedAt`, `resolutionNotes`).
 - **`Consumable`**: Expendable materials (`name`, `quantity`, `unit`, `alertThreshold`).
+- **`Projecttype`**: Typologies of attendance and visit purposes (`name: "Personnel" | "Academic" | "Sorbonne" | "Repair Café" | "Atelier"...`).
+  > [!IMPORTANT]
+  > **Domain Model vs UI Terminology (`projecttype` vs « Motif de la visite »)**:
+  > In the database and backend codebase, this entity is named `Projecttype` (linked to `Project.projecttypeId`, route `/admin/projecttypes`).
+  > In all user-facing interfaces (Kiosk check-in, contributor profiles, admin UI, export/import CSV), it is systematically presented as **« Motif de la visite »** (French) / **« Purpose of visit »** (English). The database table and column names remain `projecttype` to preserve stability and avoid breaking migrations.
 - **`History` & `Activity`**: Visitor sessions, machine usage, project affiliations, and departure timestamps.
 - **`SystemSetting`**: Key-value pairs for all runtime platform configurations.
 
@@ -434,6 +439,12 @@ FabtrackJS uses server-side rendered EJS templates.
 - **Icons**: Use FontAwesome 6 icons (`fa-solid fa-...`).
 - **Header Actions**: Action buttons in header use `.header-action-btn` and `.header-icon-circle`. Tooltips should be used for compact icon-only action bars.
 - **Card Aesthetics**: Cards should feature subtle borders (`border-0 shadow-sm rounded-3` or `border rounded-3 bg-body`).
+
+### Terminology & Wording Standards:
+- **« Motif de la visite » (UI) vs `projecttype` (Backend/DB)**:
+  Always display **« Motif de la visite »** (French) / **« Purpose of visit »** (English) in user-facing views (Kiosk, admin views, CSV templates, flash messages). Do not use « Type de projet » in UI copy. The underlying database model, foreign keys, and routes remain `projecttype` / `Projecttype`.
+- **« Contributeur » (UI) vs `user` (Backend/DB)**:
+  Always use **« Contributeur »** instead of « Usager » across all interfaces and documentation.
 
 ---
 
