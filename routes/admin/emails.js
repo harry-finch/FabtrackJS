@@ -73,6 +73,9 @@ router.post(
     updates.mail_notif_staff_registration =
       req.body.mail_notif_staff_registration === "true" || req.body.mail_notif_staff_registration === "on" ? "true" : "false";
 
+    updates.mail_notif_staff_approved =
+      req.body.mail_notif_staff_approved === "true" || req.body.mail_notif_staff_approved === "on" ? "true" : "false";
+
     updates.mail_notif_user_agreement =
       req.body.mail_notif_user_agreement === "true" || req.body.mail_notif_user_agreement === "on" ? "true" : "false";
 

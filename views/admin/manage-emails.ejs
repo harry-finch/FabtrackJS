@@ -147,7 +147,36 @@
                                 </div>
                             </div>
 
-                            <!-- Alert 4: User Terms Agreement -->
+                            <!-- Alert 4: Staff Account Approved -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <i class="fa-solid fa-user-check"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Validation de Compte Staff</h6>
+                                                <small class="text-muted">Activation & accès</small>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch fs-5 mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchStaffApproved" name="mail_notif_staff_approved" value="true" <%= settings.mail_notif_staff_approved === 'true' ? 'checked' : '' %>>
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-3 flex-grow-1">
+                                        Envoie automatiquement un e-mail au membre du personnel dès que son compte est approuvé par un administrateur pour l'informer qu'il peut se connecter.
+                                    </p>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Membre staff</span>
+                                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewStaffApproved">
+                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alert 5: User Terms Agreement -->
                             <div class="col-12 col-md-6">
                                 <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
@@ -593,6 +622,59 @@
                                 <div class="text-center pt-2">
                                     <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
                                         Voir la machine &amp; ses incidents &rarr;
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL: Preview Staff Account Approved Alert -->
+            <div class="modal fade" id="modalPreviewStaffApproved" tabindex="-1" aria-labelledby="modalPreviewStaffApprovedLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content shadow-lg border-0">
+                        <div class="modal-header border-0 pb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="fa-solid fa-user-check fa-sm"></i>
+                                </div>
+                                <h6 class="modal-title fw-bold" id="modalPreviewStaffApprovedLabel">Aperçu : Validation de Compte Staff</h6>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                                    <span class="fw-bold fs-5"><%= settings.platform_name || 'FabtrackJS' %></span>
+                                    <span class="badge bg-success text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Compte activé</span>
+                                </div>
+                                <h5 class="fw-bold mb-3">Votre compte staff a été validé !</h5>
+                                <p class="text-secondary small mb-2">Bonjour <strong>Jean Dupont</strong>,</p>
+                                <p class="text-secondary small mb-3">Bonne nouvelle ! Votre compte d'accès sur la plateforme <strong><%= settings.platform_name || 'FabtrackJS' %></strong> a été validé avec succès par un administrateur (<strong>Admin Principal</strong>).</p>
+                                <table class="table table-bordered table-sm bg-white mb-3">
+                                    <tbody>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small w-40">Identifiant</th>
+                                            <td class="fw-bold">Jean Dupont</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Adresse e-mail</th>
+                                            <td class="fw-bold">jean.dupont@fablab.fr</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-body-secondary text-muted small">Rôle attribué</th>
+                                            <td>Médiateur / Animateur</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class="text-secondary small mb-3">Vous pouvez dès à présent vous connecter pour accéder au kiosque et aux fonctionnalités de gestion du Fablab.</p>
+                                <div class="text-center pt-2">
+                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                        Se connecter à la plateforme &rarr;
                                     </span>
                                 </div>
                             </div>

@@ -10,6 +10,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const logger = require("../../utilities/simpleLogger.js");
+const mailService = require("../../services/mailService.js");
 
 // ******************************************************************************
 // Route redirecting /admin/staff to /admin/staff/manage
@@ -72,6 +73,12 @@ router.get(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
+    const staffBefore = await prisma.staff.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
+
     const result = await prisma.staff.update({
       where: {
         id: Number(id),
@@ -80,6 +87,17 @@ router.get(
         approved: true,
       },
     });
+
+    if (staffBefore && !staffBefore.approved) {
+      const hostUrl = `${req.protocol}://${req.get("host")}`;
+      mailService
+        .sendStaffApprovedNotification({
+          staff: result,
+          adminUsername: req.session.username,
+          hostUrl,
+        })
+        .catch((err) => console.error("[routes/admin/staff/enable] Failed to send staff approved email:", err));
+    }
 
     logger.logThat("User " + result.name + " enabled by " + req.session.username);
     req.session.notification = "Success: User is now enabled";
@@ -192,6 +210,10 @@ router.post(
       approval = true;
     }
 
+    const staffBefore = await prisma.staff.findUnique({
+      where: { id: Number(user.id) },
+    });
+
     const result = await prisma.staff.update({
       where: { id: Number(user.id) },
       data: {
@@ -201,6 +223,17 @@ router.post(
         approved: approval,
       },
     });
+
+    if (approval && staffBefore && !staffBefore.approved) {
+      const hostUrl = `${req.protocol}://${req.get("host")}`;
+      mailService
+        .sendStaffApprovedNotification({
+          staff: result,
+          adminUsername: req.session.username,
+          hostUrl,
+        })
+        .catch((err) => console.error("[routes/admin/staff/update] Failed to send staff approved email:", err));
+    }
 
     logger.logThat("User " + result.name + " has been updated by " + req.session.username);
     req.session.notification = "Success: User has been updated";

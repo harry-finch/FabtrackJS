@@ -514,6 +514,68 @@ class MailService {
   }
 
   /**
+   * Sends an automated email to a staff member when their account has been approved by an administrator.
+   */
+  async sendStaffApprovedNotification({ staff, adminUsername, hostUrl: customHostUrl }) {
+    if (!staff || !staff.email || !staff.email.trim()) {
+      return { skipped: true, reason: "No staff email" };
+    }
+
+    const settings = await settingsService.getSettings();
+
+    if (settings.mail_notif_staff_approved === "false") {
+      return { skipped: true, reason: "Staff approved notification disabled in settings" };
+    }
+
+    const hostUrl = this.resolveBaseUrl(customHostUrl);
+    const platformName = settings.platform_name || "FabtrackJS";
+    const loginUrl = `${hostUrl}/login`;
+    const roleLabels = {
+      admin: "Administrateur",
+      staff: "Borne Kiosque (Staff)",
+      user: "Médiateur / Animateur",
+    };
+    const roleText = roleLabels[staff.role] || staff.role || "Médiateur";
+
+    const contentHtml = `
+      <p>Bonjour <strong>${staff.name}</strong>,</p>
+      <p>Bonne nouvelle ! Votre compte d'accès sur la plateforme <strong>${platformName}</strong> a été validé avec succès par un administrateur${adminUsername ? ` (<strong>${adminUsername}</strong>)` : ""}.</p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin: 18px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Identifiant</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${staff.name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Adresse e-mail</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${staff.email}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Rôle attribué</td>
+          <td style="padding: 10px 14px; font-size: 14px; color: #0f172a;">${roleText}</td>
+        </tr>
+      </table>
+
+      <p style="margin-bottom: 0;">Vous pouvez dès à présent vous connecter pour accéder au kiosque et aux fonctionnalités de gestion du Fablab.</p>
+    `;
+
+    const html = this.renderEmailLayout({
+      title: "Votre compte staff a été validé !",
+      badgeText: "Compte activé",
+      badgeColor: "#10b981",
+      contentHtml,
+      ctaUrl: loginUrl,
+      ctaText: "Se connecter à la plateforme",
+    });
+
+    return await this.sendMail({
+      to: staff.email.trim(),
+      subject: `[${platformName}] Votre compte staff a été validé`,
+      html,
+    });
+  }
+
+  /**
    * Sends password reset email.
    */
   async sendPasswordResetEmail({ email, token, hostUrl: customHostUrl }) {

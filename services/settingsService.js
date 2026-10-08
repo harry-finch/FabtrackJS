@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS = {
   mail_notif_consumable_low_stock: "true",
   mail_notif_user_warning: "true",
   mail_notif_staff_registration: "true",
+  mail_notif_staff_approved: "true",
   mail_notif_user_agreement: "true",
   mail_notif_machine_issue: "true",
   // User Agreement Email Template
