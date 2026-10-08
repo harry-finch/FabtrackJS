@@ -52,7 +52,8 @@ describe("Integration: Charter Signature & Kiosk Access Blocking", () => {
     // Public request to /agreement/:token (unauthenticated, user clicking link from email)
     const signRes = await request(app).get(`/agreement/${userToSign.token}`);
 
-    expect(signRes.status).toBe(302);
+    expect(signRes.status).toBe(200);
+    expect(signRes.text).toContain("charte");
 
     // Verify DB update
     const updated = await prisma.user.findUnique({

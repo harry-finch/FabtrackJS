@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Validation de la charte d'utilisation" />
+        <title><%= title %> • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'Fabtrack' %></title>
+
+        <%- include('../includes/pagehead.html') %>
+        <style>
+            .agreement-card {
+                border-radius: 1.25rem;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                border: 1px solid rgba(0, 0, 0, 0.06);
+            }
+            [data-bs-theme="dark"] .agreement-card {
+                border-color: rgba(255, 255, 255, 0.1);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            }
+            .success-icon-box {
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 1.5rem auto;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.25rem;
+                animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            @keyframes popIn {
+                0% { transform: scale(0.4); opacity: 0; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+            .countdown-badge {
+                font-variant-numeric: tabular-nums;
+                font-weight: 700;
+            }
+        </style>
+    </head>
+
+    <body class="d-flex justify-content-center align-items-center min-vh-100 bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+
+        <main class="main-container w-100 px-3" style="max-width: 620px;">
+            <!-- Top Branding Logo -->
+            <div class="text-center mb-4">
+                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="text-decoration-none">
+                    <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
+                        <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
+                    <% } else { %>
+                        <img src="images/logo-fabtrack.svg" alt="FabtrackJS" width="60" height="46" class="app-auth-logo" />
+                    <% } %>
+                </a>
+            </div>
+
+            <!-- Confirmation Card -->
+            <div class="card border-0 agreement-card bg-body text-center p-4 p-md-5">
+                <div class="card-body p-0">
+                    <% if (success) { %>
+                        <div class="success-icon-box bg-success-subtle text-success">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1.5 fw-semibold mb-3">
+                            <i class="fa-solid fa-file-signature me-1"></i> Charte validée
+                        </span>
+
+                        <h2 class="fw-bold mb-3 text-body fs-3">
+                            <%= title %>
+                        </h2>
+
+                        <% if (typeof userName !== 'undefined' && userName) { %>
+                        <p class="text-muted small mb-3">
+                            Contributeur : <strong class="text-body"><%= userName %></strong>
+                        </p>
+                        <% } %>
+
+                        <div class="text-secondary mb-4" style="font-size: 1rem; line-height: 1.6; white-space: pre-line;">
+                            <%= message %>
+                        </div>
+
+                        <% if (typeof redirectUrl !== 'undefined' && redirectUrl) { %>
+                            <div class="p-3 rounded-3 bg-body-tertiary border mb-4">
+                                <div class="d-flex align-items-center justify-content-center gap-2 text-muted small mb-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 1rem; height: 1rem;" id="spinnerTimer">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <span id="countdownText">
+                                        Redirection automatique dans <span id="countdownVal" class="countdown-badge text-primary fw-bold fs-6"><%= redirectDelay %></span> s...
+                                    </span>
+                                </div>
+
+                                <a href="<%= redirectUrl %>" id="btnRedirectNow" class="btn btn-primary rounded-pill px-4 py-2.5 shadow-sm fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                                    <span>Accéder au site maintenant</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square fa-sm"></i>
+                                </a>
+                            </div>
+
+                            <script>
+                                (function() {
+                                    let delay = parseInt("<%= redirectDelay %>", 10);
+                                    const targetUrl = "<%= redirectUrl %>";
+                                    const countdownEl = document.getElementById("countdownVal");
+                                    const spinnerEl = document.getElementById("spinnerTimer");
+                                    const countdownText = document.getElementById("countdownText");
+
+                                    if (isNaN(delay) || delay <= 0) {
+                                        if (spinnerEl) spinnerEl.style.display = "none";
+                                        if (countdownText) countdownText.textContent = "Vous pouvez poursuivre vers le site ci-dessous :";
+                                        return;
+                                    }
+
+                                    const timer = setInterval(function() {
+                                        delay--;
+                                        if (countdownEl) countdownEl.textContent = delay;
+                                        if (delay <= 0) {
+                                            clearInterval(timer);
+                                            window.location.assign(targetUrl);
+                                        }
+                                    }, 1000);
+                                })();
+                            </script>
+                        <% } else { %>
+                            <div class="pt-2">
+                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                                    <i class="fa-solid fa-desktop me-1"></i> Aller au Kiosque
+                                </a>
+                            </div>
+                        <% } %>
+
+                    <% } else { %>
+                        <!-- Error State -->
+                        <div class="success-icon-box bg-danger-subtle text-danger">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1.5 fw-semibold mb-3">
+                            <i class="fa-solid fa-xmark me-1"></i> Validation impossible
+                        </span>
+
+                        <h2 class="fw-bold mb-3 text-body fs-3">
+                            <%= title %>
+                        </h2>
+
+                        <div class="text-secondary mb-4" style="font-size: 1rem; line-height: 1.6; white-space: pre-line;">
+                            <%= message %>
+                        </div>
+
+                        <div class="pt-2">
+                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                                <i class="fa-solid fa-house me-1"></i> Retour à l'accueil
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <%- include('../includes/footer.html') %>
+        </main>
+    </body>
+</html>

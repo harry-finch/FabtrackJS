@@ -85,7 +85,7 @@ router.post(
       logger.logThat(`User ${user.name} ${user.surname} created by ${req.session.username}`);
 
       // Send agreement email to user asynchronously without blocking HTTP response
-      const hostUrl = `${req.protocol}://${req.get("host")}`;
+      const hostUrl = `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
       mailService
         .sendAgreementEmail({ user, token, hostUrl })
         .catch((err) => console.error("[routes/users/create] Failed to send agreement email:", err));
@@ -647,7 +647,7 @@ router.get(
       return res.redirect(req.session.lastPage || "/users/manage");
     }
 
-    const hostUrl = `${req.protocol}://${req.get("host")}`;
+    const hostUrl = `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
     const result = await mailService.sendAgreementEmail({
       user,
       token: user.token,

@@ -351,6 +351,85 @@
                                 />
                                 <div class="form-text small text-muted">Affiche un encadré mis en avant sous le message. Laissez vide pour ne pas afficher d'encadré.</div>
                             </div>
+
+                            <!-- SUB-SECTION: Post-Signature Web Confirmation Page & Redirect -->
+                            <div class="col-12 mt-4 pt-3 border-top">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
+                                        <i class="fa-solid fa-circle-check me-1"></i> Page web après signature
+                                    </span>
+                                    <h6 class="fw-bold mb-0">Page de confirmation & redirection (Wiki)</h6>
+                                </div>
+                                <p class="text-muted small mb-3">Personnalisez le message affiché lorsque le contributeur valide la charte en ligne ainsi que la redirection automatique vers votre site (ex. wiki).</p>
+                            </div>
+
+                            <div class="col-12 col-md-8">
+                                <label for="mail_user_agreement_success_title" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-heading me-1 text-primary"></i> Titre de remerciement
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="mail_user_agreement_success_title"
+                                    name="mail_user_agreement_success_title"
+                                    value="<%= typeof settings.mail_user_agreement_success_title !== 'undefined' ? settings.mail_user_agreement_success_title : 'Merci d\'avoir signé la charte !' %>"
+                                    placeholder="Merci d'avoir signé la charte !"
+                                />
+                                <div class="form-text small text-muted">Titre affiché au centre de la page de confirmation.</div>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label for="mail_user_agreement_redirect_delay" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-stopwatch me-1 text-primary"></i> Délai de redirection (s)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="60"
+                                    class="form-control"
+                                    id="mail_user_agreement_redirect_delay"
+                                    name="mail_user_agreement_redirect_delay"
+                                    value="<%= typeof settings.mail_user_agreement_redirect_delay !== 'undefined' ? settings.mail_user_agreement_redirect_delay : '5' %>"
+                                    placeholder="5"
+                                />
+                                <div class="form-text small text-muted">Compte à rebours avant redirection automatique (0 = désactivé).</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="mail_user_agreement_redirect_url" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-arrow-up-right-from-square me-1 text-primary"></i> URL du site de destination (ex. Wiki)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa-solid fa-link text-muted"></i></span>
+                                    <input
+                                        type="url"
+                                        class="form-control"
+                                        id="mail_user_agreement_redirect_url"
+                                        name="mail_user_agreement_redirect_url"
+                                        value="<%= typeof settings.mail_user_agreement_redirect_url !== 'undefined' && settings.mail_user_agreement_redirect_url ? settings.mail_user_agreement_redirect_url : (typeof settings.bookstack_url !== 'undefined' ? settings.bookstack_url : 'https://wiki.fablab.sorbonne-universite.fr/BookStack/') %>"
+                                        placeholder="https://wiki.fablab.sorbonne-universite.fr/BookStack/"
+                                    />
+                                    <% if (typeof settings.bookstack_url !== 'undefined' && settings.bookstack_url) { %>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('mail_user_agreement_redirect_url').value = '<%= settings.bookstack_url %>'">
+                                        <i class="fa-solid fa-book-bookmark me-1"></i> Utiliser le Wiki
+                                    </button>
+                                    <% } %>
+                                </div>
+                                <div class="form-text small text-muted">Adresse externe ou interne vers laquelle le contributeur sera redirigé après signature.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="mail_user_agreement_success_message" class="form-label fw-semibold small">
+                                    <i class="fa-solid fa-comment-dots me-1 text-primary"></i> Message personnalisé après validation
+                                </label>
+                                <textarea
+                                    class="form-control"
+                                    id="mail_user_agreement_success_message"
+                                    name="mail_user_agreement_success_message"
+                                    rows="3"
+                                ><%= typeof settings.mail_user_agreement_success_message !== 'undefined' ? settings.mail_user_agreement_success_message : "Votre acceptation de la charte d'utilisation a bien été enregistrée. Vous pouvez désormais vous enregistrer et accéder au laboratoire lors de vos visites.\n\nVous allez être redirigé vers notre site..." %></textarea>
+                                <div class="form-text small text-muted">Variables disponibles : <code>{name}</code>, <code>{surname}</code>, <code>{fullname}</code>, <code>{lab_name}</code>.</div>
+                            </div>
                         </div>
                     </div>
                 </div>

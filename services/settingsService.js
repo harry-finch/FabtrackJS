@@ -35,6 +35,11 @@ const DEFAULT_SETTINGS = {
   mail_user_agreement_body: "Bonjour {name},\n\nVotre compte a bien été créé sur la plateforme {lab_name} du Fablab.\n\nPour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.\n\nCliquez sur le bouton ci-dessous pour lire et valider la charte :",
   mail_user_agreement_cta_text: "Signer la charte d'utilisation",
   mail_user_agreement_notice: "",
+  // Charter Agreement Confirmation Page & Post-Signature Redirect
+  mail_user_agreement_success_title: "Merci d'avoir signé la charte !",
+  mail_user_agreement_success_message: "Votre acceptation de la charte d'utilisation a bien été enregistrée. Vous pouvez désormais vous enregistrer et accéder au laboratoire lors de vos visites.\n\nVous allez être redirigé vers notre site...",
+  mail_user_agreement_redirect_url: "https://wiki.fablab.sorbonne-universite.fr/BookStack/",
+  mail_user_agreement_redirect_delay: "5",
   // BookStack Wiki Plugin settings
   plugin_bookstack_enabled: "true",
   bookstack_url: "https://wiki.fablab.sorbonne-universite.fr/BookStack/",

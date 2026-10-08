@@ -164,16 +164,24 @@ class MailService {
    * 3. Default fallback to http://localhost:3000
    */
   resolveBaseUrl(customHostUrl) {
+    const rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");
+    const subpath = rawBasePath ? `/${rawBasePath}` : "";
+
+    let base = "";
     if (process.env.HOSTURL && process.env.HOSTURL.trim()) {
-      return process.env.HOSTURL.trim().replace(/\/+$/, "");
+      base = process.env.HOSTURL.trim().replace(/\/+$/, "");
+    } else if (process.env.APP_URL && process.env.APP_URL.trim()) {
+      base = process.env.APP_URL.trim().replace(/\/+$/, "");
+    } else if (customHostUrl && typeof customHostUrl === "string" && customHostUrl.trim()) {
+      base = customHostUrl.trim().replace(/\/+$/, "");
+    } else {
+      base = "http://localhost:3000";
     }
-    if (process.env.APP_URL && process.env.APP_URL.trim()) {
-      return process.env.APP_URL.trim().replace(/\/+$/, "");
+
+    if (subpath && !base.endsWith(subpath)) {
+      base = `${base}${subpath}`;
     }
-    if (customHostUrl && typeof customHostUrl === "string" && customHostUrl.trim()) {
-      return customHostUrl.trim().replace(/\/+$/, "");
-    }
-    return "http://localhost:3000";
+    return base;
   }
 
   /**

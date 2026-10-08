@@ -17,6 +17,8 @@ dotenv.config();
 
 const router = express.Router();
 const mailService = require("../services/mailService.js");
+const settingsService = require("../services/settingsService.js");
+const logger = require("../utilities/simpleLogger.js");
 
 const saltRounds = 10;
 
@@ -237,17 +239,71 @@ router.get(
     const { token } = req.params;
 
     try {
-      const result = await prisma.user.update({
+      const user = await prisma.user.findUnique({
         where: { token },
-        data: { termsAccepted: true },
       });
 
-      req.session.notification = "Success: Thank you for agreeing to our terms and conditions";
-      res.redirect("../");
+      if (!user) {
+        return res.status(404).render("index/agreement-success", {
+          success: false,
+          title: "Lien invalide ou expiré",
+          message: "Ce lien de validation de la charte est introuvable ou n'est plus actif. Si vous avez besoin d'un nouveau lien, veuillez vous adresser aux facilitateurs du Fablab.",
+          redirectUrl: null,
+          redirectDelay: 0,
+          userName: null,
+        });
+      }
+
+      // Mark charter as signed if not already done
+      if (!user.termsAccepted) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { termsAccepted: true },
+        });
+        logger.logThat(`Charte d'utilisation signée par ${user.name} ${user.surname} (id: ${user.id})`);
+      }
+
+      // Retrieve confirmation page settings
+      const settings = await settingsService.getSettings();
+      const labName = settings.platform_name || "Fabtrack";
+
+      const title = settings.mail_user_agreement_success_title || "Merci d'avoir signé la charte !";
+      const rawMessage =
+        settings.mail_user_agreement_success_message ||
+        "Votre acceptation de la charte d'utilisation a bien été enregistrée. Vous pouvez désormais vous enregistrer et accéder au laboratoire lors de vos visites.\n\nVous allez être redirigé vers notre site...";
+
+      const message = rawMessage
+        .replace(/\{name\}|\{\{name\}\}/gi, user.name || "")
+        .replace(/\{surname\}|\{\{surname\}\}/gi, user.surname || "")
+        .replace(/\{fullname\}|\{\{fullname\}\}/gi, `${user.name || ""} ${user.surname || ""}`.trim())
+        .replace(/\{lab_name\}|\{\{lab_name\}\}/gi, labName);
+
+      const redirectUrl =
+        (settings.mail_user_agreement_redirect_url && settings.mail_user_agreement_redirect_url.trim()) ||
+        settings.bookstack_url ||
+        "https://wiki.fablab.sorbonne-universite.fr/BookStack/";
+
+      const delayNum = parseInt(settings.mail_user_agreement_redirect_delay || "5", 10);
+      const redirectDelay = isNaN(delayNum) ? 5 : delayNum;
+
+      res.render("index/agreement-success", {
+        success: true,
+        title,
+        message,
+        redirectUrl,
+        redirectDelay,
+        userName: `${user.name} ${user.surname}`.trim(),
+      });
     } catch (e) {
       console.error("Error updating agreement:", e);
-      req.session.notification = "Error: Unable to update agreement status. Please try again.";
-      res.redirect("../");
+      res.status(500).render("index/agreement-success", {
+        success: false,
+        title: "Erreur lors de la validation",
+        message: "Une erreur est survenue lors de l'enregistrement de votre acceptation. Veuillez réessayer ou contacter un membre de l'équipe du Fablab.",
+        redirectUrl: null,
+        redirectDelay: 0,
+        userName: null,
+      });
     }
   }),
 );

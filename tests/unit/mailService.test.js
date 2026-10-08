@@ -39,6 +39,14 @@ describe("Unit: MailService URL Resolution and Sanitization", () => {
       const result = mailService.resolveBaseUrl();
       expect(result).toBe("http://localhost:3000");
     });
+
+    test("appends APP_BASE_PATH if subpath is not already present", () => {
+      delete process.env.HOSTURL;
+      delete process.env.APP_URL;
+      process.env.APP_BASE_PATH = "fabtrack";
+      const result = mailService.resolveBaseUrl("https://fablab.sorbonne-universite.fr");
+      expect(result).toBe("https://fablab.sorbonne-universite.fr/fabtrack");
+    });
   });
 
   describe("sanitizeLineEndings", () => {

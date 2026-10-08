@@ -98,6 +98,18 @@ router.post(
     if (req.body.mail_user_agreement_notice !== undefined) {
       updates.mail_user_agreement_notice = req.body.mail_user_agreement_notice.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
     }
+    if (req.body.mail_user_agreement_success_title !== undefined) {
+      updates.mail_user_agreement_success_title = req.body.mail_user_agreement_success_title.trim();
+    }
+    if (req.body.mail_user_agreement_success_message !== undefined) {
+      updates.mail_user_agreement_success_message = req.body.mail_user_agreement_success_message.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+    }
+    if (req.body.mail_user_agreement_redirect_url !== undefined) {
+      updates.mail_user_agreement_redirect_url = req.body.mail_user_agreement_redirect_url.trim();
+    }
+    if (req.body.mail_user_agreement_redirect_delay !== undefined) {
+      updates.mail_user_agreement_redirect_delay = req.body.mail_user_agreement_redirect_delay.trim();
+    }
 
     await settingsService.updateSettings(updates);
 
