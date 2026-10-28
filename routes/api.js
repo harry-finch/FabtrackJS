@@ -241,4 +241,136 @@ router.get(
   }),
 );
 
+// ******************************************************************************
+// Machine Access Verification & Usage Tracking Endpoints
+// (Used by computer lock screen applications & 3D printers)
+// ******************************************************************************
+const machineUsageService = require("../services/machineUsageService.js");
+const checkApiKeyOrSession = require("../middleware/checkApiKeyOrSession.js");
+const {
+  verifyCardUserSchema,
+  startMachineUsageSchema,
+  endMachineUsageSchema,
+  recordMachineUsageSchema,
+} = require("../schemas/machineUsage.schema.js");
+
+/**
+ * Verify if an NFC badge corresponds to a user currently checked-in at the lab
+ * Supports both POST and GET for simple client app integration
+ */
+router.post(
+  "/machines/verify-user",
+  checkApiKeyOrSession,
+  validateBody(verifyCardUserSchema, { isApi: true }),
+  asyncHandler(async (req, res) => {
+    const { rfid, machineId } = req.body;
+    const result = await machineUsageService.verifyUserPresenceByCard({ rfid, machineId });
+
+    if (!result.success) {
+      const statusCode =
+        result.code === "USER_NOT_FOUND" ? 404 : result.code === "NOT_CHECKED_IN" || result.code === "TERMS_NOT_ACCEPTED" ? 403 : 400;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.status(200).json(result);
+  }),
+);
+
+router.get(
+  "/machines/verify-user",
+  checkApiKeyOrSession,
+  asyncHandler(async (req, res) => {
+    const rfid = req.query.rfid || req.query.cardId;
+    const machineId = req.query.machineId ? Number(req.query.machineId) : undefined;
+
+    const result = await machineUsageService.verifyUserPresenceByCard({ rfid, machineId });
+
+    if (!result.success) {
+      const statusCode =
+        result.code === "USER_NOT_FOUND" ? 404 : result.code === "NOT_CHECKED_IN" || result.code === "TERMS_NOT_ACCEPTED" ? 403 : 400;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.status(200).json(result);
+  }),
+);
+
+/**
+ * Start using a machine (record start time)
+ */
+router.post(
+  "/machines/usage/start",
+  checkApiKeyOrSession,
+  validateBody(startMachineUsageSchema, { isApi: true }),
+  asyncHandler(async (req, res) => {
+    const result = await machineUsageService.startMachineUsage(req.body);
+
+    if (!result.success) {
+      const statusCode = result.code === "USER_NOT_FOUND" || result.code === "MACHINE_NOT_FOUND" ? 404 : 400;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.status(201).json(result);
+  }),
+);
+
+/**
+ * End machine usage (record end time + optional 3D printing telemetry)
+ */
+router.post(
+  "/machines/usage/end",
+  checkApiKeyOrSession,
+  validateBody(endMachineUsageSchema, { isApi: true }),
+  asyncHandler(async (req, res) => {
+    const result = await machineUsageService.endMachineUsage(req.body);
+
+    if (!result.success) {
+      const statusCode = result.code === "SESSION_NOT_FOUND" ? 404 : 400;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.status(200).json(result);
+  }),
+);
+
+/**
+ * Record a complete machine usage in a single call (start, end, and 3D printing details)
+ */
+router.post(
+  "/machines/usage/record",
+  checkApiKeyOrSession,
+  validateBody(recordMachineUsageSchema, { isApi: true }),
+  asyncHandler(async (req, res) => {
+    const result = await machineUsageService.recordMachineUsage(req.body);
+
+    if (!result.success) {
+      const statusCode = result.code === "USER_NOT_FOUND" || result.code === "MACHINE_NOT_FOUND" ? 404 : 400;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.status(201).json(result);
+  }),
+);
+
+/**
+ * Query usage history for a machine
+ */
+router.get(
+  "/machines/usage",
+  checkApiKeyOrSession,
+  asyncHandler(async (req, res) => {
+    const { machineId, limit } = req.query;
+    if (!machineId) {
+      return res.status(400).json({ success: false, error: "Le paramètre 'machineId' est requis." });
+    }
+
+    const history = await machineUsageService.getMachineUsageHistory(
+      Number(machineId),
+      limit ? parseInt(limit, 10) : 50,
+    );
+
+    return res.status(200).json({ success: true, machineId: Number(machineId), count: history.length, history });
+  }),
+);
+
 module.exports = router;

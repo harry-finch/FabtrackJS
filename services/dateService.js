@@ -46,10 +46,35 @@ function formatTime(time) {
   return d.format("HH:mm");
 }
 
+function formatDuration(startDate, endDate) {
+  if (!startDate || !endDate) return "-";
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return "-";
+  const diffMinutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60)));
+  const hours = Math.floor(diffMinutes / 60);
+  const mins = diffMinutes % 60;
+  if (hours === 0) return `${diffMinutes} min`;
+  return `${hours}h${mins > 0 ? mins.toString().padStart(2, "0") : ""}`;
+}
+
+function formatDurationSeconds(seconds) {
+  if (seconds === null || seconds === undefined || isNaN(seconds)) return "-";
+  const sec = parseInt(seconds, 10);
+  if (sec < 60) return `${sec}s`;
+  const totalMinutes = Math.round(sec / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  if (hours === 0) return `${totalMinutes} min`;
+  return `${hours}h${mins > 0 ? mins.toString().padStart(2, "0") : ""}`;
+}
+
 module.exports = {
   formatDate,
   formatDateTime,
   formatTime,
+  formatDuration,
+  formatDurationSeconds,
   getDateFormat,
   setLocale,
   VALID_FORMATS,

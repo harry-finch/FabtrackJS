@@ -10,4 +10,5 @@ module.exports = {
   ...require("./inventory.schema"),
   ...require("./bug.schema"),
   ...require("./setup.schema"),
+  ...require("./machineUsage.schema"),
 };

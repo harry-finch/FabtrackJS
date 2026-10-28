@@ -458,11 +458,12 @@
                 <thead>
                   <tr>
                     <th data-sort="0" scope="col"># <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                    <th data-sort="1" scope="col">Date & Heure <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                    <th data-sort="2" scope="col">Utilisateur <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                    <th data-sort="3" scope="col">Atelier / Workspace <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                    <th data-sort="4" scope="col">Projet associé <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                    <th scope="col" class="text-center">Départ / Statut</th>
+                    <th data-sort="1" scope="col">Date & Début <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th data-sort="2" scope="col">Fin / Durée <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th data-sort="3" scope="col">Utilisateur <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th data-sort="4" scope="col">Atelier / Workspace <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                    <th scope="col">Impression 3D / Télémétrie</th>
+                    <th scope="col" class="text-center">Statut</th>
                     <th scope="col">Commentaires</th>
                   </tr>
                 </thead>
@@ -470,7 +471,25 @@
                   <% usageHistory.forEach(function(entry) { %>
                     <tr>
                       <td class="text-muted"><%= entry.id %></td>
-                      <td><strong><%= entry.formattedDate %></strong></td>
+                      <td>
+                        <strong><%= entry.formattedStartedAt || entry.formattedDate %></strong>
+                      </td>
+                      <td>
+                        <% if (entry.endedAt) { %>
+                          <div class="small fw-semibold"><%= entry.formattedEndedAt %></div>
+                          <% if (entry.durationFormatted) { %>
+                            <span class="badge bg-secondary-subtle text-secondary border">
+                              <i class="fa-regular fa-clock me-1"></i><%= entry.durationFormatted %>
+                            </span>
+                          <% } %>
+                        <% } else if (entry.status === 'IN_PROGRESS') { %>
+                          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning">
+                            <i class="fa-solid fa-spinner fa-spin me-1"></i>En cours
+                          </span>
+                        <% } else { %>
+                          <span class="text-muted small">-</span>
+                        <% } %>
+                      </td>
                       <td>
                         <% if (entry.user) { %>
                           <a href="/users/edit/<%= entry.user.id %>" class="fw-semibold text-decoration-none">
@@ -487,19 +506,41 @@
                         </span>
                       </td>
                       <td>
-                        <% if (entry.project) { %>
-                          <a href="<%= entry.project.url %>" target="_blank" class="small text-decoration-none" title="<%= entry.project.url %>">
-                            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Projet
-                          </a>
+                        <% if (entry.filamentQuantity || entry.filamentType || entry.gcodeName || entry.printDuration) { %>
+                          <div class="d-flex flex-wrap gap-1 align-items-center">
+                            <% if (entry.gcodeName) { %>
+                              <span class="badge bg-body-secondary text-body border" title="Fichier: <%= entry.gcodeName %>">
+                                <i class="fa-solid fa-file-code me-1 text-primary"></i><%= entry.gcodeName.length > 20 ? entry.gcodeName.substring(0, 18) + '...' : entry.gcodeName %>
+                              </span>
+                            <% } %>
+                            <% if (entry.filamentQuantity || entry.filamentType) { %>
+                              <span class="badge bg-info-subtle text-info-emphasis border">
+                                <i class="fa-solid fa-cubes me-1"></i><%= entry.filamentQuantity ? entry.filamentQuantity + 'g ' : '' %><%= entry.filamentType || '' %>
+                              </span>
+                            <% } %>
+                            <% if (entry.printDurationFormatted) { %>
+                              <span class="badge bg-light text-secondary border" title="Durée d'impression">
+                                <i class="fa-solid fa-stopwatch me-1"></i><%= entry.printDurationFormatted %>
+                              </span>
+                            <% } %>
+                          </div>
                         <% } else { %>
                           <span class="text-muted small">-</span>
                         <% } %>
                       </td>
                       <td class="text-center">
-                        <% if (entry.departure && entry.departure !== '-') { %>
-                          <span class="small text-muted"><%= entry.departure %></span>
+                        <% if (entry.endedAt) { %>
+                          <span class="badge bg-success-subtle text-success border border-success-subtle">
+                            <i class="fa-solid fa-check me-1"></i>Terminé
+                          </span>
+                        <% } else if (entry.status === 'IN_PROGRESS') { %>
+                          <span class="badge bg-primary">
+                            <i class="fa-solid fa-play me-1"></i>En cours
+                          </span>
                         <% } else { %>
-                          <span class="badge bg-success">En cours</span>
+                          <span class="badge bg-secondary-subtle text-secondary">
+                            Enregistré
+                          </span>
                         <% } %>
                       </td>
                       <td>

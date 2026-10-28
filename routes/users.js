@@ -242,11 +242,19 @@ router.get(
     const userMachineUsage = machineActivities.map((act) => ({
       id: act.id,
       createdAt: act.createdAt,
-      formattedDate: formatDateTime(act.createdAt),
+      formattedDate: formatDateTime(act.startedAt || act.createdAt),
+      startedAt: act.startedAt,
+      endedAt: act.endedAt,
+      durationFormatted: act.startedAt && act.endedAt ? dateService.formatDuration(act.startedAt, act.endedAt) : null,
+      gcodeName: act.gcodeName,
+      filamentQuantity: act.filamentQuantity ? Number(act.filamentQuantity) : null,
+      filamentType: act.filamentType,
+      printDuration: act.printDuration,
+      printDurationFormatted: act.printDuration ? dateService.formatDurationSeconds(act.printDuration) : null,
       machine: machineMap.get(act.resourceId) || null,
       workspace: act.history && act.history.workspace ? act.history.workspace.name : "-",
       project: act.history && act.history.userproject && act.history.userproject.project ? act.history.userproject.project : null,
-      comments: act.history ? act.history.comments : null,
+      comments: act.comments || (act.history ? act.history.comments : null),
     }));
 
     // 2. Fetch Consumable Usage (Consumption) History for this user

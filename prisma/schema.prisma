@@ -207,6 +207,15 @@ model Activity {
   returnedAt         DateTime?
   returnNotes        String?      @db.VarChar(255)
 
+  // Machine usage session & 3D printing fields
+  startedAt          DateTime?    @default(now())
+  endedAt            DateTime?
+  gcodeName          String?      @db.VarChar(255)
+  filamentQuantity   Decimal?     @db.Decimal(10, 2)
+  filamentType       String?      @db.VarChar(100)
+  printDuration      Int?                            // Duration in seconds
+  comments           String?      @db.VarChar(255)
+
   // Sorbonne / Project billing settlement fields
   settled   Boolean   @default(false)
   settledAt DateTime?

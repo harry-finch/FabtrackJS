@@ -200,36 +200,9 @@ router.get(
       return res.redirect("/admin/machines/manage");
     }
 
-    // Fetch usage activities for this machine
-    const rawActivities = await prisma.activity.findMany({
-      where: {
-        resourceId: Number(id),
-        resourceType: "MACHINE",
-      },
-      include: {
-        user: true,
-        history: {
-          include: {
-            workspace: true,
-            userproject: {
-              include: { project: true },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    const usageHistory = rawActivities.map((act) => ({
-      id: act.id,
-      createdAt: act.createdAt,
-      formattedDate: formatDateTime(act.createdAt),
-      user: act.user || null,
-      workspace: act.history && act.history.workspace ? act.history.workspace.name : "-",
-      project: act.history && act.history.userproject && act.history.userproject.project ? act.history.userproject.project : null,
-      departure: act.history && act.history.departure ? formatDateTime(act.history.departure) : null,
-      comments: act.history ? act.history.comments : null,
-    }));
+    // Fetch usage activities for this machine using MachineUsageService
+    const machineUsageService = require("../../services/machineUsageService.js");
+    const usageHistory = await machineUsageService.getMachineUsageHistory(Number(id));
 
     const uniqueUsersCount = new Set(
       usageHistory.map((u) => (u.user ? u.user.id : null)).filter(Boolean)
@@ -238,7 +211,7 @@ router.get(
     const usageStats = {
       totalSessions: usageHistory.length,
       uniqueUsers: uniqueUsersCount,
-      lastUsed: usageHistory.length > 0 ? usageHistory[0].formattedDate : "Never",
+      lastUsed: usageHistory.length > 0 ? usageHistory[0].formattedStartedAt || usageHistory[0].formattedDate : "Jamais",
     };
 
     const formattedIssues = (machine.issues || []).map((issue) => ({
