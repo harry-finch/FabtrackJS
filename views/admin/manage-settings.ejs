@@ -389,6 +389,35 @@
                   <small class="text-muted">Reçoit les demandes de validation de nouveaux comptes staff et
                     alertes.</small>
                 </div>
+
+                <!-- Clé d'API Machines & Déblocage PC -->
+                <div class="col-12 pt-3 border-top">
+                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <label for="api_machine_token" class="form-label fw-bold mb-0">
+                      <i class="fa-solid fa-key me-1 text-warning-emphasis"></i> Clé / Token d'accès API (Machines & Déblocage PC)
+                    </label>
+                    <div class="d-flex align-items-center gap-2">
+                      <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-2 py-0" id="btnGenerateApiToken" style="font-size: 0.78rem;">
+                        <i class="fa-solid fa-arrows-rotate me-1"></i> Générer un token
+                      </button>
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <input type="text" class="form-control font-monospace" id="api_machine_token" name="api_machine_token"
+                      value="<%= settings.api_machine_token || '' %>" placeholder="Ex: fabtrack_sec_a8f93bc145d2e7..." autocomplete="off" />
+                    <button class="btn btn-outline-secondary" type="button" id="btnCopyApiToken" title="Copier la clé">
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                  <small class="text-muted d-block mt-1">
+                    Authentifie les applications de verrouillage/déblocage d'ordinateurs et les imprimantes 3D via l'en-tête HTTP <code>x-api-key</code> ou <code>Authorization: Bearer &lt;token&gt;</code>.
+                    <% if (process.env.FABTRACK_API_KEY) { %>
+                      <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle ms-1">
+                        <i class="fa-solid fa-circle-info me-1"></i> Déjà défini dans .env (prioritaire)
+                      </span>
+                    <% } %>
+                  </small>
+                </div>
               </div>
             </div>
           </div>
@@ -892,6 +921,32 @@
             btnTestAi.disabled = false;
             btnTestAi.innerHTML = originalText;
           }
+        });
+      }
+
+      // Generator and copy for Machine API Token
+      const btnGenToken = document.getElementById('btnGenerateApiToken');
+      const btnCopyToken = document.getElementById('btnCopyApiToken');
+      const inputToken = document.getElementById('api_machine_token');
+
+      if (btnGenToken && inputToken) {
+        btnGenToken.addEventListener('click', function() {
+          const randBytes = new Uint8Array(24);
+          window.crypto.getRandomValues(randBytes);
+          const hex = Array.from(randBytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+          inputToken.value = 'ftk_' + hex;
+          inputToken.focus();
+        });
+      }
+
+      if (btnCopyToken && inputToken) {
+        btnCopyToken.addEventListener('click', function() {
+          if (!inputToken.value) return;
+          navigator.clipboard.writeText(inputToken.value).then(function() {
+            const originalHtml = btnCopyToken.innerHTML;
+            btnCopyToken.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+            setTimeout(function() { btnCopyToken.innerHTML = originalHtml; }, 2000);
+          });
         });
       }
     </script>

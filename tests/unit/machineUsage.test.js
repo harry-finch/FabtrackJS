@@ -182,6 +182,25 @@ describe("Unit: Machine Usage Validation Schemas & Helpers", () => {
       expect(next).toHaveBeenCalled();
     });
 
+    test("validates key configured in database settings when not set in env", () => {
+      delete process.env.FABTRACK_API_KEY;
+      delete process.env.MACHINE_API_KEY;
+
+      const settingsService = require("../../services/settingsService");
+      const spy = jest.spyOn(settingsService, "getCachedSettingsSync").mockReturnValue({
+        api_machine_token: "SETTINGS_KEY_456",
+      });
+
+      const req = { session: {}, headers: { "x-api-key": "SETTINGS_KEY_456" }, query: {} };
+      const res = {};
+      const next = jest.fn();
+
+      checkApiKeyOrSession(req, res, next);
+      expect(next).toHaveBeenCalled();
+
+      spy.mockRestore();
+    });
+
     test("rejects 401 when API key does not match", () => {
       process.env.FABTRACK_API_KEY = "SECRET_LAB_KEY_123";
 

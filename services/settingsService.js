@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS = {
   platform_logo_path: "",
   platform_favicon_path: "",
   session_timeout_hours: "24",
+  api_machine_token: process.env.FABTRACK_API_KEY || "",
   plugin_ue_enabled: "true",
   ue_projecttype_name: "Academic",
   currency_symbol: "€",

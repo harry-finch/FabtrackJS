@@ -119,6 +119,9 @@ router.post(
       const hours = parseInt(req.body.session_timeout_hours, 10);
       updates.session_timeout_hours = !isNaN(hours) && hours > 0 ? String(hours) : "24";
     }
+    if (req.body.api_machine_token !== undefined) {
+      updates.api_machine_token = req.body.api_machine_token.trim();
+    }
     if (req.body.currency_symbol !== undefined) {
       updates.currency_symbol = req.body.currency_symbol.trim() || "€";
     }

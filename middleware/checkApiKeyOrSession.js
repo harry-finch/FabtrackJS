@@ -1,10 +1,12 @@
+const settingsService = require("../services/settingsService.js");
+
 /**
  * Middleware to authenticate API requests via either:
  * 1. An active web session (req.session.loggedin === true)
  * 2. An API Key provided via header ('x-api-key' or 'Authorization: Bearer <key>') or query param (?apiKey=...)
  *
- * If FABTRACK_API_KEY or MACHINE_API_KEY is configured in .env, it is enforced for non-session API requests.
- * If neither is configured in .env, API requests in local lab networks are permitted.
+ * The API key can be defined in .env (FABTRACK_API_KEY or MACHINE_API_KEY) or in platform settings (api_machine_token).
+ * If no key is configured anywhere, API requests in local lab networks are permitted.
  */
 module.exports = function checkApiKeyOrSession(req, res, next) {
   // 1. Allow active browser session
@@ -12,8 +14,12 @@ module.exports = function checkApiKeyOrSession(req, res, next) {
     return next();
   }
 
-  // 2. Extract potential API key
-  const configuredKey = process.env.FABTRACK_API_KEY || process.env.MACHINE_API_KEY;
+  // 2. Extract configured API key (priority: .env, then database settings)
+  const cachedSettings = settingsService.getCachedSettingsSync();
+  const configuredKey =
+    process.env.FABTRACK_API_KEY ||
+    process.env.MACHINE_API_KEY ||
+    (cachedSettings && cachedSettings.api_machine_token ? cachedSettings.api_machine_token.trim() : null);
 
   const headerKey = req.headers["x-api-key"];
   const authHeader = req.headers["authorization"];
@@ -34,7 +40,7 @@ module.exports = function checkApiKeyOrSession(req, res, next) {
     });
   }
 
-  // If no server key is configured in .env, allow requests (convenient for local intranet)
+  // If no server key is configured, allow requests (convenient for local intranet)
   return next();
 };
 
