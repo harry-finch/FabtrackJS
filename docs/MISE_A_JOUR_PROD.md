@@ -46,6 +46,7 @@ pm2 logs fabtrack --lines 50
 | [R-011](../roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md) | `v1.2` | Aucune en prod (`DATABASE_URL_TEST` requis uniquement pour les tests d'intégration) | Aucune | Aucune en prod (`eslint` uniquement en `devDependencies`) | Vérifier l'absence de `TEST_ADMIN_USER` dans `Staff` en production |
 | [R-012](../roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md) | `v1.2` | **Obligatoire :** définir `SECRET` (aléatoire fort, != valeur par défaut) ; vérifier `TRUST_PROXY` (`1` derrière Nginx) et `ENABLE_HTTPS=true` en HTTPS | Aucune | Aucune (CSRF & rate-limit 100 % natifs) | Reconnexion sessions actives ; tester login, `POST /logout`, suppression admin, confirmation charte `GET`→`POST /agreement/:token` et rejet `403` sans CSRF |
 | [R-013](../roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md) | `v1.2` | Aucune | Aucune | Aucune | Vérifier les icônes d'avertissement, les dialogues `data-confirm`, le tableau paginé usager et le switch « Signalement de bug » dans Administration > E-mails |
+| [R-014](../roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md) | `v1.2` | Optionnel : `VISIT_AUTO_CLOSE_TIME=18:30` (défaut `18:30`) | **Obligatoire :** `CREATE TABLE IF NOT EXISTS Session` + 10 `CREATE INDEX` composites | **`npx prisma generate`** (nouveau modèle `Session`) | Vérifier qu'une session survit à `pm2 restart fabtrack` et qu'une modif admin est visible immédiatement sur le kiosque |
 
 ---
 
@@ -276,6 +277,58 @@ curl -i -X POST -H "Accept: application/json" "https://votre-domaine.org/fabtrac
 - Les icônes des types d'avertissements (`Warningtype.icon`) sont désormais strictement filtrées sur une liste blanche de classes Font Awesome Free + couleurs Bootstrap (`text-*`). Les anciennes lignes stockées en base sous forme `<i class="fa-solid ..."></i>` restent rendues proprement via `sanitizeWarningIcon()`, sans jamais injecter de HTML brut.
 - Toutes les boîtes de confirmation de suppression utilisent désormais l'attribut `data-confirm` géré centralement par `public/javascripts/main.js` (plus aucun `confirm()` inline).
 - `POST /report-bug` requiert désormais une session staff authentifiée (`401` / redirection `/login` pour les appels anonymes), valide `pageUrl` en `http:`/`https:`, et un nouveau réglage **Administration > E-mails > Signalement de bug** (`mail_notif_bug_report`, activé par défaut) ainsi que `mail_notif_staff_registration` sont désormais effectivement appliqués.
+
+---
+
+#### `R-014` — Index SQL critiques, sessions MariaDB (`PrismaSessionStore`), cache global & clôture auto des visites
+
+**1. Évolution SQL obligatoire (non destructive, avant redémarrage)**
+
+Créer la table `Session` (pour la persistance des sessions en MariaDB sans nouvelle dépendance npm) et les index composites de performance :
+
+```sql
+CREATE TABLE IF NOT EXISTS `Session` (
+    `sid` VARCHAR(128) NOT NULL,
+    `data` LONGTEXT NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    INDEX `Session_expiresAt_idx`(`expiresAt`),
+    PRIMARY KEY (`sid`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE INDEX `Log_timestamp_idx` ON `Log`(`timestamp`);
+CREATE INDEX `Warning_userId_active_idx` ON `Warning`(`userId`, `active`);
+CREATE INDEX `History_workspaceId_departure_arrival_idx` ON `History`(`workspaceId`, `departure`, `arrival`);
+CREATE INDEX `History_userId_departure_arrival_idx` ON `History`(`userId`, `departure`, `arrival`);
+CREATE INDEX `History_arrival_idx` ON `History`(`arrival`);
+CREATE INDEX `Activity_resourceType_returnedAt_userId_idx` ON `Activity`(`resourceType`, `returnedAt`, `userId`);
+CREATE INDEX `Activity_resourceType_resourceId_endedAt_idx` ON `Activity`(`resourceType`, `resourceId`, `endedAt`);
+CREATE INDEX `Activity_createdAt_idx` ON `Activity`(`createdAt`);
+CREATE INDEX `MachineIssue_machineId_status_createdAt_idx` ON `MachineIssue`(`machineId`, `status`, `createdAt`);
+CREATE INDEX `MachineMaintenance_machineId_maintenanceDate_idx` ON `MachineMaintenance`(`machineId`, `maintenanceDate`);
+```
+
+*(Note : si un index existe déjà, MariaDB 10.1.4+ accepte `CREATE INDEX IF NOT EXISTS ...` ; sinon ignorer l'erreur « Duplicate key name » sur cet index précis.)*
+
+**2. Client Prisma obligatoire**
+
+Le schéma incluant le nouveau modèle `Session`, régénérer le client Prisma avant redémarrage :
+
+```bash
+npx prisma generate
+```
+
+**3. Variable `.env` optionnelle**
+
+- `VISIT_AUTO_CLOSE_TIME=18:30` (optionnel, défaut `18:30`) : heure de clôture automatique des visites oubliées des jours précédents (également surchargeable via le paramètre système `visit_auto_close_time`). La clôture garantit toujours `departure >= arrival` (aucune durée négative).
+
+**4. Vérifications post-déploiement**
+
+- Se connecter, exécuter `pm2 restart fabtrack`, puis recharger `/fabtrack` : la session doit rester active sans reconnexion.
+- Créer ou renommer un motif de visite en admin et vérifier sa visibilité immédiate sur un autre poste kiosque connecté sans reconnexion.
+- Vérifier avec `EXPLAIN SELECT * FROM History WHERE workspaceId = 1 AND departure IS NULL AND arrival >= CURDATE();` que `History_workspaceId_departure_arrival_idx` est utilisé.
+
 
 
 

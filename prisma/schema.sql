@@ -5,6 +5,7 @@ CREATE TABLE `Log` (
     `description` VARCHAR(255) NOT NULL,
     `userId` INTEGER NULL,
 
+    INDEX `Log_timestamp_idx`(`timestamp`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -118,6 +119,7 @@ CREATE TABLE `Warning` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `comments` VARCHAR(255) NULL,
 
+    INDEX `Warning_userId_active_idx`(`userId`, `active`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -149,6 +151,9 @@ CREATE TABLE `History` (
     `repairNotes` TEXT NULL,
     `workshopId` INTEGER NULL,
 
+    INDEX `History_workspaceId_departure_arrival_idx`(`workspaceId`, `departure`, `arrival`),
+    INDEX `History_userId_departure_arrival_idx`(`userId`, `departure`, `arrival`),
+    INDEX `History_arrival_idx`(`arrival`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -186,6 +191,9 @@ CREATE TABLE `Activity` (
     `settledAt` DATETIME(3) NULL,
     `settledBy` VARCHAR(255) NULL,
 
+    INDEX `Activity_resourceType_returnedAt_userId_idx`(`resourceType`, `returnedAt`, `userId`),
+    INDEX `Activity_resourceType_resourceId_endedAt_idx`(`resourceType`, `resourceId`, `endedAt`),
+    INDEX `Activity_createdAt_idx`(`createdAt`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -339,6 +347,7 @@ CREATE TABLE `MachineIssue` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `MachineIssue_machineId_status_createdAt_idx`(`machineId`, `status`, `createdAt`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -355,6 +364,7 @@ CREATE TABLE `MachineMaintenance` (
     `partsReplaced` VARCHAR(255) NULL,
     `cost` DECIMAL(10, 2) NULL,
 
+    INDEX `MachineMaintenance_machineId_maintenanceDate_idx`(`machineId`, `maintenanceDate`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -376,6 +386,18 @@ CREATE TABLE `InventoryMovement` (
     `equipmentStatusAfter` VARCHAR(50) NULL,
 
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Session` (
+    `sid` VARCHAR(128) NOT NULL,
+    `data` LONGTEXT NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `Session_expiresAt_idx`(`expiresAt`),
+    PRIMARY KEY (`sid`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -464,3 +486,4 @@ ALTER TABLE `MachineIssue` ADD CONSTRAINT `MachineIssue_machineId_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `MachineMaintenance` ADD CONSTRAINT `MachineMaintenance_machineId_fkey` FOREIGN KEY (`machineId`) REFERENCES `Machine`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+

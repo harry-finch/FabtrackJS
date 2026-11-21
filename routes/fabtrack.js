@@ -4,12 +4,13 @@ const moment = require("moment");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db");
 
 const isLoggedIn = require("../middleware/checkSession.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
+const referenceCacheService = require("../services/referenceCacheService.js");
+const { getStartOfDay } = require("../services/visitAutoCloseService.js");
 
 const hookManager = require("../core/HookManager");
 
@@ -34,9 +35,11 @@ router.get(
       },
     });
 
-    var history = await prisma.history.findMany({
+    const startOfToday = getStartOfDay(new Date());
+    const history = await prisma.history.findMany({
       where: {
         departure: null,
+        arrival: { gte: startOfToday },
         workspaceId: req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null,
       },
       relationLoadStrategy: "join",
@@ -104,44 +107,14 @@ router.get(
       });
     });
 
-    var oldRecords = false;
-
-    // 5. Populate Warnings and Active Loans in History Entries and handle the arrival time
+    // 5. Populate Warnings and Active Loans in History Entries (strictly read-only;
+    // forgotten visits from previous days are closed by visitAutoCloseService)
     for (const entry of history) {
-      const parsedDate = moment(entry.arrival);
-      const today = moment();
-
       entry.arrival = moment(entry.arrival).format("HH:mm");
       entry.warnings = warningsByUser.get(entry.userId) || [];
       entry.activeLoans = activeLoansByUser.get(entry.userId) || [];
       entry.hasOverdueLoans = entry.activeLoans.some((l) => l.isOverdue);
-
-      // If the user has been in the lab but not logged out on a previous day
-      if (parsedDate.isBefore(today, "day")) {
-        parsedDate.set({ hour: 18, minute: 30 });
-        const isoString = parsedDate.toISOString();
-
-        try {
-          // Update the departure time in the database
-          await prisma.history.update({
-            where: {
-              id: entry.id,
-            },
-            data: {
-              departure: isoString,
-            },
-          });
-        } catch (error) {
-          console.error("Error updating history entry:", error);
-        }
-
-        // 5. If there are old records, then all records are old
-        oldRecords = true;
-      }
     }
-
-    // 6. Empty complete object
-    if (oldRecords) history = [];
 
     // Hook for plugins to provide teaching units
     let teachingUnits = [];
@@ -175,14 +148,10 @@ router.post(
   "/switchworkspace",
   asyncHandler(async (req, res) => {
     const newWorkspaceId = Number(req.body.workspaceId);
-
-    if (!req.session.availableWorkspaces) {
-      req.session.availableWorkspaces = await prisma.workspace.findMany();
-    }
-
-    const selected = req.session.availableWorkspaces.find((w) => w.id === newWorkspaceId);
+    const availableWorkspaces = await referenceCacheService.getWorkspaces();
+    const selected = availableWorkspaces.find((w) => w.id === newWorkspaceId);
     if (selected) {
-      req.session.selectedWorkspace = selected;
+      req.session.selectedWorkspace = { id: selected.id, name: selected.name };
       req.session.lastWorkspaceId = selected.id;
       res.cookie("fabtrack_last_workspace_id", selected.id, {
         maxAge: 365 * 24 * 60 * 60 * 1000,

@@ -15,6 +15,8 @@ model Log {
   userId      Int? // Optional link to the responsible user
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp])
 }
 
 // Staff who can log into the platform
@@ -129,6 +131,8 @@ model Warning {
 
   user        User        @relation(fields: [userId], references: [id])
   warningtype Warningtype @relation(fields: [warningtypeId], references: [id])
+
+  @@index([userId, active])
 }
 
 // Types of warnings (e.g., safety violation, overdue balance...)
@@ -168,6 +172,10 @@ model History {
   workspace      Workspace?    @relation(fields: [workspaceId], references: [id])
   workshop       Workshop?     @relation(fields: [workshopId], references: [id], onDelete: SetNull)
   activities     Activity[]
+
+  @@index([workspaceId, departure, arrival])
+  @@index([userId, departure, arrival])
+  @@index([arrival])
 }
 
 // Workspaces within the fablab (e.g., 3D printing room, laser cutting room)
@@ -220,6 +228,10 @@ model Activity {
   settled   Boolean   @default(false)
   settledAt DateTime?
   settledBy String?   @db.VarChar(255)
+
+  @@index([resourceType, returnedAt, userId])
+  @@index([resourceType, resourceId, endedAt])
+  @@index([createdAt])
 }
 
 // Categories within a workspace (e.g., electronics, woodworking)
@@ -384,6 +396,8 @@ model MachineIssue {
   updatedAt       DateTime  @updatedAt
 
   machine         Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+
+  @@index([machineId, status, createdAt])
 }
 
 // Maintenance operations performed on machines by staff
@@ -400,6 +414,8 @@ model MachineMaintenance {
   cost            Decimal?  @db.Decimal(10, 2)
 
   machine         Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+
+  @@index([machineId, maintenanceDate])
 }
 
 enum InventoryItemType {
@@ -423,4 +439,15 @@ model InventoryMovement {
   stockAfter            Int?
   equipmentStatusBefore String?           @db.VarChar(50)
   equipmentStatusAfter  String?           @db.VarChar(50)
+}
+
+// Persistent HTTP sessions stored in MariaDB via PrismaSessionStore
+model Session {
+  sid       String   @id @db.VarChar(128)
+  data      String   @db.LongText
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([expiresAt])
 }

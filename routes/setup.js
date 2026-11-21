@@ -4,6 +4,7 @@ const asyncHandler = require("../middleware/asyncHandler");
 const { validateBody } = require("../middleware/validate");
 const { setupSchema } = require("../schemas/setup.schema");
 const setupService = require("../services/setupService");
+const { invalidateCache } = require("../middleware/cacheHelper");
 
 /**
  * GET /setup - Installation wizard form
@@ -86,7 +87,7 @@ router.post(
     if (result.workspaces && result.workspaces.length > 0) {
       req.session.lastWorkspaceId = result.workspaces[0].id;
     }
-    req.session.invalidateCache = true;
+    invalidateCache(req);
 
     if (req.isApiRequest || req.xhr || req.headers.accept?.includes("application/json")) {
       return res.json({

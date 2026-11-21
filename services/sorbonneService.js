@@ -1,6 +1,7 @@
 const { PrismaClient, ResourceType } = require("@prisma/client");
 const prisma = new PrismaClient();
 const settingsService = require("./settingsService");
+const referenceCacheService = require("./referenceCacheService");
 const dateService = require("./dateService");
 
 class SorbonneService {
@@ -20,6 +21,7 @@ class SorbonneService {
         projectType = await prisma.projecttype.create({
           data: { name: typeName },
         });
+        referenceCacheService.invalidate();
       }
       return projectType;
     } catch (err) {

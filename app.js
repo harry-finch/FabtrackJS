@@ -18,6 +18,8 @@ const settingsService = require("./services/settingsService");
 const setupService = require("./services/setupService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
+const referenceCacheService = require("./services/referenceCacheService");
+const { PrismaSessionStore } = require("./services/prismaSessionStore");
 const { applyUploadStaticHeaders } = require("./services/uploadSecurityService");
 const { csrfTokenMiddleware, csrfProtection } = require("./middleware/csrf");
 const { escapeHtml, safeJson, safeHttpUrl, sanitizeWarningIcon } = require("./utilities/xssHelpers");
@@ -78,6 +80,28 @@ function resolveTrustProxy(env = process.env) {
 
 const sessionSecret = resolveSessionSecret(process.env);
 const trustProxyValue = resolveTrustProxy(process.env);
+
+/**
+ * Creates the Express session store.
+ * Uses persistent MariaDB storage via Prisma (`PrismaSessionStore`) by default,
+ * falling back to Express MemoryStore in `NODE_ENV=test` or when `SESSION_STORE=memory`.
+ *
+ * @param {NodeJS.ProcessEnv} [env=process.env]
+ * @returns {PrismaSessionStore | undefined}
+ */
+function createSessionStore(env = process.env) {
+  if (env.NODE_ENV === "test" || env.SESSION_STORE === "memory") {
+    return undefined;
+  }
+  const ttlMs = parseInt(env.SESSION_DURATION || "86400000", 10);
+  return new PrismaSessionStore({
+    prisma,
+    ttlMs: Number.isFinite(ttlMs) && ttlMs > 0 ? ttlMs : 86400000,
+    autoStartCleanup: env.NODE_ENV === "production",
+  });
+}
+
+const sessionStore = createSessionStore(process.env);
 
 const app = express();
 
@@ -172,6 +196,7 @@ app.use(
   session({
     name: "fabtrack.sid", // Avoid session collision with other apps on the same domain
     secret: sessionSecret,
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -351,7 +376,7 @@ app.use(async (req, res, next) => {
 // (mounted after settings middleware so error views have baseUrl/platformName/i18n)
 app.use(csrfProtection);
 
-// Workspace middleware
+// Workspace middleware (backed by global referenceCacheService instead of per-session arrays)
 async function workspaceSwitcher(req, res, next) {
   try {
     if (!req.session || !req.session.loggedin) {
@@ -360,11 +385,9 @@ async function workspaceSwitcher(req, res, next) {
       return next();
     }
 
-    if (!req.session.availableWorkspaces || req.session.invalidateCache) {
-      req.session.availableWorkspaces = await prisma.workspace.findMany();
-    }
+    const availableWorkspaces = await referenceCacheService.getWorkspaces();
 
-    if (!req.session.selectedWorkspace && req.session.availableWorkspaces.length > 0) {
+    if (!req.session.selectedWorkspace && availableWorkspaces.length > 0) {
       let candidateId = null;
 
       // 1. If staff is logged in and lastWorkspaceId is in session or database
@@ -387,23 +410,32 @@ async function workspaceSwitcher(req, res, next) {
       }
 
       if (candidateId) {
-        const foundCandidate = req.session.availableWorkspaces.find((w) => w.id === candidateId);
+        const foundCandidate = availableWorkspaces.find((w) => w.id === candidateId);
         if (foundCandidate) {
-          req.session.selectedWorkspace = foundCandidate;
+          req.session.selectedWorkspace = { id: foundCandidate.id, name: foundCandidate.name };
         }
       }
 
       // 3. Fallback to first available workspace if none found
       if (!req.session.selectedWorkspace) {
-        req.session.selectedWorkspace = req.session.availableWorkspaces[0];
+        const first = availableWorkspaces[0];
+        req.session.selectedWorkspace = { id: first.id, name: first.name };
       }
     } else if (req.session.selectedWorkspace) {
-      // Ensure selected workspace still exists in database
-      const found = req.session.availableWorkspaces.find((w) => w.id === req.session.selectedWorkspace.id);
-      req.session.selectedWorkspace = found || (req.session.availableWorkspaces.length > 0 ? req.session.availableWorkspaces[0] : null);
+      // Ensure selected workspace still exists in database and stays synced with renamed title
+      const found = availableWorkspaces.find((w) => w.id === req.session.selectedWorkspace.id);
+      if (found) {
+        if (req.session.selectedWorkspace.name !== found.name) {
+          req.session.selectedWorkspace = { id: found.id, name: found.name };
+        }
+      } else if (availableWorkspaces.length > 0) {
+        req.session.selectedWorkspace = { id: availableWorkspaces[0].id, name: availableWorkspaces[0].name };
+      } else {
+        req.session.selectedWorkspace = null;
+      }
     }
 
-    res.locals.availableWorkspaces = req.session.availableWorkspaces || [];
+    res.locals.availableWorkspaces = availableWorkspaces || [];
     res.locals.selectedWorkspace = req.session.selectedWorkspace || { id: 0, name: "Fablab" };
 
     next();
@@ -415,7 +447,7 @@ async function workspaceSwitcher(req, res, next) {
 
 app.use(workspaceSwitcher);
 
-// Load types, categories and such in cache to avoid repeated db queries
+// Load reference data from global cache (immediately invalidated across all sessions on admin mutations)
 async function loadCache(req, res, next) {
   try {
     if (!req.session || !req.session.loggedin) {
@@ -426,36 +458,20 @@ async function loadCache(req, res, next) {
       res.locals.categories = [];
       res.locals.locations = [];
       res.locals.access = [];
-      res.locals.machines = [];
       res.locals.equipment = [];
       return next();
     }
 
-    if (!req.session.usertypes || req.session.invalidateCache) {
-      req.session.usertypes = await prisma.usertype.findMany();
-      req.session.projecttypes = await prisma.projecttype.findMany();
-      req.session.machinetypes = await prisma.machineType.findMany();
-      req.session.warningtypes = await prisma.warningtype.findMany();
-      req.session.categories = await prisma.category.findMany({ include: { workspace: true } });
-      req.session.locations = await prisma.location.findMany();
-      req.session.access = await prisma.access.findMany();
-      req.session.equipment = await prisma.equipment.findMany({
-        where: { status: "AVAILABLE" },
-        include: { workspace: true },
-        orderBy: { name: "asc" },
-      });
-      req.session.invalidateCache = false;
-    }
+    const refData = await referenceCacheService.getReferenceData();
 
-    res.locals.usertypes = req.session.usertypes || [];
-    res.locals.projecttypes = req.session.projecttypes || [];
-    res.locals.machinetypes = req.session.machinetypes || [];
-    res.locals.warningtypes = req.session.warningtypes || [];
-    res.locals.categories = req.session.categories || [];
-    res.locals.locations = req.session.locations || [];
-    res.locals.access = req.session.access || [];
-    res.locals.machines = req.session.machines || [];
-    res.locals.equipment = req.session.equipment || [];
+    res.locals.usertypes = refData.usertypes || [];
+    res.locals.projecttypes = refData.projecttypes || [];
+    res.locals.machinetypes = refData.machinetypes || [];
+    res.locals.warningtypes = refData.warningtypes || [];
+    res.locals.categories = refData.categories || [];
+    res.locals.locations = refData.locations || [];
+    res.locals.access = refData.access || [];
+    res.locals.equipment = refData.equipment || [];
 
     next();
   } catch (error) {
@@ -581,5 +597,7 @@ app.use((err, req, res, next) => {
 
 app.resolveSessionSecret = resolveSessionSecret;
 app.resolveTrustProxy = resolveTrustProxy;
+app.createSessionStore = createSessionStore;
+app.sessionStore = sessionStore;
 
 module.exports = app;

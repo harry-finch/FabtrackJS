@@ -26,8 +26,8 @@
    Passer les 31+ actions GET mutantes en POST, ajouter un jeton CSRF natif synchronisé en session et durcir sessions, cookies, rate-limiting et révocation staff.
 10. **[R-013 Éradiquer les XSS templates/DOM et sécuriser /report-bug & mailService](roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md)** · À tester · jalon v1.2
    Supprimer les injections <%- JSON.stringify %>, icônes HTML brutes, confirm() inline, innerHTML dynamiques et HTML injection dans les e-mails.
-11. **[R-014 Index SQL critiques, sessions MariaDB, cache global et clôture auto des visites](roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md)** · Idée · jalon v1.2
-   Ajouter les index DB, remplacer MemoryStore et le cache par session, et sortir la clôture des visites de GET /fabtrack/.
+11. **[R-014 Index SQL critiques, sessions MariaDB, cache global et clôture auto des visites](roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md)** · À tester · jalon v1.2
+   Ajouter les index DB, remplacer MemoryStore par un store MariaDB natif Prisma, mutualiser le cache de référence et sortir la clôture auto des visites de GET /fabtrack/.
 12. **[R-015 Corriger les injections transverses et l'exposition de secrets](roadmap/items/R-015-corriger-les-injections-transverses-et-l.md)** · Idée · jalon v1.3
    Bloquer la Prototype Pollution i18n, les Open Redirects, les injections CSV et filtrer les secrets hors de res.locals et /api/list/*.
 13. **[R-016 Confiner l'IA NL2SQL (rôle MariaDB lecture seule) et corriger les SSRF](roadmap/items/R-016-confiner-l-ia-nl2sql-role-mariadb-lecture-seule.md)** · Idée · jalon v1.3
@@ -90,6 +90,8 @@
 - [ ] [A-019](roadmap/actions/A-019-valider-dans-le-navigateur-la-connexion-post.md) Valider dans le navigateur la connexion, POST /logout, les actions admin POST avec CSRF, la confirmation charte GET->POST /agreement/:token et le rejet 403 sans jeton CSRF (tester, R-012)
 - [ ] [A-020](roadmap/actions/A-020-verifier-dans-le-navigateur-les-boites-data.md) Vérifier dans le navigateur les boîtes data-confirm sur suppressions admin, le rendu des icônes d'avertissement (kiosque/admin) et le tableau paginé d'historique usager (tester, R-013)
 - [ ] [A-021](roadmap/actions/A-021-verifier-dans-administration-e-mails-le-nouveau.md) Vérifier dans Administration > E-mails le nouveau switch Signalement de bug et tester l'envoi d'un signalement connecté puis le refus d'un appel anonyme POST /report-bug (tester, R-013)
+- [ ] [A-022](roadmap/actions/A-022-appliquer-les-requetes-sql-r-014-create-table.md) Appliquer les requêtes SQL R-014 (CREATE TABLE Session + 10 CREATE INDEX) et npx prisma generate en prod puis confirmer qu'une session survit à pm2 restart fabtrack (tester, R-014)
+- [ ] [A-023](roadmap/actions/A-023-verifier-qu-un-changement-admin-motif-de-visite.md) Vérifier qu'un changement admin (motif de visite / workspace) apparaît immédiatement sur un autre poste kiosque sans reconnexion et qu'EXPLAIN utilise les nouveaux index (tester, R-014)
 
 ## Livré
 

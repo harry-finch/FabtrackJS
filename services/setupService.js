@@ -1,6 +1,7 @@
 const { prisma } = require("../utilities/db");
 const bcrypt = require("bcryptjs");
 const settingsService = require("./settingsService");
+const referenceCacheService = require("./referenceCacheService");
 const { parseWorkspacesInput } = require("../schemas/setup.schema");
 
 class SetupService {
@@ -220,8 +221,9 @@ class SetupService {
       result = await execute(customPrisma);
     }
 
-    // Invalidate settingsService cached in memory
+    // Invalidate settingsService and global reference cache in memory
     settingsService.invalidateCache();
+    referenceCacheService.invalidate();
 
     return result;
   }

@@ -1,20 +1,60 @@
 ---
 id: R-014
 titre: "Index SQL critiques, sessions MariaDB, cache global et clôture auto des visites"
-resume: "Ajouter les index DB, remplacer MemoryStore et le cache par session, et sortir la clôture des visites de GET /fabtrack/."
-statut: idee
+resume: "Ajouter les index DB, remplacer MemoryStore par un store MariaDB natif Prisma, mutualiser le cache de référence et sortir la clôture auto des visites de GET /fabtrack/."
+statut: a-tester
 jalon: v1.2
 cree: 2026-11-21
 maj: 2026-11-21
 livree:
 ---
 
-- **Priorité / Source :** Top 10 (#10) · `AUD-017`, `AUD-019`, `AUD-024` (Opus #8, #13, #16)
-- **Fichiers principaux :** `prisma/schema.prisma`, `prisma/schema.sql`, `app.js:101-112,270-363`, `middleware/cacheHelper.js`, nouveaux `services/referenceCacheService.js` et `services/visitAutoCloseService.js`, `routes/fabtrack.js:107-145`, `plugins/rfidPlugin.js:68-105`
-- **Périmètre envisagé :**
-  - Ajouter les index composites (`History`, `Activity`, `Warning`, `Log`, `MachineIssue`) et synchroniser `prisma/schema.sql`.
-  - Remplacer `MemoryStore` par `express-mysql-session` (MariaDB) avec `saveUninitialized: false`.
-  - Remplacer le cache par session (`loadCache`) par un `referenceCacheService` global en mémoire avec invalidation globale (corriger les 3 oublis `Projecttype` dans `settings.js`, `repair-cafe.js`, `admin/history.js` et retirer `res.locals.machines`).
-  - Externaliser la clôture automatique des visites oubliées dans une tâche planifiée (`updateMany` tous workspaces, heure configurable, `departure = max(arrival, closingTime)`), supprimer `if (oldRecords) history = []` et filtrer `rfidPlugin` sur la journée en cours.
-- **Arbitrages & dépendances :** Dépend de `R-009` et `R-011`.
-- **Critères d'acceptation visés :** `EXPLAIN` utilise les index ; un changement admin est visible immédiatement sur le kiosque ; les sessions survivent au redémarrage ; les présents du jour restent affichés et aucune durée n'est négative.
+## But
+
+Améliorer les performances SQL (`AUD-017`), rendre les sessions résilientes aux redémarrages (`AUD-019`), rendre les modifications d'administration immédiatement visibles sur tous les postes kiosque/médiateurs (`AUD-019`) et corriger la clôture automatique des visites oubliées qui effaçait les présents du jour et produisait des durées négatives (`AUD-024`).
+
+## Inclus
+
+- **Schéma Prisma & index SQL critiques (`prisma/schema.prisma`, `prisma/schema.sql`) :**
+  - Ajouter les index composites sur `History` (`[workspaceId, departure, arrival]`, `[userId, departure, arrival]`, `[arrival]`), `Activity` (`[resourceType, returnedAt, userId]`, `[resourceType, resourceId, endedAt]`, `[createdAt]`), `Warning` (`[userId, active]`), `Log` (`[timestamp]`) et `MachineIssue` (`[machineId, status, createdAt]`).
+  - Ajouter le modèle `Session` (`sid`, `data`, `expiresAt`, `createdAt`, `updatedAt`, `@@index([expiresAt])`) pour la persistance des sessions en MariaDB.
+  - Régénérer le client Prisma et resynchroniser `prisma/schema.sql`.
+- **Store de sessions persistant MariaDB natif (`services/prismaSessionStore.js`, `app.js`, `bin/www`) :**
+  - Implémenter `PrismaSessionStore` (sous-classe de `express-session` `Store`) sur le pool Prisma unique, avec nettoyage périodique des sessions expirées (`unref()` + arrêt gracieux dans `bin/www`), repli automatique sur `MemoryStore` en `NODE_ENV=test` / `SESSION_STORE=memory`, et `saveUninitialized: false`.
+- **Cache global de référence (`services/referenceCacheService.js`, `middleware/cacheHelper.js`, `app.js`, `routes/`, `services/`) :**
+  - Remplacer le cache dupliqué par session (`req.session.usertypes`, `availableWorkspaces`, etc.) par un cache global en mémoire avec déduplication des chargements concurrents et invalidation globale immédiate.
+  - Supprimer `res.locals.machines` inutilisé.
+  - Corriger les oublis d'invalidation lors des créations de `Projecttype` (`routes/admin/settings.js`, `services/repairCafeService.js`, `services/workshopService.js`, `services/sorbonneService.js`, `services/historyImportService.js`, `services/setupService.js`, `routes/setup.js`).
+- **Clôture automatique des visites oubliées (`services/visitAutoCloseService.js`, `routes/fabtrack.js`, `plugins/rfidPlugin.js`, `bin/www`) :**
+  - Externaliser la clôture dans une tâche planifiée (`updateMany` sur tous les workspaces, heure configurable via `visit_auto_close_time` / `VISIT_AUTO_CLOSE_TIME` défaut `18:30`, `departure = max(arrival, closingTime)` pour interdire toute durée négative).
+  - Rendre `GET /fabtrack/` strictement lecture seule, filtrer sur la journée en cours et supprimer `if (oldRecords) history = []`.
+  - Filtrer la recherche de visite ouverte dans `plugins/rfidPlugin.js` sur la journée en cours (`arrival >= startOfToday`).
+- **Tests & documentation :**
+  - Créer `tests/unit/perfSessionsAndAutoCloseR014.test.js` ; mettre à jour `docs/MISE_A_JOUR_PROD.md` (avec SQL `CREATE TABLE Session` + `CREATE INDEX` non destructifs et `npx prisma generate`) et `STATUS.md`.
+
+## Hors périmètre
+
+- Ajout de paquets npm externes (`express-mysql-session`, `node-cron`, Redis).
+- Refactorisation complète de l'interface kiosque ou pagination serveur de l'historique complet.
+
+## Décisions
+
+- **Arbitrage Option A :** Store de sessions MariaDB **natif via Prisma** (`services/prismaSessionStore.js` + table `Session`) sans nouvelle dépendance npm ni second pool `mysql2`, avec repli automatique `MemoryStore` en `NODE_ENV=test`.
+- **Durée non négative :** `departure = max(arrival, closingTime)` calculé sur le jour calendaire de `arrival`, appliqué par lots via `prisma.history.updateMany(..., departure: null)` sur tous les workspaces.
+
+## Dépendances
+
+- Dépend de `R-009` (`prisma/schema.sql` aligné) et `R-011` (tests unitaires hors-ligne isolés).
+
+## Critères d'acceptation
+
+- Index composites présents dans `prisma/schema.prisma` et `prisma/schema.sql`, et table `Session` créée dans le schéma.
+- `PrismaSessionStore` persiste, lit, expire, met à jour (`touch`), détruit et purge les sessions via Prisma.
+- `invalidateCache()` rend une modification admin immédiatement visible sur tous les postes sans attendre la reconnexion.
+- `GET /fabtrack/` n'exécute plus d'écriture DB et affiche toujours les présents du jour même si une visite d'un jour précédent reste ouverte ; aucune durée de clôture auto n'est négative ; `rfidPlugin` ignore les visites ouvertes des jours précédents.
+- `npm run lint` (0 erreur), `npm audit --omit=dev` (0 vulnérabilité) et `DATABASE_URL="" npm run test:unit` (100 % vert).
+
+## Vérifications de l'utilisateur
+
+- Appliquer les commandes SQL (`CREATE TABLE Session` + `CREATE INDEX`) et `npx prisma generate` en production selon `docs/MISE_A_JOUR_PROD.md`, puis confirmer que les sessions survivent à un `pm2 restart fabtrack`.
+- Modifier un motif de visite / workspace en admin et vérifier sa visibilité immédiate dans une autre session kiosque sans reconnexion.

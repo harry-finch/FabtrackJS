@@ -422,6 +422,8 @@ class HistoryImportService {
         projectType = await prisma.projecttype.create({
           data: { name: projectTypeName },
         });
+        const referenceCacheService = require("./referenceCacheService");
+        referenceCacheService.invalidate();
       }
 
       // 3. Résolution ou création du Projet et UserProject

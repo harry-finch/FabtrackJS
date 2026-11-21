@@ -6,6 +6,7 @@
 
 var app = require("../app");
 const { prisma, closePool } = require("../utilities/db");
+const visitAutoCloseService = require("../services/visitAutoCloseService");
 var debug = require("debug")("fabtrackjs:server");
 var http = require("http");
 
@@ -102,6 +103,12 @@ function onListening() {
   var addr = server.address();
   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);
+
+  // Start background schedulers (forgotten visits auto-close & expired sessions cleanup)
+  visitAutoCloseService.startScheduler();
+  if (app.sessionStore && typeof app.sessionStore.startCleanupTimer === "function") {
+    app.sessionStore.startCleanupTimer();
+  }
 }
 
 let isShuttingDown = false;
@@ -123,6 +130,10 @@ async function shutdown(signal, exitCode = 0) {
   forceTimer.unref();
 
   try {
+    visitAutoCloseService.stopScheduler();
+    if (app.sessionStore && typeof app.sessionStore.stopCleanupTimer === "function") {
+      app.sessionStore.stopCleanupTimer();
+    }
     await new Promise((resolve) => {
       io.close(() => {
         if (!server.listening) {

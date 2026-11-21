@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const settingsService = require("./settingsService.js");
+const referenceCacheService = require("./referenceCacheService.js");
 const logger = require("../utilities/simpleLogger.js");
 
 const VALID_STATUSES = {
@@ -37,6 +38,7 @@ class RepairCafeService {
         projectType = await prisma.projecttype.create({
           data: { name: typeName },
         });
+        referenceCacheService.invalidate();
         logger.logThat(`Created default project type '${typeName}' for Repair Café plugin`);
       }
 

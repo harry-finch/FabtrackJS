@@ -1,6 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db");
 const logger = require("../utilities/simpleLogger.js");
+const { getStartOfDay } = require("../services/visitAutoCloseService.js");
 
 // Anti-bounce memory map: { [rfid]: timestamp }
 const lastScans = new Map();
@@ -65,11 +65,13 @@ module.exports = {
         };
       }
 
-      // Check if user is currently checked-in in this workspace (departure is null)
+      // Check if user is currently checked-in today in this workspace (ignore forgotten open visits from prior days)
+      const startOfToday = getStartOfDay(new Date());
       const currentVisit = await prisma.history.findFirst({
         where: {
           userId: user.id,
           departure: null,
+          arrival: { gte: startOfToday },
           workspaceId: workspaceId ? Number(workspaceId) : undefined,
         },
         orderBy: {

@@ -309,6 +309,8 @@ router.post(
         await prisma.projecttype.create({
           data: { name: updates.ue_projecttype_name },
         });
+        const { invalidateCache } = require("../../middleware/cacheHelper.js");
+        invalidateCache(req);
       }
     }
 
