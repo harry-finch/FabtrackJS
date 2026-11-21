@@ -20,7 +20,8 @@
           <!-- Alert feedback container -->
           <div id="checkoutAlertContainer"></div>
 
-          <!-- Type Selector: Consumable vs Equipment -->
+          <!-- Type Selector: Consumable vs Equipment (Equipment reserved to admin) -->
+          <% if (typeof role !== 'undefined' && role === 'admin') { %>
           <div class="mb-4">
             <label class="form-label small fw-bold text-uppercase text-muted mb-2">Type d'article à sortir</label>
             <div class="btn-group w-100 shadow-sm rounded-3" role="group" id="checkoutTypeGroup">
@@ -35,6 +36,9 @@
               </label>
             </div>
           </div>
+          <% } else { %>
+          <input type="hidden" name="itemType" id="typeConsumable" value="CONSUMABLE">
+          <% } %>
 
           <!-- Section Consumable Selection -->
           <div id="sectionConsumable" class="checkout-item-section">
@@ -297,20 +301,30 @@
     const itemUnit = triggerBtn.dataset.itemUnit;
 
     if (itemType === "CONSUMABLE") {
-      document.getElementById("typeConsumable").checked = true;
-      document.getElementById("typeConsumable").dispatchEvent(new Event("change"));
+      const radioConsumable = document.getElementById("typeConsumable");
+      if (radioConsumable) {
+        radioConsumable.checked = true;
+        radioConsumable.dispatchEvent(new Event("change"));
+      }
       if (itemId) {
         const sel = document.getElementById("checkoutConsumableSelect");
-        sel.value = itemId;
-        sel.dispatchEvent(new Event("change"));
+        if (sel) {
+          sel.value = itemId;
+          sel.dispatchEvent(new Event("change"));
+        }
       }
     } else if (itemType === "EQUIPMENT") {
-      document.getElementById("typeEquipment").checked = true;
-      document.getElementById("typeEquipment").dispatchEvent(new Event("change"));
+      const radioEquipment = document.getElementById("typeEquipment");
+      if (radioEquipment) {
+        radioEquipment.checked = true;
+        radioEquipment.dispatchEvent(new Event("change"));
+      }
       if (itemId) {
         const sel = document.getElementById("checkoutEquipmentSelect");
-        sel.value = itemId;
-        sel.dispatchEvent(new Event("change"));
+        if (sel) {
+          sel.value = itemId;
+          sel.dispatchEvent(new Event("change"));
+        }
       }
     }
   });

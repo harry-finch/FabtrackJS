@@ -21,24 +21,64 @@ const createVisitSchema = z.object({
   sorbonneEntity: z.string().trim().max(255).optional().nullable(),
 });
 
+function preprocessDecimalAmount(val) {
+  if (val === undefined || val === null) return undefined;
+  if (typeof val === "boolean" || typeof val === "object") return val;
+  if (typeof val === "string") {
+    const cleaned = val.replace(",", ".").trim();
+    return cleaned === "" ? undefined : Number(cleaned);
+  }
+  return Number(val);
+}
+
 const creditSchema = z.object({
   userid: z.preprocess(
     (val) => (val !== undefined && val !== null && val !== "" ? Number(val) : undefined),
-    z.number({ required_error: "Identifiant d'usager manquant." }).int().positive("Identifiant usager invalide."),
+    z.number({ error: "Identifiant d'usager manquant." }).int().positive("Identifiant usager invalide."),
   ),
   money: z.preprocess(
-    (val) => {
-      if (typeof val === "string") {
-        const cleaned = val.replace(",", ".").trim();
-        return Number(cleaned);
-      }
-      return Number(val);
-    },
-    z.number({ required_error: "Veuillez saisir un montant valide." }).refine((n) => !isNaN(n), {
-      message: "Le montant saisi n'est pas un nombre valide.",
-    }),
+    preprocessDecimalAmount,
+    z
+      .number({ error: "Veuillez saisir un montant valide." })
+      .finite("Le montant saisi n'est pas un nombre valide.")
+      .positive("Le montant à créditer doit être strictement positif (> 0)."),
   ),
 });
+
+const adjustBalanceSchema = z
+  .object({
+    userid: z.preprocess(
+      (val) => (val !== undefined && val !== null && val !== "" ? Number(val) : undefined),
+      z.number({ error: "Identifiant d'usager manquant." }).int().positive("Identifiant usager invalide."),
+    ),
+    operation: z.enum(["debit", "credit"]).optional(),
+    amount: z.preprocess(
+      preprocessDecimalAmount,
+      z
+        .number({ error: "Veuillez saisir un montant valide." })
+        .finite("Le montant saisi n'est pas un nombre valide.")
+        .refine((n) => n !== 0, {
+          message: "Le montant de l'ajustement ne peut pas être égal à 0.",
+        }),
+    ),
+    reason: z
+      .string({ error: "Veuillez préciser le motif de l'ajustement." })
+      .trim()
+      .min(3, "Le motif de l'ajustement doit contenir au moins 3 caractères.")
+      .max(255, "Le motif de l'ajustement ne peut pas dépasser 255 caractères."),
+  })
+  .transform((data) => {
+    let delta = data.amount;
+    if (data.operation === "debit") {
+      delta = -Math.abs(data.amount);
+    } else if (data.operation === "credit") {
+      delta = Math.abs(data.amount);
+    }
+    return {
+      ...data,
+      delta: Number(delta.toFixed(2)),
+    };
+  });
 
 const activitySchema = z.object({
   activityhistoryid: z.preprocess(
@@ -86,6 +126,7 @@ const updateCommentSchema = z.object({
 module.exports = {
   createVisitSchema,
   creditSchema,
+  adjustBalanceSchema,
   activitySchema,
   returnEquipmentSchema,
   updateCommentSchema,

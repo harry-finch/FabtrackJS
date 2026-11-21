@@ -191,6 +191,7 @@ router.post(
         return res.redirect("/login");
       }
       req.session.loggedin = true;
+      req.session.staffId = user.id;
       req.session.role = user.role;
       req.session.username = user.name;
       if (user.lastWorkspaceId) {

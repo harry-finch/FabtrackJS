@@ -11,4 +11,5 @@ module.exports = {
   ...require("./bug.schema"),
   ...require("./setup.schema"),
   ...require("./machineUsage.schema"),
+  ...require("./staff.schema"),
 };

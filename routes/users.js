@@ -9,6 +9,7 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
+const requireRoles = require("../middleware/requireRoles.js");
 const { validateBody } = require("../middleware/validate.js");
 const { createUserSchema, updateUserSchema } = require("../schemas/user.schema.js");
 const dateService = require("../services/dateService.js");
@@ -54,14 +55,10 @@ router.get(
 
 router.post(
   "/create",
+  requireRoles("admin", "user"),
   clearNotification,
   validateBody(createUserSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
-    if (req.session.role === "staff") {
-      req.session.notification = "Warning: L'enregistrement d'un nouvel utilisateur doit être fait par un médiateur.";
-      return res.redirect("/fabtrack");
-    }
-
     const { newname, newsurname, newemail, newusertype, newbirthyear, newcomments, newrfid, newnewsletter } = req.body;
     const cleanRfid = newrfid && newrfid.trim() ? newrfid.trim() : null;
 
@@ -137,13 +134,9 @@ router.get(
 
 router.get(
   "/edit/:id",
+  requireRoles("admin", "user"),
   clearNotification,
   asyncHandler(async (req, res) => {
-    if (req.session.role === "staff") {
-      req.session.notification = "Warning: La consultation du profil d'un contributeur est réservée aux médiateurs.";
-      return res.redirect("/fabtrack");
-    }
-
     const { id } = req.params;
     req.session.lastPage = `/users/edit/${id}`;
 
@@ -430,14 +423,10 @@ router.get(
 
 router.post(
   "/update/:id",
+  requireRoles("admin", "user"),
   clearNotification,
   validateBody(updateUserSchema, { redirectUrl: (req) => `/users/edit/${req.params.id}` }),
   asyncHandler(async (req, res) => {
-    if (req.session.role === "staff") {
-      req.session.notification = "Warning: La modification d'un profil est réservée aux médiateurs.";
-      return res.redirect("/fabtrack");
-    }
-
     const { id } = req.params;
     const { name, surname, email, usertype, birthyear, comments, isExpert, rfid, newsletter, termsAccepted } = req.body;
     const cleanRfid = rfid && rfid.trim() ? rfid.trim() : null;
@@ -480,6 +469,7 @@ router.post(
 
 router.post(
   "/:id/workshop-interest/add",
+  requireRoles("admin", "user"),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -512,6 +502,7 @@ router.post(
 
 router.get(
   "/:id/workshop-interest/remove/:workshopId",
+  requireRoles("admin", "user"),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id, workshopId } = req.params;
@@ -536,13 +527,12 @@ router.get(
 
 router.post(
   "/:id/workshop-badge/award",
+  requireRoles("admin", "user", {
+    redirectUrl: (req) => `/users/edit/${req.params.id}`,
+    message: "Seuls les administrateurs et médiateurs peuvent attribuer une habilitation.",
+  }),
   clearNotification,
   asyncHandler(async (req, res) => {
-    if (req.session.role !== "admin" && req.session.role !== "mediateur") {
-      req.session.notification = "Error: Seuls les administrateurs et médiateurs peuvent attribuer une habilitation.";
-      return res.redirect(`/users/edit/${req.params.id}`);
-    }
-
     const { id } = req.params;
     const { workshopId, removeInterest, awardedAt, awardedBy } = req.body;
     const uId = Number(id);
@@ -604,13 +594,12 @@ router.post(
 
 router.get(
   "/:id/workshop-badge/revoke/:workshopId",
+  requireRoles("admin", "user", {
+    redirectUrl: (req) => `/users/edit/${req.params.id}`,
+    message: "Seuls les administrateurs et médiateurs peuvent révoquer une habilitation.",
+  }),
   clearNotification,
   asyncHandler(async (req, res) => {
-    if (req.session.role !== "admin" && req.session.role !== "mediateur") {
-      req.session.notification = "Error: Seuls les administrateurs et médiateurs peuvent révoquer une habilitation.";
-      return res.redirect(`/users/edit/${req.params.id}`);
-    }
-
     const { id, workshopId } = req.params;
 
     try {
@@ -637,6 +626,7 @@ router.get(
 
 router.get(
   "/resend/:id",
+  requireRoles("admin", "user"),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;

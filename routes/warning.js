@@ -3,6 +3,7 @@ const router = express.Router();
 
 const asyncHandler = require("../middleware/asyncHandler.js");
 const isLoggedIn = require("../middleware/checkSession.js");
+const requireRoles = require("../middleware/requireRoles.js");
 const logger = require("../utilities/simpleLogger.js");
 const { validateBody } = require("../middleware/validate.js");
 const { createWarningSchema } = require("../schemas/warning.schema.js");
@@ -19,6 +20,10 @@ const mailService = require("../services/mailService.js");
 
 router.get(
   "/deactivate/:id",
+  requireRoles("admin", {
+    redirectUrl: (req) => req.session.lastPage || "/fabtrack",
+    message: "La résolution d'un avertissement est réservée aux administrateurs.",
+  }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -40,6 +45,7 @@ router.get(
 
 router.post(
   "/create",
+  requireRoles("admin", "user"),
   validateBody(createWarningSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { userid, warningtype, comments } = req.body;

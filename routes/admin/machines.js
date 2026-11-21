@@ -7,11 +7,11 @@ const fs = require("fs");
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
-const isAuthenticated = require("../../middleware/checkSession.js");
+const requireRoles = require("../../middleware/requireRoles.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
 const { createMaintenanceSchema } = require("../../schemas/issue.schema.js");
 
-router.use(isAuthenticated);
+router.use(requireRoles("admin", "user"));
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -392,11 +392,10 @@ router.post(
 
 // ******************************************************************************
 // POST /admin/machines/maintenance/create: Log a machine maintenance operation
-// Accessible to all logged-in staff and admins
+// Accessible to mediators (user) and admins (blocked for staff)
 // ******************************************************************************
 router.post(
   "/maintenance/create",
-  isAuthenticated,
   asyncHandler(async (req, res) => {
     const parsed = createMaintenanceSchema.safeParse(req.body);
     if (!parsed.success) {

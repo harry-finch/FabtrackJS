@@ -12,7 +12,7 @@
    Fermer la XSS stockée anonyme par upload public, filtrer les images machines/branding et empêcher la saturation disque.
 3. **[R-006 Verrouiller l'API machines/NFC en Fail-Closed et corriger machineUsageService](roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md)** · À tester · jalon v1.1
    Sécuriser les endpoints /api/machines/* par défaut, supprimer la fuite PII de User et corriger les failles d'autorisation et d'IDOR.
-4. **[R-007 Verrouiller le rôle borne kiosque (staff) et corriger le RBAC médiateurs](roadmap/items/R-007-verrouiller-le-role-borne-kiosque-staff-et.md)** · Idée · jalon v1.1
+4. **[R-007 Verrouiller le rôle borne kiosque (staff) et corriger le RBAC médiateurs](roadmap/items/R-007-verrouiller-le-role-borne-kiosque-staff-et.md)** · À tester · jalon v1.1
    Empêcher la borne kiosque (staff) d'exécuter des actions financières ou destructives et rétablir les habilitations pour les médiateurs (user).
 5. **[R-008 Corriger le bug confirm() dans main.js, sécuriser simpleLogger et SMTP_PORT](roadmap/items/R-008-corriger-le-bug-confirm-dans-main-js-securiser.md)** · Idée · jalon v1.1
    Empêcher les suppressions accidentelles en sous-chemin, les crashs serveur sur promesses rejetées et la collision PORT/SMTP.
@@ -76,6 +76,8 @@
 - [ ] [A-005](roadmap/actions/A-005-auditer-le-dossier-uploads-en-production-apres.md) Auditer le dossier uploads/ en production après déploiement R-005 (tester, R-005)
 - [ ] [A-006](roadmap/actions/A-006-tester-les-endpoints-api-machines-nfc-en-local.md) Tester les endpoints API machines/NFC en local (tester, R-006)
 - [ ] [A-007](roadmap/actions/A-007-verifier-le-comportement-fail-closed-de-api.md) Vérifier le comportement Fail-Closed de /api/machines/* en production (tester, R-006)
+- [ ] [A-008](roadmap/actions/A-008-tester-la-matrice-rbac-admin-mediateur-borne.md) Tester la matrice RBAC (admin, médiateur, borne kiosque) en local (tester, R-007)
+- [ ] [A-009](roadmap/actions/A-009-verifier-les-comptes-staff-et-roles-apres.md) Vérifier les comptes Staff et rôles après déploiement R-007 en production (tester, R-007)
 
 ## Livré
 

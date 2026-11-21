@@ -3,6 +3,8 @@ const {
   updateUserSchema,
   createVisitSchema,
   creditSchema,
+  adjustBalanceSchema,
+  updateStaffSchema,
   activitySchema,
   loginSchema,
   requestPasswordResetSchema,
@@ -51,19 +53,20 @@ describe("Unit: Zod Validation Schemas", () => {
   });
 
   describe("creditSchema", () => {
-    test("accepts valid decimal amounts and negative debits", () => {
+    test("accepts strictly positive decimal amounts (with dot or comma)", () => {
       const creditRes = creditSchema.safeParse({ userid: "10", money: "15.50" });
       expect(creditRes.success).toBe(true);
       expect(creditRes.data.userid).toBe(10);
       expect(creditRes.data.money).toBe(15.5);
 
-      const debitRes = creditSchema.safeParse({ userid: "10", money: "-5.25" });
-      expect(debitRes.success).toBe(true);
-      expect(debitRes.data.money).toBe(-5.25);
-
       const commaRes = creditSchema.safeParse({ userid: "10", money: "12,50" });
       expect(commaRes.success).toBe(true);
       expect(commaRes.data.money).toBe(12.5);
+    });
+
+    test("rejects zero and negative amounts on credit route (R-007)", () => {
+      expect(creditSchema.safeParse({ userid: "10", money: "0" }).success).toBe(false);
+      expect(creditSchema.safeParse({ userid: "10", money: "-5.25" }).success).toBe(false);
     });
 
     test("rejects non-numeric money values (NaN protection)", () => {
@@ -74,6 +77,68 @@ describe("Unit: Zod Validation Schemas", () => {
     test("rejects missing user ID", () => {
       const result = creditSchema.safeParse({ money: "10" });
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe("adjustBalanceSchema", () => {
+    test("computes signed delta for admin debit and credit operations", () => {
+      const debitRes = adjustBalanceSchema.safeParse({
+        userid: "10",
+        operation: "debit",
+        amount: "7,50",
+        reason: "Correction caisse atelier",
+      });
+      expect(debitRes.success).toBe(true);
+      expect(debitRes.data.delta).toBe(-7.5);
+
+      const creditRes = adjustBalanceSchema.safeParse({
+        userid: "10",
+        operation: "credit",
+        amount: "12.00",
+        reason: "Avoir impression annulée",
+      });
+      expect(creditRes.success).toBe(true);
+      expect(creditRes.data.delta).toBe(12);
+
+      const signedRes = adjustBalanceSchema.safeParse({
+        userid: "10",
+        amount: "-3.25",
+        reason: "Régularisation directe",
+      });
+      expect(signedRes.success).toBe(true);
+      expect(signedRes.data.delta).toBe(-3.25);
+    });
+
+    test("rejects zero amount and missing reason", () => {
+      expect(adjustBalanceSchema.safeParse({ userid: "10", amount: "0", reason: "Test" }).success).toBe(false);
+      expect(adjustBalanceSchema.safeParse({ userid: "10", amount: "5", reason: "ab" }).success).toBe(false);
+    });
+  });
+
+  describe("updateStaffSchema", () => {
+    test("accepts allowed staff roles (admin, user, staff)", () => {
+      for (const role of ["admin", "user", "staff"]) {
+        const res = updateStaffSchema.safeParse({
+          id: "4",
+          username: "compte_test",
+          email: "staff@fablab.fr",
+          role,
+          approved: "on",
+        });
+        expect(res.success).toBe(true);
+        expect(res.data.role).toBe(role);
+        expect(res.data.approved).toBe(true);
+      }
+    });
+
+    test("rejects unknown roles outside whitelist", () => {
+      const res = updateStaffSchema.safeParse({
+        id: "4",
+        username: "compte_test",
+        email: "staff@fablab.fr",
+        role: "superadmin",
+      });
+      expect(res.success).toBe(false);
     });
   });
 

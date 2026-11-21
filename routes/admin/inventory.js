@@ -4,7 +4,8 @@ const router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
-const isAuthenticated = require("../../middleware/checkSession.js");
+const requireRoles = require("../../middleware/requireRoles.js");
+const { isApiOrAjaxRequest } = requireRoles;
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
 const inventoryService = require("../../services/inventoryService.js");
 const { inventoryCheckoutSchema } = require("../../schemas/inventory.schema.js");
@@ -12,12 +13,12 @@ const { prisma } = require("../../utilities/db.js");
 
 // ******************************************************************************
 // API: Get inventory items (consumables + equipment) for modals
-// Accessible to logged-in staff and admins
+// Accessible to mediators (user) and admins
 // ******************************************************************************
 
 router.get(
   "/items",
-  isAuthenticated,
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
     const items = await inventoryService.getInventoryItems();
     res.json({ success: true, ...items });
@@ -26,15 +27,15 @@ router.get(
 
 // ******************************************************************************
 // Route: Record inventory checkout / write-off (AJAX or Form submission)
-// Accessible to logged-in staff and admins
+// CONSUMABLE: mediators (user) + admins | EQUIPMENT: admins only | staff: blocked
 // ******************************************************************************
 
 router.post(
   "/checkout",
-  isAuthenticated,
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
-    const isJson = req.xhr || (req.headers.accept && req.headers.accept.includes("application/json"));
-    const redirectUrl = req.headers.referer || req.session.lastPage || "/admin";
+    const isJson = isApiOrAjaxRequest(req);
+    const redirectUrl = req.headers.referer || req.session.lastPage || "/fabtrack";
 
     const parsed = inventoryCheckoutSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -47,6 +48,15 @@ router.post(
     }
 
     const { itemType, itemId, quantity, reason, equipmentAction, notes } = parsed.data;
+    if (itemType !== "CONSUMABLE" && req.session.role !== "admin") {
+      const errMsg = "La sortie d'équipement ou la mise au rebut est réservée aux administrateurs.";
+      if (isJson) {
+        return res.status(403).json({ success: false, code: "FORBIDDEN", message: errMsg });
+      }
+      req.session.notification = `Error: ${errMsg}`;
+      return res.redirect(redirectUrl);
+    }
+
     const author = req.session.username || "Staff";
 
     try {

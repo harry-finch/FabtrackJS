@@ -1,9 +1,7 @@
-module.exports = function isAdmin(req, res, next) {
-  if (req.session.role === "admin") {
-    res.locals.username = req.session.username;
-    next();
-  } else {
-    req.session.notification = "Error: Unauthorized access!";
-    res.redirect("/login");
-  }
-};
+const requireRoles = require("./requireRoles.js");
+
+module.exports = requireRoles("admin", {
+  notification: "Error: Unauthorized access!",
+  redirectUrl: "/fabtrack",
+  message: "Accès réservé aux administrateurs.",
+});

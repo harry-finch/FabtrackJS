@@ -1,16 +1,45 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { isApiOrAjaxRequest } = require("../../middleware/requireRoles.js");
+const { validateBody } = require("../../middleware/validate.js");
+const { updateStaffSchema } = require("../../schemas/staff.schema.js");
+const staffAdminService = require("../../services/staffAdminService.js");
+const { prisma } = require("../../utilities/db.js");
+
 router.use(isAdmin);
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+function buildActor(req) {
+  return {
+    staffId: req.session.staffId,
+    username: req.session.username,
+  };
+}
 
-const logger = require("../../utilities/simpleLogger.js");
-const mailService = require("../../services/mailService.js");
+function buildHostUrl(req, res) {
+  return `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
+}
+
+function sendStaffResult(req, res, result, fallbackUrl = "/admin/staff/manage") {
+  if (isApiOrAjaxRequest(req)) {
+    if (result.success) {
+      return res.status(200).json(result);
+    }
+    const status =
+      result.code === "STAFF_NOT_FOUND"
+        ? 404
+        : result.code === "SELF_ACTION_FORBIDDEN" || result.code === "LAST_ADMIN_PROTECTED"
+          ? 403
+          : 400;
+    return res.status(status).json(result);
+  }
+
+  req.session.notification = result.success ? result.message : `Error: ${result.message}`;
+  return res.redirect(req.session.lastPage || fallbackUrl);
+}
 
 // ******************************************************************************
 // Route redirecting /admin/staff to /admin/staff/manage
@@ -58,6 +87,11 @@ router.get(
       },
     });
 
+    if (!user) {
+      req.session.notification = "Error: Compte staff introuvable.";
+      return res.redirect("/admin/staff/manage");
+    }
+
     res.render("admin/edit-staff", {
       user,
     });
@@ -71,37 +105,12 @@ router.get(
 router.get(
   "/enable/:id",
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    const staffBefore = await prisma.staff.findUnique({
-      where: {
-        id: Number(id),
-      },
+    const result = await staffAdminService.enableStaff({
+      targetId: req.params.id,
+      actor: buildActor(req),
+      hostUrl: buildHostUrl(req, res),
     });
-
-    const result = await prisma.staff.update({
-      where: {
-        id: Number(id),
-      },
-      data: {
-        approved: true,
-      },
-    });
-
-    if (staffBefore && !staffBefore.approved) {
-      const hostUrl = `${req.protocol}://${req.get("host")}`;
-      mailService
-        .sendStaffApprovedNotification({
-          staff: result,
-          adminUsername: req.session.username,
-          hostUrl,
-        })
-        .catch((err) => console.error("[routes/admin/staff/enable] Failed to send staff approved email:", err));
-    }
-
-    logger.logThat("User " + result.name + " enabled by " + req.session.username);
-    req.session.notification = "Success: User is now enabled";
-    res.redirect(req.session.lastPage);
+    return sendStaffResult(req, res, result);
   }),
 );
 
@@ -112,20 +121,11 @@ router.get(
 router.get(
   "/disable/:id",
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    const result = await prisma.staff.update({
-      where: {
-        id: Number(id),
-      },
-      data: {
-        approved: false,
-      },
+    const result = await staffAdminService.disableStaff({
+      targetId: req.params.id,
+      actor: buildActor(req),
     });
-
-    logger.logThat("User " + result.name + " disabled by " + req.session.username);
-    req.session.notification = "Success: User is now disabled";
-    res.redirect(req.session.lastPage);
+    return sendStaffResult(req, res, result);
   }),
 );
 
@@ -136,20 +136,11 @@ router.get(
 router.get(
   "/promote/:id",
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    const result = await prisma.staff.update({
-      where: {
-        id: Number(id),
-      },
-      data: {
-        role: "admin",
-      },
+    const result = await staffAdminService.promoteStaff({
+      targetId: req.params.id,
+      actor: buildActor(req),
     });
-
-    logger.logThat("User " + result.name + " made admin by " + req.session.username);
-    req.session.notification = "Success: User is now admin";
-    res.redirect(req.session.lastPage);
+    return sendStaffResult(req, res, result);
   }),
 );
 
@@ -160,20 +151,11 @@ router.get(
 router.get(
   "/demote/:id",
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    const result = await prisma.staff.update({
-      where: {
-        id: Number(id),
-      },
-      data: {
-        role: "user",
-      },
+    const result = await staffAdminService.demoteStaff({
+      targetId: req.params.id,
+      actor: buildActor(req),
     });
-
-    logger.logThat("User " + result.name + " made simple user by " + req.session.username);
-    req.session.notification = "Success: User is now just a user again";
-    res.redirect(req.session.lastPage);
+    return sendStaffResult(req, res, result);
   }),
 );
 
@@ -184,15 +166,11 @@ router.get(
 router.get(
   "/delete/:id",
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    const result = await prisma.staff.delete({
-      where: { id: Number(id) },
+    const result = await staffAdminService.deleteStaff({
+      targetId: req.params.id,
+      actor: buildActor(req),
     });
-
-    logger.logThat("User " + result.name + " has been deleted by " + req.session.username);
-    req.session.notification = "Success: User has been deleted";
-    res.redirect(req.session.lastPage);
+    return sendStaffResult(req, res, result);
   }),
 );
 
@@ -202,42 +180,14 @@ router.get(
 
 router.post(
   "/update",
+  validateBody(updateStaffSchema, { redirectUrl: "/admin/staff/manage" }),
   asyncHandler(async (req, res) => {
-    const user = req.body;
-    let approval = false;
-
-    if (user.approved == "on") {
-      approval = true;
-    }
-
-    const staffBefore = await prisma.staff.findUnique({
-      where: { id: Number(user.id) },
+    const result = await staffAdminService.updateStaff({
+      data: req.validatedBody || req.body,
+      actor: buildActor(req),
+      hostUrl: buildHostUrl(req, res),
     });
-
-    const result = await prisma.staff.update({
-      where: { id: Number(user.id) },
-      data: {
-        name: user.username,
-        email: user.email,
-        role: user.role,
-        approved: approval,
-      },
-    });
-
-    if (approval && staffBefore && !staffBefore.approved) {
-      const hostUrl = `${req.protocol}://${req.get("host")}`;
-      mailService
-        .sendStaffApprovedNotification({
-          staff: result,
-          adminUsername: req.session.username,
-          hostUrl,
-        })
-        .catch((err) => console.error("[routes/admin/staff/update] Failed to send staff approved email:", err));
-    }
-
-    logger.logThat("User " + result.name + " has been updated by " + req.session.username);
-    req.session.notification = "Success: User has been updated";
-    res.redirect("/admin/staff/manage");
+    return sendStaffResult(req, res, result, "/admin/staff/manage");
   }),
 );
 

@@ -39,6 +39,7 @@ pm2 logs fabtrack --lines 50
 | [R-004](../roadmap/items/R-004-securiser-la-reinitialisation-de-mot-de-passe.md) | `v1.1` | Vérifier `HOSTURL` ou `APP_URL` | `ALTER TABLE Staff MODIFY COLUMN pwdToken VARCHAR(64) NULL;` | `npx prisma generate` | Auditer manuellement la table `Staff` |
 | [R-005](../roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md) | `v1.1` | Aucune | Aucune | Aucune | Auditer le dossier `uploads/` (fichiers non-raster / `.svg`) |
 | [R-006](../roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md) | `v1.1` | Définir `FABTRACK_API_KEY` (ou `api_machine_token` en admin) avant tout client NFC | Aucune | Aucune | Vérifier que `/api/machines/*` retourne HTTP `401` sans clé |
+| [R-007](../roadmap/items/R-007-verrouiller-le-role-borne-kiosque-staff-et.md) | `v1.1` | Aucune | Aucune | Aucune | Contrôler les rôles Staff (`admin`, `user`, `staff`) et reconnecter les sessions actives |
 
 ---
 
@@ -125,5 +126,20 @@ Contrôler que les endpoints machines refusent bien les appels anonymes après r
 curl -i "https://votre-domaine.org/fabtrack/api/machines/usage?machineId=1"
 # Attendu : HTTP/1.1 401 Unauthorized
 ```
+
+---
+
+#### `R-007` — Verrouiller le rôle borne kiosque (`staff`) et corriger le RBAC médiateurs (`user`)
+
+**1. Variable `.env`, SQL et dépendances**
+
+- **Aucune** modification `.env`, **aucune** requête SQL et **aucune** nouvelle dépendance npm requises : `git pull` et redémarrage du service suffisent.
+
+**2. Vérification post-déploiement (comptes & sessions)**
+
+- Se rendre dans **Administration > Staff** (`/admin/staff/manage`) et vérifier que chaque compte porte bien son rôle attendu (`admin` pour administrateur, `user` pour médiateur, `staff` pour borne kiosque). En particulier, aucun compte actif ne doit utiliser l'ancien intitulé erroné `mediateur` (qui doit être `user`).
+- **Reconnexion des sessions actives :** le redémarrage de l'application vide le cache en mémoire des sessions ; demander aux administrateurs, médiateurs et bornes kiosques de se reconnecter afin de charger les nouveaux attributs de session (dont `staffId`, nécessaire à la protection contre l'auto-suppression / auto-rétrogradation).
+- Vérifier que les bornes kiosques (`staff`) peuvent toujours enregistrer arrivées et sorties sur `/fabtrack`, tandis que les opérations de solde (`credit > 0`, `cleardebt < 0`), d'ajustement (`balance-adjust`, réservé `admin`), d'avertissements (`warning/deactivate`, réservé `admin`) et d'habilitations ateliers (`users/:id/workshop-badge/*` pour `admin` + `user`) respectent la nouvelle matrice.
+
 
 

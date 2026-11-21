@@ -3,11 +3,14 @@ var router = express.Router();
 
 const asyncHandler = require("../middleware/asyncHandler.js");
 const isLoggedIn = require("../middleware/checkSession.js");
+const requireRoles = require("../middleware/requireRoles.js");
+const { isApiOrAjaxRequest } = requireRoles;
 const { invalidateCache } = require("../middleware/cacheHelper.js");
 const { validateBody } = require("../middleware/validate.js");
 const {
   createVisitSchema,
   creditSchema,
+  adjustBalanceSchema,
   activitySchema,
   returnEquipmentSchema,
   updateCommentSchema,
@@ -18,6 +21,7 @@ router.use(isLoggedIn);
 const { PrismaClient, ResourceType, ConsumableStatus } = require("@prisma/client");
 const prisma = new PrismaClient();
 const mailService = require("../services/mailService.js");
+const balanceService = require("../services/balanceService.js");
 const logger = require("../utilities/simpleLogger.js");
 
 // Helper to update consumable stock and status
@@ -339,6 +343,7 @@ router.post(
 
 router.get(
   "/delete/:id",
+  requireRoles("admin"),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -362,6 +367,7 @@ router.get(
 
 router.post(
   "/update",
+  requireRoles("admin"),
   asyncHandler(async (req, res) => {
     const { historyid, arrival, departure, workspaceId, comments } = req.body;
 
@@ -392,13 +398,9 @@ router.post(
 
 router.post(
   "/update-comment",
+  requireRoles("admin", "user"),
   validateBody(updateCommentSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
   asyncHandler(async (req, res) => {
-    if (req.session.role === "staff") {
-      req.session.notification = "Warning: La modification des commentaires est réservée aux médiateurs.";
-      return res.redirect(req.session.lastPage || "/fabtrack");
-    }
-
     const { historyid, comments } = req.body;
 
     if (!historyid) {
@@ -432,6 +434,7 @@ router.post(
 
 router.get(
   "/project/unarchive/:id",
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -451,6 +454,7 @@ router.get(
 
 router.get(
   "/project/archive/:id",
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -470,13 +474,9 @@ router.get(
 
 router.post(
   "/activity",
+  requireRoles("admin", "user"),
   validateBody(activitySchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
-    if (req.session.role === "staff") {
-      req.session.notification = "Warning: Les ajouts d'activités sont réservés aux médiateurs.";
-      return res.redirect("/fabtrack");
-    }
-
     const { activityhistoryid, activityuserid, machineId, equipmentId, consumable, quantity, borrowDurationDays } = req.body;
 
     const histId = activityhistoryid && activityhistoryid !== "null" ? Number(activityhistoryid) : null;
@@ -613,41 +613,91 @@ router.post(
 );
 
 // ******************************************************************************
-// Route to clear a user's debt
+// Route to clear a user's debt (strictly when balance < 0)
 // ******************************************************************************
 
 router.get(
   "/cleardebt/:id",
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-
-    await prisma.user.update({
-      where: { id: Number(id) },
-      data: { balance: 0.0 },
+    const result = await balanceService.clearUserDebt({
+      userId: id,
+      actorUsername: req.session.username,
     });
 
-    req.session.notification = "Success: Debt paid!";
-    res.redirect(req.session.lastPage || "/fabtrack");
+    if (isApiOrAjaxRequest(req)) {
+      const status = result.success
+        ? 200
+        : result.code === "USER_NOT_FOUND"
+          ? 404
+          : result.code === "CONFLICT"
+            ? 409
+            : 400;
+      return res.status(status).json(result);
+    }
+
+    if (!result.success) {
+      const prefix = result.code === "POSITIVE_BALANCE" || result.code === "NO_DEBT" ? "Warning" : "Error";
+      req.session.notification = `${prefix}: ${result.message}`;
+      return res.redirect(req.session.lastPage || "/fabtrack");
+    }
+
+    req.session.notification = result.message;
+    return res.redirect(req.session.lastPage || "/fabtrack");
   }),
 );
 
 // ******************************************************************************
-// Route to credit a user's account
+// Route to credit a user's account (strictly positive amount > 0)
 // ******************************************************************************
 
 router.post(
   "/credit",
+  requireRoles("admin", "user"),
   validateBody(creditSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
   asyncHandler(async (req, res) => {
-    const { userid, money } = req.body;
-
-    await prisma.user.update({
-      where: { id: Number(userid) },
-      data: { balance: { increment: Number(money) } },
+    const { userid, money } = req.validatedBody || req.body;
+    const result = await balanceService.creditUserBalance({
+      userId: userid,
+      amount: money,
+      actorUsername: req.session.username,
     });
 
-    req.session.notification = "Success: Account credited!";
-    res.redirect(req.session.lastPage || "/fabtrack");
+    if (isApiOrAjaxRequest(req)) {
+      const status = result.success ? 200 : result.code === "USER_NOT_FOUND" ? 404 : 400;
+      return res.status(status).json(result);
+    }
+
+    req.session.notification = result.success ? result.message : `Error: ${result.message}`;
+    return res.redirect(req.session.lastPage || "/fabtrack");
+  }),
+);
+
+// ******************************************************************************
+// Route to adjust (debit/credit) a user's account (Admin Only)
+// ******************************************************************************
+
+router.post(
+  "/balance-adjust",
+  requireRoles("admin"),
+  validateBody(adjustBalanceSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
+  asyncHandler(async (req, res) => {
+    const { userid, delta, reason } = req.validatedBody || req.body;
+    const result = await balanceService.adjustUserBalance({
+      userId: userid,
+      delta,
+      reason,
+      actorUsername: req.session.username,
+    });
+
+    if (isApiOrAjaxRequest(req)) {
+      const status = result.success ? 200 : result.code === "USER_NOT_FOUND" ? 404 : 400;
+      return res.status(status).json(result);
+    }
+
+    req.session.notification = result.success ? result.message : `Error: ${result.message}`;
+    return res.redirect(req.session.lastPage || "/fabtrack");
   }),
 );
 
@@ -657,13 +707,9 @@ router.post(
 
 router.post(
   "/equipment/return/:id",
+  requireRoles("admin", "user"),
   validateBody(returnEquipmentSchema, { redirectUrl: (req) => req.headers.referer || "/fabtrack" }),
   asyncHandler(async (req, res) => {
-    if (req.session.role === "staff") {
-      req.session.notification = "Warning: La restitution de matériel est réservée aux médiateurs.";
-      return res.redirect(req.headers.referer || "/fabtrack");
-    }
-
     const { id } = req.params;
     const { returnNotes } = req.body;
 
