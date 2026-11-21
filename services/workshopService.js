@@ -61,51 +61,49 @@ class WorkshopService {
       throw new Error("ID utilisateur ou atelier invalide");
     }
 
-    const workshop = await prisma.workshop.findUnique({
-      where: { id: wId },
-      include: { access: true },
-    });
+    const { completion, workshop } = await prisma.$transaction(async (tx) => {
+      const foundWorkshop = await tx.workshop.findUnique({
+        where: { id: wId },
+        include: { access: true },
+      });
 
-    if (!workshop) {
-      throw new Error("Atelier introuvable");
-    }
+      if (!foundWorkshop) {
+        throw new Error("Atelier introuvable");
+      }
 
-    // Award or update completion
-    const completion = await prisma.userWorkshopCompletion.upsert({
-      where: {
-        userId_workshopId: {
+      const upsertedCompletion = await tx.userWorkshopCompletion.upsert({
+        where: {
+          userId_workshopId: {
+            userId: uId,
+            workshopId: wId,
+          },
+        },
+        create: {
           userId: uId,
           workshopId: wId,
+          awardedBy,
         },
-      },
-      create: {
-        userId: uId,
-        workshopId: wId,
-        awardedBy,
-      },
-      update: {
-        awardedAt: new Date(),
-        awardedBy,
-      },
-      include: {
-        user: true,
-        workshop: {
-          include: { access: true },
+        update: {
+          awardedAt: new Date(),
+          awardedBy,
         },
-      },
-    });
+        include: {
+          user: true,
+          workshop: {
+            include: { access: true },
+          },
+        },
+      });
 
-    // Remove pending interest if user had expressed one
-    try {
-      await prisma.userWorkshopInterest.deleteMany({
+      await tx.userWorkshopInterest.deleteMany({
         where: {
           userId: uId,
           workshopId: wId,
         },
       });
-    } catch (e) {
-      // Non-critical if no interest existed
-    }
+
+      return { completion: upsertedCompletion, workshop: foundWorkshop };
+    });
 
     const userName = completion.user ? `${completion.user.name} ${completion.user.surname}` : `Contributeur #${uId}`;
     const accessText = workshop.access ? ` (Habilitation débloquée : ${workshop.access.name})` : "";

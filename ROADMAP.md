@@ -34,7 +34,7 @@
    Exécuter les requêtes IA via un compte MariaDB lecture seule (fail-closed en prod), durcir le pare-feu SQL, bloquer les SSRF et chiffrer optionnellement les clés API au repos.
 14. **[R-017 Corriger les bugs métier avérés (warnings, sorbonne, inventory, users, machines, bookstack)](roadmap/items/R-017-corriger-les-bugs-metier-averes-warnings.md)** · À tester · jalon v1.3
    Corriger six dysfonctionnements fonctionnels confirmés par l'audit sur les e-mails d'avertissement, filtres, stocks, profils et stats machines.
-15. **[R-018 Garantir la transactionnalité des écritures critiques et historiser Activity.unitCost](roadmap/items/R-018-garantir-la-transactionnalite-des-ecritures.md)** · Idée · jalon v1.3
+15. **[R-018 Garantir la transactionnalité des écritures critiques et historiser Activity.unitCost](roadmap/items/R-018-garantir-la-transactionnalite-des-ecritures.md)** · À tester · jalon v1.3
    Encapsuler stock, soldes, emprunts et import CSV dans des transactions Prisma, corriger le 413 import CSV et figer les tarifs consommables.
 16. **[R-019 Migrer les schémas vers Zod v4 et généraliser la validation HTTP](roadmap/items/R-019-migrer-les-schemas-vers-zod-v4-et-generaliser-la.md)** · Idée · jalon v1.3
    Rétablir les messages d'erreur français sous Zod v4, activer le stripping contre le mass-assignment et valider paramètres, queries et POST restants.
@@ -98,6 +98,8 @@
 - [ ] [A-027](roadmap/actions/A-027-verifier-qu-une-requete-ia-legitime-s-execute.md) Vérifier qu'une requête IA légitime s'exécute sous compte RO et qu'une URL interne non autorisée (http://169.254.169.254) est bloquée sur Paramètres / BookStack (tester, R-016)
 - [ ] [A-028](roadmap/actions/A-028-tester-un-ajout-d-avertissement-verifier-motif.md) Tester un ajout d'avertissement (vérifier motif/commentaire/auteur dans l'e-mail), un filtre par dates sur Sorbonne (KPI alignés) et une sortie équipement KEEP_STATUS (tester, R-017)
 - [ ] [A-029](roadmap/actions/A-029-verifier-l-ajout-d-une-maintenance-machine.md) Vérifier l'ajout d'une maintenance machine antidatée (préservation de lastMaintenance) et le comportement sur /users/edit/:id introuvable (tester, R-017)
+- [ ] [A-030](roadmap/actions/A-030-executer-alter-table-activity-add-column.md) Exécuter ALTER TABLE Activity ADD COLUMN unitCost DECIMAL(10, 2) NULL; et npx prisma generate en production avant redémarrage (docs/MISE_A_JOUR_PROD.md) (tester, R-018)
+- [ ] [A-031](roadmap/actions/A-031-tester-un-double-emprunt-d-equipement-refuse-un.md) Tester un double emprunt d'équipement (refusé), un import CSV > 200 Ko avec projet existant et la non-rétroactivité d'une hausse de prix consommable (tester, R-018)
 
 ## Livré
 

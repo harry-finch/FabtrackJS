@@ -183,41 +183,48 @@ router.post(
     }
 
     try {
-      const existing = await prisma.consumable.findUnique({ where: { id: targetId } });
-      if (!existing) {
-        req.session.notification = "Error: Consumable not found.";
+      const outcome = await prisma.$transaction(async (tx) => {
+        const existing = await tx.consumable.findUnique({ where: { id: targetId } });
+        if (!existing) {
+          return { error: "Error: Consumable not found." };
+        }
+
+        const ratio = Number(existing.unitsPerPack || 1);
+        let addedUnits = 0;
+
+        if (req.body.restockMode === "packs" && req.body.packages) {
+          const packs = parseFloat(req.body.packages);
+          if (isNaN(packs) || packs <= 0) {
+            return { error: "Error: Invalid number of packages." };
+          }
+          addedUnits = Math.round(packs * ratio);
+        } else {
+          addedUnits = parseInt(req.body.quantity, 10);
+          if (isNaN(addedUnits) || addedUnits <= 0) {
+            return { error: "Error: Invalid quantity entered." };
+          }
+        }
+
+        const newStock = existing.stock + addedUnits;
+        const newStatus = computeStatus(newStock, existing.reorderThreshold);
+
+        const updated = await tx.consumable.update({
+          where: { id: targetId },
+          data: {
+            stock: newStock,
+            status: newStatus,
+          },
+        });
+
+        return { existing, updated, addedUnits, ratio };
+      });
+
+      if (outcome.error) {
+        req.session.notification = outcome.error;
         return res.redirect("/admin/consumables/manage");
       }
 
-      const ratio = Number(existing.unitsPerPack || 1);
-      let addedUnits = 0;
-
-      if (req.body.restockMode === "packs" && req.body.packages) {
-        const packs = parseFloat(req.body.packages);
-        if (isNaN(packs) || packs <= 0) {
-          req.session.notification = "Error: Invalid number of packages.";
-          return res.redirect("/admin/consumables/manage");
-        }
-        addedUnits = Math.round(packs * ratio);
-      } else {
-        addedUnits = parseInt(req.body.quantity, 10);
-        if (isNaN(addedUnits) || addedUnits <= 0) {
-          req.session.notification = "Error: Invalid quantity entered.";
-          return res.redirect("/admin/consumables/manage");
-        }
-      }
-
-      const newStock = existing.stock + addedUnits;
-      const newStatus = computeStatus(newStock, existing.reorderThreshold);
-
-      const updated = await prisma.consumable.update({
-        where: { id: targetId },
-        data: {
-          stock: newStock,
-          status: newStatus,
-        },
-      });
-
+      const { existing, updated, addedUnits, ratio } = outcome;
       invalidateCache(req);
       const packsEquiv = ratio > 1 ? ` (~${(addedUnits / ratio).toFixed(2)} ${existing.stockUnit || "packs"})` : "";
       logger.logThat(

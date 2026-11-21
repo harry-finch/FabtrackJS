@@ -27,27 +27,28 @@ async function checkoutConsumable({ id, quantity, reason, notes, author }) {
   const consumableId = Number(id);
   const qty = Math.max(1, parseInt(quantity, 10) || 1);
 
-  const consumable = await prisma.consumable.findUnique({
-    where: { id: consumableId },
-  });
+  const txResult = await prisma.$transaction(async (tx) => {
+    const consumable = await tx.consumable.findUnique({
+      where: { id: consumableId },
+    });
 
-  if (!consumable) {
-    throw new Error(`Consommable introuvable (#${consumableId}).`);
-  }
+    if (!consumable) {
+      throw new Error(`Consommable introuvable (#${consumableId}).`);
+    }
 
-  const stockBefore = consumable.stock;
-  const stockAfter = Math.max(0, stockBefore - qty);
-  const newStatus = computeStatus(stockAfter, consumable.reorderThreshold);
+    const stockBefore = consumable.stock;
+    const stockAfter = Math.max(0, stockBefore - qty);
+    const newStatus = computeStatus(stockAfter, consumable.reorderThreshold);
 
-  const [updatedConsumable, movement] = await prisma.$transaction([
-    prisma.consumable.update({
+    const updatedConsumable = await tx.consumable.update({
       where: { id: consumableId },
       data: {
         stock: stockAfter,
         status: newStatus,
       },
-    }),
-    prisma.inventoryMovement.create({
+    });
+
+    const movement = await tx.inventoryMovement.create({
       data: {
         itemType: "CONSUMABLE",
         itemId: consumable.id,
@@ -60,11 +61,15 @@ async function checkoutConsumable({ id, quantity, reason, notes, author }) {
         stockBefore,
         stockAfter,
       },
-    }),
-  ]);
+    });
+
+    return { consumable: updatedConsumable, movement, stockAfter, newStatus };
+  });
+
+  const { consumable: updatedConsumable, movement, stockAfter, newStatus } = txResult;
 
   logger.logThat(
-    `Sortie d'inventaire: -${qty} ${consumable.unit || "u"} de "${consumable.name}" (Motif: ${reason}) par ${author}. Nouveau stock: ${stockAfter}.`,
+    `Sortie d'inventaire: -${qty} ${updatedConsumable.unit || "u"} de "${updatedConsumable.name}" (Motif: ${reason}) par ${author}. Nouveau stock: ${stockAfter}.`,
   );
 
   if (newStatus === "LOW_STOCK" || newStatus === "OUT_OF_STOCK") {
@@ -79,6 +84,7 @@ async function checkoutConsumable({ id, quantity, reason, notes, author }) {
 /**
  * Check out / decommission / mark out of service an equipment or tool.
  * Supports `"KEEP_STATUS"` to record a movement without altering the equipment status.
+ * Uses interactive Prisma transaction with intra-transaction read.
  * @param {Object} params
  * @param {number} params.id - Equipment ID
  * @param {string} [params.action] - "OUT_OF_SERVICE" | "DECOMMISSIONED" | "KEEP_STATUS"
@@ -90,27 +96,36 @@ async function checkoutEquipment({ id, action = "DECOMMISSIONED", reason, notes,
   const equipmentId = Number(id);
   const keepStatus = action === "KEEP_STATUS";
 
-  const equipment = await prisma.equipment.findUnique({
-    where: { id: equipmentId },
-    include: { workspace: true },
-  });
+  const { equipment: updatedEquipment, movement, statusTarget } = await prisma.$transaction(async (tx) => {
+    const equipment = await tx.equipment.findUnique({
+      where: { id: equipmentId },
+      include: { workspace: true },
+    });
 
-  if (!equipment) {
-    throw new Error(`Équipement introuvable (#${equipmentId}).`);
-  }
+    if (!equipment) {
+      throw new Error(`Équipement introuvable (#${equipmentId}).`);
+    }
 
-  const equipmentStatusBefore = equipment.status || "AVAILABLE";
-  const statusTarget = keepStatus
-    ? equipmentStatusBefore
-    : action === "OUT_OF_SERVICE"
-      ? "OUT_OF_SERVICE"
-      : "DECOMMISSIONED";
+    const equipmentStatusBefore = equipment.status || "AVAILABLE";
+    const targetStatus = keepStatus
+      ? equipmentStatusBefore
+      : action === "OUT_OF_SERVICE"
+        ? "OUT_OF_SERVICE"
+        : "DECOMMISSIONED";
 
-  let updatedEquipment = equipment;
-  let movement;
+    let nextEquipment = equipment;
+    if (!keepStatus) {
+      nextEquipment = await tx.equipment.update({
+        where: { id: equipmentId },
+        data: {
+          status: targetStatus,
+          decommissionedAt: new Date(),
+          decommissionReason: reason.trim(),
+        },
+      });
+    }
 
-  if (keepStatus) {
-    movement = await prisma.inventoryMovement.create({
+    const createdMovement = await tx.inventoryMovement.create({
       data: {
         itemType: "EQUIPMENT",
         itemId: equipment.id,
@@ -121,40 +136,17 @@ async function checkoutEquipment({ id, action = "DECOMMISSIONED", reason, notes,
         notes: notes ? notes.trim() : null,
         author: author || "Système",
         equipmentStatusBefore,
-        equipmentStatusAfter: statusTarget,
+        equipmentStatusAfter: targetStatus,
       },
     });
-  } else {
-    [updatedEquipment, movement] = await prisma.$transaction([
-      prisma.equipment.update({
-        where: { id: equipmentId },
-        data: {
-          status: statusTarget,
-          decommissionedAt: new Date(),
-          decommissionReason: reason.trim(),
-        },
-      }),
-      prisma.inventoryMovement.create({
-        data: {
-          itemType: "EQUIPMENT",
-          itemId: equipment.id,
-          itemName: equipment.name,
-          quantity: 1,
-          unit: "u",
-          reason: reason.trim(),
-          notes: notes ? notes.trim() : null,
-          author: author || "Système",
-          equipmentStatusBefore,
-          equipmentStatusAfter: statusTarget,
-        },
-      }),
-    ]);
-  }
+
+    return { equipment: nextEquipment, movement: createdMovement, statusTarget: targetStatus };
+  });
 
   logger.logThat(
     keepStatus
-      ? `Sortie d'inventaire équipement: "${equipment.name}" (#${equipment.id}) statut conservé (${statusTarget}, Motif: ${reason}) par ${author}.`
-      : `Sortie d'inventaire équipement: "${equipment.name}" (#${equipment.id}) passé à ${statusTarget} (Motif: ${reason}) par ${author}.`,
+      ? `Sortie d'inventaire équipement: "${updatedEquipment.name}" (#${updatedEquipment.id}) statut conservé (${statusTarget}, Motif: ${reason}) par ${author}.`
+      : `Sortie d'inventaire équipement: "${updatedEquipment.name}" (#${updatedEquipment.id}) passé à ${statusTarget} (Motif: ${reason}) par ${author}.`,
   );
 
   return { equipment: updatedEquipment, movement };

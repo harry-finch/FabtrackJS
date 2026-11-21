@@ -205,6 +205,7 @@ model Activity {
   resourceId   Int // ID of the resource (Machine, Equipment, or Consumable)
   resourceType ResourceType // Type of the resource (MACHINE, EQUIPMENT, CONSUMABLE)
   quantity     Int? // Only used for Consumables
+  unitCost     Decimal?     @db.Decimal(10, 2) // Snapshot of Consumable.cost at consumption time
 
   history History? @relation(fields: [historyId], references: [id], onDelete: SetNull)
   user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)

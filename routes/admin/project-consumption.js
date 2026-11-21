@@ -64,7 +64,12 @@ router.get(
     // 4. Enrich every activity
     const enrichedEntries = rawActivities.map((act) => {
       const consumable = consumableMap.get(act.resourceId);
-      const unitCost = consumable ? Number(consumable.cost) : 0;
+      const unitCost =
+        act.unitCost !== null && act.unitCost !== undefined
+          ? Number(act.unitCost)
+          : consumable
+            ? Number(consumable.cost)
+            : 0;
       const qty = act.quantity || 1;
       const project = act.history && act.history.userproject ? act.history.userproject.project : null;
 

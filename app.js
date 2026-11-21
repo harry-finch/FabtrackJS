@@ -160,7 +160,14 @@ app.use(
 );
 
 app.use(logger("dev"));
-app.use(express.json());
+const defaultJsonParser = express.json({ limit: "1mb" });
+app.use((req, res, next) => {
+  // Let /admin/history/execute apply its dedicated 15mb JSON parser without hitting a smaller global limit (413)
+  if (req.path === "/admin/history/execute") {
+    return next();
+  }
+  return defaultJsonParser(req, res, next);
+});
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 

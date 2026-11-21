@@ -354,15 +354,43 @@ class HistoryImportService {
   }
 
   /**
-   * Exécution de l'importation en base de données MariaDB
+   * Exécution atomique (transaction Prisma) de l'importation en base MariaDB
+   * avec re-validation serveur, résolution unique Project.url et décompte sans doublons.
    */
   async executeImport(items, options = {}, sessionUser = "Admin") {
     if (!Array.isArray(items) || items.length === 0) {
       throw new Error("Aucune donnée valide à importer.");
     }
 
-    // Filtrer uniquement les lignes valides
-    const validItems = items.filter((i) => i.isValid);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Re-validation stricte côté serveur (ne pas faire aveuglément confiance au flag client isValid)
+    const validItems = items
+      .filter((i) => i && typeof i === "object" && i.isValid !== false)
+      .map((i) => {
+        const email = typeof i.email === "string" ? i.email.trim().toLowerCase() : "";
+        const name = typeof i.name === "string" ? i.name.trim() : "";
+        const surname = typeof i.surname === "string" ? i.surname.trim() : "";
+        const arrivalDate = i.arrival ? new Date(i.arrival) : new Date();
+        const departureDate = i.departure ? new Date(i.departure) : null;
+        return {
+          ...i,
+          email,
+          name,
+          surname,
+          arrivalDate,
+          departureDate,
+        };
+      })
+      .filter(
+        (i) =>
+          emailRegex.test(i.email) &&
+          i.name.length > 0 &&
+          i.surname.length > 0 &&
+          !Number.isNaN(i.arrivalDate.getTime()) &&
+          (!i.departureDate || !Number.isNaN(i.departureDate.getTime())),
+      );
+
     if (validItems.length === 0) {
       throw new Error("Toutes les lignes sélectionnées contiennent des erreurs bloquantes.");
     }
@@ -370,121 +398,134 @@ class HistoryImportService {
     const defaultUserTypeId = options.defaultUserTypeId ? Number(options.defaultUserTypeId) : 1;
     const acceptTerms = options.acceptTerms === true || options.acceptTerms === "true";
 
-    let createdUsersCount = 0;
-    let createdHistoriesCount = 0;
-    let existingUsersCount = 0;
+    let createdProjectTypes = false;
 
-    // Cache local pour éviter les doublons au sein du même import
-    const userCache = new Map();
+    const runBatch = async (tx) => {
+      const createdEmails = new Set();
+      const existingEmails = new Set();
+      let createdHistoriesCount = 0;
+      const userCache = new Map();
 
-    for (const item of validItems) {
-      let userId = item.matchedUserId;
+      for (const item of validItems) {
+        let userId = userCache.get(item.email) || null;
 
-      // 1. Récupération ou création de l'usager
-      if (!userId && userCache.has(item.email)) {
-        userId = userCache.get(item.email);
-      }
+        if (!userId && item.matchedUserId) {
+          const matched = await tx.user.findUnique({ where: { id: Number(item.matchedUserId) } });
+          if (matched) {
+            userId = matched.id;
+            existingEmails.add(item.email);
+            userCache.set(item.email, userId);
+          }
+        }
 
-      if (!userId) {
-        // Vérifier à nouveau en DB si créé précédemment dans ce batch
-        const existing = await prisma.user.findUnique({ where: { email: item.email } });
-        if (existing) {
-          userId = existing.id;
-          existingUsersCount++;
-        } else {
-          // Création minimale du nouvel usager
-          const token = uuidv4();
-          const newUser = await prisma.user.create({
+        if (!userId) {
+          const existing = await tx.user.findUnique({ where: { email: item.email } });
+          if (existing) {
+            userId = existing.id;
+            if (!createdEmails.has(item.email)) {
+              existingEmails.add(item.email);
+            }
+          } else {
+            const token = uuidv4();
+            const newUser = await tx.user.create({
+              data: {
+                name: item.name,
+                surname: item.surname,
+                email: item.email,
+                usertypeId: defaultUserTypeId,
+                token,
+                termsAccepted: acceptTerms,
+                balance: 0.0,
+              },
+            });
+            userId = newUser.id;
+            createdEmails.add(item.email);
+          }
+          userCache.set(item.email, userId);
+        }
+
+        // 2. Résolution ou création du type de projet
+        const projectTypeName = (item.projectTypeName && String(item.projectTypeName).trim()) || "Academic";
+        let projectType = await tx.projecttype.findUnique({
+          where: { name: projectTypeName },
+        });
+        if (!projectType) {
+          projectType = await tx.projecttype.create({
+            data: { name: projectTypeName },
+          });
+          createdProjectTypes = true;
+        }
+
+        // 3. Résolution ou création du Projet par sa clé unique `url` (évite crash P2002)
+        const projectUrl = (item.projectName && String(item.projectName).trim()) || `${projectTypeName} - Séance du ${item.date}`;
+        let project = await tx.project.findUnique({
+          where: { url: projectUrl },
+        });
+        if (!project) {
+          project = await tx.project.create({
             data: {
-              name: item.name,
-              surname: item.surname,
-              email: item.email,
-              usertypeId: defaultUserTypeId,
-              token: token,
-              termsAccepted: acceptTerms,
-              balance: 0.0,
+              url: projectUrl,
+              projecttypeId: projectType.id,
+              teachingUnitId: item.teachingUnitId ? Number(item.teachingUnitId) : null,
+              active: true,
             },
           });
-          userId = newUser.id;
-          createdUsersCount++;
         }
-        userCache.set(item.email, userId);
-      } else {
-        existingUsersCount++;
-      }
 
-      // 2. Résolution ou création du type de projet
-      const projectTypeName = item.projectTypeName || "Academic";
-      let projectType = await prisma.projecttype.findUnique({
-        where: { name: projectTypeName },
-      });
-      if (!projectType) {
-        projectType = await prisma.projecttype.create({
-          data: { name: projectTypeName },
+        // Liaison UserProject
+        let userProject = await tx.userProject.findUnique({
+          where: {
+            userId_projectId: {
+              userId,
+              projectId: project.id,
+            },
+          },
         });
-        const referenceCacheService = require("./referenceCacheService");
-        referenceCacheService.invalidate();
-      }
+        if (!userProject) {
+          userProject = await tx.userProject.create({
+            data: {
+              userId,
+              projectId: project.id,
+            },
+          });
+        }
 
-      // 3. Résolution ou création du Projet et UserProject
-      const projectUrl = item.projectName || `${projectTypeName} - Séance du ${item.date}`;
-      let project = await prisma.project.findFirst({
-        where: {
-          url: projectUrl,
-          projecttypeId: projectType.id,
-        },
-      });
-      if (!project) {
-        project = await prisma.project.create({
+        // 4. Création de l'enregistrement History
+        await tx.history.create({
           data: {
-            url: projectUrl,
-            projecttypeId: projectType.id,
-            teachingUnitId: item.teachingUnitId || null,
-            active: true,
+            userId,
+            userprojectId: userProject.id,
+            teachingUnitId: item.teachingUnitId ? Number(item.teachingUnitId) : null,
+            unregisteredUeName: !item.teachingUnitId && item.teachingUnitCode ? item.teachingUnitCode : null,
+            workspaceId: item.workspaceId ? Number(item.workspaceId) : null,
+            comments: item.comments || `Importation séance : ${projectUrl}`,
+            arrival: item.arrivalDate,
+            departure: item.departureDate,
           },
         });
+
+        createdHistoriesCount++;
       }
 
-      // Liaison UserProject
-      let userProject = await prisma.userProject.findUnique({
-        where: {
-          userId_projectId: {
-            userId: userId,
-            projectId: project.id,
-          },
-        },
-      });
-      if (!userProject) {
-        userProject = await prisma.userProject.create({
-          data: {
-            userId: userId,
-            projectId: project.id,
-          },
-        });
-      }
+      return {
+        createdHistoriesCount,
+        createdUsersCount: createdEmails.size,
+        existingUsersCount: existingEmails.size,
+      };
+    };
 
-      // 4. Création de l'enregistrement History
-      const arrivalDate = item.arrival ? new Date(item.arrival) : new Date();
-      const departureDate = item.departure ? new Date(item.departure) : null;
+    const { createdHistoriesCount, createdUsersCount, existingUsersCount } =
+      typeof prisma.$transaction === "function"
+        ? await prisma.$transaction(runBatch, { timeout: 60000 })
+        : await runBatch(prisma);
 
-      await prisma.history.create({
-        data: {
-          userId: userId,
-          userprojectId: userProject.id,
-          teachingUnitId: item.teachingUnitId || null,
-          unregisteredUeName: !item.teachingUnitId && item.teachingUnitCode ? item.teachingUnitCode : null,
-          workspaceId: item.workspaceId || null,
-          comments: item.comments || `Importation séance : ${projectUrl}`,
-          arrival: arrivalDate,
-          departure: departureDate,
-        },
-      });
-
-      createdHistoriesCount++;
+    if (createdProjectTypes) {
+      const referenceCacheService = require("./referenceCacheService");
+      referenceCacheService.invalidate();
     }
 
     logger.logThat(
-      `Importation CSV d'historique exécutée par ${sessionUser} : ${createdHistoriesCount} visites créées, ${createdUsersCount} nouveaux contributeurs créés.`
+      `Importation CSV d'historique exécutée par ${sessionUser} : ${createdHistoriesCount} visites créées, ${createdUsersCount} nouveaux contributeurs créés.`,
     );
 
     return {

@@ -24,22 +24,24 @@ const mailService = require("../services/mailService.js");
 const balanceService = require("../services/balanceService.js");
 const logger = require("../utilities/simpleLogger.js");
 
-// Helper to update consumable stock and status
-async function consumeItem(consumableId, quantity) {
-  const consumable = await prisma.consumable.findUnique({
+// Helper to compute consumable status from stock & threshold
+function computeConsumableStatus(stock, threshold) {
+  if (stock <= 0) return ConsumableStatus.OUT_OF_STOCK;
+  if (stock <= threshold) return ConsumableStatus.LOW_STOCK;
+  return ConsumableStatus.AVAILABLE;
+}
+
+// Helper to update consumable stock and status inside an active Prisma transaction (or default client)
+async function consumeItemTx(tx, consumableId, quantity) {
+  const consumable = await tx.consumable.findUnique({
     where: { id: Number(consumableId) },
   });
   if (!consumable) return null;
 
   const newStock = Math.max(0, consumable.stock - Number(quantity));
-  let newStatus = ConsumableStatus.AVAILABLE;
-  if (newStock <= 0) {
-    newStatus = ConsumableStatus.OUT_OF_STOCK;
-  } else if (newStock <= consumable.reorderThreshold) {
-    newStatus = ConsumableStatus.LOW_STOCK;
-  }
+  const newStatus = computeConsumableStatus(newStock, consumable.reorderThreshold);
 
-  await prisma.consumable.update({
+  await tx.consumable.update({
     where: { id: consumable.id },
     data: {
       stock: newStock,
@@ -47,14 +49,11 @@ async function consumeItem(consumableId, quantity) {
     },
   });
 
-  // Alert admin if stock just reached or fell below reorder threshold
-  if (newStock <= consumable.reorderThreshold && (consumable.stock > consumable.reorderThreshold || (consumable.stock > 0 && newStock === 0))) {
-    mailService.sendLowStockAlert(consumable, newStock).catch((err) => {
-      console.error("[consumeItem] Failed to send low stock alert email:", err);
-    });
-  }
+  const shouldAlertLowStock =
+    newStock <= consumable.reorderThreshold &&
+    (consumable.stock > consumable.reorderThreshold || (consumable.stock > 0 && newStock === 0));
 
-  return consumable;
+  return { consumable, newStock, shouldAlertLowStock };
 }
 
 // ******************************************************************************
@@ -112,111 +111,125 @@ router.post(
       }
     }
 
-    // Checking if the user is already here to avoid conflicts
-    const alreadyHere = await prisma.history.findMany({
-      where: {
-        userId: parsedUserId,
-        departure: null,
-      },
-    });
+    const activeWorkspaceId =
+      req.session.selectedWorkspace && req.session.selectedWorkspace.id > 0
+        ? req.session.selectedWorkspace.id
+        : null;
 
-    if (alreadyHere.length === 0) {
+    const runCheckIn = async (tx) => {
+      // Checking if the user is already here to avoid conflicts
+      const alreadyHere = await tx.history.findMany({
+        where: {
+          userId: parsedUserId,
+          departure: null,
+        },
+      });
+
+      if (alreadyHere.length > 0) {
+        return { alreadyHere: true };
+      }
+
       let attendedWorkshop = null;
       if (parsedWorkshopId) {
-        attendedWorkshop = await prisma.workshop.findUnique({
+        attendedWorkshop = await tx.workshop.findUnique({
           where: { id: parsedWorkshopId },
           include: { access: true },
         });
       }
 
-      if (!projectid || projectid === "null" || projectid === "") {
+      let resolvedProjectId = projectid && projectid !== "null" && projectid !== "" ? Number(projectid) : null;
+      let resolvedUserProjectId =
+        userprojectid && userprojectid !== "null" && userprojectid !== "" ? Number(userprojectid) : null;
+
+      // Verify ownership when an explicit userprojectid is submitted
+      if (resolvedUserProjectId) {
+        const ownedUP = await tx.userProject.findFirst({
+          where: { id: resolvedUserProjectId, userId: parsedUserId },
+          select: { id: true, projectId: true },
+        });
+        if (!ownedUP) {
+          resolvedUserProjectId = null;
+        } else if (!resolvedProjectId) {
+          resolvedProjectId = ownedUP.projectId;
+        }
+      }
+
+      if (!resolvedProjectId) {
         if (attendedWorkshop) {
-          // Create or retrieve project for this workshop
           const uniqueSlug = `workshop://${encodeURIComponent(attendedWorkshop.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}-${attendedWorkshop.id}`;
-          let project = await prisma.project.findFirst({
+          let project = await tx.project.findUnique({
             where: { url: uniqueSlug },
           });
           if (!project) {
-            project = await prisma.project.create({
+            project = await tx.project.create({
               data: {
                 url: uniqueSlug,
                 projecttypeId: projecttype ? Number(projecttype) : 1,
               },
             });
           }
-          projectid = project.id;
+          resolvedProjectId = project.id;
         } else if (cleanRepairObject) {
-          // Create synthetic project for Repair Café item
           const uniqueSlug = `repair-cafe://${encodeURIComponent(cleanRepairObject.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}-${Date.now()}`;
-          const project = await prisma.project.create({
+          const project = await tx.project.create({
             data: {
               url: uniqueSlug,
               projecttypeId: projecttype ? Number(projecttype) : 1,
             },
           });
-          projectid = project.id;
+          resolvedProjectId = project.id;
         } else if (documentation && documentation.trim() !== "") {
-          // If project does not exist in the db, create the project
-          const project = await prisma.project.create({
-            data: {
-              url: documentation.trim(),
-              projecttypeId: projecttype ? Number(projecttype) : 1,
-              teachingUnitId: parsedTeachingUnitId,
-              unregisteredUeName: parsedUnregisteredUeName,
-              unregisteredUeContact: parsedUnregisteredUeContact,
-              sorbonneEntity: cleanSorbonneEntity,
-            },
+          const cleanDoc = documentation.trim();
+          let project = await tx.project.findUnique({
+            where: { url: cleanDoc },
           });
-          projectid = project.id;
+          if (!project) {
+            project = await tx.project.create({
+              data: {
+                url: cleanDoc,
+                projecttypeId: projecttype ? Number(projecttype) : 1,
+                teachingUnitId: parsedTeachingUnitId,
+                unregisteredUeName: parsedUnregisteredUeName,
+                unregisteredUeContact: parsedUnregisteredUeContact,
+                sorbonneEntity: cleanSorbonneEntity,
+              },
+            });
+          }
+          resolvedProjectId = project.id;
         }
       } else if (parsedTeachingUnitId) {
-        // If project exists, update its teachingUnitId if provided
-        try {
-          await prisma.project.update({
-            where: { id: Number(projectid) },
-            data: {
-              teachingUnitId: parsedTeachingUnitId,
-              unregisteredUeName: null,
-              unregisteredUeContact: null,
-            },
-          });
-        } catch (e) {
-          console.error("Error updating project teachingUnitId:", e);
-        }
+        await tx.project.update({
+          where: { id: resolvedProjectId },
+          data: {
+            teachingUnitId: parsedTeachingUnitId,
+            unregisteredUeName: null,
+            unregisteredUeContact: null,
+          },
+        });
       } else if (parsedUnregisteredUeName) {
-        try {
-          await prisma.project.update({
-            where: { id: Number(projectid) },
-            data: {
-              teachingUnitId: null,
-              unregisteredUeName: parsedUnregisteredUeName,
-              unregisteredUeContact: parsedUnregisteredUeContact,
-            },
-          });
-        } catch (e) {
-          console.error("Error updating project unregistered UE:", e);
-        }
+        await tx.project.update({
+          where: { id: resolvedProjectId },
+          data: {
+            teachingUnitId: null,
+            unregisteredUeName: parsedUnregisteredUeName,
+            unregisteredUeContact: parsedUnregisteredUeContact,
+          },
+        });
       }
 
-      // Update project sorbonneEntity if provided
-      if (cleanSorbonneEntity && projectid && projectid !== "null" && projectid !== "") {
-        try {
-          await prisma.project.update({
-            where: { id: Number(projectid) },
-            data: {
-              sorbonneEntity: cleanSorbonneEntity,
-            },
-          });
-        } catch (e) {
-          console.error("Error updating project sorbonneEntity:", e);
-        }
+      if (cleanSorbonneEntity && resolvedProjectId) {
+        await tx.project.update({
+          where: { id: resolvedProjectId },
+          data: {
+            sorbonneEntity: cleanSorbonneEntity,
+          },
+        });
       }
 
-      // Inherit sorbonneEntity for history entry if not directly provided
       let resolvedSorbonneEntity = cleanSorbonneEntity;
-      if (!resolvedSorbonneEntity && projectid && projectid !== "null" && projectid !== "") {
-        const existingProj = await prisma.project.findUnique({
-          where: { id: Number(projectid) },
+      if (!resolvedSorbonneEntity && resolvedProjectId) {
+        const existingProj = await tx.project.findUnique({
+          where: { id: resolvedProjectId },
           select: { sorbonneEntity: true },
         });
         if (existingProj && existingProj.sorbonneEntity) {
@@ -224,37 +237,31 @@ router.post(
         }
       }
 
-      // Associate project with user if not already linked
-      if (projectid && projectid !== "null" && (!userprojectid || userprojectid === "null" || userprojectid === "")) {
-        const existingUP = await prisma.userProject.findFirst({
+      if (resolvedProjectId && !resolvedUserProjectId) {
+        const existingUP = await tx.userProject.findFirst({
           where: {
             userId: parsedUserId,
-            projectId: Number(projectid),
+            projectId: resolvedProjectId,
           },
         });
 
         if (existingUP) {
-          userprojectid = existingUP.id;
+          resolvedUserProjectId = existingUP.id;
         } else {
-          const userproject = await prisma.userProject.create({
+          const userproject = await tx.userProject.create({
             data: {
               userId: parsedUserId,
-              projectId: Number(projectid),
+              projectId: resolvedProjectId,
             },
           });
-          userprojectid = userproject.id;
+          resolvedUserProjectId = userproject.id;
         }
       }
 
-      const activeWorkspaceId =
-        req.session.selectedWorkspace && req.session.selectedWorkspace.id > 0
-          ? req.session.selectedWorkspace.id
-          : null;
-
-      await prisma.history.create({
+      await tx.history.create({
         data: {
           userId: parsedUserId,
-          userprojectId: userprojectid && userprojectid !== "null" ? Number(userprojectid) : null,
+          userprojectId: resolvedUserProjectId,
           teachingUnitId: parsedTeachingUnitId,
           unregisteredUeName: parsedUnregisteredUeName,
           unregisteredUeContact: parsedUnregisteredUeContact,
@@ -267,6 +274,16 @@ router.post(
         },
       });
 
+      return { alreadyHere: false, attendedWorkshop };
+    };
+
+    const checkInOutcome =
+      typeof prisma.$transaction === "function"
+        ? await prisma.$transaction(runCheckIn)
+        : await runCheckIn(prisma);
+
+    if (!checkInOutcome.alreadyHere) {
+      const { attendedWorkshop } = checkInOutcome;
       // Automatically award workshop badge and machine habilitation to user
       if (parsedWorkshopId && attendedWorkshop) {
         try {
@@ -482,7 +499,20 @@ router.post(
     const histId = activityhistoryid && activityhistoryid !== "null" ? Number(activityhistoryid) : null;
     const usrId = activityuserid && activityuserid !== "null" ? Number(activityuserid) : null;
 
+    // Integrity guard: verify historyId belongs to usrId when both are provided
+    if (histId && usrId) {
+      const ownedHistory = await prisma.history.findFirst({
+        where: { id: histId, userId: usrId },
+        select: { id: true },
+      });
+      if (!ownedHistory) {
+        req.session.notification = "Error: La visite sélectionnée ne correspond pas à ce contributeur.";
+        return res.redirect(req.session.lastPage || "/fabtrack");
+      }
+    }
+
     let recordedCount = 0;
+    let pendingLowStockAlert = null;
 
     // 1. Machine Usage
     if (machineId && machineId !== "" && machineId !== "null") {
@@ -497,45 +527,89 @@ router.post(
       recordedCount++;
     }
 
-    // 2. Equipment Borrow
+    // 2. Equipment Borrow (atomic transaction preventing double loans & unavailable tools)
     if (equipmentId && equipmentId !== "" && equipmentId !== "null") {
+      const equipId = Number(equipmentId);
       const durationDays = Math.max(1, parseInt(borrowDurationDays, 10) || 7);
       const expectedReturnAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
 
-      await prisma.activity.create({
-        data: {
-          historyId: histId,
-          userId: usrId,
-          resourceId: Number(equipmentId),
-          resourceType: ResourceType.EQUIPMENT,
-          borrowDurationDays: durationDays,
-          expectedReturnAt: expectedReturnAt,
-          returnedAt: null,
-        },
-      });
-      recordedCount++;
+      const runBorrow = async (tx) => {
+        const eqItem = await tx.equipment.findUnique({ where: { id: equipId } });
+        if (!eqItem) {
+          return { ok: false, message: "Error: Équipement introuvable." };
+        }
+        if (eqItem.status !== "AVAILABLE") {
+          return {
+            ok: false,
+            message: `Error: L'équipement "${eqItem.name}" n'est pas disponible au prêt (statut : ${eqItem.status}).`,
+          };
+        }
+        const activeLoan = await tx.activity.findFirst({
+          where: {
+            resourceType: ResourceType.EQUIPMENT,
+            resourceId: equipId,
+            returnedAt: null,
+          },
+          select: { id: true },
+        });
+        if (activeLoan) {
+          return {
+            ok: false,
+            message: `Error: L'équipement "${eqItem.name}" est déjà actuellement emprunté.`,
+          };
+        }
 
-      const eqItem = await prisma.equipment.findUnique({ where: { id: Number(equipmentId) } });
-      const eqName = eqItem ? eqItem.name : `#${equipmentId}`;
+        await tx.activity.create({
+          data: {
+            historyId: histId,
+            userId: usrId,
+            resourceId: equipId,
+            resourceType: ResourceType.EQUIPMENT,
+            borrowDurationDays: durationDays,
+            expectedReturnAt,
+            returnedAt: null,
+          },
+        });
+        return { ok: true, eqItem };
+      };
+
+      const borrowOutcome =
+        typeof prisma.$transaction === "function"
+          ? await prisma.$transaction(runBorrow)
+          : await runBorrow(prisma);
+
+      if (!borrowOutcome.ok) {
+        if (isApiOrAjaxRequest(req)) {
+          return res.status(409).json({ success: false, code: "EQUIPMENT_UNAVAILABLE", message: borrowOutcome.message });
+        }
+        req.session.notification = borrowOutcome.message;
+        return res.redirect(req.session.lastPage || "/fabtrack");
+      }
+
+      recordedCount++;
+      const eqName = borrowOutcome.eqItem ? borrowOutcome.eqItem.name : `#${equipId}`;
       logger.logThat(`Équipement "${eqName}" emprunté par contributeur #${usrId} pour ${durationDays} jour(s) (retour prévu: ${expectedReturnAt.toLocaleDateString("fr-FR")}).`);
     }
 
-    // 3. Consumable Usage
+    // 3. Consumable Usage (atomic transaction: stock decrement + balance debit + activity with unitCost snapshot)
     if (consumable && consumable !== "" && consumable !== "null") {
-      const qty = parseInt(quantity, 10) || 1;
-      const consumed = await consumeItem(consumable, qty);
+      const qty = Math.max(1, parseInt(quantity, 10) || 1);
 
-      if (consumed) {
+      const runConsume = async (tx) => {
+        const consumedResult = await consumeItemTx(tx, consumable, qty);
+        if (!consumedResult) return null;
+
+        const { consumable: consumed, newStock, shouldAlertLowStock } = consumedResult;
+        const unitCost = Number(Number(consumed.cost).toFixed(2));
         const totalPrice = Number((Number(consumed.cost) * qty).toFixed(2));
 
-        // Check if this history entry is associated with a Teaching Unit (UE) or a Sorbonne Project
         let isCoveredByUe = false;
         let ueInfo = null;
         let isCoveredBySorbonne = false;
         let sorbonneEntityName = null;
 
         if (histId) {
-          const histEntry = await prisma.history.findUnique({
+          const histEntry = await tx.history.findUnique({
             where: { id: histId },
             include: {
               teachingUnit: true,
@@ -569,35 +643,68 @@ router.post(
 
         const isCovered = isCoveredByUe || isCoveredBySorbonne;
 
-        // Decrement user balance ONLY if NOT covered by UE or Sorbonne Project
         if (usrId && !isCovered) {
-          await prisma.user.update({
+          await tx.user.update({
             where: { id: usrId },
             data: { balance: { decrement: totalPrice } },
           });
         }
 
-        await prisma.activity.create({
+        await tx.activity.create({
           data: {
             historyId: histId,
             userId: usrId,
             resourceId: Number(consumable),
             resourceType: ResourceType.CONSUMABLE,
             quantity: qty,
+            unitCost,
           },
         });
-        recordedCount++;
 
-        if (isCoveredBySorbonne) {
-          req.session.notification = `Success: Activité enregistrée. Prise en charge Projet Sorbonne (${sorbonneEntityName}) : solde contributeur non débité (${totalPrice.toFixed(2)} € facturables à l'entité).`;
-        } else if (isCoveredByUe) {
-          if (ueInfo && ueInfo.isUnregistered) {
-            req.session.notification = `Success: Activité enregistrée. Prise en charge UE non-enregistrée (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € en attente de régularisation).`;
+        return {
+          consumed,
+          newStock,
+          shouldAlertLowStock,
+          totalPrice,
+          isCoveredByUe,
+          ueInfo,
+          isCoveredBySorbonne,
+          sorbonneEntityName,
+        };
+      };
+
+      const consumeOutcome =
+        typeof prisma.$transaction === "function"
+          ? await prisma.$transaction(runConsume)
+          : await runConsume(prisma);
+
+      if (consumeOutcome) {
+        recordedCount++;
+        if (consumeOutcome.shouldAlertLowStock) {
+          pendingLowStockAlert = {
+            consumable: consumeOutcome.consumed,
+            newStock: consumeOutcome.newStock,
+          };
+        }
+
+        if (consumeOutcome.isCoveredBySorbonne) {
+          req.session.notification = `Success: Activité enregistrée. Prise en charge Projet Sorbonne (${consumeOutcome.sorbonneEntityName}) : solde contributeur non débité (${consumeOutcome.totalPrice.toFixed(2)} € facturables à l'entité).`;
+        } else if (consumeOutcome.isCoveredByUe) {
+          if (consumeOutcome.ueInfo && consumeOutcome.ueInfo.isUnregistered) {
+            req.session.notification = `Success: Activité enregistrée. Prise en charge UE non-enregistrée (${consumeOutcome.ueInfo.code}) : solde étudiant non débité (${consumeOutcome.totalPrice.toFixed(2)} € en attente de régularisation).`;
           } else {
-            req.session.notification = `Success: Activité enregistrée. Prise en charge UE (${ueInfo.code}) : solde étudiant non débité (${totalPrice.toFixed(2)} € imputés à l'UE).`;
+            req.session.notification = `Success: Activité enregistrée. Prise en charge UE (${consumeOutcome.ueInfo.code}) : solde étudiant non débité (${consumeOutcome.totalPrice.toFixed(2)} € imputés à l'UE).`;
           }
         }
       }
+    }
+
+    if (pendingLowStockAlert) {
+      mailService
+        .sendLowStockAlert(pendingLowStockAlert.consumable, pendingLowStockAlert.newStock)
+        .catch((err) => {
+          console.error("[consumeItem] Failed to send low stock alert email:", err);
+        });
     }
 
     if (recordedCount > 0) {
@@ -724,13 +831,23 @@ router.post(
       return res.redirect(getSafeRedirectPath(req, "/fabtrack"));
     }
 
-    await prisma.activity.update({
-      where: { id: Number(id) },
+    if (activity.returnedAt) {
+      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
+      return res.redirect(getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage"));
+    }
+
+    const updated = await prisma.activity.updateMany({
+      where: { id: Number(id), resourceType: ResourceType.EQUIPMENT, returnedAt: null },
       data: {
         returnedAt: new Date(),
         returnNotes: returnNotes && returnNotes.trim() ? returnNotes.trim() : null,
       },
     });
+
+    if (updated.count === 0) {
+      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
+      return res.redirect(getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage"));
+    }
 
     const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
     const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;

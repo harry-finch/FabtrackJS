@@ -21,7 +21,7 @@ const mockR017Prisma = {
   machineMaintenance: { create: jest.fn() },
   machineIssue: { updateMany: jest.fn() },
   log: { create: jest.fn(async () => ({})) },
-  $transaction: jest.fn(async (ops) => Promise.all(ops)),
+  $transaction: jest.fn(async (arg) => (typeof arg === "function" ? arg(mockR017Prisma) : Promise.all(arg))),
 };
 
 jest.mock("../../utilities/db", () => ({

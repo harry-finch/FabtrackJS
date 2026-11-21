@@ -176,6 +176,7 @@ CREATE TABLE `Activity` (
     `resourceId` INTEGER NOT NULL,
     `resourceType` ENUM('MACHINE', 'EQUIPMENT', 'CONSUMABLE') NOT NULL,
     `quantity` INTEGER NULL,
+    `unitCost` DECIMAL(10, 2) NULL,
     `borrowDurationDays` INTEGER NULL,
     `expectedReturnAt` DATETIME(3) NULL,
     `returnedAt` DATETIME(3) NULL,

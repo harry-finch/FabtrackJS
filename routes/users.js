@@ -296,7 +296,12 @@ router.get(
 
     const userConsumptions = consumableActivities.map((act) => {
       const consumable = consumableMap.get(act.resourceId);
-      const unitCost = consumable ? Number(consumable.cost) : 0;
+      const unitCost =
+        act.unitCost !== null && act.unitCost !== undefined
+          ? Number(act.unitCost)
+          : consumable
+            ? Number(consumable.cost)
+            : 0;
       const qty = act.quantity || 1;
       return {
         id: act.id,

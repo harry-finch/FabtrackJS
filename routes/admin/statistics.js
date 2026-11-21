@@ -198,7 +198,8 @@ router.get(
     const totalConsumablesCost = consumableActivities
       .reduce((sum, a) => {
         const c = consumableMap.get(a.resourceId);
-        const unitCost = c ? Number(c.cost) : 0;
+        const unitCost =
+          a.unitCost !== null && a.unitCost !== undefined ? Number(a.unitCost) : c ? Number(c.cost) : 0;
         return sum + (a.quantity || 1) * unitCost;
       }, 0)
       .toFixed(2);

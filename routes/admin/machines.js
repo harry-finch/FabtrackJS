@@ -400,50 +400,62 @@ router.post(
     const { machineId, title, type, description, operator, partsReplaced, cost, maintenanceDate, resolveOpenIssues } = parsed.data;
     const author = operator && operator.trim() ? operator.trim() : (req.session.username || "Staff");
 
-    const machine = await prisma.machine.findUnique({ where: { id: machineId } });
+    const opDate = maintenanceDate || new Date();
+
+    const runMaintenance = async (tx) => {
+      const foundMachine = await tx.machine.findUnique({ where: { id: machineId } });
+      if (!foundMachine) {
+        return null;
+      }
+
+      await tx.machineMaintenance.create({
+        data: {
+          machineId,
+          title,
+          type: type || "PREVENTIVE",
+          description: description || null,
+          operator: author,
+          partsReplaced: partsReplaced || null,
+          cost: cost !== null && cost !== undefined ? Number(cost) : null,
+          maintenanceDate: opDate,
+        },
+      });
+
+      const shouldUpdateLastMaintenance =
+        !foundMachine.lastMaintenance ||
+        new Date(opDate).getTime() >= new Date(foundMachine.lastMaintenance).getTime();
+
+      if (shouldUpdateLastMaintenance) {
+        await tx.machine.update({
+          where: { id: machineId },
+          data: {
+            lastMaintenance: opDate,
+          },
+        });
+      }
+
+      if (resolveOpenIssues) {
+        await tx.machineIssue.updateMany({
+          where: { machineId, status: "OPEN" },
+          data: {
+            status: "RESOLVED",
+            resolvedAt: new Date(),
+            resolutionNotes: `Résolu par l'opération de maintenance : "${title}" (${author})`,
+          },
+        });
+      }
+
+      return foundMachine;
+    };
+
+    const machine =
+      typeof prisma.$transaction === "function"
+        ? await prisma.$transaction(runMaintenance)
+        : await runMaintenance(prisma);
+
     if (!machine) {
       req.session.notification = "Error: Machine introuvable.";
       return res.redirect("/admin/machines/manage");
-    }
-
-    const opDate = maintenanceDate || new Date();
-
-    const maintenance = await prisma.machineMaintenance.create({
-      data: {
-        machineId,
-        title,
-        type: type || "PREVENTIVE",
-        description: description || null,
-        operator: author,
-        partsReplaced: partsReplaced || null,
-        cost: cost !== null && cost !== undefined ? Number(cost) : null,
-        maintenanceDate: opDate,
-      },
-    });
-
-    // Preserve the most recent maintenance date when a backdated maintenance entry is recorded
-    const shouldUpdateLastMaintenance =
-      !machine.lastMaintenance || new Date(opDate).getTime() >= new Date(machine.lastMaintenance).getTime();
-
-    if (shouldUpdateLastMaintenance) {
-      await prisma.machine.update({
-        where: { id: machineId },
-        data: {
-          lastMaintenance: opDate,
-        },
-      });
-    }
-
-    // Optionally resolve open issues if requested
-    if (resolveOpenIssues) {
-      await prisma.machineIssue.updateMany({
-        where: { machineId, status: "OPEN" },
-        data: {
-          status: "RESOLVED",
-          resolvedAt: new Date(),
-          resolutionNotes: `Résolu par l'opération de maintenance : "${title}" (${author})`,
-        },
-      });
     }
 
     invalidateCache(req);

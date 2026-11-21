@@ -239,36 +239,33 @@ router.post(
     const equipId = Number(id);
 
     try {
-      const item = await prisma.equipment.findUnique({
-        where: { id: equipId },
+      const item = await prisma.$transaction(async (tx) => {
+        const found = await tx.equipment.findUnique({
+          where: { id: equipId },
+        });
+
+        if (!found) {
+          return null;
+        }
+
+        await tx.activity.deleteMany({
+          where: {
+            resourceType: ResourceType.EQUIPMENT,
+            resourceId: equipId,
+          },
+        });
+
+        await tx.equipment.delete({
+          where: { id: equipId },
+        });
+
+        return found;
       });
 
       if (!item) {
         req.session.notification = "Error: Équipement introuvable.";
         return res.redirect("/admin/equipment/manage");
       }
-
-      // Check if activities are linked to this equipment
-      const linkedActivities = await prisma.activity.count({
-        where: {
-          resourceType: ResourceType.EQUIPMENT,
-          resourceId: equipId,
-        },
-      });
-
-      if (linkedActivities > 0) {
-        // Unlink or inform
-        await prisma.activity.deleteMany({
-          where: {
-            resourceType: ResourceType.EQUIPMENT,
-            resourceId: equipId,
-          },
-        });
-      }
-
-      await prisma.equipment.delete({
-        where: { id: equipId },
-      });
 
       invalidateCache(req);
       logger.logThat(`Equipment ${item.name} deleted by ${req.session.username}`);
@@ -303,13 +300,25 @@ router.post(
       return res.redirect("/admin/equipment/manage");
     }
 
-    await prisma.activity.update({
-      where: { id: Number(id) },
+    if (activity.returnedAt) {
+      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
+      const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
+      return res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
+    }
+
+    const updated = await prisma.activity.updateMany({
+      where: { id: Number(id), resourceType: ResourceType.EQUIPMENT, returnedAt: null },
       data: {
         returnedAt: new Date(),
         returnNotes: returnNotes && returnNotes.trim() ? returnNotes.trim() : null,
       },
     });
+
+    if (updated.count === 0) {
+      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
+      const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
+      return res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
+    }
 
     const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
     const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;

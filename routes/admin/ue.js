@@ -73,7 +73,12 @@ router.get(
     const enrichedActivities = ueActivities.map((act) => {
       const consumable = consumableMap.get(act.resourceId);
       const qty = act.quantity || 1;
-      const unitCost = consumable ? Number(consumable.cost) : 0;
+      const unitCost =
+        act.unitCost !== null && act.unitCost !== undefined
+          ? Number(act.unitCost)
+          : consumable
+            ? Number(consumable.cost)
+            : 0;
       const unitStr = consumable ? consumable.unit || "u" : "u";
       const total = Number((unitCost * qty).toFixed(2));
       const isUnregistered = !act.history || !act.history.teachingUnitId;
@@ -305,89 +310,92 @@ router.post(
   asyncHandler(async (req, res) => {
     const { historyId, unregisteredName, regularizeAction, targetUeId, newCode, newName, newDepartment, newResponsibleEmail } = req.body;
 
-    let finalUeId = null;
+    try {
+      const outcome = await prisma.$transaction(async (tx) => {
+        let finalUeId = null;
 
-    if (regularizeAction === "existing") {
-      if (!targetUeId) {
-        req.session.notification = "Error: Veuillez sélectionner une UE existante.";
-        return res.redirect("/admin/ue");
-      }
-      finalUeId = Number(targetUeId);
-    } else if (regularizeAction === "new") {
-      if (!newCode || !newName) {
-        req.session.notification = "Error: Le code et l'intitulé de la nouvelle UE sont obligatoires.";
-        return res.redirect("/admin/ue");
-      }
-      try {
-        const createdUe = await prisma.teachingUnit.create({
-          data: {
-            code: newCode.trim().toUpperCase(),
-            name: newName.trim(),
-            department: newDepartment ? newDepartment.trim() : null,
-            responsibleEmail: newResponsibleEmail ? newResponsibleEmail.trim() : null,
-            active: true,
-          },
-        });
-        finalUeId = createdUe.id;
-      } catch (err) {
-        console.error("Error creating new UE during regularization:", err);
-        if (err.code === "P2002") {
-          req.session.notification = `Error: Une UE avec le code ${newCode.toUpperCase()} existe déjà. Veuillez l'associer via l'option 'Associer à une UE existante'.`;
+        if (regularizeAction === "existing") {
+          if (!targetUeId) {
+            return { error: "Error: Veuillez sélectionner une UE existante." };
+          }
+          finalUeId = Number(targetUeId);
+        } else if (regularizeAction === "new") {
+          if (!newCode || !newName) {
+            return { error: "Error: Le code et l'intitulé de la nouvelle UE sont obligatoires." };
+          }
+          const createdUe = await tx.teachingUnit.create({
+            data: {
+              code: newCode.trim().toUpperCase(),
+              name: newName.trim(),
+              department: newDepartment ? newDepartment.trim() : null,
+              responsibleEmail: newResponsibleEmail ? newResponsibleEmail.trim() : null,
+              active: true,
+            },
+          });
+          finalUeId = createdUe.id;
         } else {
-          req.session.notification = "Error: Impossible de créer la nouvelle UE.";
+          return { error: "Error: Action de régularisation non reconnue." };
         }
+
+        const targetUe = await tx.teachingUnit.findUnique({ where: { id: finalUeId } });
+        if (!targetUe) {
+          return { error: "Error: UE cible introuvable." };
+        }
+
+        let updatedHistoriesCount = 0;
+
+        if (unregisteredName) {
+          const resHist = await tx.history.updateMany({
+            where: {
+              unregisteredUeName: unregisteredName,
+            },
+            data: {
+              teachingUnitId: finalUeId,
+              unregisteredUeName: null,
+              unregisteredUeContact: null,
+            },
+          });
+          updatedHistoriesCount = resHist.count;
+
+          await tx.project.updateMany({
+            where: {
+              unregisteredUeName: unregisteredName,
+            },
+            data: {
+              teachingUnitId: finalUeId,
+              unregisteredUeName: null,
+              unregisteredUeContact: null,
+            },
+          });
+        } else if (historyId) {
+          await tx.history.update({
+            where: { id: Number(historyId) },
+            data: {
+              teachingUnitId: finalUeId,
+              unregisteredUeName: null,
+              unregisteredUeContact: null,
+            },
+          });
+          updatedHistoriesCount = 1;
+        }
+
+        return { targetUe, updatedHistoriesCount };
+      });
+
+      if (outcome.error) {
+        req.session.notification = outcome.error;
         return res.redirect("/admin/ue");
       }
-    } else {
-      req.session.notification = "Error: Action de régularisation non reconnue.";
-      return res.redirect("/admin/ue");
+
+      req.session.notification = `Success: Situation régularisée avec succès ! ${outcome.updatedHistoriesCount} visite(s) rattachée(s) à l'UE ${outcome.targetUe.code} — ${outcome.targetUe.name}.`;
+    } catch (err) {
+      console.error("Error during UE regularization:", err);
+      if (err.code === "P2002") {
+        req.session.notification = `Error: Une UE avec le code ${(newCode || "").toUpperCase()} existe déjà. Veuillez l'associer via l'option 'Associer à une UE existante'.`;
+      } else {
+        req.session.notification = "Error: Impossible de régulariser l'UE.";
+      }
     }
-
-    const targetUe = await prisma.teachingUnit.findUnique({ where: { id: finalUeId } });
-
-    if (!targetUe) {
-      req.session.notification = "Error: UE cible introuvable.";
-      return res.redirect("/admin/ue");
-    }
-
-    let updatedHistoriesCount = 0;
-
-    if (unregisteredName) {
-      const resHist = await prisma.history.updateMany({
-        where: {
-          unregisteredUeName: unregisteredName,
-        },
-        data: {
-          teachingUnitId: finalUeId,
-          unregisteredUeName: null,
-          unregisteredUeContact: null,
-        },
-      });
-      updatedHistoriesCount = resHist.count;
-
-      await prisma.project.updateMany({
-        where: {
-          unregisteredUeName: unregisteredName,
-        },
-        data: {
-          teachingUnitId: finalUeId,
-          unregisteredUeName: null,
-          unregisteredUeContact: null,
-        },
-      });
-    } else if (historyId) {
-      await prisma.history.update({
-        where: { id: Number(historyId) },
-        data: {
-          teachingUnitId: finalUeId,
-          unregisteredUeName: null,
-          unregisteredUeContact: null,
-        },
-      });
-      updatedHistoriesCount = 1;
-    }
-
-    req.session.notification = `Success: Situation régularisée avec succès ! ${updatedHistoriesCount} visite(s) rattachée(s) à l'UE ${targetUe.code} — ${targetUe.name}.`;
     res.redirect("/admin/ue");
   }),
 );
@@ -482,7 +490,12 @@ router.get(
       const consumableName = escapeCsvCell(consumable ? consumable.name : `Consommable #${act.resourceId}`);
       const qty = act.quantity || 1;
       const unit = escapeCsvCell(consumable ? consumable.unit || "u" : "u");
-      const unitCost = consumable ? Number(consumable.cost) : 0;
+      const unitCost =
+        act.unitCost !== null && act.unitCost !== undefined
+          ? Number(act.unitCost)
+          : consumable
+            ? Number(consumable.cost)
+            : 0;
       const total = Number((unitCost * qty).toFixed(2));
 
       csv += `${code};${name};${department};${respEmail};${regStatus};${dateStr};${student};${studentEmail};${projectUrl};${consumableName};${qty};${unit};${unitCost.toFixed(4).replace(".", ",")};${total.toFixed(2).replace(".", ",")}\r\n`;
