@@ -8,6 +8,10 @@
 
 Rien en attente.
 
+## Actions à faire
+
+- [ ] [A-001](roadmap/actions/A-001-valider-la-mise-d-equerre-de-fabtrackjs.md) Valider la mise d'équerre de FabtrackJS (valider)
+
 ## Livré
 
 ### v0.1 : Base Node.js & suivi utilisateurs
