@@ -24,7 +24,7 @@ model Staff {
   email       String    @unique @db.VarChar(255)
   password    String    @db.VarChar(255)
   role        String    @default("user") @db.VarChar(20)
-  pwdToken    String?   @db.VarChar(40)
+  pwdToken    String?   @db.VarChar(64)
   tokenExpiry DateTime?
   createdAt       DateTime  @default(now())
   approved        Boolean   @default(false)

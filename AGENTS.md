@@ -26,6 +26,7 @@ La feuille de route est dans `roadmap/` (un fichier par élément dans `items/`,
 - Respecter le fonctionnement derrière reverse proxy en sous-chemin : `mailService.resolveBaseUrl()` pour les liens d'email et `window.getAppBaseUrl(...)` côté client.
 - Vérifier de façon croisée les autres pages `/admin` lors d'une correction sur une vue ou un contrôleur admin.
 - Mettre à jour la documentation dans le même changement que le comportement.
+- Tenir à jour [docs/MISE_A_JOUR_PROD.md](docs/MISE_A_JOUR_PROD.md) dès qu'une modification implique une action de déploiement (variable `.env`, SQL, `npm`, `prisma generate` ou vérification post-déploiement).
 
 ## Commandes
 

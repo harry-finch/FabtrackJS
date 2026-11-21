@@ -6,7 +6,7 @@
 
 ## Restant à faire
 
-1. **[R-004 Sécuriser la réinitialisation de mot de passe staff](roadmap/items/R-004-securiser-la-reinitialisation-de-mot-de-passe.md)** · Idée · jalon v1.1
+1. **[R-004 Sécuriser la réinitialisation de mot de passe staff](roadmap/items/R-004-securiser-la-reinitialisation-de-mot-de-passe.md)** · À tester · jalon v1.1
    Supprimer la prise de contrôle de compte sans authentification sur POST /reset_password et l'énumération d'e-mails sur POST /reset.
 2. **[R-005 Sécuriser les uploads de fichiers (/report-issue, machines, settings)](roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md)** · Idée · jalon v1.1
    Fermer la XSS stockée anonyme par upload public, filtrer les images machines/branding et empêcher la saturation disque.
@@ -70,6 +70,8 @@
 ## Actions à faire
 
 - [ ] [A-001](roadmap/actions/A-001-valider-la-mise-d-equerre-de-fabtrackjs.md) Valider la mise d'équerre de FabtrackJS (valider)
+- [ ] [A-002](roadmap/actions/A-002-tester-la-reinitialisation-de-mot-de-passe-en.md) Tester la réinitialisation de mot de passe en local (tester, R-004)
+- [ ] [A-003](roadmap/actions/A-003-appliquer-r-004-en-production-et-auditer-la.md) Appliquer R-004 en production et auditer la table Staff (tester, R-004)
 
 ## Livré
 

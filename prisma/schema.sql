@@ -15,7 +15,7 @@ CREATE TABLE `Staff` (
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
     `role` VARCHAR(20) NOT NULL DEFAULT 'user',
-    `pwdToken` VARCHAR(40) NULL,
+    `pwdToken` VARCHAR(64) NULL,
     `tokenExpiry` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `approved` BOOLEAN NOT NULL DEFAULT false,

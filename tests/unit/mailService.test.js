@@ -47,6 +47,32 @@ describe("Unit: MailService URL Resolution and Sanitization", () => {
       const result = mailService.resolveBaseUrl("https://fablab.sorbonne-universite.fr");
       expect(result).toBe("https://fablab.sorbonne-universite.fr/fabtrack");
     });
+
+    test("throws in production if neither HOSTURL nor APP_URL is set (Host header poisoning defense)", () => {
+      delete process.env.HOSTURL;
+      delete process.env.APP_URL;
+      process.env.NODE_ENV = "production";
+      expect(() => mailService.resolveBaseUrl("https://attacker.evil.com")).toThrow(
+        /HOSTURL ou APP_URL/,
+      );
+    });
+
+    test("ignores untrusted customHostUrl in production when HOSTURL is set", () => {
+      process.env.NODE_ENV = "production";
+      process.env.HOSTURL = "https://fablab.sorbonne-universite.fr";
+      process.env.APP_BASE_PATH = "fabtrack";
+      const result = mailService.resolveBaseUrl("https://attacker.evil.com");
+      expect(result).toBe("https://fablab.sorbonne-universite.fr/fabtrack");
+    });
+
+    test("ignores non-HTTP protocols passed via customHostUrl", () => {
+      delete process.env.HOSTURL;
+      delete process.env.APP_URL;
+      delete process.env.APP_BASE_PATH;
+      process.env.NODE_ENV = "development";
+      const result = mailService.resolveBaseUrl("javascript:alert(1)");
+      expect(result).toBe("http://localhost:3000");
+    });
   });
 
   describe("sanitizeLineEndings", () => {

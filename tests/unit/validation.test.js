@@ -5,6 +5,8 @@ const {
   creditSchema,
   activitySchema,
   loginSchema,
+  requestPasswordResetSchema,
+  resetPasswordSchema,
   reportIssueSchema,
   rfidScanSchema,
 } = require("../../schemas");
@@ -84,6 +86,66 @@ describe("Unit: Zod Validation Schemas", () => {
     test("rejects empty username or password", () => {
       const result = loginSchema.safeParse({ username: "", password: "" });
       expect(result.success).toBe(false);
+    });
+
+    test("keeps accepting existing accounts whose passwords are shorter than 8 characters", () => {
+      const result = loginSchema.safeParse({ username: "legacy", password: "12345" });
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("requestPasswordResetSchema", () => {
+    test("validates and normalizes valid email", () => {
+      const result = requestPasswordResetSchema.safeParse({ mail: "  Staff@Fablab.FR " });
+      expect(result.success).toBe(true);
+      expect(result.data.mail).toBe("staff@fablab.fr");
+    });
+
+    test("rejects invalid email", () => {
+      const result = requestPasswordResetSchema.safeParse({ mail: "pas-un-email" });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("resetPasswordSchema", () => {
+    const validToken = "a".repeat(64);
+
+    test("accepts valid 64-hex token and matching 8+ char password", () => {
+      const result = resetPasswordSchema.safeParse({
+        token: validToken,
+        password: "Password123",
+        password_verif: "Password123",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    test("rejects legacy id-only payload without a valid token", () => {
+      const result = resetPasswordSchema.safeParse({
+        id: "1",
+        password: "Password123",
+        password_verif: "Password123",
+      });
+      expect(result.success).toBe(false);
+    });
+
+    test("rejects passwords shorter than 8 characters", () => {
+      const result = resetPasswordSchema.safeParse({
+        token: validToken,
+        password: "1234567",
+        password_verif: "1234567",
+      });
+      expect(result.success).toBe(false);
+      expect(result.error.issues[0].message).toContain("8 caractères");
+    });
+
+    test("rejects mismatched confirmation password", () => {
+      const result = resetPasswordSchema.safeParse({
+        token: validToken,
+        password: "Password123",
+        password_verif: "Different123",
+      });
+      expect(result.success).toBe(false);
+      expect(result.error.issues[0].path).toContain("password_verif");
     });
   });
 

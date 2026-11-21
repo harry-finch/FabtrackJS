@@ -1,7 +1,5 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const { v4: uuidv4 } = require("uuid");
-const nodemailer = require("nodemailer");
 const { prisma } = require("../utilities/db");
 const dotenv = require("dotenv");
 
@@ -9,9 +7,15 @@ const isAuthenticated = require("../middleware/checkSession.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody } = require("../middleware/validate.js");
-const { loginSchema, registerStaffSchema } = require("../schemas/auth.schema.js");
+const {
+  loginSchema,
+  registerStaffSchema,
+  requestPasswordResetSchema,
+  resetPasswordSchema,
+} = require("../schemas/auth.schema.js");
 const { reportBugSchema } = require("../schemas/bug.schema.js");
 const i18nService = require("../services/i18nService.js");
+const passwordResetService = require("../services/passwordResetService.js");
 
 dotenv.config();
 
@@ -104,23 +108,17 @@ router.get("/forgot", clearNotification, function (req, res) {
 
 router.post(
   "/reset",
+  validateBody(requestPasswordResetSchema, { redirectUrl: "/forgot" }),
   asyncHandler(async (req, res) => {
-    const { mail } = req.body;
-    const token = uuidv4();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    const hostUrl =
+      process.env.NODE_ENV === "production"
+        ? undefined
+        : `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
 
-    // Update password reset token in the database
-    await prisma.staff.update({
-      where: { email: mail },
-      data: { pwdToken: token, tokenExpiry: expiresAt },
-    });
+    await passwordResetService.requestReset(req.validatedBody.mail, { hostUrl });
 
-    const hostUrl = `${req.protocol}://${req.get("host")}`;
-    mailService
-      .sendPasswordResetEmail({ email: mail, token, hostUrl })
-      .catch((err) => console.error("[routes/index/reset] Failed to send password reset email:", err));
-
-    req.session.notification = "Success: Check your email to reset your password.";
+    req.session.notification =
+      "Success: Si un compte correspond à cette adresse e-mail, un lien de réinitialisation vient d'être envoyé.";
     res.redirect("/login");
   }),
 );
@@ -133,12 +131,17 @@ router.get(
   "/reset/:token",
   clearNotification,
   asyncHandler(async (req, res) => {
-    const { token } = req.params;
-    const user = await prisma.staff.findFirst({
-      where: { pwdToken: token, tokenExpiry: { gte: new Date() } },
-    });
+    const staff = await passwordResetService.verifyToken(req.params.token);
+    if (!staff) {
+      req.session.notification =
+        "Warning: Ce lien de réinitialisation est invalide ou expiré. Veuillez en demander un nouveau.";
+      return res.redirect("/forgot");
+    }
 
-    user ? res.render("index/reset", { user }) : res.redirect("/forgot");
+    return res.render("index/reset", {
+      user: { name: staff.name },
+      token: req.params.token.trim(),
+    });
   }),
 );
 
@@ -148,30 +151,26 @@ router.get(
 
 router.post(
   "/reset_password",
+  validateBody(resetPasswordSchema, {
+    redirectUrl: (req) =>
+      passwordResetService.isValidTokenFormat(req.body?.token)
+        ? `/reset/${req.body.token.trim()}`
+        : "/forgot",
+  }),
   asyncHandler(async (req, res) => {
-    const { password, id } = req.body;
+    const result = await passwordResetService.completeReset(
+      req.validatedBody.token,
+      req.validatedBody.password,
+    );
 
-    // Hash the new password with bcrypt
-    const hash = await bcrypt.hash(password, saltRounds);
-
-    // Update the password in the database and clear the reset token
-    try {
-      await prisma.staff.update({
-        where: { id: Number(id) },
-        data: {
-          password: hash,
-          pwdToken: null, // Clear the token to prevent reuse
-          tokenExpiry: null, // Clear token expiration if stored
-        },
-      });
-
-      req.session.notification = "Success: Password reset successfully.";
-      res.redirect("/login");
-    } catch (e) {
-      console.error("Error resetting password:", e);
-      req.session.notification = "Error: Unable to reset password. Please try again.";
-      res.redirect("/reset/" + id);
+    if (!result.ok) {
+      req.session.notification =
+        "Error: Ce lien de réinitialisation est invalide, expiré ou déjà utilisé.";
+      return res.redirect("/forgot");
     }
+
+    req.session.notification = "Success: Votre mot de passe a été réinitialisé avec succès.";
+    return res.redirect("/login");
   }),
 );
 

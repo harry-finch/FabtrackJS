@@ -7,6 +7,26 @@ function sanitizeLineEndings(str) {
   return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
 
+/**
+ * Validates and normalizes an HTTP/HTTPS URL, returning null for malformed or non-HTTP values.
+ * @param {unknown} value
+ * @returns {string | null}
+ */
+function parseHttpUrl(value) {
+  if (!value || typeof value !== "string") return null;
+  const trimmed = value.trim().replace(/\/+$/, "");
+  if (!trimmed) return null;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+    return trimmed;
+  } catch {
+    return null;
+  }
+}
+
 class MailService {
   /**
    * Builds a nodemailer transporter based on platform settings and environment fallback.
@@ -160,22 +180,22 @@ class MailService {
    * Resolves the canonical public base URL for platform emails.
    * Priority:
    * 1. process.env.HOSTURL or process.env.APP_URL (explicit canonical URL configured in .env)
-   * 2. customHostUrl (passed by caller if not localhost)
-   * 3. Default fallback to http://localhost:3000
+   * 2. Fail closed in production if neither HOSTURL nor APP_URL is configured (prevents Host header poisoning)
+   * 3. In non-production only: customHostUrl (validated HTTP/HTTPS) or http://localhost:3000
    */
   resolveBaseUrl(customHostUrl) {
     const rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");
     const subpath = rawBasePath ? `/${rawBasePath}` : "";
 
+    const configuredUrl = parseHttpUrl(process.env.HOSTURL) || parseHttpUrl(process.env.APP_URL);
     let base = "";
-    if (process.env.HOSTURL && process.env.HOSTURL.trim()) {
-      base = process.env.HOSTURL.trim().replace(/\/+$/, "");
-    } else if (process.env.APP_URL && process.env.APP_URL.trim()) {
-      base = process.env.APP_URL.trim().replace(/\/+$/, "");
-    } else if (customHostUrl && typeof customHostUrl === "string" && customHostUrl.trim()) {
-      base = customHostUrl.trim().replace(/\/+$/, "");
+
+    if (configuredUrl) {
+      base = configuredUrl;
+    } else if (process.env.NODE_ENV === "production") {
+      throw new Error("HOSTURL ou APP_URL doit être configuré dans .env en production.");
     } else {
-      base = "http://localhost:3000";
+      base = parseHttpUrl(customHostUrl) || "http://localhost:3000";
     }
 
     if (subpath && !base.endsWith(subpath)) {
