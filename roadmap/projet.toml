@@ -27,3 +27,23 @@ titre = "Plateforme complète, Prisma v7 & plugins"
 [[jalons]]
 id = "v1.0"
 titre = "Suivi machines NFC, finitions & v1"
+
+[[jalons]]
+id = "v1.1"
+titre = "Sécurité critique & stabilisation d'urgence"
+
+[[jalons]]
+id = "v1.2"
+titre = "Tests isolés, défense web & tenue en production"
+
+[[jalons]]
+id = "v1.3"
+titre = "Sécurité avancée, intégrité des données & fiabilité métier"
+
+[[jalons]]
+id = "v1.4"
+titre = "Performances, dette architecturale, exploitation & documentation"
+
+[[jalons]]
+id = "v1.5"
+titre = "UX / UI, accessibilité, assets & i18n"

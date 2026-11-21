@@ -12,8 +12,8 @@
 
 ## Points ouverts
 
-- `tests/unit/inventoryService.test.js` : échec sur `restoreEquipment()` (`Équipement introuvable (#224)`).
+- `tests/unit/inventoryService.test.js` : cause racine identifiée de l'échec intermittent (`restoreEquipment()`, `Équipement introuvable (#224)`) lors d'exécutions parallèles sans `--runInBand` (collision SQL `LIKE 'TEST_%'` avec `rfidPlugin.test.js`) ; correction et isolation de la base de test suivies dans `R-011`.
 
 ## À suivre
 
-- Aucun élément restant dans `roadmap/` pour l'instant (nouveaux jalons à ajouter).
+- Jalons `v1.1` à `v1.5` (`R-004` à `R-030`, statut `idee`) issus de l'audit technique `AUDIT-01` et prêts à être spécifiés (jalon `v1.5` UX/UI à compléter avec l'utilisateur). Voir [ROADMAP.md](ROADMAP.md).
