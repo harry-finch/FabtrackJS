@@ -140,3 +140,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 .aider*
+
+# Hairline look/source sheets (generated locally)
+branding/illustrations/*.png
+branding/illustrations/*-source.txt

@@ -3,6 +3,7 @@ nom = "FabtrackJS"
 resume = "Suivi d'activité, machines et consommables pour fablabs"
 identite = "#4c8df5"
 logo = "public/images/logo-fabtrack.svg"
+figure = "fabtrack"
 agent = "agy"
 type = "logiciel"
 
