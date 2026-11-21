@@ -79,17 +79,17 @@
                                             <%= warningtype.name %>
                                         </span>
                                     </td>
-                                    <td class="text-center fs-5"><%- warningtype.icon %></td>
+                                    <td class="text-center fs-5"><i class="<%= sanitizeWarningIcon(warningtype.icon) %>"></i></td>
                                     <td class="text-end pe-3">
                                         <div class="btn-group btn-group-sm">
                                             <a href="#" class="btn btn-outline-primary" id="edit-<%= warningtype.id %>"
                                                         data-id="<%= warningtype.id %>"
                                                         data-name="<%= warningtype.name %>"
-                                                        data-description='<%= warningtype.icon %>'
+                                                        data-description="<%= sanitizeWarningIcon(warningtype.icon) %>"
                                                         title="Modifier">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
-                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warningtypes/delete/<%= warningtype.id %>" class="d-inline" onsubmit="return confirm('Supprimer le motif <%= warningtype.name %> ?');">
+                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warningtypes/delete/<%= warningtype.id %>" class="d-inline" data-confirm="Supprimer le motif <%= warningtype.name %> ?">
                                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
                                                     <i class="fa-solid fa-trash-can"></i>
@@ -115,7 +115,7 @@
                 <div class="card-body p-4">
                     <form action="/admin/warningtypes/create" method="post" id="warningTypeForm">
                         <input type="hidden" id="warningtypeid" name="warningtypeid" value="" />
-                        <input type="hidden" id="icon" name="icon" value='<i class="fa-solid fa-triangle-exclamation" style="color: #dc3545"></i>' />
+                        <input type="hidden" id="icon" name="icon" value="fa-solid fa-triangle-exclamation text-danger" />
 
                         <!-- Name field -->
                         <div class="form-floating mb-4">
@@ -217,23 +217,22 @@
 
                             <div class="d-flex flex-wrap align-items-center gap-3">
                                 <div class="d-flex align-items-center gap-2" id="colorPresets">
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#dc3545" style="width: 32px; height: 32px; background-color: #dc3545; border: 3px solid #212529; cursor: pointer;" title="Rouge alerte (#dc3545)" onclick="selectColor('#dc3545')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#fd7e14" style="width: 32px; height: 32px; background-color: #fd7e14; border: 3px solid transparent; cursor: pointer;" title="Orange vif (#fd7e14)" onclick="selectColor('#fd7e14')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#ffc107" style="width: 32px; height: 32px; background-color: #ffc107; border: 3px solid transparent; cursor: pointer;" title="Ambre / Jaune (#ffc107)" onclick="selectColor('#ffc107')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#d63384" style="width: 32px; height: 32px; background-color: #d63384; border: 3px solid transparent; cursor: pointer;" title="Rose / Magenta (#d63384)" onclick="selectColor('#d63384')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#6f42c1" style="width: 32px; height: 32px; background-color: #6f42c1; border: 3px solid transparent; cursor: pointer;" title="Violet (#6f42c1)" onclick="selectColor('#6f42c1')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#0d6efd" style="width: 32px; height: 32px; background-color: #0d6efd; border: 3px solid transparent; cursor: pointer;" title="Bleu (#0d6efd)" onclick="selectColor('#0d6efd')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#0dcaf0" style="width: 32px; height: 32px; background-color: #0dcaf0; border: 3px solid transparent; cursor: pointer;" title="Cyan (#0dcaf0)" onclick="selectColor('#0dcaf0')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#198754" style="width: 32px; height: 32px; background-color: #198754; border: 3px solid transparent; cursor: pointer;" title="Vert (#198754)" onclick="selectColor('#198754')"></button>
-                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="#495057" style="width: 32px; height: 32px; background-color: #495057; border: 3px solid transparent; cursor: pointer;" title="Gris sombre (#495057)" onclick="selectColor('#495057')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-danger" style="width: 32px; height: 32px; background-color: #dc3545; border: 3px solid #212529; cursor: pointer;" title="Rouge alerte (text-danger)" onclick="selectColor('text-danger')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-warning-emphasis" style="width: 32px; height: 32px; background-color: #fd7e14; border: 3px solid transparent; cursor: pointer;" title="Orange vif (text-warning-emphasis)" onclick="selectColor('text-warning-emphasis')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-warning" style="width: 32px; height: 32px; background-color: #ffc107; border: 3px solid transparent; cursor: pointer;" title="Ambre / Jaune (text-warning)" onclick="selectColor('text-warning')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-danger-emphasis" style="width: 32px; height: 32px; background-color: #842029; border: 3px solid transparent; cursor: pointer;" title="Rouge foncé (text-danger-emphasis)" onclick="selectColor('text-danger-emphasis')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-primary-emphasis" style="width: 32px; height: 32px; background-color: #052c65; border: 3px solid transparent; cursor: pointer;" title="Bleu foncé (text-primary-emphasis)" onclick="selectColor('text-primary-emphasis')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-primary" style="width: 32px; height: 32px; background-color: #0d6efd; border: 3px solid transparent; cursor: pointer;" title="Bleu (text-primary)" onclick="selectColor('text-primary')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-info" style="width: 32px; height: 32px; background-color: #0dcaf0; border: 3px solid transparent; cursor: pointer;" title="Cyan (text-info)" onclick="selectColor('text-info')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-success" style="width: 32px; height: 32px; background-color: #198754; border: 3px solid transparent; cursor: pointer;" title="Vert (text-success)" onclick="selectColor('text-success')"></button>
+                                    <button type="button" class="color-btn rounded-circle shadow-sm" data-color="text-secondary" style="width: 32px; height: 32px; background-color: #495057; border: 3px solid transparent; cursor: pointer;" title="Gris sombre (text-secondary)" onclick="selectColor('text-secondary')"></button>
                                 </div>
 
                                 <div class="vr d-none d-sm-block" style="height: 28px;"></div>
 
                                 <div class="d-flex align-items-center gap-2">
-                                    <label for="customColorPicker" class="small text-muted mb-0">Couleur libre :</label>
-                                    <input type="color" class="form-control form-control-color border-0 p-0 shadow-sm" id="customColorPicker" value="#dc3545" title="Choisir une nuance sur-mesure" style="width: 32px; height: 32px; cursor: pointer; border-radius: 50%;" oninput="selectColor(this.value, true)" />
-                                    <span id="colorHexText" class="small font-monospace text-muted">#dc3545</span>
+                                    <span class="small text-muted">Classe couleur :</span>
+                                    <span id="colorHexText" class="small font-monospace text-muted">text-danger</span>
                                 </div>
                             </div>
                         </div>
@@ -248,22 +247,22 @@
                             </div>
                             <div class="p-2">
                                 <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-2 fs-6 shadow-sm d-inline-flex align-items-center gap-2" id="previewBadge">
-                                    <span id="previewIconHolder" class="fs-5"><i class="fa-solid fa-triangle-exclamation" style="color: #dc3545"></i></span>
+                                    <span id="previewIconHolder" class="fs-5"><i class="fa-solid fa-triangle-exclamation text-danger"></i></span>
                                     <span id="previewName" class="fw-semibold">Nom du motif</span>
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Advanced HTML Toggle (Backwards compatibility & fine control) -->
+                        <!-- Advanced Classes Toggle -->
                         <div class="mb-4">
                             <button class="btn btn-link btn-sm text-decoration-none text-muted p-0" type="button" data-bs-toggle="collapse" data-bs-target="#advancedHtmlCollapse" aria-expanded="false" aria-controls="advancedHtmlCollapse">
-                                <i class="fa-solid fa-code me-1"></i> Mode avancé : voir / modifier le code HTML brut
+                                <i class="fa-solid fa-code me-1"></i> Mode avancé : voir / modifier les classes Font Awesome
                             </button>
                             <div class="collapse mt-2" id="advancedHtmlCollapse">
                                 <div class="card card-body bg-body-tertiary p-3 border rounded-3">
-                                    <label for="rawHtmlTextarea" class="form-label small text-muted fw-semibold">Code HTML généré</label>
+                                    <label for="rawHtmlTextarea" class="form-label small text-muted fw-semibold">Classes Font Awesome générées</label>
                                     <textarea class="form-control font-monospace small" id="rawHtmlTextarea" rows="2" oninput="onRawHtmlInput(this.value)"></textarea>
-                                    <div class="form-text small text-muted">Vous pouvez éditer directement la balise HTML si vous souhaitez un style ou une structure particulière.</div>
+                                    <div class="form-text small text-muted">Saisissez les classes Font Awesome et Bootstrap autorisées (ex: <code>fa-solid fa-ban text-danger</code>).</div>
                                 </div>
                             </div>
                         </div>
@@ -283,18 +282,80 @@
             <%- include('../includes/footer.html') %>
 
         <script>
+          const ALLOWED_COLOR_CLASS_RE = /^text-(primary|secondary|success|danger|warning|info|dark|light|muted|body|black|white|primary-emphasis|secondary-emphasis|success-emphasis|danger-emphasis|warning-emphasis|info-emphasis)$/;
+          const ALLOWED_FA_STYLE_SET = new Set(["fa", "fas", "far", "fab", "fa-solid", "fa-regular", "fa-brands"]);
+          const ALLOWED_FA_ICON_RE = /^fa-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+          const HEX_TO_COLOR_CLASS = {
+            "#dc3545": "text-danger",
+            "#fd7e14": "text-warning-emphasis",
+            "#ffc107": "text-warning",
+            "#d63384": "text-danger-emphasis",
+            "#842029": "text-danger-emphasis",
+            "#6f42c1": "text-primary-emphasis",
+            "#052c65": "text-primary-emphasis",
+            "#0d6efd": "text-primary",
+            "#0dcaf0": "text-info",
+            "#198754": "text-success",
+            "#495057": "text-secondary",
+          };
+
           let selectedIcon = "fa-triangle-exclamation";
-          let selectedColor = "#dc3545";
+          let selectedColor = "text-danger";
 
           const elements = document.querySelectorAll('[id^="edit-"]');
           elements.forEach(function(element){
             element.addEventListener("click", editItem);
           });
 
+          function extractClassStringFromInput(rawValue) {
+            if (!rawValue || typeof rawValue !== "string") return "";
+            const trimmed = rawValue.trim();
+            if (!trimmed) return "";
+            if (trimmed.includes("<") || trimmed.includes(">")) {
+              const legacyMatch = trimmed.match(/^<i\s+class\s*=\s*(?:"([^"]*)"|'([^']*)')\s*(?:[^>]*)>\s*<\/i>$/i);
+              if (legacyMatch) {
+                return (legacyMatch[1] || legacyMatch[2] || "").trim();
+              }
+              return "";
+            }
+            return trimmed;
+          }
+
+          function sanitizeClientIconClasses(rawValue) {
+            const candidate = extractClassStringFromInput(rawValue);
+            const tokens = candidate.split(/\s+/).filter(Boolean);
+            let style = "fa-solid";
+            let icon = "";
+            let color = "";
+            for (const token of tokens) {
+              if (ALLOWED_FA_STYLE_SET.has(token)) {
+                style = token;
+              } else if (!color && ALLOWED_COLOR_CLASS_RE.test(token)) {
+                color = token;
+              } else if (!icon && ALLOWED_FA_ICON_RE.test(token)) {
+                icon = token;
+              }
+            }
+            if (!icon) return "fa-solid fa-triangle-exclamation text-danger";
+            return color ? `${style} ${icon} ${color}` : `${style} ${icon}`;
+          }
+
+          function renderPreviewIcon(classString) {
+            const previewIconHolder = document.getElementById("previewIconHolder");
+            if (!previewIconHolder) return;
+            previewIconHolder.textContent = "";
+            const iconEl = document.createElement("i");
+            iconEl.className = classString;
+            previewIconHolder.appendChild(iconEl);
+          }
+
           function selectIcon(iconClass, isCustom = false) {
             selectedIcon = iconClass.trim();
             if (!selectedIcon.startsWith("fa-")) {
               selectedIcon = "fa-" + selectedIcon;
+            }
+            if (!ALLOWED_FA_ICON_RE.test(selectedIcon)) {
+              selectedIcon = "fa-triangle-exclamation";
             }
 
             // Update button states
@@ -324,12 +385,19 @@
             }
           }
 
-          function selectColor(colorHex, isCustom = false) {
-            selectedColor = colorHex;
+          function selectColor(colorValue, isCustom = false) {
+            const normalized = (colorValue || "").trim();
+            if (ALLOWED_COLOR_CLASS_RE.test(normalized)) {
+              selectedColor = normalized;
+            } else if (HEX_TO_COLOR_CLASS[normalized.toLowerCase()]) {
+              selectedColor = HEX_TO_COLOR_CLASS[normalized.toLowerCase()];
+            } else {
+              selectedColor = "text-danger";
+            }
 
             // Highlight matching preset button
             document.querySelectorAll("#colorPresets .color-btn").forEach(btn => {
-              if (btn.dataset.color.toLowerCase() === colorHex.toLowerCase()) {
+              if ((btn.dataset.color || "").toLowerCase() === selectedColor.toLowerCase()) {
                 btn.style.borderColor = "#212529";
                 btn.style.transform = "scale(1.15)";
               } else {
@@ -338,12 +406,8 @@
               }
             });
 
-            // Update custom picker and hex text
-            const picker = document.getElementById("customColorPicker");
-            if (picker && !isCustom) picker.value = colorHex;
-
             const hexText = document.getElementById("colorHexText");
-            if (hexText) hexText.innerText = colorHex;
+            if (hexText) hexText.textContent = selectedColor;
 
             updatePreview();
           }
@@ -351,75 +415,72 @@
           function updatePreview() {
             const nameInput = document.getElementById("name");
             const previewName = document.getElementById("previewName");
-            const previewIconHolder = document.getElementById("previewIconHolder");
             const iconHidden = document.getElementById("icon");
             const rawTextarea = document.getElementById("rawHtmlTextarea");
 
             const displayName = (nameInput && nameInput.value.trim().length > 0) ? nameInput.value.trim() : "Nom du motif";
-            if (previewName) previewName.innerText = displayName;
+            if (previewName) previewName.textContent = displayName;
 
-            // Build standard HTML tag
-            const generatedHtml = `<i class="fa-solid ${selectedIcon}" style="color: ${selectedColor}"></i>`;
-
-            if (previewIconHolder) {
-              previewIconHolder.innerHTML = generatedHtml;
-            }
+            const generatedClasses = sanitizeClientIconClasses(`fa-solid ${selectedIcon} ${selectedColor}`);
+            renderPreviewIcon(generatedClasses);
 
             if (iconHidden) {
-              iconHidden.value = generatedHtml;
+              iconHidden.value = generatedClasses;
             }
 
             if (rawTextarea && document.activeElement !== rawTextarea) {
-              rawTextarea.value = generatedHtml;
+              rawTextarea.value = generatedClasses;
             }
           }
 
-          function onRawHtmlInput(htmlValue) {
+          function onRawHtmlInput(rawValue) {
+            const cleanClasses = sanitizeClientIconClasses(rawValue);
             const iconHidden = document.getElementById("icon");
-            if (iconHidden) iconHidden.value = htmlValue;
+            if (iconHidden) iconHidden.value = cleanClasses;
 
-            const previewIconHolder = document.getElementById("previewIconHolder");
-            if (previewIconHolder) previewIconHolder.innerHTML = htmlValue;
+            renderPreviewIcon(cleanClasses);
 
-            // Attempt to parse icon and color from custom input
-            parseAndApplyIconHtml(htmlValue, false);
+            // Attempt to parse icon and color from input
+            parseAndApplyIconHtml(rawValue, false);
           }
 
-          function parseAndApplyIconHtml(htmlString, syncRaw = true) {
-            if (!htmlString) return;
+          function parseAndApplyIconHtml(rawValue, syncRaw = true) {
+            if (!rawValue) return;
 
-            // 1. Extract icon class
-            const iconMatch = htmlString.match(/fa-([a-z0-9-]+)/i);
-            if (iconMatch) {
-              const matchedIcon = iconMatch[0].toLowerCase();
-              // Exclude generic prefix matches
-              if (!["fa-solid", "fa-regular", "fa-brands", "fa-sm", "fa-lg", "fa-2x"].includes(matchedIcon)) {
-                selectedIcon = matchedIcon;
+            const candidate = extractClassStringFromInput(rawValue);
+            const tokens = candidate.split(/\s+/).filter(Boolean);
 
-                // Check if it exists in grid
-                const matchingBtn = document.querySelector(`#iconGrid [data-icon="${matchedIcon}"]`);
+            for (const token of tokens) {
+              if (!ALLOWED_FA_STYLE_SET.has(token) && ALLOWED_FA_ICON_RE.test(token)) {
+                selectedIcon = token;
+                const matchingBtn = document.querySelector(`#iconGrid [data-icon="${token}"]`);
                 if (matchingBtn) {
-                  selectIcon(matchedIcon, false);
+                  selectIcon(token, false);
                 } else {
                   const customInput = document.getElementById("customIconInput");
-                  if (customInput) customInput.value = matchedIcon;
-                  selectIcon(matchedIcon, true);
+                  if (customInput) customInput.value = token;
+                  selectIcon(token, true);
                 }
+                break;
               }
             }
 
-            // 2. Extract color
-            const colorMatch = htmlString.match(/color:\s*([#a-zA-Z0-9]+)/i);
-            if (colorMatch && colorMatch[1]) {
-              selectedColor = colorMatch[1];
-              selectColor(selectedColor, true);
+            const colorClassToken = tokens.find(t => ALLOWED_COLOR_CLASS_RE.test(t));
+            if (colorClassToken) {
+              selectColor(colorClassToken, true);
+            } else {
+              const colorMatch = rawValue.match(/color:\s*([#a-zA-Z0-9]+)/i);
+              if (colorMatch && colorMatch[1]) {
+                selectColor(colorMatch[1], true);
+              }
             }
 
             if (syncRaw) {
+              const cleanClasses = sanitizeClientIconClasses(rawValue);
               const rawTextarea = document.getElementById("rawHtmlTextarea");
-              if (rawTextarea) rawTextarea.value = htmlString;
+              if (rawTextarea) rawTextarea.value = cleanClasses;
               const iconHidden = document.getElementById("icon");
-              if (iconHidden) iconHidden.value = htmlString;
+              if (iconHidden) iconHidden.value = cleanClasses;
             }
           }
 
@@ -431,11 +492,10 @@
             document.getElementById("warningtypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
 
-            const decodedIcon = this.dataset.description.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-            parseAndApplyIconHtml(decodedIcon, true);
+            parseAndApplyIconHtml(this.dataset.description || "", true);
             updatePreview();
 
-            document.getElementById("submitBtn").innerText = "Update warning type";
+            document.getElementById("submitBtn").textContent = "Update warning type";
             document.getElementById("cancelEditBtn").style.display = "inline-block";
 
             document.getElementById("warningTypeForm").scrollIntoView({ behavior: 'smooth' });
@@ -449,10 +509,10 @@
             document.getElementById("name").value = "";
             
             selectIcon("fa-triangle-exclamation", false);
-            selectColor("#dc3545", false);
+            selectColor("text-danger", false);
             updatePreview();
 
-            document.getElementById("submitBtn").innerText = "Create new warning type";
+            document.getElementById("submitBtn").textContent = "Create new warning type";
             document.getElementById("cancelEditBtn").style.display = "none";
           }
 

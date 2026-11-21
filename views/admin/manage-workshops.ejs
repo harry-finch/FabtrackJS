@@ -155,7 +155,7 @@
                                                     title="Modifier l'atelier">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
-                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/delete/<%= ws.id %>" class="d-inline" onsubmit="return confirm('Supprimer définitivement l\'atelier <%= ws.name %> ?');">
+                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/delete/<%= ws.id %>" class="d-inline" data-confirm="Supprimer définitivement l'atelier <%= ws.name %> ?">
                                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
                                                     <i class="fa-solid fa-trash-can"></i>
@@ -279,7 +279,7 @@
                                                                         <i class="fa-solid fa-check"></i>
                                                                     </button>
                                                                 </form>
-                                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/remove-interest/<%= ws.id %>/<%= item.user.id %>" class="d-inline" onsubmit="return confirm('Retirer cet utilisateur de la liste d\'intérêt ?');">
+                                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/remove-interest/<%= ws.id %>/<%= item.user.id %>" class="d-inline" data-confirm="Retirer cet utilisateur de la liste d'intérêt ?">
                                                                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                                     <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Retirer l'intérêt">
                                                                         <i class="fa-solid fa-trash-can"></i>

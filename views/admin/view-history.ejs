@@ -136,10 +136,13 @@
                 <% } %>
               </td>
               <td class="text-center">
-                <% if (entry.userproject && entry.userproject.project) { %>
-                  <a href="<%= entry.userproject.project.url %>" target="_blank" title="View Project">
+                <% const validProjectUrl = entry.userproject && entry.userproject.project ? safeHttpUrl(entry.userproject.project.url) : null; %>
+                <% if (validProjectUrl) { %>
+                  <a href="<%= validProjectUrl %>" target="_blank" rel="noopener noreferrer" title="View Project">
                     <i class="fa-solid fa-book"></i>
                   </a>
+                <% } else if (entry.userproject && entry.userproject.project && entry.userproject.project.url) { %>
+                  <span class="text-muted small"><%= entry.userproject.project.url %></span>
                 <% } else { %>
                   <span class="text-muted small">-</span>
                 <% } %>
@@ -167,7 +170,7 @@
                 </a>
               </td>
               <td class="text-center">
-                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/delete/<%= entry.id %>" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this history record?');">
+                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/delete/<%= entry.id %>" class="d-inline" data-confirm="Are you sure you want to delete this history record?">
                   <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                   <button type="submit" class="btn btn-link p-0 border-0 text-decoration-none" title="Delete Record">
                     <i class="fa-solid fa-trash-can text-danger"></i>

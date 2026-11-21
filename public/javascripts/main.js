@@ -175,12 +175,21 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Form Submissions Feedback & Double-submission prevention
+  // 3. Form Submissions Feedback, Centralized data-confirm & Double-submission prevention
   // ---------------------------------------------------------------------------
   document.addEventListener("submit", (e) => {
     if (e.defaultPrevented) return;
 
     const form = e.target;
+
+    // Centralized confirmation dialog via data-confirm attribute (eliminates inline JS confirm() XSS)
+    if (form && typeof form.getAttribute === "function") {
+      const confirmMessage = form.getAttribute("data-confirm");
+      if (confirmMessage && typeof window.confirm === "function" && !window.confirm(confirmMessage)) {
+        e.preventDefault();
+        return;
+      }
+    }
 
     // Subpath Auto-Correction for form action in reverse proxy deployments
     if (window.getAppBaseUrl && form.action) {

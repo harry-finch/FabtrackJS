@@ -20,6 +20,7 @@ const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
 const { applyUploadStaticHeaders } = require("./services/uploadSecurityService");
 const { csrfTokenMiddleware, csrfProtection } = require("./middleware/csrf");
+const { escapeHtml, safeJson, safeHttpUrl, sanitizeWarningIcon } = require("./utilities/xssHelpers");
 const i18n = require("./config/i18n");
 const compression = require("compression");
 const isProduction = process.env.NODE_ENV === "production";
@@ -332,6 +333,12 @@ app.use(async (req, res, next) => {
     res.locals.role = req.session ? req.session.role : undefined;
     res.locals.username = req.session ? req.session.username : undefined;
     res.locals.currentPath = req.originalUrl ? req.originalUrl.split("?")[0] : req.path;
+
+    // Expose centralized XSS / URL / JSON / icon sanitization helpers to all EJS views
+    res.locals.escapeHtml = escapeHtml;
+    res.locals.safeJson = safeJson;
+    res.locals.safeHttpUrl = safeHttpUrl;
+    res.locals.sanitizeWarningIcon = sanitizeWarningIcon;
 
     next();
   } catch (err) {

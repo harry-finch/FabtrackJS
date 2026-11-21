@@ -198,7 +198,7 @@
                       <% } %>
                     </td>
                     <td class="text-end pe-4">
-                      <form action="/admin/equipment/return/<%= loan.id %>" method="post" class="d-inline" onsubmit="return confirm('Confirmer la restitution de cet équipement ?');">
+                      <form action="/admin/equipment/return/<%= loan.id %>" method="post" class="d-inline" data-confirm="Confirmer la restitution de cet équipement ?">
                         <button type="submit" class="btn btn-sm btn-success rounded-circle shadow-sm" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;" data-bs-toggle="tooltip" data-bs-placement="top" title="Restituer l'équipement" aria-label="Restituer">
                           <i class="fa-solid fa-rotate-left"></i>
                         </button>
@@ -358,7 +358,7 @@
                         <i class="fa-solid fa-arrow-up-from-bracket"></i>
                       </button>
                       <% if (item.status === 'OUT_OF_SERVICE' || item.status === 'DECOMMISSIONED') { %>
-                      <form action="/admin/inventory/equipment/restore/<%= item.id %>" method="POST" class="d-inline" onsubmit="return confirm('Remettre cet équipement en service (disponible au prêt) ?');">
+                      <form action="/admin/inventory/equipment/restore/<%= item.id %>" method="POST" class="d-inline" data-confirm="Remettre cet équipement en service (disponible au prêt) ?">
                         <button type="submit" class="btn btn-outline-success" title="Remettre en service (disponible)">
                           <i class="fa-solid fa-rotate-left"></i>
                         </button>
@@ -376,7 +376,7 @@
                       >
                         <i class="fa-solid fa-pen-to-square"></i>
                       </button>
-                      <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/equipment/delete/<%= item.id %>" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet équipement (<%= item.name %>) ?');">
+                      <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/equipment/delete/<%= item.id %>" class="d-inline" data-confirm="Êtes-vous sûr de vouloir supprimer cet équipement (<%= item.name %>) ?">
                         <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
                           <i class="fa-solid fa-trash-can"></i>

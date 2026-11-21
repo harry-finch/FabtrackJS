@@ -124,11 +124,7 @@
                                         <td>
                                             <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1">
                                                 <% if (warning.warningtype?.icon) { %>
-                                                    <% if (warning.warningtype.icon.includes('<')) { %>
-                                                        <%- warning.warningtype.icon %>
-                                                    <% } else { %>
-                                                        <i class="fa-solid <%= warning.warningtype.icon %> me-1"></i>
-                                                    <% } %>
+                                                    <i class="<%= sanitizeWarningIcon(warning.warningtype.icon) %> me-1"></i>
                                                 <% } else { %>
                                                     <i class="fa-solid fa-triangle-exclamation me-1"></i>
                                                 <% } %>
@@ -159,21 +155,21 @@
                                         <td class="text-end pe-4">
                                             <div class="btn-group btn-group-sm">
                                                 <% if (warning.active) { %>
-                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/deactivate/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Marquer cet avertissement comme résolu ?');">
+                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/deactivate/<%= warning.id %>" class="d-inline" data-confirm="Marquer cet avertissement comme résolu ?">
                                                         <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                         <button type="submit" class="btn btn-sm btn-outline-success" title="Marquer comme résolu">
                                                             <i class="fa-solid fa-check"></i>
                                                         </button>
                                                     </form>
                                                 <% } else { %>
-                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/activate/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Réactiver cet avertissement ?');">
+                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/activate/<%= warning.id %>" class="d-inline" data-confirm="Réactiver cet avertissement ?">
                                                         <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                         <button type="submit" class="btn btn-sm btn-outline-secondary" title="Réactiver cet avertissement">
                                                             <i class="fa-solid fa-rotate-left"></i>
                                                         </button>
                                                     </form>
                                                 <% } %>
-                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/delete/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Supprimer définitivement cet enregistrement d\'avertissement ?');">
+                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/delete/<%= warning.id %>" class="d-inline" data-confirm="Supprimer définitivement cet enregistrement d'avertissement ?">
                                                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer définitivement">
                                                         <i class="fa-solid fa-trash-can"></i>

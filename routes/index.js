@@ -4,11 +4,13 @@ const { prisma } = require("../utilities/db");
 const dotenv = require("dotenv");
 
 const clearNotification = require("../middleware/clearNotification.js");
+const isAuthenticated = require("../middleware/checkSession.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody } = require("../middleware/validate.js");
 const { createRateLimiter } = require("../middleware/rateLimit.js");
 const { ensureCsrfToken } = require("../middleware/csrf.js");
 const { isApiOrAjaxRequest } = require("../middleware/requireRoles.js");
+const { safeHttpUrl } = require("../utilities/xssHelpers.js");
 const {
   loginSchema,
   registerStaffSchema,
@@ -169,10 +171,11 @@ function buildAgreementSuccessViewModel(user, settings, { alreadyAccepted = fals
     .replace(/\{fullname\}|\{\{fullname\}\}/gi, `${user.name || ""} ${user.surname || ""}`.trim())
     .replace(/\{lab_name\}|\{\{lab_name\}\}/gi, labName);
 
-  const redirectUrl =
+  const rawRedirectUrl =
     (safeSettings.mail_user_agreement_redirect_url && safeSettings.mail_user_agreement_redirect_url.trim()) ||
     safeSettings.bookstack_url ||
     "https://wiki.fablab.sorbonne-universite.fr/BookStack/";
+  const redirectUrl = safeHttpUrl(rawRedirectUrl);
 
   const delayNum = parseInt(safeSettings.mail_user_agreement_redirect_delay || "5", 10);
   const redirectDelay = Number.isNaN(delayNum) ? 5 : delayNum;
@@ -621,14 +624,19 @@ router.get("/change-language/:lang", (req, res) => {
 
 router.post(
   "/report-bug",
+  isAuthenticated,
   reportBugLimiter,
   validateBody(reportBugSchema, {
     redirectUrl: (req) => resolveSafeRedirectPath(req, "/fabtrack"),
   }),
   asyncHandler(async (req, res) => {
-    const { title, category, description, pageUrl, severity, reporterName, reporterEmail } = req.body;
+    const payload = req.validatedBody || req.body;
+    const { title, category, description, pageUrl, severity, reporterName, reporterEmail } = payload;
     const finalReporterName = reporterName || (req.session && req.session.username) || null;
-    const hostUrl = `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
+    const hostUrl =
+      process.env.NODE_ENV === "production"
+        ? undefined
+        : `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
 
     try {
       await mailService.sendBugReportAlert({

@@ -45,6 +45,7 @@ pm2 logs fabtrack --lines 50
 | [R-010](../roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md) | `v1.1` | Aucune | Aucune | **`npm install --omit=dev`** (obligatoire : correctifs CVE + `@fortawesome/fontawesome-free`) | Vérifier l'affichage des icônes (kiosque, admin, avertissements) et `npm audit --omit=dev` |
 | [R-011](../roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md) | `v1.2` | Aucune en prod (`DATABASE_URL_TEST` requis uniquement pour les tests d'intégration) | Aucune | Aucune en prod (`eslint` uniquement en `devDependencies`) | Vérifier l'absence de `TEST_ADMIN_USER` dans `Staff` en production |
 | [R-012](../roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md) | `v1.2` | **Obligatoire :** définir `SECRET` (aléatoire fort, != valeur par défaut) ; vérifier `TRUST_PROXY` (`1` derrière Nginx) et `ENABLE_HTTPS=true` en HTTPS | Aucune | Aucune (CSRF & rate-limit 100 % natifs) | Reconnexion sessions actives ; tester login, `POST /logout`, suppression admin, confirmation charte `GET`→`POST /agreement/:token` et rejet `403` sans CSRF |
+| [R-013](../roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md) | `v1.2` | Aucune | Aucune | Aucune | Vérifier les icônes d'avertissement, les dialogues `data-confirm`, le tableau paginé usager et le switch « Signalement de bug » dans Administration > E-mails |
 
 ---
 
@@ -261,6 +262,21 @@ ENABLE_HTTPS=true      # Active cookie Secure + HSTS si l'accès public passe en
 curl -i -X POST -H "Accept: application/json" "https://votre-domaine.org/fabtrack/logout"
 # Attendu : HTTP/1.1 403 Forbidden (code EBADCSRFTOKEN)
 ```
+
+---
+
+#### `R-013` — Éradication des XSS templates/DOM, sécurisation `/report-bug` & `mailService`
+
+**1. Variable `.env`, SQL et dépendances**
+
+- **Aucune** modification `.env`, **aucune** migration SQL et **aucune** nouvelle dépendance npm requises : `git pull` et redémarrage du service suffisent.
+
+**2. Impacts fonctionnels & sécurité**
+
+- Les icônes des types d'avertissements (`Warningtype.icon`) sont désormais strictement filtrées sur une liste blanche de classes Font Awesome Free + couleurs Bootstrap (`text-*`). Les anciennes lignes stockées en base sous forme `<i class="fa-solid ..."></i>` restent rendues proprement via `sanitizeWarningIcon()`, sans jamais injecter de HTML brut.
+- Toutes les boîtes de confirmation de suppression utilisent désormais l'attribut `data-confirm` géré centralement par `public/javascripts/main.js` (plus aucun `confirm()` inline).
+- `POST /report-bug` requiert désormais une session staff authentifiée (`401` / redirection `/login` pour les appels anonymes), valide `pageUrl` en `http:`/`https:`, et un nouveau réglage **Administration > E-mails > Signalement de bug** (`mail_notif_bug_report`, activé par défaut) ainsi que `mail_notif_staff_registration` sont désormais effectivement appliqués.
+
 
 
 

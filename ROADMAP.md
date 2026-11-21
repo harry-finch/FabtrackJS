@@ -24,7 +24,7 @@
    Imposer DATABASE_URL_TEST, supprimer le backdoor TEST_ADMIN_USER sur la base réelle, corriger LIKE 'TEST_%' et créer la CI GitHub Actions.
 9. **[R-012 Protection CSRF, conversion des 31 routes GET mutantes et durcissement Auth](roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md)** · À tester · jalon v1.2
    Passer les 31+ actions GET mutantes en POST, ajouter un jeton CSRF natif synchronisé en session et durcir sessions, cookies, rate-limiting et révocation staff.
-10. **[R-013 Éradiquer les XSS templates/DOM et sécuriser /report-bug & mailService](roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md)** · Idée · jalon v1.2
+10. **[R-013 Éradiquer les XSS templates/DOM et sécuriser /report-bug & mailService](roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md)** · À tester · jalon v1.2
    Supprimer les injections <%- JSON.stringify %>, icônes HTML brutes, confirm() inline, innerHTML dynamiques et HTML injection dans les e-mails.
 11. **[R-014 Index SQL critiques, sessions MariaDB, cache global et clôture auto des visites](roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md)** · Idée · jalon v1.2
    Ajouter les index DB, remplacer MemoryStore et le cache par session, et sortir la clôture des visites de GET /fabtrack/.
@@ -88,6 +88,8 @@
 - [ ] [A-017](roadmap/actions/A-017-valider-la-suite-d-integration-sur-fabtrack-test.md) Valider la suite d'intégration sur fabtrack_test et la CI GitHub Actions (R-011) (tester, R-011)
 - [ ] [A-018](roadmap/actions/A-018-verifier-en-preproduction-production-la-presence.md) Vérifier en préproduction/production la présence d'un SECRET fort non-par-défaut, TRUST_PROXY et ENABLE_HTTPS dans .env avant redémarrage (tester, R-012)
 - [ ] [A-019](roadmap/actions/A-019-valider-dans-le-navigateur-la-connexion-post.md) Valider dans le navigateur la connexion, POST /logout, les actions admin POST avec CSRF, la confirmation charte GET->POST /agreement/:token et le rejet 403 sans jeton CSRF (tester, R-012)
+- [ ] [A-020](roadmap/actions/A-020-verifier-dans-le-navigateur-les-boites-data.md) Vérifier dans le navigateur les boîtes data-confirm sur suppressions admin, le rendu des icônes d'avertissement (kiosque/admin) et le tableau paginé d'historique usager (tester, R-013)
+- [ ] [A-021](roadmap/actions/A-021-verifier-dans-administration-e-mails-le-nouveau.md) Vérifier dans Administration > E-mails le nouveau switch Signalement de bug et tester l'envoi d'un signalement connecté puis le refus d'un appel anonyme POST /report-bug (tester, R-013)
 
 ## Livré
 

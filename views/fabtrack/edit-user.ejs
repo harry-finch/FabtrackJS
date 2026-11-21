@@ -545,7 +545,7 @@
                                                 <td><%= warning.comments || '-' %></td>
                                                 <td class="text-center">
                                                     <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>warning/deactivate/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Résoudre et désactiver cet avertissement ?');">
+                                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>warning/deactivate/<%= warning.id %>" class="d-inline" data-confirm="Résoudre et désactiver cet avertissement ?">
                                                             <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                             <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3" title="Marquer comme résolu">
                                                                 <i class="fa-solid fa-check me-1"></i> Résolu
@@ -643,15 +643,33 @@
                                     </thead>
                                     <tbody id="table-content">
                                         <% let tableData = [] %>
-                                        <% for (const entry of history) { %>
-                                        <% tableData.push( {
-                                          col1: entry.arrival,
-                                          col2: entry.departure || "-",
-                                          col3: entry.workspace ? entry.workspace.name : "-",
-                                          col4: (entry.userproject && entry.userproject.project) ? '<a href="' + entry.userproject.project.url + '" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="Consulter"><i class="fa-solid fa-arrow-up-right-from-square fa-xs me-1"></i>Doc</a>' : '<span class="text-muted small">-</span>',
-                                          col5: entry.comments ? '<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="' + entry.comments + '"><i class="fa-solid fa-comment-dots text-primary"></i></span>' : '<span class="text-muted small">-</span>',
-                                        }) %>
-                                        <% } %>
+                                        <% for (const entry of history) {
+                                          const safeEntryProjectUrl = (entry.userproject && entry.userproject.project) ? safeHttpUrl(entry.userproject.project.url) : null;
+                                          tableData.push({
+                                            col1: entry.arrival,
+                                            col2: entry.departure || "-",
+                                            col3: entry.workspace ? entry.workspace.name : "-",
+                                            col4: safeEntryProjectUrl
+                                              ? {
+                                                  type: "link",
+                                                  url: safeEntryProjectUrl,
+                                                  label: "Doc",
+                                                  title: "Consulter",
+                                                  className: "btn btn-sm btn-outline-primary rounded-pill px-2 py-0",
+                                                  iconClass: "fa-solid fa-arrow-up-right-from-square fa-xs me-1",
+                                                }
+                                              : { type: "text", text: "-", className: "text-muted small" },
+                                            col5: entry.comments
+                                              ? {
+                                                  type: "tooltipIcon",
+                                                  title: entry.comments,
+                                                  iconClass: "fa-solid fa-comment-dots text-primary",
+                                                  placement: "top",
+                                                  customClass: "custom-tooltip",
+                                                }
+                                              : { type: "text", text: "-", className: "text-muted small" },
+                                          });
+                                        } %>
                                     </tbody>
                                 </table>
                             </div>
@@ -718,8 +736,9 @@
                                                 <span class="badge bg-body-secondary text-secondary-emphasis border rounded-pill"><%= projectTypeName %></span>
                                             </td>
                                             <td class="text-center">
-                                                <% if (project.url && project.url.startsWith('http')) { %>
-                                                    <a href="<%= project.url %>" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-2 py-0" title="Consulter la documentation">
+                                                <% const safeProjUrl = safeHttpUrl(project.url); %>
+                                                <% if (safeProjUrl) { %>
+                                                    <a href="<%= safeProjUrl %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm rounded-pill px-2 py-0" title="Consulter la documentation">
                                                         <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i> Ouvrir
                                                     </a>
                                                 <% } else { %>
@@ -831,10 +850,13 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <% if (usage.project) { %>
-                                                        <a href="<%= usage.project.url %>" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="<%= usage.project.url %>">
+                                                    <% const safeUsageProjUrl = usage.project ? safeHttpUrl(usage.project.url) : null; %>
+                                                    <% if (safeUsageProjUrl) { %>
+                                                        <a href="<%= safeUsageProjUrl %>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="<%= safeUsageProjUrl %>">
                                                             <i class="fa-solid fa-arrow-up-right-from-square fa-xs me-1"></i>Projet
                                                         </a>
+                                                    <% } else if (usage.project && usage.project.url) { %>
+                                                        <span class="text-muted small"><%= usage.project.url %></span>
                                                     <% } else { %>
                                                         <span class="text-muted small">-</span>
                                                     <% } %>
@@ -1042,7 +1064,7 @@
                                                     <% } %>
                                                 </td>
                                                 <td class="text-end pe-3">
-                                                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/equipment/return/<%= loan.id %>" method="post" class="d-inline" onsubmit="return confirm('Confirmer la restitution de cet objet ?');">
+                                                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/equipment/return/<%= loan.id %>" method="post" class="d-inline" data-confirm="Confirmer la restitution de cet objet ?">
                                                         <button type="submit" class="btn btn-sm btn-success rounded-circle shadow-sm" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;" data-bs-toggle="tooltip" data-bs-placement="top" title="Restituer l'équipement" aria-label="Restituer">
                                                             <i class="fa-solid fa-rotate-left"></i>
                                                         </button>
@@ -1218,7 +1240,7 @@
                                                                         <i class="fa-solid fa-check me-1"></i> Valider
                                                                     </button>
                                                                 </form>
-                                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-interest/remove/<%= item.workshop.id %>" class="d-inline" onsubmit="return confirm('Retirer l\'intérêt pour cet atelier ?');">
+                                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-interest/remove/<%= item.workshop.id %>" class="d-inline" data-confirm="Retirer l'intérêt pour cet atelier ?">
                                                                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Retirer l'intérêt">
                                                                         <i class="fa-solid fa-trash-can"></i>
@@ -1263,7 +1285,7 @@
                                                         <% } %>
                                                     </div>
                                                     <div>
-                                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-badge/revoke/<%= comp.workshop.id %>" class="d-inline" onsubmit="return confirm('Révoquer le badge pour cet atelier ?');">
+                                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-badge/revoke/<%= comp.workshop.id %>" class="d-inline" data-confirm="Révoquer le badge pour cet atelier ?">
                                                             <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                             <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Révoquer le badge">
                                                                 <i class="fa-solid fa-xmark"></i>
@@ -1303,7 +1325,7 @@
         <%- include('../includes/footer.html') %>
         <script>
           // Call the pagination function after the table is rendered
-          addPagination('historyTable', <%- JSON.stringify(tableData) %>);
+          addPagination('historyTable', <%- safeJson(tableData) %>);
 
           // Automatically expand accordion section if URL has a hash anchor (e.g. #collapseInterests)
           if (window.location.hash) {

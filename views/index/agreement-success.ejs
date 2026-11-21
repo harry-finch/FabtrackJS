@@ -81,7 +81,14 @@
                             <%= message %>
                         </div>
 
-                        <% if (typeof redirectUrl !== 'undefined' && redirectUrl) { %>
+                        <%
+                            const validatedRedirectUrl = typeof redirectUrl !== 'undefined' && redirectUrl
+                                ? (typeof safeHttpUrl === 'function'
+                                    ? safeHttpUrl(redirectUrl)
+                                    : (/^https?:\/\//i.test(redirectUrl) ? redirectUrl : null))
+                                : null;
+                        %>
+                        <% if (validatedRedirectUrl) { %>
                             <div class="p-3 rounded-3 bg-body-tertiary border mb-4">
                                 <div class="d-flex align-items-center justify-content-center gap-2 text-muted small mb-3">
                                     <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 1rem; height: 1rem;" id="spinnerTimer">
@@ -92,7 +99,7 @@
                                     </span>
                                 </div>
 
-                                <a href="<%= redirectUrl %>" id="btnRedirectNow" class="btn btn-primary rounded-pill px-4 py-2.5 shadow-sm fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                                <a href="<%= validatedRedirectUrl %>" rel="noopener noreferrer" id="btnRedirectNow" class="btn btn-primary rounded-pill px-4 py-2.5 shadow-sm fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-2">
                                     <span>Accéder au site maintenant</span>
                                     <i class="fa-solid fa-arrow-up-right-from-square fa-sm"></i>
                                 </a>
@@ -100,11 +107,16 @@
 
                             <script>
                                 (function() {
-                                    let delay = parseInt("<%= redirectDelay %>", 10);
-                                    const targetUrl = "<%= redirectUrl %>";
+                                    let delay = parseInt(String(<%- typeof safeJson === 'function' ? safeJson(redirectDelay) : JSON.stringify(redirectDelay) %>), 10);
+                                    const targetUrl = <%- typeof safeJson === 'function' ? safeJson(validatedRedirectUrl) : JSON.stringify(validatedRedirectUrl) %>;
                                     const countdownEl = document.getElementById("countdownVal");
                                     const spinnerEl = document.getElementById("spinnerTimer");
                                     const countdownText = document.getElementById("countdownText");
+
+                                    if (typeof targetUrl !== "string" || !/^https?:\/\//i.test(targetUrl)) {
+                                        if (spinnerEl) spinnerEl.style.display = "none";
+                                        return;
+                                    }
 
                                     if (isNaN(delay) || delay <= 0) {
                                         if (spinnerEl) spinnerEl.style.display = "none";
@@ -117,7 +129,9 @@
                                         if (countdownEl) countdownEl.textContent = delay;
                                         if (delay <= 0) {
                                             clearInterval(timer);
-                                            window.location.assign(targetUrl);
+                                            if (/^https?:\/\//i.test(targetUrl)) {
+                                                window.location.assign(targetUrl);
+                                            }
                                         }
                                     }, 1000);
                                 })();

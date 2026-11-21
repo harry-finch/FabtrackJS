@@ -72,7 +72,7 @@
               event.preventDefault();
               document
                 .getElementsByClassName("toast-body")[0]
-                .innerHTML = "<%= __('auth.passwords_mismatch') %>";
+                .textContent = <%- typeof safeJson === 'function' ? safeJson(__('auth.passwords_mismatch')) : JSON.stringify(__('auth.passwords_mismatch')) %>;
               showNotification();
             }
           });

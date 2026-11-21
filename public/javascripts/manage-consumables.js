@@ -79,7 +79,23 @@ document.addEventListener("DOMContentLoaded", function () {
     if (previewText) {
       const packsEquiv = unitsPerPack > 1 ? ` (~${(addedUnits / unitsPerPack).toFixed(2)} ${stockUnit})` : "";
       const totalPacksEquiv = unitsPerPack > 1 ? ` (~${(newStock / unitsPerPack).toFixed(2)} ${stockUnit})` : "";
-      previewText.innerHTML = `<strong>+${addedUnits.toLocaleString()} ${unit}</strong>${packsEquiv} ajoutés au stock &rarr; Nouveau stock total : <strong>${newStock.toLocaleString()} ${unit}</strong>${totalPacksEquiv}`;
+      previewText.textContent = "";
+
+      const addedStrong = document.createElement("strong");
+      addedStrong.textContent = `+${addedUnits.toLocaleString()} ${unit}`;
+      previewText.appendChild(addedStrong);
+
+      previewText.appendChild(
+        document.createTextNode(`${packsEquiv} ajoutés au stock → Nouveau stock total : `)
+      );
+
+      const totalStrong = document.createElement("strong");
+      totalStrong.textContent = `${newStock.toLocaleString()} ${unit}`;
+      previewText.appendChild(totalStrong);
+
+      if (totalPacksEquiv) {
+        previewText.appendChild(document.createTextNode(totalPacksEquiv));
+      }
     }
   }
 
@@ -117,7 +133,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const labelUnitsInput = document.getElementById("labelUnitsInput");
 
     if (labelModePacks) {
-      labelModePacks.innerHTML = `<i class="fa-solid fa-box-archive me-1"></i> Par conditionnement (${stockUnit} de ${ratio} ${unit})`;
+      labelModePacks.textContent = "";
+      const icon = document.createElement("i");
+      icon.className = "fa-solid fa-box-archive me-1";
+      labelModePacks.appendChild(icon);
+      labelModePacks.appendChild(
+        document.createTextNode(` Par conditionnement (${stockUnit} de ${ratio} ${unit})`)
+      );
     }
     if (labelPackagesInput) {
       labelPackagesInput.textContent = `Nombre de ${stockUnit}(s) reçues`;

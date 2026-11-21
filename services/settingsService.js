@@ -30,6 +30,7 @@ const DEFAULT_SETTINGS = {
   mail_notif_staff_approved: "true",
   mail_notif_user_agreement: "true",
   mail_notif_machine_issue: "true",
+  mail_notif_bug_report: "true",
   // User Agreement Email Template
   mail_user_agreement_subject: "Fablab : Signature requise de la charte d'utilisation",
   mail_user_agreement_title: "Validation de la charte d'utilisation du Fablab",

@@ -64,7 +64,7 @@
             <a href="/admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-pen-to-square me-1"></i> Modifier
             </a>
-            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/delete/<%= machine.id %>" class="d-inline" onsubmit="return confirm('Confirmez-vous la suppression définitive de cette machine ?');">
+            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/delete/<%= machine.id %>" class="d-inline" data-confirm="Confirmez-vous la suppression définitive de cette machine ?">
               <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
               <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                 <i class="fa-solid fa-trash-can me-1"></i> Supprimer
@@ -340,7 +340,7 @@
                         <div class="d-flex justify-content-end align-items-center gap-1">
                           <% if (ev.kind === 'MAINTENANCE') { %>
                             <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                              <form action="/admin/machines/maintenance/<%= ev.original.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Confirmez-vous la suppression de cette fiche de maintenance ?');">
+                              <form action="/admin/machines/maintenance/<%= ev.original.id %>/delete" method="POST" class="d-inline" data-confirm="Confirmez-vous la suppression de cette fiche de maintenance ?">
                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer la maintenance">
                                   <i class="fa-solid fa-trash-can fa-xs"></i>
                                 </button>
@@ -362,7 +362,7 @@
                             <% } %>
 
                             <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                            <form action="/admin/machines/issues/<%= ev.original.id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Confirmez-vous la suppression de ce signalement ?');">
+                            <form action="/admin/machines/issues/<%= ev.original.id %>/delete" method="POST" class="d-inline" data-confirm="Confirmez-vous la suppression de ce signalement ?">
                               <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer">
                                 <i class="fa-solid fa-trash-can fa-xs"></i>
                               </button>

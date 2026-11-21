@@ -224,7 +224,7 @@
                         <span class="icon-box bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
                             <i class="fa-solid fa-users"></i>
                         </span>
-                        <h5 class="fw-bold mb-0"><%- Object.entries(history).length %> <%= __('kiosk.users_present') %></h5>
+                        <h5 class="fw-bold mb-0"><%= Object.entries(history).length %> <%= __('kiosk.users_present') %></h5>
                     </div>
 
                     <div class="card-body p-0">
@@ -306,13 +306,13 @@
                                                             <span   data-bs-toggle="tooltip"
                                                                     data-bs-placement="right"
                                                                     data-bs-custom-class="custom-tooltip"
-                                                                    data-bs-title="<%= warning.comments %>"><%- warning.warningtype.icon %></span>
+                                                                    data-bs-title="<%= warning.comments %>"><i class="<%= typeof sanitizeWarningIcon === 'function' ? sanitizeWarningIcon(warning.warningtype.icon) : 'fa-solid fa-triangle-exclamation text-warning' %>"></i></span>
                                                         </a>
                                                         <% } else { %>
                                                             <span   data-bs-toggle="tooltip"
                                                                     data-bs-placement="right"
                                                                     data-bs-custom-class="custom-tooltip"
-                                                                    data-bs-title="<%= warning.comments %> (résolution réservée admin)"><%- warning.warningtype.icon %></span>
+                                                                    data-bs-title="<%= warning.comments %> (résolution réservée admin)"><i class="<%= typeof sanitizeWarningIcon === 'function' ? sanitizeWarningIcon(warning.warningtype.icon) : 'fa-solid fa-triangle-exclamation text-warning' %>"></i></span>
                                                         <% } %>
                                                     <% }); %>
                                                 <% } %>
@@ -347,7 +347,7 @@
                                                    data-bs-target="#modalComment"
                                                    data-bs-historyid="<%= entry.id %>"
                                                    data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
-                                                   data-bs-comment="<%- encodeURIComponent(entry.comments || '') %>">
+                                                   data-bs-comment="<%= encodeURIComponent(entry.comments || '') %>">
                                                     <% if ( entry.comments ) { %>
                                                         <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="<%= __('kiosk.tooltip_edit_comment') %> : <%= entry.comments %>">
                                                             <i class="fa-solid fa-comment-dots text-primary fs-5"></i>
@@ -818,7 +818,7 @@
             <%- include('../includes/footer.html') %>
 
         <script id="consumablesData" type="application/json">
-            <%- JSON.stringify(consumables.map(function(c) {
+            <%- safeJson(consumables.map(function(c) {
                 return {
                     id: c.id,
                     name: c.name,
@@ -833,7 +833,7 @@
         </script>
 
         <script id="equipmentData" type="application/json">
-            <%- JSON.stringify((typeof equipment !== 'undefined' ? equipment : []).map(function(eq) {
+            <%- safeJson((typeof equipment !== 'undefined' ? equipment : []).map(function(eq) {
                 return {
                     id: eq.id,
                     name: eq.name,
@@ -845,24 +845,24 @@
         <script>
             window.bookstackConfig = {
                 enabled: <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? 'true' : 'false' %>,
-                baseUrl: "<%= typeof bookstackBaseUrl !== 'undefined' ? bookstackBaseUrl : 'https://wiki.fablab.sorbonne-universite.fr/BookStack/' %>",
+                baseUrl: <%- safeJson(typeof bookstackBaseUrl !== 'undefined' ? bookstackBaseUrl : 'https://wiki.fablab.sorbonne-universite.fr/BookStack/') %>,
                 autoPrefill: <%= (typeof bookstackAutoPrefill !== 'undefined' && bookstackAutoPrefill) ? 'true' : 'false' %>
             };
             window.repairCafeConfig = {
                 enabled: <%= (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) ? 'true' : 'false' %>,
-                projectTypeName: "<%= typeof repairCafeProjectTypeName !== 'undefined' ? repairCafeProjectTypeName : 'Repair Café' %>"
+                projectTypeName: <%- safeJson(typeof repairCafeProjectTypeName !== 'undefined' ? repairCafeProjectTypeName : 'Repair Café') %>
             };
             window.workshopConfig = {
                 enabled: <%= (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) ? 'true' : 'false' %>,
-                projectTypeName: "<%= typeof workshopProjectTypeName !== 'undefined' ? workshopProjectTypeName : 'Atelier' %>"
+                projectTypeName: <%- safeJson(typeof workshopProjectTypeName !== 'undefined' ? workshopProjectTypeName : 'Atelier') %>
             };
             window.ueConfig = {
                 enabled: <%= (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) ? 'true' : 'false' %>,
-                projectTypeName: "<%= typeof ueProjectTypeName !== 'undefined' ? ueProjectTypeName : 'Academic' %>"
+                projectTypeName: <%- safeJson(typeof ueProjectTypeName !== 'undefined' ? ueProjectTypeName : 'Academic') %>
             };
             window.sorbonneConfig = {
                 enabled: <%= (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) ? 'true' : 'false' %>,
-                projectTypeName: "<%= typeof sorbonneProjectTypeName !== 'undefined' ? sorbonneProjectTypeName : 'Sorbonne' %>"
+                projectTypeName: <%- safeJson(typeof sorbonneProjectTypeName !== 'undefined' ? sorbonneProjectTypeName : 'Sorbonne') %>
             };
         </script>
 

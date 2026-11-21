@@ -262,6 +262,53 @@
     });
   });
 
+  function setStockBadgeContent(badgeEl, iconClass, text, strongText) {
+    if (!badgeEl) return;
+    badgeEl.textContent = "";
+    const icon = document.createElement("i");
+    icon.className = iconClass;
+    badgeEl.appendChild(icon);
+    badgeEl.appendChild(document.createTextNode(text));
+    if (strongText !== undefined && strongText !== null) {
+      const strong = document.createElement("strong");
+      strong.textContent = String(strongText);
+      badgeEl.appendChild(strong);
+    }
+  }
+
+  function renderCheckoutAlert(container, variant, iconClass, message) {
+    if (!container) return;
+    container.textContent = "";
+    const alertDiv = document.createElement("div");
+    alertDiv.className = `alert alert-${variant} d-flex align-items-center mb-3`;
+    const icon = document.createElement("i");
+    icon.className = `${iconClass} me-2 fa-lg`;
+    alertDiv.appendChild(icon);
+    const msgDiv = document.createElement("div");
+    msgDiv.textContent = message;
+    alertDiv.appendChild(msgDiv);
+    container.appendChild(alertDiv);
+  }
+
+  function setCheckoutSubmitButtonState(btn, loading) {
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.textContent = "";
+    if (loading) {
+      const spinner = document.createElement("span");
+      spinner.className = "spinner-border spinner-border-sm me-2";
+      spinner.setAttribute("role", "status");
+      spinner.setAttribute("aria-hidden", "true");
+      btn.appendChild(spinner);
+      btn.appendChild(document.createTextNode(" Enregistrement..."));
+    } else {
+      const icon = document.createElement("i");
+      icon.className = "fa-solid fa-check me-1";
+      btn.appendChild(icon);
+      btn.appendChild(document.createTextNode(" Valider la sortie"));
+    }
+  }
+
   // Consumable select change -> update badge and unit
   const consumableSelect = document.getElementById("checkoutConsumableSelect");
   if (consumableSelect) {
@@ -275,13 +322,13 @@
         const stock = selected.dataset.stock;
         const unit = selected.dataset.unit || "u";
         unitLabel.textContent = unit;
-        badge.innerHTML = `<i class="fa-solid fa-box text-success me-1"></i> Stock actuel : <strong>${stock} ${unit}</strong>`;
+        setStockBadgeContent(badge, "fa-solid fa-box text-success me-1", " Stock actuel : ", `${stock} ${unit}`);
         if (Number(stock) > 0) {
           qtyInput.max = stock;
         }
       } else {
         unitLabel.textContent = "u";
-        badge.innerHTML = `<i class="fa-solid fa-info-circle text-primary me-1"></i> Sélectionnez un consommable pour vérifier le stock restant.`;
+        setStockBadgeContent(badge, "fa-solid fa-info-circle text-primary me-1", " Sélectionnez un consommable pour vérifier le stock restant.");
       }
     });
   }
@@ -336,10 +383,9 @@
       e.preventDefault();
       const btn = document.getElementById("btnSubmitCheckout");
       const alertContainer = document.getElementById("checkoutAlertContainer");
-      alertContainer.innerHTML = "";
+      if (alertContainer) alertContainer.textContent = "";
 
-      btn.disabled = true;
-      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Enregistrement...`;
+      setCheckoutSubmitButtonState(btn, true);
 
       const formData = new FormData(form);
       const postUrl = window.getAppBaseUrl ? window.getAppBaseUrl("admin/inventory/checkout") : "/admin/inventory/checkout";
@@ -356,7 +402,7 @@
 
         const data = await res.json();
         if (data.success) {
-          alertContainer.innerHTML = `<div class="alert alert-success d-flex align-items-center mb-3"><i class="fa-solid fa-circle-check me-2 fa-lg"></i> <div>${data.message}</div></div>`;
+          renderCheckoutAlert(alertContainer, "success", "fa-solid fa-circle-check", data.message || "Sortie enregistrée");
           setTimeout(() => {
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if (modalInstance) modalInstance.hide();
@@ -364,15 +410,13 @@
             window.location.reload();
           }, 1000);
         } else {
-          alertContainer.innerHTML = `<div class="alert alert-danger d-flex align-items-center mb-3"><i class="fa-solid fa-triangle-exclamation me-2 fa-lg"></i> <div>${data.message || "Erreur lors de la sortie"}</div></div>`;
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-check me-1"></i> Valider la sortie`;
+          renderCheckoutAlert(alertContainer, "danger", "fa-solid fa-triangle-exclamation", data.message || "Erreur lors de la sortie");
+          setCheckoutSubmitButtonState(btn, false);
         }
       } catch (err) {
         console.error("Submission error:", err);
-        alertContainer.innerHTML = `<div class="alert alert-danger d-flex align-items-center mb-3"><i class="fa-solid fa-triangle-exclamation me-2 fa-lg"></i> <div>Erreur de connexion au serveur.</div></div>`;
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-check me-1"></i> Valider la sortie`;
+        renderCheckoutAlert(alertContainer, "danger", "fa-solid fa-triangle-exclamation", "Erreur de connexion au serveur.");
+        setCheckoutSubmitButtonState(btn, false);
       }
     });
   }

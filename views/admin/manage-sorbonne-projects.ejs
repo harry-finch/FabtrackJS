@@ -200,7 +200,7 @@
               </div>
             </div>
           </div>
-          <form method="POST" action="/admin/sorbonne/settle-entity" onsubmit="return confirm('Confirmez-vous le règlement de toutes les consommations en attente pour <%= currentEntitySummary.entity %> ?');">
+          <form method="POST" action="/admin/sorbonne/settle-entity" data-confirm="Confirmez-vous le règlement de toutes les consommations en attente pour <%= currentEntitySummary.entity %> ?">
             <input type="hidden" name="entity" value="<%= currentEntitySummary.entity %>">
             <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
               <i class="fa-solid fa-check-double me-1"></i> Tout marquer comme réglé pour cette entité
@@ -265,9 +265,10 @@
                       </td>
                       <td class="small text-truncate" style="max-width: 150px;">
                         <% if (act.projectUrl && act.projectUrl !== 'N/A') { %>
-                          <% if (act.projectUrl.startsWith('http')) { %>
-                            <a href="<%= act.projectUrl %>" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="<%= act.projectUrl %>">
-                              <%= act.projectUrl.length > 25 ? act.projectUrl.substring(0, 22) + '...' : act.projectUrl %>
+                          <% const validActUrl = safeHttpUrl(act.projectUrl); %>
+                          <% if (validActUrl) { %>
+                            <a href="<%= validActUrl %>" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="<%= validActUrl %>">
+                              <%= validActUrl.length > 25 ? validActUrl.substring(0, 22) + '...' : validActUrl %>
                               <i class="fa-solid fa-arrow-up-right-from-square ms-1 small"></i>
                             </a>
                           <% } else { %>
@@ -386,7 +387,7 @@
                             <i class="fa-solid fa-list me-1"></i>Filtrer
                           </a>
                           <% if (st.pendingCost > 0) { %>
-                          <form method="POST" action="/admin/sorbonne/settle-entity" class="d-inline" onsubmit="return confirm('Confirmez-vous le règlement de toutes les consommations en attente pour <%= st.entity %> ?');">
+                          <form method="POST" action="/admin/sorbonne/settle-entity" class="d-inline" data-confirm="Confirmez-vous le règlement de toutes les consommations en attente pour <%= st.entity %> ?">
                             <input type="hidden" name="entity" value="<%= st.entity %>">
                             <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-2 py-0" style="font-size: 0.78rem;" title="Tout solder">
                               <i class="fa-solid fa-check-double me-1"></i>Solder

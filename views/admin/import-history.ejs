@@ -397,33 +397,75 @@
             tr.classList.add('table-warning');
           }
 
+          const tdNum = document.createElement('td');
+          tdNum.className = 'text-center text-muted small';
+          tdNum.textContent = String(item.rowNum);
+
+          const tdUser = document.createElement('td');
+          const strongSurname = document.createElement('strong');
+          strongSurname.textContent = item.surname || '';
+          tdUser.appendChild(strongSurname);
+          tdUser.appendChild(document.createTextNode(' ' + (item.name || '')));
+
+          const tdEmail = document.createElement('td');
+          const codeEmail = document.createElement('code');
+          codeEmail.textContent = item.email || '';
+          tdEmail.appendChild(codeEmail);
+
           // Badge Statut Contributeur
-          let userStatusBadge = '';
+          const tdUserStatus = document.createElement('td');
+          const userBadge = document.createElement('span');
+          const userIcon = document.createElement('i');
           if (item.userStatus === 'EXISTING_USER') {
-            userStatusBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"><i class="fa-solid fa-user-check me-1"></i> Compte existant</span>';
+            userBadge.className = 'badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill';
+            userIcon.className = 'fa-solid fa-user-check me-1';
+            userBadge.appendChild(userIcon);
+            userBadge.appendChild(document.createTextNode(' Compte existant'));
           } else if (item.userStatus === 'HOMONYM_WARNING') {
-            userStatusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" title="${item.warnings.join(' | ')}"><i class="fa-solid fa-triangle-exclamation me-1"></i> Homonyme (${item.homonymEmail})</span>`;
+            userBadge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill';
+            userBadge.title = Array.isArray(item.warnings) ? item.warnings.join(' | ') : '';
+            userIcon.className = 'fa-solid fa-triangle-exclamation me-1';
+            userBadge.appendChild(userIcon);
+            userBadge.appendChild(document.createTextNode(' Homonyme (' + (item.homonymEmail || '') + ')'));
           } else {
-            userStatusBadge = '<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill"><i class="fa-solid fa-user-plus me-1"></i> Nouveau compte</span>';
+            userBadge.className = 'badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill';
+            userIcon.className = 'fa-solid fa-user-plus me-1';
+            userBadge.appendChild(userIcon);
+            userBadge.appendChild(document.createTextNode(' Nouveau compte'));
           }
+          tdUserStatus.appendChild(userBadge);
+
+          const tdDate = document.createElement('td');
+          const dateSpan = document.createElement('span');
+          dateSpan.className = 'small';
+          dateSpan.textContent = `${item.date || ''} (${item.displayArrival || ''} - ${item.displayDeparture || ''})`;
+          tdDate.appendChild(dateSpan);
+
+          const tdProject = document.createElement('td');
+          const projectSpan = document.createElement('span');
+          projectSpan.className = 'small text-muted';
+          projectSpan.textContent = item.projectName || item.projectTypeName || '';
+          tdProject.appendChild(projectSpan);
 
           // Badge Statut Ligne
-          let rowStatusBadge = '';
+          const tdRowStatus = document.createElement('td');
+          const rowBadge = document.createElement('span');
+          const rowIcon = document.createElement('i');
           if (item.isValid) {
-            rowStatusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa-solid fa-check me-1"></i> Prêt</span>';
+            rowBadge.className = 'badge bg-success-subtle text-success border border-success-subtle rounded-pill';
+            rowIcon.className = 'fa-solid fa-check me-1';
+            rowBadge.appendChild(rowIcon);
+            rowBadge.appendChild(document.createTextNode(' Prêt'));
           } else {
-            rowStatusBadge = `<span class="badge bg-danger text-white rounded-pill" title="${item.errors.join(', ')}"><i class="fa-solid fa-xmark me-1"></i> Erreur</span>`;
+            rowBadge.className = 'badge bg-danger text-white rounded-pill';
+            rowBadge.title = Array.isArray(item.errors) ? item.errors.join(', ') : '';
+            rowIcon.className = 'fa-solid fa-xmark me-1';
+            rowBadge.appendChild(rowIcon);
+            rowBadge.appendChild(document.createTextNode(' Erreur'));
           }
+          tdRowStatus.appendChild(rowBadge);
 
-          tr.innerHTML = `
-            <td class="text-center text-muted small">${item.rowNum}</td>
-            <td><strong>${escapeHtml(item.surname)}</strong> ${escapeHtml(item.name)}</td>
-            <td><code>${escapeHtml(item.email)}</code></td>
-            <td>${userStatusBadge}</td>
-            <td><span class="small">${item.date} (${item.displayArrival} - ${item.displayDeparture})</span></td>
-            <td><span class="small text-muted">${escapeHtml(item.projectName || item.projectTypeName)}</span></td>
-            <td>${rowStatusBadge}</td>
-          `;
+          tr.append(tdNum, tdUser, tdEmail, tdUserStatus, tdDate, tdProject, tdRowStatus);
 
           previewTableBody.appendChild(tr);
         });

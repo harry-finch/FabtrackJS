@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const settingsService = require("./settingsService.js");
 const logger = require("../utilities/simpleLogger.js");
+const { escapeHtml, safeHttpUrl } = require("../utilities/xssHelpers.js");
 
 function sanitizeLineEndings(str) {
   if (!str || typeof str !== "string") return "";
@@ -16,15 +17,24 @@ function parseHttpUrl(value) {
   if (!value || typeof value !== "string") return null;
   const trimmed = value.trim().replace(/\/+$/, "");
   if (!trimmed) return null;
-  try {
-    const parsed = new URL(trimmed);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return null;
-    }
-    return trimmed;
-  } catch {
+  if (!safeHttpUrl(trimmed)) return null;
+  return trimmed;
+}
+
+/**
+ * Normalizes a relative upload path (e.g. `/uploads/issues/issue-123.jpg`) safely
+ * before appending it to a canonical base URL.
+ *
+ * @param {unknown} photoPath
+ * @returns {string | null}
+ */
+function normalizeSafeUploadPath(photoPath) {
+  if (typeof photoPath !== "string") return null;
+  const trimmed = photoPath.trim();
+  if (!trimmed.startsWith("/uploads/") || trimmed.includes("..") || /[\s"'<>]/.test(trimmed)) {
     return null;
   }
+  return trimmed;
 }
 
 class MailService {
@@ -105,10 +115,16 @@ class MailService {
 
   /**
    * Generates a modern branded HTML email layout for platform notifications.
+   * Escapes title, badgeText, ctaText, and validates ctaUrl strictly (`http:` / `https:`).
    */
   renderEmailLayout({ title, badgeText, badgeColor = "#EF4136", contentHtml, ctaUrl, ctaText }) {
     const primaryColor = "#112970";
     const lightBg = "#f8f9fa";
+    const safeTitle = escapeHtml(title);
+    const safeBadgeText = badgeText ? escapeHtml(badgeText) : "";
+    const safeBadgeColor = /^#[0-9a-fA-F]{3,8}$/.test(String(badgeColor || "")) ? badgeColor : "#EF4136";
+    const validCtaUrl = ctaUrl ? safeHttpUrl(ctaUrl) : null;
+    const safeCtaText = ctaText ? escapeHtml(ctaText) : "";
 
     return `
       <!DOCTYPE html>
@@ -116,7 +132,7 @@ class MailService {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${title}</title>
+        <title>${safeTitle}</title>
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
@@ -128,9 +144,9 @@ class MailService {
                   <td>
                     <span style="color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">FabtrackJS</span>
                   </td>
-                  ${badgeText ? `
+                  ${safeBadgeText ? `
                   <td align="right">
-                    <span style="background-color: ${badgeColor}; color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">${badgeText}</span>
+                    <span style="background-color: ${safeBadgeColor}; color: #ffffff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">${safeBadgeText}</span>
                   </td>
                   ` : ""}
                 </tr>
@@ -141,16 +157,16 @@ class MailService {
           <!-- Main Content -->
           <tr>
             <td style="padding: 30px;">
-              <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: #0f172a; font-weight: 700;">${title}</h2>
+              <h2 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: #0f172a; font-weight: 700;">${safeTitle}</h2>
               
               <div style="font-size: 14px; line-height: 1.6; color: #334155;">
                 ${contentHtml}
               </div>
 
-              ${ctaUrl && ctaText ? `
+              ${validCtaUrl && safeCtaText ? `
               <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center;">
-                <a href="${ctaUrl}" style="display: inline-block; background-color: ${primaryColor}; color: #ffffff; padding: 10px 22px; border-radius: 50px; font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 2px 6px rgba(17,41,112,0.25);">
-                  ${ctaText} &rarr;
+                <a href="${escapeHtml(validCtaUrl)}" style="display: inline-block; background-color: ${primaryColor}; color: #ffffff; padding: 10px 22px; border-radius: 50px; font-size: 13px; font-weight: 600; text-decoration: none; box-shadow: 0 2px 6px rgba(17,41,112,0.25);">
+                  ${safeCtaText} &rarr;
                 </a>
               </div>
               ` : ""}
@@ -175,6 +191,13 @@ class MailService {
    */
   sanitizeLineEndings(str) {
     return sanitizeLineEndings(str);
+  }
+
+  /**
+   * Escapes HTML special characters for email body composition.
+   */
+  escapeHtml(str) {
+    return escapeHtml(str);
   }
 
   /**
@@ -222,24 +245,29 @@ class MailService {
     const badgeText = isOutOfStock ? "Rupture de stock" : "Stock faible";
     const badgeColor = isOutOfStock ? "#dc3545" : "#fd7e14";
 
+    const safeName = escapeHtml(consumable.name);
+    const safeUnit = escapeHtml(unitStr);
+    const safeStock = escapeHtml(newStock);
+    const safeThreshold = escapeHtml(consumable.reorderThreshold);
+
     const contentHtml = `
       <p>Le consommable suivant a atteint ou franchi à la baisse son seuil d'alerte de réapprovisionnement :</p>
       
       <table style="width: 100%; border-collapse: collapse; margin: 18px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 40%;">Consommable</td>
-          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${consumable.name}</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${safeName}</td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Stock actuel restant</td>
           <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: ${badgeColor}; border-bottom: 1px solid #e2e8f0;">
-            ${newStock} ${unitStr}
+            ${safeStock} ${safeUnit}
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Seuil de réapprovisionnement</td>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #334155;">
-            ${consumable.reorderThreshold} ${unitStr}
+            ${safeThreshold} ${safeUnit}
           </td>
         </tr>
       </table>
@@ -276,8 +304,14 @@ class MailService {
     const hostUrl = this.resolveBaseUrl();
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
     const author = staffUsername || "Médiateur Fablab";
-    const warningName = (warningtype && warningtype.name) ? warningtype.name : "Avertissement";
+    const warningName = warningtype && warningtype.name ? warningtype.name : "Avertissement";
     const userFullName = `${user.name} ${user.surname}`;
+
+    const safeUserFullName = escapeHtml(userFullName);
+    const safeUserEmail = escapeHtml(user.email || "Email non renseigné");
+    const safeWarningName = escapeHtml(warningName);
+    const safeAuthor = escapeHtml(author);
+    const safeComments = comments && comments.trim() ? escapeHtml(comments) : "Aucun commentaire saisi";
 
     const contentHtml = `
       <p>Un nouvel avertissement a été attribué à un contributeur de la plateforme :</p>
@@ -286,25 +320,25 @@ class MailService {
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Contributeur concerné</td>
           <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">
-            ${userFullName} (${user.email || 'Email non renseigné'})
+            ${safeUserFullName} (${safeUserEmail})
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Motif d'avertissement</td>
           <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #dc3545; border-bottom: 1px solid #e2e8f0;">
-            ${warningName}
+            ${safeWarningName}
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Attribué par</td>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0;">
-            ${author}
+            ${safeAuthor}
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Commentaires & détails</td>
           <td style="padding: 10px 14px; font-size: 13px; color: #334155; font-style: italic;">
-            ${comments && comments.trim() ? comments : "Aucun commentaire saisi"}
+            ${safeComments}
           </td>
         </tr>
       </table>
@@ -317,7 +351,7 @@ class MailService {
       badgeText: "Avertissement",
       badgeColor: "#dc3545",
       contentHtml,
-      ctaUrl: `${hostUrl}/users/edit/${user.id}`,
+      ctaUrl: `${hostUrl}/users/edit/${encodeURIComponent(String(user.id))}`,
       ctaText: "Consulter la fiche contributeur",
     });
 
@@ -342,8 +376,17 @@ class MailService {
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN;
     const reporter = issue.reporterName
       ? `${issue.reporterName}${issue.reporterEmail ? ` (${issue.reporterEmail})` : ""}`
-      : (issue.reporterEmail || "Contributeur (non renseigné)");
+      : issue.reporterEmail || "Contributeur (non renseigné)";
     const dateStr = new Date(issue.createdAt || Date.now()).toLocaleString("fr-FR");
+
+    const safeMachineLabel = `${escapeHtml(machine.name)}${
+      machine.make ? ` (${escapeHtml(machine.make)}${machine.model ? ` ${escapeHtml(machine.model)}` : ""})` : ""
+    }`;
+    const safeReporter = escapeHtml(reporter);
+    const safeDate = escapeHtml(dateStr);
+    const safeDescription = escapeHtml(issue.description);
+    const safePhotoPath = normalizeSafeUploadPath(issue.photoPath);
+    const safePhotoUrl = safePhotoPath ? safeHttpUrl(`${hostUrl}${safePhotoPath}`) : null;
 
     const contentHtml = `
       <p>Un nouvel incident ou une panne a été signalé(e) sur une machine du fablab :</p>
@@ -352,31 +395,31 @@ class MailService {
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Machine concernée</td>
           <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">
-            ${machine.name} ${machine.make ? `(${machine.make} ${machine.model || ""})` : ""}
+            ${safeMachineLabel}
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Signalé par</td>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0;">
-            ${reporter}
+            ${safeReporter}
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Date du signalement</td>
           <td style="padding: 10px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0;">
-            ${dateStr}
+            ${safeDate}
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Description du problème</td>
           <td style="padding: 10px 14px; font-size: 13px; color: #b91c1c; font-weight: 600; white-space: pre-wrap; border-bottom: 1px solid #e2e8f0;">
-            ${issue.description}
+            ${safeDescription}
           </td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Photo jointe</td>
           <td style="padding: 10px 14px; font-size: 13px; color: #334155;">
-            ${issue.photoPath ? `&#128247; Une photo a été jointe au signalement (<a href="${hostUrl}${issue.photoPath}" target="_blank" style="color: #2563eb; text-decoration: underline;">consulter la photo</a>)` : "Aucune photo jointe"}
+            ${safePhotoUrl ? `&#128247; Une photo a été jointe au signalement (<a href="${escapeHtml(safePhotoUrl)}" target="_blank" style="color: #2563eb; text-decoration: underline;">consulter la photo</a>)` : "Aucune photo jointe"}
           </td>
         </tr>
       </table>
@@ -389,7 +432,7 @@ class MailService {
       badgeText: "Panne Machine",
       badgeColor: "#dc2626",
       contentHtml,
-      ctaUrl: `${hostUrl}/admin/machines/view/${machine.id}`,
+      ctaUrl: `${hostUrl}/admin/machines/view/${encodeURIComponent(String(machine.id))}`,
       ctaText: "Voir la machine & ses incidents",
     });
 
@@ -405,7 +448,7 @@ class MailService {
    */
   async sendTestEmail(targetEmail) {
     const hostUrl = this.resolveBaseUrl();
-    const dateStr = new Date().toLocaleString("fr-FR");
+    const dateStr = escapeHtml(new Date().toLocaleString("fr-FR"));
 
     const contentHtml = `
       <p>Ceci est un <strong>e-mail de test</strong> envoyé depuis votre instance FabtrackJS.</p>
@@ -448,7 +491,7 @@ class MailService {
 
     const hostUrl = this.resolveBaseUrl(customHostUrl);
     const agreementToken = token || user.token;
-    const agreementUrl = `${hostUrl}/agreement/${agreementToken}`;
+    const agreementUrl = `${hostUrl}/agreement/${encodeURIComponent(String(agreementToken || ""))}`;
     const labName = settings.platform_name || "FabtrackJS";
 
     const replaceVariables = (str) => {
@@ -464,25 +507,27 @@ class MailService {
 
     const subject = replaceVariables(settings.mail_user_agreement_subject || "Fablab : Signature requise de la charte d'utilisation");
     const title = replaceVariables(settings.mail_user_agreement_title || "Validation de la charte d'utilisation du Fablab");
-    const rawBody = settings.mail_user_agreement_body || 
+    const rawBody =
+      settings.mail_user_agreement_body ||
       "Bonjour {name},\n\nVotre compte a bien été créé sur la plateforme {lab_name} du Fablab.\n\nPour pouvoir accéder au laboratoire et vous enregistrer lors de vos visites, vous devez obligatoirement prendre connaissance de la charte d'utilisation et la signer en ligne.\n\nCliquez sur le bouton ci-dessous pour lire et valider la charte :";
-    
+
     const cleanRawBody = sanitizeLineEndings(replaceVariables(rawBody));
     const formattedBodyHtml = cleanRawBody
       .split(/\n\s*\n/)
-      .map((p) => `<p style="margin-bottom: 12px;">${p.replace(/\n/g, "<br>")}</p>`)
+      .map((p) => `<p style="margin-bottom: 12px;">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
       .join("");
 
     const ctaText = replaceVariables(settings.mail_user_agreement_cta_text || "Signer la charte d'utilisation");
 
-    const noticeText = settings.mail_user_agreement_notice && settings.mail_user_agreement_notice.trim()
-      ? sanitizeLineEndings(replaceVariables(settings.mail_user_agreement_notice.trim()))
-      : "";
+    const noticeText =
+      settings.mail_user_agreement_notice && settings.mail_user_agreement_notice.trim()
+        ? sanitizeLineEndings(replaceVariables(settings.mail_user_agreement_notice.trim()))
+        : "";
 
     const noticeHtml = noticeText
       ? `
       <div style="background-color: #f8fafc; border-left: 4px solid #112970; padding: 14px 18px; margin: 18px 0; border-radius: 4px; font-size: 13px; color: #334155;">
-        ${noticeText}
+        ${escapeHtml(noticeText).replace(/\n/g, "<br>")}
       </div>
       `
       : "";
@@ -515,14 +560,22 @@ class MailService {
    */
   async sendStaffRegisteredAlert({ username, email, hostUrl: customHostUrl }) {
     const settings = await settingsService.getSettings();
+
+    if (settings.mail_notif_staff_registration === "false") {
+      return { skipped: true, reason: "Staff registration notification disabled in settings" };
+    }
+
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || process.env.ADMIN || "admin@example.com";
     const hostUrl = this.resolveBaseUrl(customHostUrl);
+
+    const safeUsername = escapeHtml(username);
+    const safeEmail = escapeHtml(email);
 
     const contentHtml = `
       <p>Un nouveau membre du staff s'est inscrit et attend votre validation pour pouvoir se connecter :</p>
       <ul>
-        <li><strong>Identifiant :</strong> ${username}</li>
-        <li><strong>Email :</strong> ${email}</li>
+        <li><strong>Identifiant :</strong> ${safeUsername}</li>
+        <li><strong>Email :</strong> ${safeEmail}</li>
       </ul>
     `;
 
@@ -566,22 +619,28 @@ class MailService {
     };
     const roleText = roleLabels[staff.role] || staff.role || "Médiateur";
 
+    const safeStaffName = escapeHtml(staff.name);
+    const safeStaffEmail = escapeHtml(staff.email);
+    const safePlatformName = escapeHtml(platformName);
+    const safeAdminUsername = adminUsername ? escapeHtml(adminUsername) : "";
+    const safeRoleText = escapeHtml(roleText);
+
     const contentHtml = `
-      <p>Bonjour <strong>${staff.name}</strong>,</p>
-      <p>Bonne nouvelle ! Votre compte d'accès sur la plateforme <strong>${platformName}</strong> a été validé avec succès par un administrateur${adminUsername ? ` (<strong>${adminUsername}</strong>)` : ""}.</p>
+      <p>Bonjour <strong>${safeStaffName}</strong>,</p>
+      <p>Bonne nouvelle ! Votre compte d'accès sur la plateforme <strong>${safePlatformName}</strong> a été validé avec succès par un administrateur${safeAdminUsername ? ` (<strong>${safeAdminUsername}</strong>)` : ""}.</p>
       
       <table style="width: 100%; border-collapse: collapse; margin: 18px 0; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Identifiant</td>
-          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${staff.name}</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${safeStaffName}</td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Adresse e-mail</td>
-          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${staff.email}</td>
+          <td style="padding: 10px 14px; font-weight: 700; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${safeStaffEmail}</td>
         </tr>
         <tr>
           <td style="padding: 10px 14px; font-weight: 600; font-size: 13px; color: #64748b;">Rôle attribué</td>
-          <td style="padding: 10px 14px; font-size: 14px; color: #0f172a;">${roleText}</td>
+          <td style="padding: 10px 14px; font-size: 14px; color: #0f172a;">${safeRoleText}</td>
         </tr>
       </table>
 
@@ -609,7 +668,7 @@ class MailService {
    */
   async sendPasswordResetEmail({ email, token, hostUrl: customHostUrl }) {
     const hostUrl = this.resolveBaseUrl(customHostUrl);
-    const resetUrl = `${hostUrl}/reset/${token}`;
+    const resetUrl = `${hostUrl}/reset/${encodeURIComponent(String(token || ""))}`;
 
     const contentHtml = `
       <p>Vous avez demandé la réinitialisation de votre mot de passe pour la plateforme FabtrackJS.</p>
@@ -636,13 +695,19 @@ class MailService {
    * Sends an automated alert email to administrator when a bug or platform issue is reported.
    */
   async sendBugReportAlert({ title, category, description, pageUrl, reporterName, reporterEmail, severity, hostUrl: customHostUrl }) {
-    const { settings, adminRecipient } = await this.getTransporter();
+    const settings = await settingsService.getSettings();
+
+    if (settings.mail_notif_bug_report === "false") {
+      return { skipped: true, reason: "Bug report notification disabled in settings" };
+    }
+
+    const { adminRecipient } = await this.getTransporter();
     const adminEmail = settings.mail_admin_recipient || settings.admin_email || adminRecipient;
     const hostUrl = this.resolveBaseUrl(customHostUrl);
 
     const reporter = reporterName
       ? `${reporterName}${reporterEmail ? ` (${reporterEmail})` : ""}`
-      : (reporterEmail || "Médiateur / Utilisateur");
+      : reporterEmail || "Médiateur / Utilisateur";
     const dateStr = new Date().toLocaleString("fr-FR");
 
     const severityColors = {
@@ -653,18 +718,27 @@ class MailService {
     };
     const badgeColor = severityColors[severity] || "#f59e0b";
 
+    const safeTitle = escapeHtml(title);
+    const safeCategory = escapeHtml(category);
+    const safeSeverity = escapeHtml(severity);
+    const safeReporter = escapeHtml(reporter);
+    const safeDate = escapeHtml(dateStr);
+    const safeDescription = escapeHtml(description);
+    const validatedPageUrl = pageUrl ? safeHttpUrl(pageUrl) : null;
+    const safePageUrlHtml = validatedPageUrl ? escapeHtml(validatedPageUrl) : null;
+
     const contentHtml = `
       <p>Un nouveau problème ou une suggestion d'amélioration a été signalé sur la plateforme Fabtrack :</p>
       <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 16px 0;">
-        <p style="margin: 0 0 8px 0;"><strong>&#128392; Objet :</strong> ${title}</p>
-        <p style="margin: 0 0 8px 0;"><strong>&#128193; Catégorie :</strong> ${category}</p>
-        <p style="margin: 0 0 8px 0;"><strong>&#9888; Gravité :</strong> <span style="display: inline-block; background-color: ${badgeColor}; color: #ffffff; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">${severity}</span></p>
-        <p style="margin: 0 0 8px 0;"><strong>&#128100; Signalé par :</strong> ${reporter}</p>
-        <p style="margin: 0 0 8px 0;"><strong>&#128197; Date :</strong> ${dateStr}</p>
-        ${pageUrl ? `<p style="margin: 0 0 8px 0;"><strong>&#128279; Page concernée :</strong> <a href="${pageUrl}" target="_blank" style="color: #2563eb; word-break: break-all;">${pageUrl}</a></p>` : ""}
+        <p style="margin: 0 0 8px 0;"><strong>&#128392; Objet :</strong> ${safeTitle}</p>
+        <p style="margin: 0 0 8px 0;"><strong>&#128193; Catégorie :</strong> ${safeCategory}</p>
+        <p style="margin: 0 0 8px 0;"><strong>&#9888; Gravité :</strong> <span style="display: inline-block; background-color: ${badgeColor}; color: #ffffff; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">${safeSeverity}</span></p>
+        <p style="margin: 0 0 8px 0;"><strong>&#128100; Signalé par :</strong> ${safeReporter}</p>
+        <p style="margin: 0 0 8px 0;"><strong>&#128197; Date :</strong> ${safeDate}</p>
+        ${safePageUrlHtml ? `<p style="margin: 0 0 8px 0;"><strong>&#128279; Page concernée :</strong> <a href="${safePageUrlHtml}" target="_blank" style="color: #2563eb; word-break: break-all;">${safePageUrlHtml}</a></p>` : ""}
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 12px 0;" />
         <p style="margin: 0 0 4px 0;"><strong>&#128221; Description du problème :</strong></p>
-        <p style="margin: 0; white-space: pre-wrap; font-family: monospace; background: #ffffff; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">${description}</p>
+        <p style="margin: 0; white-space: pre-wrap; font-family: monospace; background: #ffffff; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">${safeDescription}</p>
       </div>
     `;
 
@@ -673,7 +747,7 @@ class MailService {
       badgeText: `Plateforme - ${category}`,
       badgeColor,
       contentHtml,
-      ctaUrl: pageUrl || `${hostUrl}/fabtrack`,
+      ctaUrl: validatedPageUrl || `${hostUrl}/fabtrack`,
       ctaText: "Accéder à la plateforme",
     });
 

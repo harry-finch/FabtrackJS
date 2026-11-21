@@ -551,7 +551,7 @@
         <!-- SCRIPTS CHART.JS & INTERACTIONS -->
         <script>
             // Données transmises depuis le serveur
-            const chartData = <%- JSON.stringify(chartData) %>;
+            const chartData = <%- safeJson(chartData) %>;
 
             // Détection du thème clair/sombre pour adapter Chart.js
             const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark" ||

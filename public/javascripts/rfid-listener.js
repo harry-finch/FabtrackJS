@@ -212,92 +212,133 @@
       document.body.appendChild(overlay);
     }
 
-    let iconHtml = "";
     let colorClass = "text-primary";
     let bgBadge = "bg-primary-subtle text-primary";
+    let iconEl = null;
+
+    function createCircleIcon(circleClasses, faClass, extraStyle) {
+      const circle = document.createElement("div");
+      circle.className = `rounded-circle d-flex align-items-center justify-content-center ${circleClasses} shadow-lg mx-auto mb-3`;
+      circle.style.width = "90px";
+      circle.style.height = "90px";
+      circle.style.fontSize = "2.8rem";
+      if (extraStyle) {
+        circle.style.animation = extraStyle;
+      }
+      const icon = document.createElement("i");
+      icon.className = faClass;
+      circle.appendChild(icon);
+      return circle;
+    }
 
     switch (options.type) {
-      case "loading":
-        iconHtml = `<div class="spinner-border text-primary" style="width: 4.5rem; height: 4.5rem;" role="status"></div>`;
+      case "loading": {
+        const spinner = document.createElement("div");
+        spinner.className = "spinner-border text-primary mx-auto mb-3";
+        spinner.style.width = "4.5rem";
+        spinner.style.height = "4.5rem";
+        spinner.setAttribute("role", "status");
+        iconEl = spinner;
         break;
+      }
       case "checkin":
         colorClass = "text-success";
         bgBadge = "bg-success-subtle text-success border border-success-subtle";
-        iconHtml = `
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-success text-white shadow-lg mx-auto mb-3" style="width: 90px; height: 90px; font-size: 2.8rem; animation: pulse 1s infinite alternate;">
-            <i class="fa-solid fa-arrow-right-to-bracket"></i>
-          </div>
-        `;
+        iconEl = createCircleIcon("bg-success text-white", "fa-solid fa-arrow-right-to-bracket", "pulse 1s infinite alternate");
         break;
       case "checkout":
         colorClass = "text-info";
         bgBadge = "bg-info-subtle text-info border border-info-subtle";
-        iconHtml = `
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-info text-white shadow-lg mx-auto mb-3" style="width: 90px; height: 90px; font-size: 2.8rem;">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-          </div>
-        `;
+        iconEl = createCircleIcon("bg-info text-white", "fa-solid fa-arrow-right-from-bracket");
         break;
       case "not_found":
         colorClass = "text-warning";
         bgBadge = "bg-warning-subtle text-warning-emphasis border border-warning-subtle";
-        iconHtml = `
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning text-dark shadow-lg mx-auto mb-3" style="width: 90px; height: 90px; font-size: 2.8rem;">
-            <i class="fa-solid fa-id-card-clip"></i>
-          </div>
-        `;
+        iconEl = createCircleIcon("bg-warning text-dark", "fa-solid fa-id-card-clip");
         break;
       case "warning":
       case "error":
       default:
         colorClass = "text-danger";
         bgBadge = "bg-danger-subtle text-danger border border-danger-subtle";
-        iconHtml = `
-          <div class="rounded-circle d-flex align-items-center justify-content-center bg-danger text-white shadow-lg mx-auto mb-3" style="width: 90px; height: 90px; font-size: 2.8rem;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-          </div>
-        `;
+        iconEl = createCircleIcon("bg-danger text-white", "fa-solid fa-circle-exclamation");
         break;
     }
 
-    overlay.innerHTML = `
-      <div class="card border-0 shadow-2-strong text-center p-4 p-md-5 rounded-4 bg-body" style="max-width: 520px; width: 90%; transform: scale(0.95); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
-        ${iconHtml}
-        <h2 class="fw-bold ${colorClass} mb-2">${options.title}</h2>
-        <p class="text-secondary fs-5 mb-3">${options.subtitle}</p>
-        
-        ${
-          options.user
-            ? `
-          <div class="p-3 bg-body-tertiary rounded-3 border mb-3 text-start">
-            <div class="d-flex align-items-center justify-content-between">
-              <span class="fw-semibold fs-5">${options.user.name} ${options.user.surname}</span>
-              ${options.user.type ? `<span class="badge ${bgBadge} rounded-pill">${options.user.type}</span>` : ""}
-            </div>
-          </div>
-        `
-            : ""
-        }
+    overlay.textContent = "";
 
-        ${
-          options.rfid
-            ? `
-          <div class="mb-3">
-            <span class="badge bg-secondary-subtle text-secondary font-monospace px-3 py-2 fs-6">
-              <i class="fa-solid fa-fingerprint me-1"></i> UID: ${options.rfid}
-            </span>
-          </div>
-        `
-            : ""
-        }
+    const card = document.createElement("div");
+    card.className = "card border-0 shadow-2-strong text-center p-4 p-md-5 rounded-4 bg-body";
+    card.style.maxWidth = "520px";
+    card.style.width = "90%";
+    card.style.transform = "scale(0.95)";
+    card.style.transition = "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)";
 
-        <div class="mt-2">
-          <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill" id="closeRfidOverlayBtn">
-            Fermer
-          </button>
-        </div>
-      </div>
-    `;
+    if (iconEl) {
+      card.appendChild(iconEl);
+    }
+
+    const titleEl = document.createElement("h2");
+    titleEl.className = `fw-bold ${colorClass} mb-2`;
+    titleEl.textContent = options.title || "";
+    card.appendChild(titleEl);
+
+    const subtitleEl = document.createElement("p");
+    subtitleEl.className = "text-secondary fs-5 mb-3";
+    subtitleEl.textContent = options.subtitle || "";
+    card.appendChild(subtitleEl);
+
+    if (options.user) {
+      const userBox = document.createElement("div");
+      userBox.className = "p-3 bg-body-tertiary rounded-3 border mb-3 text-start";
+
+      const userRow = document.createElement("div");
+      userRow.className = "d-flex align-items-center justify-content-between";
+
+      const fullNameSpan = document.createElement("span");
+      fullNameSpan.className = "fw-semibold fs-5";
+      fullNameSpan.textContent = `${options.user.name || ""} ${options.user.surname || ""}`.trim();
+      userRow.appendChild(fullNameSpan);
+
+      if (options.user.type) {
+        const typeBadge = document.createElement("span");
+        typeBadge.className = `badge ${bgBadge} rounded-pill`;
+        typeBadge.textContent = String(options.user.type);
+        userRow.appendChild(typeBadge);
+      }
+
+      userBox.appendChild(userRow);
+      card.appendChild(userBox);
+    }
+
+    if (options.rfid) {
+      const rfidWrap = document.createElement("div");
+      rfidWrap.className = "mb-3";
+
+      const rfidBadge = document.createElement("span");
+      rfidBadge.className = "badge bg-secondary-subtle text-secondary font-monospace px-3 py-2 fs-6";
+
+      const fpIcon = document.createElement("i");
+      fpIcon.className = "fa-solid fa-fingerprint me-1";
+      rfidBadge.appendChild(fpIcon);
+      rfidBadge.appendChild(document.createTextNode(" UID: " + String(options.rfid)));
+
+      rfidWrap.appendChild(rfidBadge);
+      card.appendChild(rfidWrap);
+    }
+
+    const btnWrap = document.createElement("div");
+    btnWrap.className = "mt-2";
+
+    const closeBtnEl = document.createElement("button");
+    closeBtnEl.type = "button";
+    closeBtnEl.className = "btn btn-outline-secondary px-4 py-2 rounded-pill";
+    closeBtnEl.id = "closeRfidOverlayBtn";
+    closeBtnEl.textContent = "Fermer";
+    btnWrap.appendChild(closeBtnEl);
+    card.appendChild(btnWrap);
+
+    overlay.appendChild(card);
 
     // Display
     overlay.style.display = "flex";

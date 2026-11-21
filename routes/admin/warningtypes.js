@@ -12,6 +12,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const logger = require("../../utilities/simpleLogger.js");
+const { sanitizeWarningIcon } = require("../../utilities/xssHelpers.js");
 
 // ******************************************************************************
 // Route to manage warning types
@@ -69,8 +70,9 @@ router.post(
     const { name, icon } = req.body;
 
     try {
-      const warningtype = await prisma.warningtype.create({
-        data: { name: name.trim(), icon: icon ? icon.trim() : null },
+      const sanitizedIcon = icon && icon.trim() ? sanitizeWarningIcon(icon) : null;
+      await prisma.warningtype.create({
+        data: { name: name.trim(), icon: sanitizedIcon },
       });
 
       invalidateCache(req);
@@ -95,9 +97,10 @@ router.post(
     const { warningtypeid, name, icon } = req.body;
 
     try {
-      const warningtype = await prisma.warningtype.update({
+      const sanitizedIcon = icon && icon.trim() ? sanitizeWarningIcon(icon) : null;
+      await prisma.warningtype.update({
         where: { id: Number(warningtypeid) },
-        data: { name: name.trim(), icon: icon ? icon.trim() : null },
+        data: { name: name.trim(), icon: sanitizedIcon },
       });
 
       invalidateCache(req);

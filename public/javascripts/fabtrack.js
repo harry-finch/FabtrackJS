@@ -1,3 +1,58 @@
+function setElementIconAndText(el, iconClass, text) {
+  if (!el) return;
+  el.textContent = "";
+  const icon = document.createElement("i");
+  icon.className = iconClass;
+  el.appendChild(icon);
+  el.appendChild(document.createTextNode(text));
+}
+
+function appendHighlightedText(container, text, search) {
+  const safeText = text === null || text === undefined ? "" : String(text);
+  const query = typeof search === "string" ? search.trim() : "";
+  if (!query) {
+    container.appendChild(document.createTextNode(safeText));
+    return;
+  }
+
+  let regex;
+  try {
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    regex = new RegExp(`(${escaped})`, "gi");
+  } catch (e) {
+    container.appendChild(document.createTextNode(safeText));
+    return;
+  }
+
+  const parts = safeText.split(regex);
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (!part) continue;
+    if (i % 2 === 1) {
+      const strong = document.createElement("strong");
+      strong.textContent = part;
+      container.appendChild(strong);
+    } else {
+      container.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
+function toSafeHttpUrl(rawUrl) {
+  if (typeof rawUrl !== "string") return "";
+  const trimmed = rawUrl.trim();
+  if (!trimmed || /[\u0000-\u001F\u007F]/.test(trimmed)) return "";
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return "";
+    }
+    return parsed.href;
+  } catch (e) {
+    return "";
+  }
+}
+
 // Switching between registering and user creation forms
 document.getElementById("registerbutton").addEventListener("click", (event) => {
   document.getElementById("newuser").style.display = "block";
@@ -42,7 +97,7 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
         registerSubmitBtn.disabled = false;
         registerSubmitBtn.classList.remove("btn-secondary", "opacity-50");
         registerSubmitBtn.classList.add("btn-primary");
-        registerSubmitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i> ' + (window.kioskRegisterBtnText || "S'enregistrer");
+        setElementIconAndText(registerSubmitBtn, "fa-solid fa-check me-1", " " + (window.kioskRegisterBtnText || "S'enregistrer"));
       }
       return;
     }
@@ -62,7 +117,7 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
         registerSubmitBtn.disabled = true;
         registerSubmitBtn.classList.remove("btn-primary");
         registerSubmitBtn.classList.add("btn-secondary", "opacity-50");
-        registerSubmitBtn.innerHTML = '<i class="fa-solid fa-ban me-1"></i> Charte non signée (inscription bloquée)';
+        setElementIconAndText(registerSubmitBtn, "fa-solid fa-ban me-1", " Charte non signée (inscription bloquée)");
       }
     } else {
       if (charterWarningRow) charterWarningRow.style.display = "none";
@@ -70,7 +125,7 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
         registerSubmitBtn.disabled = false;
         registerSubmitBtn.classList.remove("btn-secondary", "opacity-50");
         registerSubmitBtn.classList.add("btn-primary");
-        registerSubmitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i> ' + (window.kioskRegisterBtnText || "S'enregistrer");
+        setElementIconAndText(registerSubmitBtn, "fa-solid fa-check me-1", " " + (window.kioskRegisterBtnText || "S'enregistrer"));
       }
     }
   }
@@ -93,12 +148,9 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
       var nameSpan = document.createElement("span");
       if (allowedChars.test(value)) {
-        var regex = new RegExp(value, "gi");
-        nameSpan.innerHTML = item.fullname.replace(regex, function (match) {
-          return `<strong>${match}</strong>`;
-        });
+        appendHighlightedText(nameSpan, item.fullname, value);
       } else {
-        nameSpan.textContent = item.fullname;
+        nameSpan.textContent = item.fullname || "";
       }
       itemElement.appendChild(nameSpan);
 
@@ -106,7 +158,7 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
         var badge = document.createElement("span");
         badge.className = "badge bg-warning text-dark border border-warning-subtle rounded-pill ms-2 px-2 py-1";
         badge.style.fontSize = "0.7rem";
-        badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>Charte non signée';
+        setElementIconAndText(badge, "fa-solid fa-triangle-exclamation me-1", "Charte non signée");
         itemElement.appendChild(badge);
       }
 
@@ -209,12 +261,9 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     render: function (item, value) {
       var itemElement = document.createElement("div");
       if (allowedChars.test(value)) {
-        var regex = new RegExp(value, "gi");
-        itemElement.innerHTML = item.url.replace(regex, function (match) {
-          return `<strong>${match}</strong>`;
-        });
+        appendHighlightedText(itemElement, item.url, value);
       } else {
-        itemElement.textContent = item.url;
+        itemElement.textContent = item.url || "";
       }
       return itemElement;
     },
@@ -226,7 +275,8 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
       docInput.value = item.url;
       document.getElementById("projectid").value = item.id;
-      document.getElementById("urldocumentation").href = item.url;
+      const safeDocHref = toSafeHttpUrl(item.url);
+      document.getElementById("urldocumentation").href = safeDocHref || "#";
       const projectTypeEl = document.getElementById("projecttype");
       if (projectTypeEl) {
         projectTypeEl.value = item.type;
@@ -337,14 +387,14 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       const matched = projects.find((p) => p.url.toLowerCase() === currentVal.toLowerCase());
       if (matched) {
         document.getElementById("projectid").value = matched.id;
-        document.getElementById("urldocumentation").href = matched.url;
+        document.getElementById("urldocumentation").href = toSafeHttpUrl(matched.url) || "#";
         checkBookstackDocFreshness(matched.id, Number(document.getElementById("userid").value));
       } else {
         if (document.getElementById("projectid").value !== "null") {
           document.getElementById("projectid").value = "null";
           document.getElementById("userprojectid").value = "null";
         }
-        document.getElementById("urldocumentation").href = currentVal;
+        document.getElementById("urldocumentation").href = toSafeHttpUrl(currentVal) || "#";
         resetDocStatusButton();
       }
     });
@@ -546,12 +596,13 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       render: function (item, value) {
         const div = document.createElement("div");
         div.className = "autocomplete-item py-1 px-2";
+        const icon = document.createElement("i");
+        icon.className = "fa-solid fa-landmark me-2 text-primary";
+        div.appendChild(icon);
         if (value && allowedChars.test(value)) {
-          const regex = new RegExp(value, "gi");
-          div.innerHTML = '<i class="fa-solid fa-landmark me-2 text-primary"></i>' +
-            item.label.replace(regex, (match) => '<strong>' + match + '</strong>');
+          appendHighlightedText(div, item.label, value);
         } else {
-          div.innerHTML = '<i class="fa-solid fa-landmark me-2 text-primary"></i>' + item.label;
+          div.appendChild(document.createTextNode(item.label || ""));
         }
         return div;
       },
@@ -594,7 +645,7 @@ if (activityManager) {
     const historyInput = document.getElementById("activityhistoryid");
     const userInput = document.getElementById("activityuserid");
 
-    modalTitle.innerHTML = `<i class="fa-solid fa-layer-group text-primary me-2"></i> Nouvelle activité pour ${user}`;
+    setElementIconAndText(modalTitle, "fa-solid fa-layer-group text-primary me-2", ` Nouvelle activité pour ${user || ""}`);
     historyInput.value = historyid;
     userInput.value = userid;
 
@@ -845,32 +896,35 @@ if (consumableSearchInput && typeof autocomplete === "function") {
       const costNum = Number(item.cost);
       const costFormatted = costNum < 0.1 ? costNum.toFixed(4) : costNum.toFixed(2);
 
-      let displayName = item.name;
-      if (value && value.trim()) {
-        try {
-          const escaped = value.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-          const regex = new RegExp(`(${escaped})`, "gi");
-          displayName = displayName.replace(regex, "<strong>$1</strong>");
-        } catch (e) {
-          displayName = item.name;
-        }
+      const leftCol = document.createElement("div");
+      leftCol.className = "me-2 text-truncate";
+
+      const nameDiv = document.createElement("div");
+      nameDiv.className = "fw-semibold text-body";
+      appendHighlightedText(nameDiv, item.name, value);
+      leftCol.appendChild(nameDiv);
+
+      const metaDiv = document.createElement("div");
+      metaDiv.className = "small text-muted";
+      if (item.categoryName) {
+        const catBadge = document.createElement("span");
+        catBadge.className = "badge bg-secondary-subtle text-secondary-emphasis border me-1";
+        catBadge.textContent = item.categoryName;
+        metaDiv.appendChild(catBadge);
       }
+      metaDiv.appendChild(document.createTextNode(`${costFormatted} € / ${item.unit || ""}`));
+      leftCol.appendChild(metaDiv);
 
-      const categoryBadge = item.categoryName
-        ? `<span class="badge bg-secondary-subtle text-secondary-emphasis border me-1">${item.categoryName}</span>`
-        : "";
+      const rightCol = document.createElement("div");
+      rightCol.className = "text-end text-nowrap ms-2";
 
-      itemElement.innerHTML = `
-        <div class="me-2 text-truncate">
-          <div class="fw-semibold text-body">${displayName}</div>
-          <div class="small text-muted">${categoryBadge}${costFormatted} € / ${item.unit}</div>
-        </div>
-        <div class="text-end text-nowrap ms-2">
-          <span class="badge ${item.stock <= 0 ? "bg-danger-subtle text-danger" : "bg-light text-dark"} border">
-            Stock: ${item.stock} ${item.unit}
-          </span>
-        </div>
-      `;
+      const stockBadge = document.createElement("span");
+      stockBadge.className = `badge ${item.stock <= 0 ? "bg-danger-subtle text-danger" : "bg-light text-dark"} border`;
+      stockBadge.textContent = `Stock: ${item.stock} ${item.unit || ""}`;
+      rightCol.appendChild(stockBadge);
+
+      itemElement.appendChild(leftCol);
+      itemElement.appendChild(rightCol);
       return itemElement;
     },
     onSelect: function (item) {
@@ -969,30 +1023,34 @@ if (equipmentSearchInput && typeof autocomplete === "function") {
       const itemElement = document.createElement("div");
       itemElement.className = "d-flex justify-content-between align-items-center py-2 px-2 border-bottom";
 
-      let displayName = item.name;
-      if (value && value.trim()) {
-        try {
-          const escaped = value.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-          const regex = new RegExp(`(${escaped})`, "gi");
-          displayName = displayName.replace(regex, "<strong>$1</strong>");
-        } catch (e) {
-          displayName = item.name;
-        }
+      const wrapper = document.createElement("div");
+      wrapper.className = "d-flex align-items-center justify-content-between w-100 py-1";
+
+      const leftDiv = document.createElement("div");
+      leftDiv.className = "d-flex align-items-center text-truncate";
+
+      const toolIcon = document.createElement("i");
+      toolIcon.className = "fa-solid fa-toolbox text-secondary me-2";
+      leftDiv.appendChild(toolIcon);
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "fw-semibold text-body";
+      appendHighlightedText(nameSpan, item.name, value);
+      leftDiv.appendChild(nameSpan);
+
+      wrapper.appendChild(leftDiv);
+
+      if (item.workspaceName) {
+        const wsBadge = document.createElement("span");
+        wsBadge.className = "badge bg-secondary-subtle text-secondary border ms-2 small";
+        const locIcon = document.createElement("i");
+        locIcon.className = "fa-solid fa-location-dot me-1";
+        wsBadge.appendChild(locIcon);
+        wsBadge.appendChild(document.createTextNode(item.workspaceName));
+        wrapper.appendChild(wsBadge);
       }
 
-      const workspaceBadge = item.workspaceName
-        ? `<span class="badge bg-secondary-subtle text-secondary border ms-2 small"><i class="fa-solid fa-location-dot me-1"></i>${item.workspaceName}</span>`
-        : '';
-
-      itemElement.innerHTML = `
-        <div class="d-flex align-items-center justify-content-between w-100 py-1">
-          <div class="d-flex align-items-center text-truncate">
-            <i class="fa-solid fa-toolbox text-secondary me-2"></i>
-            <span class="fw-semibold text-body">${displayName}</span>
-          </div>
-          ${workspaceBadge}
-        </div>
-      `;
+      itemElement.appendChild(wrapper);
       return itemElement;
     },
     onSelect: function (item) {

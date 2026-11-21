@@ -104,7 +104,7 @@
                                             <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/edit/<%= user.id %>" class="btn btn-outline-primary" title="Modifier">
                                                 <i class="fa-solid fa-user-pen"></i>
                                             </a>
-                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/delete/<%= user.id %>" class="d-inline" onsubmit="return confirm('Supprimer le compte staff de <%= user.name %> ?');">
+                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/delete/<%= user.id %>" class="d-inline" data-confirm="Supprimer le compte staff de <%= user.name %> ?">
                                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
                                                     <i class="fa-solid fa-trash-can"></i>

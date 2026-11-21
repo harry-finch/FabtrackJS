@@ -82,6 +82,9 @@ router.post(
     updates.mail_notif_machine_issue =
       req.body.mail_notif_machine_issue === "true" || req.body.mail_notif_machine_issue === "on" ? "true" : "false";
 
+    updates.mail_notif_bug_report =
+      req.body.mail_notif_bug_report === "true" || req.body.mail_notif_bug_report === "on" ? "true" : "false";
+
     // User Agreement Email Template Customization
     if (req.body.mail_user_agreement_subject !== undefined) {
       updates.mail_user_agreement_subject = req.body.mail_user_agreement_subject.trim();

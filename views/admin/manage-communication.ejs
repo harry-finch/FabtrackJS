@@ -248,7 +248,7 @@
 
         <!-- JSON Data for instant switching without reloads -->
         <script id="newsletterData" type="application/json">
-            <%- JSON.stringify(newsletterUsers.map(u => ({
+            <%- safeJson(newsletterUsers.map(u => ({
                 id: u.id,
                 name: u.name,
                 surname: u.surname,
@@ -260,7 +260,7 @@
         </script>
 
         <script id="workshopsData" type="application/json">
-            <%- JSON.stringify(workshops.map(w => ({
+            <%- safeJson(workshops.map(w => ({
                 id: w.id,
                 name: w.name,
                 interestsCount: w.interests.length,
@@ -339,26 +339,52 @@
                     tr.className = 'contact-row';
                     tr.dataset.searchText = `${c.name} ${c.surname} ${c.email} ${c.usertype}`.toLowerCase();
 
-                    tr.innerHTML = `
-                        <td class="ps-3 text-center">
-                            <input type="checkbox" class="form-check-input contact-checkbox" data-index="${index}" ${c.selected ? 'checked' : ''} onchange="toggleContactSelection(${index}, this.checked)">
-                        </td>
-                        <td>
-                            <div class="fw-semibold">${escapeHtml(c.name)} ${escapeHtml(c.surname)}</div>
-                        </td>
-                        <td>
-                            <span class="text-primary font-monospace small">${escapeHtml(c.email)}</span>
-                        </td>
-                        <td>
-                            <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill">${escapeHtml(c.usertype)}</span>
-                        </td>
-                        <td class="text-muted small">${escapeHtml(c.date)}</td>
-                        <td class="text-end pe-3">
-                            <a href="/users/edit/${c.id}" class="btn btn-sm btn-outline-secondary" target="_blank" title="Voir le profil">
-                                <i class="fa-solid fa-up-right-from-square"></i>
-                            </a>
-                        </td>
-                    `;
+                    const tdCheck = document.createElement('td');
+                    tdCheck.className = 'ps-3 text-center';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'form-check-input contact-checkbox';
+                    checkbox.dataset.index = String(index);
+                    checkbox.checked = Boolean(c.selected);
+                    checkbox.addEventListener('change', (e) => toggleContactSelection(index, e.target.checked));
+                    tdCheck.appendChild(checkbox);
+
+                    const tdName = document.createElement('td');
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'fw-semibold';
+                    nameDiv.textContent = `${c.name || ''} ${c.surname || ''}`.trim();
+                    tdName.appendChild(nameDiv);
+
+                    const tdEmail = document.createElement('td');
+                    const emailSpan = document.createElement('span');
+                    emailSpan.className = 'text-primary font-monospace small';
+                    emailSpan.textContent = c.email || '';
+                    tdEmail.appendChild(emailSpan);
+
+                    const tdUsertype = document.createElement('td');
+                    const typeSpan = document.createElement('span');
+                    typeSpan.className = 'badge bg-secondary-subtle text-secondary-emphasis border rounded-pill';
+                    typeSpan.textContent = c.usertype || '-';
+                    tdUsertype.appendChild(typeSpan);
+
+                    const tdDate = document.createElement('td');
+                    tdDate.className = 'text-muted small';
+                    tdDate.textContent = c.date || '';
+
+                    const tdAction = document.createElement('td');
+                    tdAction.className = 'text-end pe-3';
+                    const editLink = document.createElement('a');
+                    editLink.href = `/users/edit/${encodeURIComponent(c.id)}`;
+                    editLink.className = 'btn btn-sm btn-outline-secondary';
+                    editLink.target = '_blank';
+                    editLink.rel = 'noopener noreferrer';
+                    editLink.title = 'Voir le profil';
+                    const linkIcon = document.createElement('i');
+                    linkIcon.className = 'fa-solid fa-up-right-from-square';
+                    editLink.appendChild(linkIcon);
+                    tdAction.appendChild(editLink);
+
+                    tr.append(tdCheck, tdName, tdEmail, tdUsertype, tdDate, tdAction);
                     tbody.appendChild(tr);
                 });
 

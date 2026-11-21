@@ -238,6 +238,35 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Alert 6: Bug Report / Platform Suggestion -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <i class="fa-solid fa-bug"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">
+                                                    <label class="form-check-label" for="switchBugReport">Signalement de bug / suggestion (Plateforme)</label>
+                                                </h6>
+                                                <small class="text-muted">Retours utilisateurs & support</small>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch fs-5 mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switchBugReport" name="mail_notif_bug_report" value="true" <%= settings.mail_notif_bug_report !== 'false' ? 'checked' : '' %>>
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-3 flex-grow-1">
+                                        Envoie un e-mail aux administrateurs lorsqu'un utilisateur soumet un signalement de bug ou une suggestion d'amélioration depuis la plateforme.
+                                    </p>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <span class="small text-muted">Formulaire de signalement</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -853,7 +882,7 @@
                         surname: "Martin",
                         fullname: "Camille Martin",
                         email: "camille.martin@sorbonne-universite.fr",
-                        lab_name: "<%= settings.platform_name || 'FabtrackJS' %>"
+                        lab_name: <%- safeJson(settings.platform_name || 'FabtrackJS') %>
                     };
 
                     const replaceSample = (str) => {
@@ -873,11 +902,18 @@
 
                     if (previewBody && bodyInput) {
                         const raw = bodyInput.value || "";
-                        const formatted = replaceSample(raw)
-                            .split("\n\n")
-                            .map(p => `<p class="mb-2">${p.replace(/\n/g, "<br>")}</p>`)
-                            .join("");
-                        previewBody.innerHTML = formatted;
+                        const paragraphs = replaceSample(raw).split("\n\n");
+                        previewBody.textContent = "";
+                        paragraphs.forEach((paraText) => {
+                            const p = document.createElement("p");
+                            p.className = "mb-2";
+                            const lines = paraText.split("\n");
+                            lines.forEach((line, idx) => {
+                                if (idx > 0) p.appendChild(document.createElement("br"));
+                                p.appendChild(document.createTextNode(line));
+                            });
+                            previewBody.appendChild(p);
+                        });
                     }
 
                     if (previewCta && ctaInput) {
