@@ -21,60 +21,84 @@ const { rfidScanSchema } = require("../schemas/api.schema.js");
 // Route returning a list of all staff members (admin only)
 // ******************************************************************************
 
-router.get("/list/all-staff", isAdmin, async (req, res) => {
-  const allStaff = await prisma.staff.findMany({});
-  res.status(200).json(allStaff);
-});
+router.get(
+  "/list/all-staff",
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const allStaff = await prisma.staff.findMany({});
+    res.status(200).json(allStaff);
+  }),
+);
 
 // ******************************************************************************
 // Route returning a list of all usertypes (admin only)
 // ******************************************************************************
 
-router.get("/list/all-usertypes", isAdmin, async (req, res) => {
-  const allTypes = await prisma.usertype.findMany({});
-  res.status(200).json(allTypes);
-});
+router.get(
+  "/list/all-usertypes",
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const allTypes = await prisma.usertype.findMany({});
+    res.status(200).json(allTypes);
+  }),
+);
 
 // ******************************************************************************
 // Route returning a list of all users
 // ******************************************************************************
 
-router.get("/list/all-users", isAdmin, async (req, res) => {
-  const allUsers = await prisma.user.findMany({});
-  res.status(200).json(allUsers);
-});
+router.get(
+  "/list/all-users",
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const allUsers = await prisma.user.findMany({});
+    res.status(200).json(allUsers);
+  }),
+);
 
 // ******************************************************************************
 // Route returning a list of all history entries
 // ******************************************************************************
 
-router.get("/list/all-history", isAdmin, async (req, res) => {
-  const allHistory = await prisma.history.findMany({});
-  res.status(200).json(allHistory);
-});
+router.get(
+  "/list/all-history",
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const allHistory = await prisma.history.findMany({});
+    res.status(200).json(allHistory);
+  }),
+);
 
 // ******************************************************************************
 // Route returning a list of all users in the lab
 // ******************************************************************************
 
-router.get("/list/users-inlab", isLoggedIn, async (req, res) => {
-  const history = await prisma.history.findMany({
-    where: {
-      departure: null,
-    },
-  });
+router.get(
+  "/list/users-inlab",
+  isLoggedIn,
+  asyncHandler(async (req, res) => {
+    const history = await prisma.history.findMany({
+      where: {
+        departure: null,
+      },
+    });
 
-  res.status(200).json(history);
-});
+    res.status(200).json(history);
+  }),
+);
 
 // ******************************************************************************
 // Route returning a list of all projects
 // ******************************************************************************
 
-router.get("/list/all-projects", isAdmin, async (req, res) => {
-  const allProjects = await prisma.project.findMany({});
-  res.status(200).json(allProjects);
-});
+router.get(
+  "/list/all-projects",
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const allProjects = await prisma.project.findMany({});
+    res.status(200).json(allProjects);
+  }),
+);
 
 // ******************************************************************************
 // Route to get users and projects in dictionary format (main fabtrack page)

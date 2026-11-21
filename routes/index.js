@@ -209,25 +209,28 @@ router.post(
 // Logout route
 // ******************************************************************************
 
-router.get("/logout", async (req, res) => {
-  if (req.session.username && req.session.selectedWorkspace) {
-    try {
-      await prisma.staff.update({
-        where: { name: req.session.username },
-        data: { lastWorkspaceId: req.session.selectedWorkspace.id },
-      });
-    } catch (e) {
-      console.error("Could not save last workspace on logout:", e);
+router.get(
+  "/logout",
+  asyncHandler(async (req, res) => {
+    if (req.session.username && req.session.selectedWorkspace) {
+      try {
+        await prisma.staff.update({
+          where: { name: req.session.username },
+          data: { lastWorkspaceId: req.session.selectedWorkspace.id },
+        });
+      } catch (e) {
+        console.error("Could not save last workspace on logout:", e);
+      }
     }
-  }
-  if (req.session.selectedWorkspace) {
-    res.cookie("fabtrack_last_workspace_id", req.session.selectedWorkspace.id, {
-      maxAge: 365 * 24 * 60 * 60 * 1000,
-      sameSite: "lax",
-    });
-  }
-  req.session.destroy(() => res.redirect("/login"));
-});
+    if (req.session.selectedWorkspace) {
+      res.cookie("fabtrack_last_workspace_id", req.session.selectedWorkspace.id, {
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+        sameSite: "lax",
+      });
+    }
+    req.session.destroy(() => res.redirect("/login"));
+  }),
+);
 
 // ******************************************************************************
 // Route for users to validate the agreement to the terms

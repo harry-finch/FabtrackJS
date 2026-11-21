@@ -77,10 +77,26 @@ if (process.env.NODE_ENV === "test") {
   globalPrisma.$disconnect = async () => {};
 }
 
+/**
+ * Gracefully closes the shared MariaDB connection pool if initialized.
+ */
+async function closePool() {
+  if (!sharedPool) {
+    return;
+  }
+  const poolToClose = sharedPool;
+  sharedPool = null;
+  if (global.__fabtrack_mariadb_pool__ === poolToClose) {
+    delete global.__fabtrack_mariadb_pool__;
+  }
+  await poolToClose.end();
+}
+
 module.exports = {
   prisma: globalPrisma,
   PrismaClient: AutoPrismaClient,
   ResourceType,
   ConsumableStatus,
   createMariaDbAdapter,
+  closePool,
 };

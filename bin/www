@@ -5,6 +5,7 @@
  */
 
 var app = require("../app");
+const { prisma, closePool } = require("../utilities/db");
 var debug = require("debug")("fabtrackjs:server");
 var http = require("http");
 
@@ -102,3 +103,56 @@ function onListening() {
   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);
 }
+
+let isShuttingDown = false;
+
+/**
+ * Gracefully shuts down Socket.IO, the HTTP server, Prisma, and the MariaDB pool.
+ */
+async function shutdown(signal, exitCode = 0) {
+  if (isShuttingDown) {
+    return;
+  }
+  isShuttingDown = true;
+  console.log(`[process] Received ${signal}, shutting down gracefully...`);
+
+  const forceTimer = setTimeout(() => {
+    console.error("[process] Graceful shutdown timed out, forcing exit.");
+    process.exit(exitCode || 1);
+  }, 10000);
+  forceTimer.unref();
+
+  try {
+    await new Promise((resolve) => {
+      io.close(() => {
+        if (!server.listening) {
+          resolve();
+          return;
+        }
+        server.close(() => resolve());
+      });
+    });
+    await prisma.$disconnect();
+    await closePool();
+  } catch (err) {
+    console.error("[process] Error during graceful shutdown:", err);
+    if (exitCode === 0) {
+      exitCode = 1;
+    }
+  } finally {
+    clearTimeout(forceTimer);
+    process.exit(exitCode);
+  }
+}
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[process] Unhandled Promise Rejection:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[process] Uncaught Exception:", err);
+  shutdown("uncaughtException", 1);
+});
+
+process.on("SIGTERM", () => shutdown("SIGTERM", 0));
+process.on("SIGINT", () => shutdown("SIGINT", 0));

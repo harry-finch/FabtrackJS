@@ -35,7 +35,8 @@ class MailService {
     const settings = await settingsService.getSettings();
 
     const host = settings.smtp_host || process.env.HOST || "localhost";
-    const port = Number(settings.smtp_port || process.env.PORT || 587);
+    const rawPort = Number(settings.smtp_port || process.env.SMTP_PORT || 587);
+    const port = Number.isInteger(rawPort) && rawPort > 0 ? rawPort : 587;
     const user = settings.smtp_user || process.env.USR || "";
     const pass = settings.smtp_pass || process.env.PASSWD || "";
     const secure = settings.smtp_secure === "true" || port === 465;

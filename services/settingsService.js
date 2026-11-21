@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS = {
   mail_admin_recipient: process.env.ADMIN || "admin@example.com",
   mail_from: process.env.MAILFROM || "Fabtrack <noreply@fabtrack.local>",
   smtp_host: process.env.HOST || "",
-  smtp_port: process.env.PORT || "587",
+  smtp_port: process.env.SMTP_PORT || "587",
   smtp_user: process.env.USR || "",
   smtp_pass: process.env.PASSWD || "",
   smtp_secure: "false",

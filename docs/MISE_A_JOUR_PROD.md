@@ -40,6 +40,7 @@ pm2 logs fabtrack --lines 50
 | [R-005](../roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md) | `v1.1` | Aucune | Aucune | Aucune | Auditer le dossier `uploads/` (fichiers non-raster / `.svg`) |
 | [R-006](../roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md) | `v1.1` | Définir `FABTRACK_API_KEY` (ou `api_machine_token` en admin) avant tout client NFC | Aucune | Aucune | Vérifier que `/api/machines/*` retourne HTTP `401` sans clé |
 | [R-007](../roadmap/items/R-007-verrouiller-le-role-borne-kiosque-staff-et.md) | `v1.1` | Aucune | Aucune | Aucune | Contrôler les rôles Staff (`admin`, `user`, `staff`) et reconnecter les sessions actives |
+| [R-008](../roadmap/items/R-008-corriger-le-bug-confirm-dans-main-js-securiser.md) | `v1.1` | Utiliser `SMTP_PORT` (et non `PORT`) si le port SMTP vient du `.env` | Aucune | Aucune | Tester « Annuler » sur un `confirm()` en sous-chemin et vérifier l'envoi d'un e-mail test |
 
 ---
 
@@ -140,6 +141,26 @@ curl -i "https://votre-domaine.org/fabtrack/api/machines/usage?machineId=1"
 - Se rendre dans **Administration > Staff** (`/admin/staff/manage`) et vérifier que chaque compte porte bien son rôle attendu (`admin` pour administrateur, `user` pour médiateur, `staff` pour borne kiosque). En particulier, aucun compte actif ne doit utiliser l'ancien intitulé erroné `mediateur` (qui doit être `user`).
 - **Reconnexion des sessions actives :** le redémarrage de l'application vide le cache en mémoire des sessions ; demander aux administrateurs, médiateurs et bornes kiosques de se reconnecter afin de charger les nouveaux attributs de session (dont `staffId`, nécessaire à la protection contre l'auto-suppression / auto-rétrogradation).
 - Vérifier que les bornes kiosques (`staff`) peuvent toujours enregistrer arrivées et sorties sur `/fabtrack`, tandis que les opérations de solde (`credit > 0`, `cleardebt < 0`), d'ajustement (`balance-adjust`, réservé `admin`), d'avertissements (`warning/deactivate`, réservé `admin`) et d'habilitations ateliers (`users/:id/workshop-badge/*` pour `admin` + `user`) respectent la nouvelle matrice.
+
+---
+
+#### `R-008` — Corriger le bug `confirm()` (`main.js`), sécuriser `simpleLogger`, `SMTP_PORT` et l'arrêt gracieux (`bin/www`)
+
+**1. Variable `.env` SMTP (`PORT` → `SMTP_PORT`)**
+
+- **Aucune** migration SQL ni nouvelle dépendance npm requises.
+- La variable `process.env.PORT` est désormais strictement réservée au port HTTP de l'application (`bin/www`). Le port SMTP ne lit plus `PORT` mais `SMTP_PORT` (ou la valeur enregistrée dans **Administration > E-mails**, sinon `587` par défaut).
+- Si votre fichier `.env` de production définissait le port SMTP via `PORT` (sans l'avoir enregistré en base dans **Administration > E-mails**), ajouter explicitement :
+
+```env
+SMTP_PORT=587
+```
+
+**2. Vérifications post-déploiement**
+
+- En déploiement sous-chemin (ex. `/fabtrack/`), cliquer sur une action protégée par `confirm()` puis sur **Annuler** : vérifier qu'aucune navigation ni suppression n'a lieu.
+- Envoyer un e-mail de test depuis **Administration > E-mails** pour confirmer la résolution du port SMTP.
+
 
 
 

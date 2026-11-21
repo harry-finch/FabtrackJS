@@ -64,6 +64,10 @@
   // 2. Soft Internal Navigation Handler
   // ---------------------------------------------------------------------------
   document.addEventListener("click", (e) => {
+    if (e.defaultPrevented) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (!e.target || typeof e.target.closest !== "function") return;
+
     const link = e.target.closest("a");
     if (!link) return;
 
@@ -127,6 +131,8 @@
   // 3. Form Submissions Feedback & Double-submission prevention
   // ---------------------------------------------------------------------------
   document.addEventListener("submit", (e) => {
+    if (e.defaultPrevented) return;
+
     const form = e.target;
     if (form.target === "_blank" || form.getAttribute("data-no-progress")) return;
 
