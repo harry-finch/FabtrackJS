@@ -1,0 +1,5 @@
+format = 1
+nom = "FabtrackJS"
+
+[[test]]
+type = "release"
