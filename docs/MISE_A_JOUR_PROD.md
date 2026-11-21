@@ -42,6 +42,7 @@ pm2 logs fabtrack --lines 50
 | [R-007](../roadmap/items/R-007-verrouiller-le-role-borne-kiosque-staff-et.md) | `v1.1` | Aucune | Aucune | Aucune | Contrôler les rôles Staff (`admin`, `user`, `staff`) et reconnecter les sessions actives |
 | [R-008](../roadmap/items/R-008-corriger-le-bug-confirm-dans-main-js-securiser.md) | `v1.1` | Utiliser `SMTP_PORT` (et non `PORT`) si le port SMTP vient du `.env` | Aucune | Aucune | Tester « Annuler » sur un `confirm()` en sous-chemin et vérifier l'envoi d'un e-mail test |
 | [R-009](../roadmap/items/R-009-reparer-le-bootstrap-setup-et-resynchroniser.md) | `v1.1` | Aucune | Aucune sur base existante (`prisma/schema.sql` resynchronisé pour nouvelles installations) | Aucune | Vérifier que `/setup` reste verrouillé (redirection `/login` ou HTTP `403`) |
+| [R-010](../roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md) | `v1.1` | Aucune | Aucune | **`npm install --omit=dev`** (obligatoire : correctifs CVE + `@fortawesome/fontawesome-free`) | Vérifier l'affichage des icônes (kiosque, admin, avertissements) et `npm audit --omit=dev` |
 
 ---
 
@@ -178,6 +179,27 @@ Contrôler qu'une instance déjà initialisée refuse bien l'accès à `/setup` 
 curl -i -H "Accept: application/json" -X POST "https://votre-domaine.org/fabtrack/setup"
 # Attendu : HTTP/1.1 403 Forbidden (code ALREADY_INSTALLED)
 ```
+
+---
+
+#### `R-010` — Correctifs CVE npm production & migration Font Awesome Free
+
+**1. Dépendances npm obligatoires**
+
+- **Aucune** modification `.env` ni requête SQL.
+- Les anciens fichiers Font Awesome Pro (`public/stylesheets/fontawsome-all.min.css` et `public/webfonts/*`) ont été supprimés au profit du paquet `@fortawesome/fontawesome-free` servi sur `/vendor/fontawesome`, et les paquets vulnérables de production ont été mis à jour (`npm audit --omit=dev` à 0 vulnérabilité). L'étape suivante est donc **obligatoire** avant de redémarrer le service :
+
+```bash
+npm install --omit=dev
+```
+
+*(Si vous utilisez `npm ci --omit=dev`, il utilisera le `package-lock.json` à jour ; `postinstall` exécute `prisma generate` si `prisma` est présent, sinon exécuter `npx prisma generate` comme prévu pour `R-004`.)*
+
+**2. Vérifications post-déploiement**
+
+- Contrôler que les icônes s'affichent correctement sur le kiosque, les fiches usagers et les écrans d'administration (vider le cache navigateur si besoin : `Ctrl+Shift+R`).
+- Si des types d'avertissements personnalisés avaient été saisis manuellement en base avec une classe Font Awesome Pro (ex. `fa-duotone` ou `fa-shield-check`), les mettre à jour dans **Administration > Types d'avertissements**.
+
 
 
 

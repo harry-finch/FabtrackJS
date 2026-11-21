@@ -2,6 +2,7 @@
   "name": "fabtrackjs",
   "version": "0.0.1",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
@@ -13,7 +14,7 @@
     "test": "jest --runInBand --detectOpenHandles --forceExit"
   },
   "dependencies": {
-    "@faker-js/faker": "^10.6.0",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@prisma/adapter-mariadb": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "bcryptjs": "^3.0.3",
@@ -33,7 +34,6 @@
     "multer": "^2.4.0",
     "node-fetch": "^2.7.0",
     "nodemailer": "^10.0.10",
-    "nodemon": "^3.1.9",
     "randomized-string": "^2.0.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
@@ -41,11 +41,14 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
     "jest": "^30.5.1",
+    "nodemon": "^3.1.9",
     "prisma": "^7.10.0",
     "supertest": "^7.2.2"
   },
   "overrides": {
+    "effect": "^3.22.5",
     "tar": "^7.5.22",
     "qs": "^6.16.0",
     "test-exclude": "^8.0.0",

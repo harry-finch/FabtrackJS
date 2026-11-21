@@ -21,7 +21,7 @@
                 <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                            <i class="fa-solid fa-lock-keyhole"></i>
+                            <i class="fa-solid fa-lock"></i>
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2">
@@ -88,7 +88,7 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-transparent border-0 pt-3 pb-0">
                     <h5 class="fw-bold mb-0" id="formTitle">
-                        <i class="fa-solid fa-lock-keyhole text-warning-emphasis me-2"></i>Create new access level
+                        <i class="fa-solid fa-lock text-warning-emphasis me-2"></i>Create new access level
                     </h5>
                 </div>
                 <div class="card-body">
@@ -146,7 +146,7 @@
           }
 
           function cancelEdit() {
-            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-lock-keyhole text-warning-emphasis me-2'></i>Create new access level";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-lock text-warning-emphasis me-2'></i>Create new access level";
             document.getElementById("accessForm").action = "/admin/accesslevels/create";
             document.getElementById("accessid").value = "";
             document.getElementById("name").value = "";

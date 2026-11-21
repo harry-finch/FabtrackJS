@@ -89,6 +89,10 @@ const staticOptions = {
   etag: true,
 };
 app.use(express.static(path.join(__dirname, "public"), staticOptions));
+app.use(
+  "/vendor/fontawesome",
+  express.static(path.join(__dirname, "node_modules/@fortawesome/fontawesome-free"), staticOptions),
+);
 
 // Ensure uploads directory exists and is statically accessible with hardened headers
 const uploadsDir = path.join(__dirname, "uploads");

@@ -18,7 +18,7 @@
    Empêcher les suppressions accidentelles en sous-chemin, les crashs serveur sur promesses rejetées et la collision PORT/SMTP.
 6. **[R-009 Réparer le bootstrap /setup et resynchroniser prisma/schema.sql](roadmap/items/R-009-reparer-le-bootstrap-setup-et-resynchroniser.md)** · À tester · jalon v1.1
    Importer setupService dans app.js, corriger la création des espaces de travail au setup et réaligner schema.sql avec v1.0.
-7. **[R-010 Corriger les CVE npm production et remplacer Font Awesome Pro](roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md)** · Idée · jalon v1.1
+7. **[R-010 Corriger les CVE npm production et remplacer Font Awesome Pro](roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md)** · À tester · jalon v1.1
    Résoudre les 13 vulnérabilités npm de production (dont proxy-addr critique) et retirer la licence commerciale Font Awesome Pro.
 8. **[R-011 Isoler la base de test, corriger la flakiness et installer la CI](roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md)** · Idée · jalon v1.2
    Imposer DATABASE_URL_TEST, supprimer le backdoor TEST_ADMIN_USER sur la base réelle, corriger LIKE 'TEST_%' et créer la CI GitHub Actions.
@@ -82,6 +82,8 @@
 - [ ] [A-011](roadmap/actions/A-011-verifier-smtp-port-avant-deploiement-r-008-en.md) Vérifier SMTP_PORT avant déploiement R-008 en production (tester, R-008)
 - [ ] [A-012](roadmap/actions/A-012-tester-le-bootstrap-setup-base-vierge-ou-rendu.md) Tester le bootstrap /setup (base vierge ou rendu) en local (tester, R-009)
 - [ ] [A-013](roadmap/actions/A-013-verifier-le-verrouillage-de-setup-sur-instance.md) Vérifier le verrouillage de /setup sur instance installée (tester, R-009)
+- [ ] [A-014](roadmap/actions/A-014-verifier-l-affichage-des-icones-font-awesome.md) Vérifier l'affichage des icônes Font Awesome Free en local (R-010) (tester, R-010)
+- [ ] [A-015](roadmap/actions/A-015-executer-npm-install-omit-dev-lors-du.md) Exécuter npm install --omit=dev lors du déploiement R-010 en production (tester, R-010)
 
 ## Livré
 

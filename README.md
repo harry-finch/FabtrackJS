@@ -439,4 +439,4 @@ server {
 
 - Original Author: Stéphane Muller
 - Current Repository: [harry-finch/FabtrackJS](https://github.com/harry-finch/FabtrackJS)
-- Licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) or [MIT](LICENSE) where applicable.
+- Licensed under the [MIT License](LICENSE). Icons by [Font Awesome Free](https://fontawesome.com/) (CC BY 4.0).
