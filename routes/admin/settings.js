@@ -110,7 +110,12 @@ router.get(
     const projecttypes = await prisma.projecttype.findMany({ orderBy: { name: "asc" } });
 
     res.render("admin/manage-settings", {
-      settings,
+      settings: settingsService.filterPublicSettings(settings),
+      hasApiMachineToken: Boolean(settings.api_machine_token && settings.api_machine_token.trim()),
+      hasOpenAiKey: Boolean(settings.ai_openai_api_key && settings.ai_openai_api_key.trim()),
+      hasGeminiKey: Boolean(settings.ai_gemini_api_key && settings.ai_gemini_api_key.trim()),
+      hasAnthropicKey: Boolean(settings.ai_anthropic_api_key && settings.ai_anthropic_api_key.trim()),
+      hasLocalAiKey: Boolean(settings.ai_local_api_key && settings.ai_local_api_key.trim()),
       plugins,
       projecttypes,
       validDateFormats: dateService.VALID_FORMATS,
@@ -169,7 +174,8 @@ router.post(
       const hours = parseInt(req.body.session_timeout_hours, 10);
       updates.session_timeout_hours = !isNaN(hours) && hours > 0 ? String(hours) : "24";
     }
-    if (req.body.api_machine_token !== undefined) {
+    // Write-only API token: preserve existing token if submitted empty
+    if (req.body.api_machine_token !== undefined && req.body.api_machine_token.trim() !== "") {
       updates.api_machine_token = req.body.api_machine_token.trim();
     }
     if (req.body.currency_symbol !== undefined) {
@@ -250,23 +256,23 @@ router.post(
       updates.sorbonne_projecttype_name = req.body.sorbonne_projecttype_name.trim() || "Sorbonne";
     }
 
-    // Natural Language AI Query settings
+    // Natural Language AI Query settings (API keys are write-only; preserve existing when submitted blank)
     if (req.body.ai_provider !== undefined) {
       updates.ai_provider = req.body.ai_provider;
     }
-    if (req.body.ai_openai_api_key !== undefined) {
+    if (req.body.ai_openai_api_key !== undefined && req.body.ai_openai_api_key.trim() !== "") {
       updates.ai_openai_api_key = req.body.ai_openai_api_key.trim();
     }
     if (req.body.ai_openai_model !== undefined) {
       updates.ai_openai_model = req.body.ai_openai_model.trim() || "gpt-4o-mini";
     }
-    if (req.body.ai_gemini_api_key !== undefined) {
+    if (req.body.ai_gemini_api_key !== undefined && req.body.ai_gemini_api_key.trim() !== "") {
       updates.ai_gemini_api_key = req.body.ai_gemini_api_key.trim();
     }
     if (req.body.ai_gemini_model !== undefined) {
       updates.ai_gemini_model = req.body.ai_gemini_model.trim() || "gemini-1.5-flash";
     }
-    if (req.body.ai_anthropic_api_key !== undefined) {
+    if (req.body.ai_anthropic_api_key !== undefined && req.body.ai_anthropic_api_key.trim() !== "") {
       updates.ai_anthropic_api_key = req.body.ai_anthropic_api_key.trim();
     }
     if (req.body.ai_anthropic_model !== undefined) {
@@ -278,7 +284,7 @@ router.post(
     if (req.body.ai_local_model !== undefined) {
       updates.ai_local_model = req.body.ai_local_model.trim() || "llama3.2";
     }
-    if (req.body.ai_local_api_key !== undefined) {
+    if (req.body.ai_local_api_key !== undefined && req.body.ai_local_api_key.trim() !== "") {
       updates.ai_local_api_key = req.body.ai_local_api_key.trim();
     }
 
@@ -407,17 +413,18 @@ router.post(
   asyncHandler(async (req, res) => {
     const aiQueryService = require("../../services/aiQueryService");
     try {
+      const stored = await settingsService.getSettings();
       const customConfig = {
         provider: req.body.ai_provider,
-        openaiApiKey: req.body.ai_openai_api_key,
+        openaiApiKey: (req.body.ai_openai_api_key && req.body.ai_openai_api_key.trim()) || stored.ai_openai_api_key || "",
         openaiModel: req.body.ai_openai_model,
-        geminiApiKey: req.body.ai_gemini_api_key,
+        geminiApiKey: (req.body.ai_gemini_api_key && req.body.ai_gemini_api_key.trim()) || stored.ai_gemini_api_key || "",
         geminiModel: req.body.ai_gemini_model,
-        anthropicApiKey: req.body.ai_anthropic_api_key,
+        anthropicApiKey: (req.body.ai_anthropic_api_key && req.body.ai_anthropic_api_key.trim()) || stored.ai_anthropic_api_key || "",
         anthropicModel: req.body.ai_anthropic_model,
         localUrl: req.body.ai_local_url,
         localModel: req.body.ai_local_model,
-        localApiKey: req.body.ai_local_api_key,
+        localApiKey: (req.body.ai_local_api_key && req.body.ai_local_api_key.trim()) || stored.ai_local_api_key || "",
       };
       const result = await aiQueryService.testConnection(customConfig);
       res.json({ success: true, message: result.message });

@@ -80,7 +80,8 @@ router.post(
       req.session.notification = `Success: Consommation #${id} marquée comme ${stateLabel}.`;
     }
 
-    const redirectUrl = req.headers.referer || "/admin/sorbonne";
+    const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
+    const redirectUrl = getSafeRedirectPath(req, "/admin/sorbonne");
     res.redirect(redirectUrl);
   }),
 );
@@ -108,7 +109,8 @@ router.post(
       req.session.notification = `Info: Aucune consommation en attente pour "${entity.trim()}".`;
     }
 
-    const redirectUrl = req.headers.referer || "/admin/sorbonne";
+    const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
+    const redirectUrl = getSafeRedirectPath(req, "/admin/sorbonne");
     res.redirect(redirectUrl);
   }),
 );
@@ -137,22 +139,23 @@ router.get(
       activities = activities.filter((a) => new Date(a.createdAt) <= end);
     }
 
+    const { escapeCsvCell, sanitizeContentDispositionFilename } = require("../../utilities/securityHelpers.js");
     // CSV header with UTF-8 BOM for Microsoft Excel
     let csv = "\uFEFF";
     csv += "Entité / UFR;Statut Règlement;Date Règlement;Réglé Par;Date Consommation;Contributeur;Email Contributeur;Projet;Consommable;Quantité;Unité;Prix Unitaire (€);Total (€)\r\n";
 
     activities.forEach((act) => {
-      const entityStr = `"${(act.sorbonneEntity || "").replace(/"/g, '""')}"`;
-      const statusStr = act.settled ? "Réglé" : "À régler";
-      const settledDate = act.settledAtFormatted || "";
-      const settledBy = act.settledBy ? `"${act.settledBy.replace(/"/g, '""')}"` : "";
-      const dateStr = act.formattedDate || moment(act.createdAt).format("DD/MM/YYYY HH:mm");
-      const userStr = `"${(act.userName || "").replace(/"/g, '""')}"`;
-      const emailStr = act.userEmail || "";
-      const projStr = `"${(act.projectUrl || "").replace(/"/g, '""')}"`;
-      const consumableStr = `"${(act.consumableName || "").replace(/"/g, '""')}"`;
+      const entityStr = escapeCsvCell(act.sorbonneEntity || "");
+      const statusStr = escapeCsvCell(act.settled ? "Réglé" : "À régler");
+      const settledDate = escapeCsvCell(act.settledAtFormatted || "");
+      const settledBy = escapeCsvCell(act.settledBy || "");
+      const dateStr = escapeCsvCell(act.formattedDate || moment(act.createdAt).format("DD/MM/YYYY HH:mm"));
+      const userStr = escapeCsvCell(act.userName || "");
+      const emailStr = escapeCsvCell(act.userEmail || "");
+      const projStr = escapeCsvCell(act.projectUrl || "");
+      const consumableStr = escapeCsvCell(act.consumableName || "");
       const qty = act.quantity || 1;
-      const unit = act.consumableUnit || "u";
+      const unit = escapeCsvCell(act.consumableUnit || "u");
       const unitCost = act.unitCost || 0;
       const totalCost = act.totalCost || 0;
 
@@ -172,7 +175,7 @@ router.get(
       filenameParts.push(moment().format("YYYY-MM-DD"));
     }
 
-    const finalFilename = `${filenameParts.join("_")}.csv`;
+    const finalFilename = sanitizeContentDispositionFilename(`${filenameParts.join("_")}.csv`, "facturation_sorbonne.csv");
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${finalFilename}"`);
     res.send(csv);

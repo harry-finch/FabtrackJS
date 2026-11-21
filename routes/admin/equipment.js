@@ -318,7 +318,8 @@ router.post(
     logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par l'admin ${req.session.username}).`);
     req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;
 
-    res.redirect(req.headers.referer || "/admin/equipment/manage");
+    const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
+    res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
   }),
 );
 

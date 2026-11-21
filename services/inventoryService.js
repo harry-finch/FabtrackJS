@@ -273,11 +273,9 @@ async function exportMovementsCsv() {
     "Notes",
   ];
 
-  const escapeCsv = (str) => {
-    if (str === null || str === undefined) return "";
-    const s = String(str).replace(/"/g, '""');
-    return `"${s}"`;
-  };
+const { escapeCsvCell } = require("../utilities/securityHelpers");
+
+  const escapeCsv = (str) => escapeCsvCell(str, { alwaysQuote: true, delimiter: ";" });
 
   const rows = movements.map((m) => {
     const d = new Date(m.createdAt);

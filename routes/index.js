@@ -11,6 +11,7 @@ const { createRateLimiter } = require("../middleware/rateLimit.js");
 const { ensureCsrfToken } = require("../middleware/csrf.js");
 const { isApiOrAjaxRequest } = require("../middleware/requireRoles.js");
 const { safeHttpUrl } = require("../utilities/xssHelpers.js");
+const { getSafeRedirectPath } = require("../utilities/securityHelpers.js");
 const {
   loginSchema,
   registerStaffSchema,
@@ -105,27 +106,7 @@ const requireSelfRegistration = asyncHandler(async (req, res, next) => {
 });
 
 function resolveSafeRedirectPath(req, fallback = "/") {
-  const referer = req.headers && req.headers.referer;
-  if (!referer || typeof referer !== "string") {
-    return fallback;
-  }
-  try {
-    const host = typeof req.get === "function" ? req.get("host") : req.headers.host;
-    if (!host) {
-      return fallback;
-    }
-    const parsed = new URL(referer, `${req.protocol || "http"}://${host}`);
-    if (parsed.host !== host) {
-      return fallback;
-    }
-    const relative = `${parsed.pathname}${parsed.search}${parsed.hash}`;
-    if (!relative.startsWith("/") || relative.startsWith("//")) {
-      return fallback;
-    }
-    return relative;
-  } catch {
-    return fallback;
-  }
+  return getSafeRedirectPath(req, fallback);
 }
 
 async function findUserByAgreementToken(token) {

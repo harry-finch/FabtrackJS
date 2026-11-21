@@ -708,8 +708,9 @@ router.post(
 router.post(
   "/equipment/return/:id",
   requireRoles("admin", "user"),
-  validateBody(returnEquipmentSchema, { redirectUrl: (req) => req.headers.referer || "/fabtrack" }),
+  validateBody(returnEquipmentSchema, { redirectUrl: (req) => require("../utilities/securityHelpers.js").getSafeRedirectPath(req, "/fabtrack") }),
   asyncHandler(async (req, res) => {
+    const { getSafeRedirectPath } = require("../utilities/securityHelpers.js");
     const { id } = req.params;
     const { returnNotes } = req.body;
 
@@ -720,7 +721,7 @@ router.post(
 
     if (!activity || activity.resourceType !== ResourceType.EQUIPMENT) {
       req.session.notification = "Error: Emprunt introuvable.";
-      return res.redirect(req.headers.referer || "/fabtrack");
+      return res.redirect(getSafeRedirectPath(req, "/fabtrack"));
     }
 
     await prisma.activity.update({
@@ -738,7 +739,7 @@ router.post(
     logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par ${req.session.username}).`);
     req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;
 
-    const redirectUrl = req.headers.referer || req.session.lastPage || "/admin/equipment/manage";
+    const redirectUrl = getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage");
     return res.redirect(redirectUrl);
   }),
 );

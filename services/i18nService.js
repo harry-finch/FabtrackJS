@@ -1,6 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const i18n = require("../config/i18n");
+const { escapeCsvCell } = require("../utilities/securityHelpers");
+
+const FORBIDDEN_OBJECT_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 const LOCALES_DIR = path.join(__dirname, "../locales");
 const DEFAULT_CSV_PATH = path.join(__dirname, "../translations.csv");
@@ -82,19 +85,27 @@ function flattenObject(obj, prefix = "") {
   return result;
 }
 
-// Helper: Unflatten dot-notated keys into a nested object
+// Helper: Unflatten dot-notated keys into a nested null-prototype object
+// Strictly blocks __proto__, constructor, and prototype segments (Prototype Pollution defense)
 function unflattenObject(data) {
-  const result = {};
+  const result = Object.create(null);
+  if (!data || typeof data !== "object") return result;
+
   for (const [key, value] of Object.entries(data)) {
-    const parts = key.split(".");
+    const parts = String(key).split(".");
+    if (parts.some((part) => !part || FORBIDDEN_OBJECT_KEYS.has(part))) {
+      continue;
+    }
+
     let current = result;
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       if (i === parts.length - 1) {
         current[part] = value;
       } else {
-        if (!current[part] || typeof current[part] !== "object") {
-          current[part] = {};
+        const existing = Object.prototype.hasOwnProperty.call(current, part) ? current[part] : undefined;
+        if (!existing || typeof existing !== "object" || Array.isArray(existing)) {
+          current[part] = Object.create(null);
         }
         current = current[part];
       }
@@ -103,14 +114,9 @@ function unflattenObject(data) {
   return result;
 }
 
-// Helper: Escape a value for CSV (RFC 4180)
+// Helper: Escape a value for CSV (RFC 4180 + CSV formula injection defense)
 function escapeCsvValue(val) {
-  if (val === null || val === undefined) return "";
-  const str = String(val);
-  if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
+  return escapeCsvCell(val, { alwaysQuote: false, delimiter: "," });
 }
 
 // Helper: Parse CSV text into rows of columns (handles quotes, commas, newlines)
@@ -358,4 +364,8 @@ class I18nService {
   }
 }
 
-module.exports = new I18nService();
+const i18nService = new I18nService();
+i18nService.unflattenObject = unflattenObject;
+i18nService.escapeCsvValue = escapeCsvValue;
+
+module.exports = i18nService;

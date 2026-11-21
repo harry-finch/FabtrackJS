@@ -34,8 +34,9 @@ router.post(
   "/checkout",
   requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
+    const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
     const isJson = isApiOrAjaxRequest(req);
-    const redirectUrl = req.headers.referer || req.session.lastPage || "/fabtrack";
+    const redirectUrl = getSafeRedirectPath(req, req.session.lastPage || "/fabtrack");
 
     const parsed = inventoryCheckoutSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -174,9 +175,10 @@ router.get(
 router.get(
   "/movements/export",
   asyncHandler(async (req, res) => {
+    const { sanitizeContentDispositionFilename } = require("../../utilities/securityHelpers.js");
     const csvData = await inventoryService.exportMovementsCsv();
     const dateStr = new Date().toISOString().split("T")[0];
-    const filename = `inventaire_sorties_${dateStr}.csv`;
+    const filename = sanitizeContentDispositionFilename(`inventaire_sorties_${dateStr}.csv`);
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
@@ -207,7 +209,8 @@ router.post(
       req.session.notification = `Error: Impossible de remettre en service cet équipement (${err.message}).`;
     }
 
-    res.redirect(req.headers.referer || "/admin/equipment/manage");
+    const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
+    res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
   }),
 );
 

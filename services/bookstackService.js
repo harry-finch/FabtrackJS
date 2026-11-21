@@ -419,7 +419,12 @@ class BookstackService {
       unverifiedCount,
       upToDatePercentage,
       projects: projectList,
-      config,
+      config: {
+        enabled: config.enabled,
+        url: config.url,
+        autoPrefill: config.autoPrefill,
+        isConfigured: config.isConfigured,
+      },
     };
   }
 }

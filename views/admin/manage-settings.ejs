@@ -402,9 +402,12 @@
                     </div>
                   </div>
                   <div class="input-group">
-                    <input type="text" class="form-control font-monospace" id="api_machine_token" name="api_machine_token"
-                      value="<%= settings.api_machine_token || '' %>" placeholder="Ex: fabtrack_sec_a8f93bc145d2e7..." autocomplete="off" />
-                    <button class="btn btn-outline-secondary" type="button" id="btnCopyApiToken" title="Copier la clé">
+                    <input type="password" class="form-control font-monospace" id="api_machine_token" name="api_machine_token"
+                      value="" placeholder="<%= typeof hasApiMachineToken !== 'undefined' && hasApiMachineToken ? '•••••••••••••••• (déjà configurée — laisser vide pour conserver)' : 'Ex: fabtrack_sec_a8f93bc145d2e7...' %>" autocomplete="new-password" />
+                    <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="api_machine_token" title="Afficher / masquer">
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" id="btnCopyApiToken" title="Copier la clé générée">
                       <i class="fa-regular fa-copy"></i>
                     </button>
                   </div>
@@ -600,7 +603,7 @@
                       <div class="col-md-7">
                         <label for="ai_openai_api_key" class="form-label small fw-semibold">Clé API OpenAI</label>
                         <div class="input-group">
-                          <input type="password" class="form-control" id="ai_openai_api_key" name="ai_openai_api_key" value="<%= settings.ai_openai_api_key || '' %>" placeholder="sk-proj-..." autocomplete="off">
+                          <input type="password" class="form-control" id="ai_openai_api_key" name="ai_openai_api_key" value="" placeholder="<%= typeof hasOpenAiKey !== 'undefined' && hasOpenAiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-proj-...' %>" autocomplete="new-password">
                           <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_openai_api_key"><i class="fa-solid fa-eye"></i></button>
                         </div>
                         <small class="text-muted">Disponible sur <a href="https://platform.openai.com/api-keys" target="_blank" class="text-decoration-none">platform.openai.com</a>.</small>
@@ -622,7 +625,7 @@
                       <div class="col-md-7">
                         <label for="ai_gemini_api_key" class="form-label small fw-semibold">Clé API Google Gemini</label>
                         <div class="input-group">
-                          <input type="password" class="form-control" id="ai_gemini_api_key" name="ai_gemini_api_key" value="<%= settings.ai_gemini_api_key || '' %>" placeholder="AIzaSy..." autocomplete="off">
+                          <input type="password" class="form-control" id="ai_gemini_api_key" name="ai_gemini_api_key" value="" placeholder="<%= typeof hasGeminiKey !== 'undefined' && hasGeminiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'AIzaSy...' %>" autocomplete="new-password">
                           <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_gemini_api_key"><i class="fa-solid fa-eye"></i></button>
                         </div>
                         <small class="text-muted">Disponible gratuitement sur <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-decoration-none">Google AI Studio</a>.</small>
@@ -644,7 +647,7 @@
                       <div class="col-md-7">
                         <label for="ai_anthropic_api_key" class="form-label small fw-semibold">Clé API Anthropic</label>
                         <div class="input-group">
-                          <input type="password" class="form-control" id="ai_anthropic_api_key" name="ai_anthropic_api_key" value="<%= settings.ai_anthropic_api_key || '' %>" placeholder="sk-ant-api..." autocomplete="off">
+                          <input type="password" class="form-control" id="ai_anthropic_api_key" name="ai_anthropic_api_key" value="" placeholder="<%= typeof hasAnthropicKey !== 'undefined' && hasAnthropicKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-ant-api...' %>" autocomplete="new-password">
                           <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_anthropic_api_key"><i class="fa-solid fa-eye"></i></button>
                         </div>
                         <small class="text-muted">Disponible sur <a href="https://console.anthropic.com/" target="_blank" class="text-decoration-none">console.anthropic.com</a>.</small>
@@ -675,7 +678,7 @@
                       </div>
                       <div class="col-md-3">
                         <label for="ai_local_api_key" class="form-label small fw-semibold">Clé / Jeton (optionnel)</label>
-                        <input type="password" class="form-control" id="ai_local_api_key" name="ai_local_api_key" value="<%= settings.ai_local_api_key || '' %>" placeholder="Facultatif">
+                        <input type="password" class="form-control" id="ai_local_api_key" name="ai_local_api_key" value="" placeholder="<%= typeof hasLocalAiKey !== 'undefined' && hasLocalAiKey ? '•••••••••••• (conservée si vide)' : 'Facultatif' %>" autocomplete="new-password">
                         <small class="text-muted">Si votre proxy local exige une authentification.</small>
                       </div>
                     </div>

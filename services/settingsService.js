@@ -73,7 +73,42 @@ const DEFAULT_SETTINGS = {
 
 let cache = null;
 
+const SECRET_SETTING_KEYS = new Set([
+  "api_machine_token",
+  "smtp_pass",
+  "bookstack_token_id",
+  "bookstack_token_secret",
+  "ai_openai_api_key",
+  "ai_gemini_api_key",
+  "ai_anthropic_api_key",
+  "ai_local_api_key",
+]);
+
+const PUBLIC_SETTING_KEYS = Object.keys(DEFAULT_SETTINGS).filter((key) => !SECRET_SETTING_KEYS.has(key));
+PUBLIC_SETTING_KEYS.push("platform_installed");
+
+/**
+ * Returns a strict whitelist projection of system settings safe to expose
+ * to EJS templates via `res.locals.settings` (excludes all API keys, tokens, and passwords).
+ *
+ * @param {Object} settings
+ * @returns {Object}
+ */
+function filterPublicSettings(settings = {}) {
+  const safe = {};
+  for (const key of PUBLIC_SETTING_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(settings, key)) {
+      safe[key] = settings[key];
+    }
+  }
+  return safe;
+}
+
 class SettingsService {
+  filterPublicSettings(settings) {
+    return filterPublicSettings(settings);
+  }
+
   getDefaults() {
     return { ...DEFAULT_SETTINGS };
   }

@@ -458,6 +458,7 @@ router.get(
     const consumableMap = new Map();
     consumables.forEach((c) => consumableMap.set(c.id, c));
 
+    const { escapeCsvCell, sanitizeContentDispositionFilename } = require("../../utilities/securityHelpers.js");
     // CSV header with UTF-8 BOM for Microsoft Excel
     let csv = "\uFEFF";
     csv += "Code UE;Intitulé UE;Département;Responsable UE;Statut Régularisation;Date Activité;Nom Étudiant;Email Étudiant;Projet;Matériau Consommé;Quantité;Unité;Prix Unitaire (€);Total Imputé (€)\r\n";
@@ -469,18 +470,18 @@ router.get(
       const project = act.history && act.history.userproject && act.history.userproject.project ? act.history.userproject.project : null;
 
       const isUnregistered = !ue;
-      const code = ue ? ue.code : (act.history && act.history.unregisteredUeName ? act.history.unregisteredUeName : "N/A");
-      const name = ue ? `"${ue.name.replace(/"/g, '""')}"` : `"UE non-enregistrée"`;
-      const department = ue && ue.department ? `"${ue.department.replace(/"/g, '""')}"` : "";
-      const respEmail = ue && ue.responsibleEmail ? ue.responsibleEmail : (act.history && act.history.unregisteredUeContact ? act.history.unregisteredUeContact : "");
-      const regStatus = isUnregistered ? "En attente de régularisation" : "Validée";
-      const dateStr = moment(act.createdAt).format("DD/MM/YYYY HH:mm");
-      const student = user ? `"${(user.name + " " + user.surname).replace(/"/g, '""')}"` : "Inconnu";
-      const studentEmail = user ? user.email : "";
-      const projectUrl = project ? `"${project.url.replace(/"/g, '""')}"` : (act.history && act.history.comments ? `"${act.history.comments.replace(/"/g, '""')}"` : "");
-      const consumableName = consumable ? `"${consumable.name.replace(/"/g, '""')}"` : `Consommable #${act.resourceId}`;
+      const code = escapeCsvCell(ue ? ue.code : (act.history && act.history.unregisteredUeName ? act.history.unregisteredUeName : "N/A"));
+      const name = escapeCsvCell(ue ? ue.name : "UE non-enregistrée");
+      const department = escapeCsvCell(ue && ue.department ? ue.department : "");
+      const respEmail = escapeCsvCell(ue && ue.responsibleEmail ? ue.responsibleEmail : (act.history && act.history.unregisteredUeContact ? act.history.unregisteredUeContact : ""));
+      const regStatus = escapeCsvCell(isUnregistered ? "En attente de régularisation" : "Validée");
+      const dateStr = escapeCsvCell(moment(act.createdAt).format("DD/MM/YYYY HH:mm"));
+      const student = escapeCsvCell(user ? `${user.name} ${user.surname}` : "Inconnu");
+      const studentEmail = escapeCsvCell(user ? user.email : "");
+      const projectUrl = escapeCsvCell(project ? project.url : (act.history && act.history.comments ? act.history.comments : ""));
+      const consumableName = escapeCsvCell(consumable ? consumable.name : `Consommable #${act.resourceId}`);
       const qty = act.quantity || 1;
-      const unit = consumable ? consumable.unit || "u" : "u";
+      const unit = escapeCsvCell(consumable ? consumable.unit || "u" : "u");
       const unitCost = consumable ? Number(consumable.cost) : 0;
       const total = Number((unitCost * qty).toFixed(2));
 
@@ -503,7 +504,7 @@ router.get(
       filenameParts.push(moment().format("YYYY-MM-DD"));
     }
 
-    const finalFilename = `${filenameParts.join("_")}.csv`;
+    const finalFilename = sanitizeContentDispositionFilename(`${filenameParts.join("_")}.csv`, "refacturation_ue.csv");
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${finalFilename}"`);
     res.send(csv);

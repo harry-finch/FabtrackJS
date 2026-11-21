@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { resolveSafeRedirectUrl } = require("../utilities/securityHelpers.js");
 
 const FORMAT_RULES = {
   png: {
@@ -348,10 +349,9 @@ function wrapUploadMiddleware(multerMiddleware, options = {}) {
         req.session.notification = `Error: ${message}`;
       }
 
-      const redirectTarget =
-        typeof options.onErrorRedirect === "function"
-          ? options.onErrorRedirect(req)
-          : options.onErrorRedirect || req.headers.referer || "/fabtrack";
+      const rawTarget =
+        typeof options.onErrorRedirect === "function" ? options.onErrorRedirect(req) : options.onErrorRedirect;
+      const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
 
       return res.redirect(redirectTarget);
     });

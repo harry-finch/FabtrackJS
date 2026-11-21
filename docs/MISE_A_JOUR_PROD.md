@@ -47,6 +47,7 @@ pm2 logs fabtrack --lines 50
 | [R-012](../roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md) | `v1.2` | **Obligatoire :** définir `SECRET` (aléatoire fort, != valeur par défaut) ; vérifier `TRUST_PROXY` (`1` derrière Nginx) et `ENABLE_HTTPS=true` en HTTPS | Aucune | Aucune (CSRF & rate-limit 100 % natifs) | Reconnexion sessions actives ; tester login, `POST /logout`, suppression admin, confirmation charte `GET`→`POST /agreement/:token` et rejet `403` sans CSRF |
 | [R-013](../roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md) | `v1.2` | Aucune | Aucune | Aucune | Vérifier les icônes d'avertissement, les dialogues `data-confirm`, le tableau paginé usager et le switch « Signalement de bug » dans Administration > E-mails |
 | [R-014](../roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md) | `v1.2` | Optionnel : `VISIT_AUTO_CLOSE_TIME=18:30` (défaut `18:30`) | **Obligatoire :** `CREATE TABLE IF NOT EXISTS Session` + 10 `CREATE INDEX` composites | **`npx prisma generate`** (nouveau modèle `Session`) | Vérifier qu'une session survit à `pm2 restart fabtrack` et qu'une modif admin est visible immédiatement sur le kiosque |
+| [R-015](../roadmap/items/R-015-corriger-les-injections-transverses-et-l.md) | `v1.3` | Aucune | Aucune | Aucune | Vérifier que `/admin/settings` n'affiche plus les clés API/tokens en clair dans le HTML et tester un export CSV |
 
 ---
 
@@ -328,6 +329,23 @@ npx prisma generate
 - Se connecter, exécuter `pm2 restart fabtrack`, puis recharger `/fabtrack` : la session doit rester active sans reconnexion.
 - Créer ou renommer un motif de visite en admin et vérifier sa visibilité immédiate sur un autre poste kiosque connecté sans reconnexion.
 - Vérifier avec `EXPLAIN SELECT * FROM History WHERE workspaceId = 1 AND departure IS NULL AND arrival >= CURDATE();` que `History_workspaceId_departure_arrival_idx` est utilisé.
+
+---
+
+### Jalon `v1.3` — Injections transverses, secrets & durcissement complémentaire
+
+#### `R-015` — Injections transverses (Prototype Pollution, Open Redirect, CSV) & filtrage des secrets
+
+**1. Variable `.env`, SQL et dépendances**
+
+- **Aucune** modification `.env`, **aucune** migration SQL et **aucune** nouvelle dépendance npm requises (`git pull` + redémarrage).
+
+**2. Impacts fonctionnels & sécurité**
+
+- Les secrets stockés en base (`api_machine_token`, `smtp_pass`, `bookstack_token_id`/`secret`, `ai_*_api_key`) sont désormais **filtrés hors de `res.locals.settings`** et passés en **écriture seule** dans **Administration > Paramètres** (laisser un champ vide conserve la valeur existante ; **Tester la connexion IA** réutilise la clé enregistrée si le champ est laissé vide).
+- Les endpoints `/api/list/all-staff` et `/api/list/all-users` n'exposent plus `password`, `pwdToken`, `tokenExpiry`, `token` ni `rfid`.
+- Tous les exports CSV neutralisent désormais les formules (`= + - @ \t \r`) et assainissent l'en-tête `Content-Disposition`.
+
 
 
 

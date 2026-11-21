@@ -406,9 +406,16 @@ router.get(
     };
 
     const aiQueryService = require("../../services/aiQueryService");
-    const aiConfig = await aiQueryService.getConfig();
-    const isAiConfigured = Boolean(aiConfig.provider && aiConfig.provider !== "none");
-    const aiProviderLabel = aiQueryService.getProviderLabel(aiConfig.provider);
+    const rawAiConfig = await aiQueryService.getConfig();
+    const isAiConfigured = Boolean(rawAiConfig.provider && rawAiConfig.provider !== "none");
+    const aiProviderLabel = aiQueryService.getProviderLabel(rawAiConfig.provider);
+    const aiConfig = {
+      provider: rawAiConfig.provider,
+      openaiModel: rawAiConfig.openaiModel,
+      geminiModel: rawAiConfig.geminiModel,
+      anthropicModel: rawAiConfig.anthropicModel,
+      localModel: rawAiConfig.localModel,
+    };
 
     res.render("admin/manage-statistics", {
       workspaces,
@@ -474,23 +481,31 @@ router.get(
       orderBy: { arrival: "asc" },
     });
 
+    const { escapeCsvCell, sanitizeContentDispositionFilename } = require("../../utilities/securityHelpers.js");
     let csvContent = "\uFEFF"; // UTF-8 BOM
     csvContent += "ID;Date arrivee;Date depart;Duree (min);Utilisateur;Type utilisateur;Projet;Type projet;Espace\r\n";
 
     history.forEach((h) => {
-      const arr = h.arrival ? new Date(h.arrival).toLocaleString("fr-FR") : "";
-      const dep = h.departure ? new Date(h.departure).toLocaleString("fr-FR") : "";
+      const arr = escapeCsvCell(h.arrival ? new Date(h.arrival).toLocaleString("fr-FR") : "");
+      const dep = escapeCsvCell(h.departure ? new Date(h.departure).toLocaleString("fr-FR") : "");
       const dur = h.departure && h.arrival ? Math.round((new Date(h.departure) - new Date(h.arrival)) / 60000) : "";
-      const uName = h.user ? `"${h.user.name} ${h.user.surname}"` : '""';
-      const uType = h.user && h.user.usertype ? `"${h.user.usertype.name}"` : '""';
-      const pUrl = h.userproject && h.userproject.project ? `"${h.userproject.project.url}"` : '""';
-      const pType = h.userproject && h.userproject.project && h.userproject.project.projecttype ? `"${h.userproject.project.projecttype.name}"` : '""';
-      const wsName = h.workspace ? `"${h.workspace.name}"` : '""';
+      const uName = escapeCsvCell(h.user ? `${h.user.name} ${h.user.surname}` : "");
+      const uType = escapeCsvCell(h.user && h.user.usertype ? h.user.usertype.name : "");
+      const pUrl = escapeCsvCell(h.userproject && h.userproject.project ? h.userproject.project.url : "");
+      const pType = escapeCsvCell(
+        h.userproject && h.userproject.project && h.userproject.project.projecttype
+          ? h.userproject.project.projecttype.name
+          : "",
+      );
+      const wsName = escapeCsvCell(h.workspace ? h.workspace.name : "");
 
       csvContent += `${h.id};${arr};${dep};${dur};${uName};${uType};${pUrl};${pType};${wsName}\r\n`;
     });
 
-    const filename = `statistiques_fablab_${startDate || "debut"}_${endDate || "fin"}.csv`;
+    const filename = sanitizeContentDispositionFilename(
+      `statistiques_fablab_${startDate || "debut"}_${endDate || "fin"}.csv`,
+      "statistiques_fablab.csv",
+    );
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.status(200).send(csvContent);

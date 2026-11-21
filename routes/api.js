@@ -25,7 +25,17 @@ router.get(
   "/list/all-staff",
   isAdmin,
   asyncHandler(async (req, res) => {
-    const allStaff = await prisma.staff.findMany({});
+    const allStaff = await prisma.staff.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        approved: true,
+        createdAt: true,
+        lastWorkspaceId: true,
+      },
+    });
     res.status(200).json(allStaff);
   }),
 );
@@ -51,7 +61,24 @@ router.get(
   "/list/all-users",
   isAdmin,
   asyncHandler(async (req, res) => {
-    const allUsers = await prisma.user.findMany({});
+    const allUsers = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
+        usertypeId: true,
+        createdAt: true,
+        updatedAt: true,
+        birthYear: true,
+        comment: true,
+        balance: true,
+        termsAccepted: true,
+        newsletter: true,
+        deletedAt: true,
+        isExpert: true,
+      },
+    });
     res.status(200).json(allUsers);
   }),
 );

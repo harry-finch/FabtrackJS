@@ -218,7 +218,7 @@ app.use(i18n.init);
 app.use(async (req, res, next) => {
   try {
     const settings = await settingsService.getSettings();
-    res.locals.settings = settings;
+    res.locals.settings = settingsService.filterPublicSettings(settings);
 
     // Configurable base URL for reverse proxy subpaths (e.g. /fabtrack/)
     const rawBasePath = (process.env.APP_BASE_PATH || "").trim().replace(/^\/|\/$/g, "");

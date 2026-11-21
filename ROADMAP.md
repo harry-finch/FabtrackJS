@@ -28,7 +28,7 @@
    Supprimer les injections <%- JSON.stringify %>, icônes HTML brutes, confirm() inline, innerHTML dynamiques et HTML injection dans les e-mails.
 11. **[R-014 Index SQL critiques, sessions MariaDB, cache global et clôture auto des visites](roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md)** · À tester · jalon v1.2
    Ajouter les index DB, remplacer MemoryStore par un store MariaDB natif Prisma, mutualiser le cache de référence et sortir la clôture auto des visites de GET /fabtrack/.
-12. **[R-015 Corriger les injections transverses et l'exposition de secrets](roadmap/items/R-015-corriger-les-injections-transverses-et-l.md)** · Idée · jalon v1.3
+12. **[R-015 Corriger les injections transverses et l'exposition de secrets](roadmap/items/R-015-corriger-les-injections-transverses-et-l.md)** · À tester · jalon v1.3
    Bloquer la Prototype Pollution i18n, les Open Redirects, les injections CSV et filtrer les secrets hors de res.locals et /api/list/*.
 13. **[R-016 Confiner l'IA NL2SQL (rôle MariaDB lecture seule) et corriger les SSRF](roadmap/items/R-016-confiner-l-ia-nl2sql-role-mariadb-lecture-seule.md)** · Idée · jalon v1.3
    Exécuter les requêtes IA via un compte MariaDB lecture seule sur des vues sans PII, durcir le pare-feu SQL et bloquer les SSRF.
@@ -92,6 +92,8 @@
 - [ ] [A-021](roadmap/actions/A-021-verifier-dans-administration-e-mails-le-nouveau.md) Vérifier dans Administration > E-mails le nouveau switch Signalement de bug et tester l'envoi d'un signalement connecté puis le refus d'un appel anonyme POST /report-bug (tester, R-013)
 - [ ] [A-022](roadmap/actions/A-022-appliquer-les-requetes-sql-r-014-create-table.md) Appliquer les requêtes SQL R-014 (CREATE TABLE Session + 10 CREATE INDEX) et npx prisma generate en prod puis confirmer qu'une session survit à pm2 restart fabtrack (tester, R-014)
 - [ ] [A-023](roadmap/actions/A-023-verifier-qu-un-changement-admin-motif-de-visite.md) Vérifier qu'un changement admin (motif de visite / workspace) apparaît immédiatement sur un autre poste kiosque sans reconnexion et qu'EXPLAIN utilise les nouveaux index (tester, R-014)
+- [ ] [A-024](roadmap/actions/A-024-ouvrir-administration-parametres-verifier-dans.md) Ouvrir Administration > Paramètres, vérifier dans le code source HTML qu'aucune clé API ni api_machine_token n'apparaît en clair et confirmer que sauvegarder un réglage conserve les clés existantes (tester, R-015)
+- [ ] [A-025](roadmap/actions/A-025-tester-un-export-csv-statistiques-ue-sorbonne-ou.md) Tester un export CSV (Statistiques, UE, Sorbonne ou Inventaire) et vérifier son ouverture propre dans LibreOffice/Excel (tester, R-015)
 
 ## Livré
 

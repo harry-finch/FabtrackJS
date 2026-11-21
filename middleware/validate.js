@@ -1,5 +1,6 @@
 const { z } = require("zod");
 const { cleanupRequestFiles } = require("../services/uploadSecurityService.js");
+const { resolveSafeRedirectUrl } = require("../utilities/securityHelpers.js");
 
 /**
  * Helper to extract human-readable error messages from ZodError
@@ -49,10 +50,9 @@ function validateBody(schema, options = {}) {
         req.session.notification = `Error: ${firstError}`;
       }
 
-      const redirectTarget =
-        typeof options.redirectUrl === "function"
-          ? options.redirectUrl(req)
-          : options.redirectUrl || req.headers.referer || "/fabtrack";
+      const rawTarget =
+        typeof options.redirectUrl === "function" ? options.redirectUrl(req) : options.redirectUrl;
+      const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
 
       return res.redirect(redirectTarget);
     }
@@ -95,10 +95,9 @@ function validateParams(schema, options = {}) {
         req.session.notification = `Error: ${firstError}`;
       }
 
-      const redirectTarget =
-        typeof options.redirectUrl === "function"
-          ? options.redirectUrl(req)
-          : options.redirectUrl || req.headers.referer || "/fabtrack";
+      const rawTarget =
+        typeof options.redirectUrl === "function" ? options.redirectUrl(req) : options.redirectUrl;
+      const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
 
       return res.redirect(redirectTarget);
     }
@@ -140,10 +139,9 @@ function validateQuery(schema, options = {}) {
         req.session.notification = `Error: ${firstError}`;
       }
 
-      const redirectTarget =
-        typeof options.redirectUrl === "function"
-          ? options.redirectUrl(req)
-          : options.redirectUrl || req.headers.referer || "/fabtrack";
+      const rawTarget =
+        typeof options.redirectUrl === "function" ? options.redirectUrl(req) : options.redirectUrl;
+      const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
 
       return res.redirect(redirectTarget);
     }
