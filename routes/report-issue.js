@@ -6,11 +6,19 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const mailService = require("../services/mailService.js");
-const settingsService = require("../services/settingsService.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const logger = require("../utilities/simpleLogger.js");
 const { validateBody } = require("../middleware/validate.js");
 const { reportIssueSchema } = require("../schemas/issue.schema.js");
+const { createRateLimiter } = require("../middleware/rateLimit.js");
+const {
+  UPLOAD_PROFILES,
+  createImageFileFilter,
+  createTempFilename,
+  verifyAndFinalizeUploadedFile,
+  safeUnlinkPath,
+  wrapUploadMiddleware,
+} = require("../services/uploadSecurityService.js");
 
 const router = express.Router();
 
@@ -20,34 +28,45 @@ if (!fs.existsSync(issuesUploadsDir)) {
   fs.mkdirSync(issuesUploadsDir, { recursive: true });
 }
 
-// Multer storage for issue photos
+function buildReportIssueRedirect(req) {
+  const rawId = req && req.body && req.body.machineId;
+  if (rawId !== undefined && rawId !== null && /^\d+$/.test(String(rawId).trim())) {
+    return `/report-issue?machineId=${encodeURIComponent(String(rawId).trim())}`;
+  }
+  return "/report-issue";
+}
+
+// Multer storage for issue photos (strict extension AND MIME + magic bytes check after upload)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, issuesUploadsDir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `issue-${uniqueSuffix}${ext}`);
+    cb(null, createTempFilename("issue-"));
   },
 });
 
-const fileFilter = (req, file, cb) => {
-  const allowed = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic"];
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext) || file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Format de fichier non pris en charge. Veuillez fournir une image valide (JPG, PNG, WEBP)."));
-  }
-};
-
 const upload = multer({
   storage,
-  fileFilter,
+  fileFilter: createImageFileFilter(
+    UPLOAD_PROFILES.ISSUE_PHOTO,
+    "Format de fichier non pris en charge. Veuillez fournir une image valide (JPG, PNG, WEBP, GIF).",
+  ),
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15 MB
+    fileSize: 10 * 1024 * 1024, // 10 MB
+    files: 1,
   },
+});
+
+const handleReportPhotoUpload = wrapUploadMiddleware(upload.single("photo"), {
+  onErrorRedirect: buildReportIssueRedirect,
+});
+
+const reportIssueLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Trop de signalements envoyés depuis cette adresse. Veuillez patienter quelques minutes.",
+  redirectUrl: buildReportIssueRedirect,
 });
 
 // ******************************************************************************
@@ -96,53 +115,82 @@ router.get(
 // ******************************************************************************
 router.post(
   "/",
-  upload.single("photo"),
+  reportIssueLimiter,
+  handleReportPhotoUpload,
   validateBody(reportIssueSchema, {
-    redirectUrl: (req) => (req.body && req.body.machineId ? `/report-issue?machineId=${req.body.machineId}` : "/report-issue"),
+    redirectUrl: buildReportIssueRedirect,
   }),
   asyncHandler(async (req, res) => {
     const { machineId, description, reporterName, reporterEmail } = req.body;
 
+    if (req.file) {
+      try {
+        verifyAndFinalizeUploadedFile(req.file, {
+          allowedFormats: UPLOAD_PROFILES.ISSUE_PHOTO,
+          targetDir: issuesUploadsDir,
+          prefix: "issue-",
+        });
+      } catch (err) {
+        if (req.session) {
+          req.session.notification = `Error: ${err.message}`;
+        }
+        return res.redirect(buildReportIssueRedirect(req));
+      }
+    }
+
     if (!machineId) {
-      req.session.notification = "Error: Veuillez sélectionner une machine.";
+      safeUnlinkPath(req.file && req.file.path);
+      if (req.session) req.session.notification = "Error: Veuillez sélectionner une machine.";
       return res.redirect("/report-issue");
     }
 
     if (!description || !description.trim()) {
-      req.session.notification = "Error: Veuillez décrire le problème rencontré.";
-      return res.redirect(`/report-issue?machineId=${machineId}`);
+      safeUnlinkPath(req.file && req.file.path);
+      if (req.session) req.session.notification = "Error: Veuillez décrire le problème rencontré.";
+      return res.redirect(buildReportIssueRedirect(req));
     }
 
-    const machine = await prisma.machine.findUnique({
-      where: { id: parseInt(machineId, 10) },
-      include: {
-        machinetype: true,
-        location: true,
-      },
-    });
+    let machine;
+    let issue;
+    try {
+      machine = await prisma.machine.findUnique({
+        where: { id: parseInt(machineId, 10) },
+        include: {
+          machinetype: true,
+          location: true,
+        },
+      });
 
-    if (!machine) {
-      req.session.notification = "Error: Machine sélectionnée introuvable.";
-      return res.redirect("/report-issue");
+      if (!machine) {
+        safeUnlinkPath(req.file && req.file.path);
+        if (req.session) req.session.notification = "Error: Machine sélectionnée introuvable.";
+        return res.redirect("/report-issue");
+      }
+
+      const photoPath = req.file ? `/uploads/issues/${req.file.filename}` : null;
+
+      issue = await prisma.machineIssue.create({
+        data: {
+          machineId: machine.id,
+          description: description.trim(),
+          photoPath,
+          reporterName: reporterName && reporterName.trim() ? reporterName.trim() : null,
+          reporterEmail: reporterEmail && reporterEmail.trim() ? reporterEmail.trim() : null,
+          status: "OPEN",
+        },
+      });
+    } catch (err) {
+      safeUnlinkPath(req.file && req.file.path);
+      throw err;
     }
-
-    const photoPath = req.file ? `/uploads/issues/${req.file.filename}` : null;
-
-    const issue = await prisma.machineIssue.create({
-      data: {
-        machineId: machine.id,
-        description: description.trim(),
-        photoPath,
-        reporterName: reporterName && reporterName.trim() ? reporterName.trim() : null,
-        reporterEmail: reporterEmail && reporterEmail.trim() ? reporterEmail.trim() : null,
-        status: "OPEN",
-      },
-    });
 
     logger.logThat(`Nouvel incident signalé sur la machine "${machine.name}" (ID #${issue.id})`);
 
-    // Asynchronously send email notification to admin
-    const hostUrl = `${req.protocol}://${req.get("host")}`;
+    // Asynchronously send email notification to admin without trusting Host header in production
+    const hostUrl =
+      process.env.NODE_ENV === "production"
+        ? undefined
+        : `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
     mailService
       .sendMachineIssueAlert({
         machine,

@@ -14,23 +14,35 @@ const repairCafeService = require("../../services/repairCafeService.js");
 const workshopService = require("../../services/workshopService.js");
 const i18nService = require("../../services/i18nService.js");
 const dateService = require("../../services/dateService.js");
+const {
+  UPLOAD_PROFILES,
+  matchesExtensionAndMime,
+  createTempFilename,
+  verifyAndFinalizeUploadedFile,
+  cleanupRequestFiles,
+  safeUnlinkInDir,
+  wrapUploadMiddleware,
+} = require("../../services/uploadSecurityService.js");
 
 const router = express.Router();
 router.use(isAdmin);
 
 const csvUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === ".csv" || file.mimetype === "text/csv" || file.mimetype === "application/vnd.ms-excel") {
+    const mime = (file.mimetype || "").split(";")[0].trim().toLowerCase();
+    if (ext === ".csv" && (mime === "text/csv" || mime === "application/vnd.ms-excel" || mime === "text/plain")) {
       return cb(null, true);
     }
-    return cb(new Error("Veuillez importer un fichier CSV (.csv)."));
+    const err = new Error("Veuillez importer un fichier CSV (.csv) valide.");
+    err.code = "INVALID_FILE_TYPE";
+    return cb(err);
   },
 });
 
-// Multer storage for branding uploads
+// Multer storage for branding uploads (raster formats only; SVG blocked per Option A)
 const uploadsDir = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -42,33 +54,44 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const prefix = file.fieldname === "favicon" ? "favicon-" : "logo-";
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, prefix + uniqueSuffix + path.extname(file.originalname).toLowerCase());
+    cb(null, createTempFilename(prefix));
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedLogoExts = [".png", ".jpg", ".jpeg", ".svg", ".webp"];
-  const allowedFaviconExts = [".ico", ".png", ".svg"];
-  const ext = path.extname(file.originalname).toLowerCase();
-
   if (file.fieldname === "favicon") {
-    if (allowedFaviconExts.includes(ext)) {
+    if (matchesExtensionAndMime(file, UPLOAD_PROFILES.BRANDING_FAVICON)) {
       return cb(null, true);
     }
-    return cb(new Error("Invalid favicon format. Please upload .ico, .png, or .svg"));
+    const err = new Error("Format de favicon non pris en charge (.ico ou .png uniquement).");
+    err.code = "INVALID_FILE_TYPE";
+    return cb(err);
   }
 
-  if (allowedLogoExts.includes(ext)) {
+  if (matchesExtensionAndMime(file, UPLOAD_PROFILES.BRANDING_LOGO)) {
     return cb(null, true);
   }
-  return cb(new Error("Invalid logo format. Please upload .png, .jpg, .svg, or .webp"));
+  const err = new Error("Format de logo non pris en charge (.png, .jpg ou .webp uniquement).");
+  err.code = "INVALID_FILE_TYPE";
+  return cb(err);
 };
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB max
+  limits: { fileSize: 3 * 1024 * 1024, files: 2 }, // 3MB max
+});
+
+const handleBrandingUpload = wrapUploadMiddleware(
+  upload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "favicon", maxCount: 1 },
+  ]),
+  { onErrorRedirect: "/admin/settings" },
+);
+
+const handleCsvUpload = wrapUploadMiddleware(csvUpload.single("translations_file"), {
+  onErrorRedirect: "/admin/settings",
 });
 
 // ******************************************************************************
@@ -100,13 +123,40 @@ router.get(
 // ******************************************************************************
 router.post(
   "/",
-  upload.fields([
-    { name: "logo", maxCount: 1 },
-    { name: "favicon", maxCount: 1 },
-  ]),
+  handleBrandingUpload,
   asyncHandler(async (req, res) => {
     const current = await settingsService.getSettings();
     const updates = {};
+
+    const logoFile = req.files && req.files["logo"] && req.files["logo"][0];
+    const faviconFile = req.files && req.files["favicon"] && req.files["favicon"][0];
+
+    if (faviconFile && faviconFile.size > 1 * 1024 * 1024) {
+      cleanupRequestFiles(req);
+      req.session.notification = "Error: Le favicon dépasse la taille maximale autorisée (1 Mo).";
+      return res.redirect("/admin/settings");
+    }
+
+    try {
+      if (logoFile) {
+        verifyAndFinalizeUploadedFile(logoFile, {
+          allowedFormats: UPLOAD_PROFILES.BRANDING_LOGO,
+          targetDir: uploadsDir,
+          prefix: "logo-",
+        });
+      }
+      if (faviconFile) {
+        verifyAndFinalizeUploadedFile(faviconFile, {
+          allowedFormats: UPLOAD_PROFILES.BRANDING_FAVICON,
+          targetDir: uploadsDir,
+          prefix: "favicon-",
+        });
+      }
+    } catch (err) {
+      cleanupRequestFiles(req);
+      req.session.notification = `Error: ${err.message}`;
+      return res.redirect("/admin/settings");
+    }
 
     // Text fields
     if (req.body.platform_name !== undefined) {
@@ -145,14 +195,18 @@ router.post(
     }
 
     // New Logo upload
-    if (req.files && req.files["logo"] && req.files["logo"][0]) {
-      updates.platform_logo_path = "/uploads/" + req.files["logo"][0].filename;
+    let newLogoPath = null;
+    if (logoFile) {
+      newLogoPath = "/uploads/" + logoFile.filename;
+      updates.platform_logo_path = newLogoPath;
       updates.platform_logo_type = "custom";
     }
 
     // New Favicon upload
-    if (req.files && req.files["favicon"] && req.files["favicon"][0]) {
-      updates.platform_favicon_path = "/uploads/" + req.files["favicon"][0].filename;
+    let newFaviconPath = null;
+    if (faviconFile) {
+      newFaviconPath = "/uploads/" + faviconFile.filename;
+      updates.platform_favicon_path = newFaviconPath;
     }
 
     // Plugins management - ONLY process if the plugins section was present in the submitted form
@@ -228,7 +282,19 @@ router.post(
       updates.ai_local_api_key = req.body.ai_local_api_key.trim();
     }
 
-    await settingsService.updateSettings(updates);
+    try {
+      await settingsService.updateSettings(updates);
+    } catch (err) {
+      cleanupRequestFiles(req);
+      throw err;
+    }
+
+    if (newLogoPath && current.platform_logo_path && current.platform_logo_path !== newLogoPath) {
+      safeUnlinkInDir(uploadsDir, current.platform_logo_path, { expectedPrefix: "/uploads/" });
+    }
+    if (newFaviconPath && current.platform_favicon_path && current.platform_favicon_path !== newFaviconPath) {
+      safeUnlinkInDir(uploadsDir, current.platform_favicon_path, { expectedPrefix: "/uploads/" });
+    }
 
     // Automatically ensure project types exist in the database
     await repairCafeService.ensureProjectType();
@@ -257,10 +323,14 @@ router.post(
 router.post(
   "/reset-logo",
   asyncHandler(async (req, res) => {
+    const current = await settingsService.getSettings();
     await settingsService.updateSettings({
       platform_logo_type: "default",
       platform_logo_path: "",
     });
+    if (current.platform_logo_path) {
+      safeUnlinkInDir(uploadsDir, current.platform_logo_path, { expectedPrefix: "/uploads/" });
+    }
 
     req.session.notification = "Success: Logo reset to default Sorbonne Université SVG.";
     res.redirect("/admin/settings");
@@ -273,9 +343,13 @@ router.post(
 router.post(
   "/reset-favicon",
   asyncHandler(async (req, res) => {
+    const current = await settingsService.getSettings();
     await settingsService.updateSettings({
       platform_favicon_path: "",
     });
+    if (current.platform_favicon_path) {
+      safeUnlinkInDir(uploadsDir, current.platform_favicon_path, { expectedPrefix: "/uploads/" });
+    }
 
     req.session.notification = "Success: Favicon reset to default.";
     res.redirect("/admin/settings");
@@ -300,7 +374,7 @@ router.get(
 // ******************************************************************************
 router.post(
   "/i18n/import",
-  csvUpload.single("translations_file"),
+  handleCsvUpload,
   asyncHandler(async (req, res) => {
     if (!req.file) {
       req.session.notification = "Error: Aucun fichier CSV sélectionné.";

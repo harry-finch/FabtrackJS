@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { cleanupRequestFiles } = require("../services/uploadSecurityService.js");
 
 /**
  * Helper to extract human-readable error messages from ZodError
@@ -25,6 +26,7 @@ function validateBody(schema, options = {}) {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
+      cleanupRequestFiles(req);
       const formattedErrors = formatZodErrors(result.error);
       const firstError = formattedErrors[0]?.message || "Données de formulaire invalides.";
 
@@ -70,6 +72,7 @@ function validateParams(schema, options = {}) {
     const result = schema.safeParse(req.params);
 
     if (!result.success) {
+      cleanupRequestFiles(req);
       const formattedErrors = formatZodErrors(result.error);
       const firstError = formattedErrors[0]?.message || "Paramètres d'URL invalides.";
 
@@ -114,6 +117,7 @@ function validateQuery(schema, options = {}) {
     const result = schema.safeParse(req.query);
 
     if (!result.success) {
+      cleanupRequestFiles(req);
       const formattedErrors = formatZodErrors(result.error);
       const firstError = formattedErrors[0]?.message || "Paramètres de requête invalides.";
 

@@ -17,6 +17,7 @@ const hookManager = require("./core/HookManager");
 const settingsService = require("./services/settingsService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
+const { applyUploadStaticHeaders } = require("./services/uploadSecurityService");
 const i18n = require("./config/i18n");
 const compression = require("compression");
 const isProduction = process.env.NODE_ENV === "production";
@@ -88,12 +89,20 @@ const staticOptions = {
 };
 app.use(express.static(path.join(__dirname, "public"), staticOptions));
 
-// Ensure uploads directory exists and is statically accessible
+// Ensure uploads directory exists and is statically accessible with hardened headers
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-app.use("/uploads", express.static(uploadsDir, staticOptions));
+app.use(
+  "/uploads",
+  express.static(uploadsDir, {
+    ...staticOptions,
+    dotfiles: "deny",
+    index: false,
+    setHeaders: applyUploadStaticHeaders,
+  }),
+);
 
 // Enable trust proxy when behind Nginx / reverse proxy
 app.set("trust proxy", 1);

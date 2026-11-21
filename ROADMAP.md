@@ -8,7 +8,7 @@
 
 1. **[R-004 Sécuriser la réinitialisation de mot de passe staff](roadmap/items/R-004-securiser-la-reinitialisation-de-mot-de-passe.md)** · À tester · jalon v1.1
    Supprimer la prise de contrôle de compte sans authentification sur POST /reset_password et l'énumération d'e-mails sur POST /reset.
-2. **[R-005 Sécuriser les uploads de fichiers (/report-issue, machines, settings)](roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md)** · Idée · jalon v1.1
+2. **[R-005 Sécuriser les uploads de fichiers (/report-issue, machines, settings)](roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md)** · À tester · jalon v1.1
    Fermer la XSS stockée anonyme par upload public, filtrer les images machines/branding et empêcher la saturation disque.
 3. **[R-006 Verrouiller l'API machines/NFC en Fail-Closed et corriger machineUsageService](roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md)** · Idée · jalon v1.1
    Sécuriser les endpoints /api/machines/* par défaut, supprimer la fuite PII de User et corriger les failles d'autorisation et d'IDOR.
@@ -72,6 +72,8 @@
 - [ ] [A-001](roadmap/actions/A-001-valider-la-mise-d-equerre-de-fabtrackjs.md) Valider la mise d'équerre de FabtrackJS (valider)
 - [ ] [A-002](roadmap/actions/A-002-tester-la-reinitialisation-de-mot-de-passe-en.md) Tester la réinitialisation de mot de passe en local (tester, R-004)
 - [ ] [A-003](roadmap/actions/A-003-appliquer-r-004-en-production-et-auditer-la.md) Appliquer R-004 en production et auditer la table Staff (tester, R-004)
+- [ ] [A-004](roadmap/actions/A-004-tester-les-uploads-securises-en-local-report.md) Tester les uploads sécurisés en local (/report-issue, machines, settings) (tester, R-005)
+- [ ] [A-005](roadmap/actions/A-005-auditer-le-dossier-uploads-en-production-apres.md) Auditer le dossier uploads/ en production après déploiement R-005 (tester, R-005)
 
 ## Livré
 

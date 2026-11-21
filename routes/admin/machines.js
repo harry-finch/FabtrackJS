@@ -17,9 +17,20 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const logger = require("../../utilities/simpleLogger.js");
+const {
+  UPLOAD_PROFILES,
+  createImageFileFilter,
+  createTempFilename,
+  verifyAndFinalizeUploadedFile,
+  safeUnlinkPath,
+  safeUnlinkInDir,
+  validatePictureField,
+  wrapUploadMiddleware,
+} = require("../../services/uploadSecurityService.js");
 
 // Define multer config for machine picture uploads
 const uploadsDir = path.join(__dirname, "../../uploads");
+const issuesUploadsDir = path.join(__dirname, "../../uploads/issues");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -29,12 +40,25 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    cb(null, createTempFilename("machine-"));
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage,
+  fileFilter: createImageFileFilter(
+    UPLOAD_PROFILES.MACHINE_PICTURE,
+    "Format d'image non pris en charge (JPG, PNG, WEBP, GIF uniquement).",
+  ),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB
+    files: 1,
+  },
+});
+
+const handleMachineUpload = wrapUploadMiddleware(upload.single("machinePicture"), {
+  onErrorRedirect: "/admin/machines/manage",
+});
 
 // ******************************************************************************
 // Route to manage machine types (3D printer, laser cutter...)
@@ -350,14 +374,9 @@ router.post(
     const targetMachineId = currentIssue.machineId;
 
     if (currentIssue.photoPath) {
-      const fullPhotoPath = path.join(__dirname, "../../", currentIssue.photoPath);
-      if (fs.existsSync(fullPhotoPath)) {
-        try {
-          fs.unlinkSync(fullPhotoPath);
-        } catch (e) {
-          console.error("Failed to delete issue photo file:", e);
-        }
-      }
+      safeUnlinkInDir(issuesUploadsDir, currentIssue.photoPath, {
+        expectedPrefix: "/uploads/issues/",
+      });
     }
 
     await prisma.machineIssue.delete({
@@ -487,7 +506,7 @@ router.post(
 router.post(
   "/create",
   isAdmin,
-  upload.any(),
+  handleMachineUpload,
   asyncHandler(async (req, res) => {
     const {
       name,
@@ -507,9 +526,19 @@ router.post(
       accessId,
     } = req.body;
 
-    let picturePath = picture || null;
-    if (req.files && req.files.length > 0) {
-      picturePath = "/uploads/" + req.files[0].filename;
+    let picturePath = validatePictureField(picture);
+    if (req.file) {
+      try {
+        verifyAndFinalizeUploadedFile(req.file, {
+          allowedFormats: UPLOAD_PROFILES.MACHINE_PICTURE,
+          targetDir: uploadsDir,
+          prefix: "machine-",
+        });
+        picturePath = "/uploads/" + req.file.filename;
+      } catch (err) {
+        req.session.notification = `Error: ${err.message}`;
+        return res.redirect("/admin/machines/manage");
+      }
     }
 
     const machineName = name && name.trim() !== "" ? name.trim() : `${make} ${model}`;
@@ -542,6 +571,7 @@ router.post(
 
       res.redirect("/admin/machines/manage");
     } catch (error) {
+      safeUnlinkPath(req.file && req.file.path);
       console.error("Error creating machine:", error);
       req.session.notification = "Error: Failed to create machine. Please verify inputs (e.g. unique serial number).";
       res.redirect("/admin/machines/manage");
@@ -597,7 +627,7 @@ router.get(
 router.post(
   "/update",
   isAdmin,
-  upload.any(),
+  handleMachineUpload,
   asyncHandler(async (req, res) => {
     const {
       machineid,
@@ -618,6 +648,7 @@ router.post(
 
     const targetId = Number(machineid || req.body.id);
     if (!targetId || isNaN(targetId)) {
+      safeUnlinkPath(req.file && req.file.path);
       req.session.notification = "Error: Invalid machine ID provided.";
       return res.redirect("/admin/machines/manage");
     }
@@ -627,13 +658,24 @@ router.post(
     });
 
     if (!existing) {
+      safeUnlinkPath(req.file && req.file.path);
       req.session.notification = "Error: Machine not found.";
       return res.redirect("/admin/machines/manage");
     }
 
     let picturePath = existing.picture;
-    if (req.files && req.files.length > 0) {
-      picturePath = "/uploads/" + req.files[0].filename;
+    if (req.file) {
+      try {
+        verifyAndFinalizeUploadedFile(req.file, {
+          allowedFormats: UPLOAD_PROFILES.MACHINE_PICTURE,
+          targetDir: uploadsDir,
+          prefix: "machine-",
+        });
+        picturePath = "/uploads/" + req.file.filename;
+      } catch (err) {
+        req.session.notification = `Error: ${err.message}`;
+        return res.redirect("/admin/machines/manage");
+      }
     }
 
     const machineName = name && name.trim() !== "" ? name.trim() : `${make} ${model}`;
@@ -661,12 +703,17 @@ router.post(
         },
       });
 
+      if (req.file && existing.picture && existing.picture !== picturePath) {
+        safeUnlinkInDir(uploadsDir, existing.picture, { expectedPrefix: "/uploads/" });
+      }
+
       invalidateCache(req);
       logger.logThat("Machine " + updated.name + " updated by " + req.session.username);
       req.session.notification = "Success: Machine " + updated.name + " updated";
 
       res.redirect("/admin/machines/manage");
     } catch (error) {
+      safeUnlinkPath(req.file && req.file.path);
       console.error("Error updating machine:", error);
       req.session.notification = "Error: Failed to update machine.";
       res.redirect("/admin/machines/manage");
@@ -688,6 +735,10 @@ router.get(
       const result = await prisma.machine.delete({
         where: { id: Number(id) },
       });
+
+      if (result.picture) {
+        safeUnlinkInDir(uploadsDir, result.picture, { expectedPrefix: "/uploads/" });
+      }
 
       invalidateCache(req);
       logger.logThat("Machine " + result.name + " deleted by " + req.session.username);

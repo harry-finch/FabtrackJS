@@ -37,6 +37,7 @@ pm2 logs fabtrack --lines 50
 | Élément | Jalon | `.env` | Base de données (SQL) | Dépendances / Prisma | Action post-déploiement |
 | --- | --- | --- | --- | --- | --- |
 | [R-004](../roadmap/items/R-004-securiser-la-reinitialisation-de-mot-de-passe.md) | `v1.1` | Vérifier `HOSTURL` ou `APP_URL` | `ALTER TABLE Staff MODIFY COLUMN pwdToken VARCHAR(64) NULL;` | `npx prisma generate` | Auditer manuellement la table `Staff` |
+| [R-005](../roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md) | `v1.1` | Aucune | Aucune | Aucune | Auditer le dossier `uploads/` (fichiers non-raster / `.svg`) |
 
 ---
 
@@ -82,3 +83,26 @@ ORDER BY id;
 ```
 
 En cas de compte inconnu, de rôle anormal ou de doute sur un compte administrateur : désactiver/supprimer le compte suspect (`approved = 0`) puis lancer une réinitialisation légitime depuis `/forgot`.
+
+---
+
+#### `R-005` — Sécuriser les uploads de fichiers (`/report-issue`, machines, settings)
+
+**1. Variable `.env`, SQL et dépendances**
+
+- **Aucune** modification `.env`, **aucune** requête SQL et **aucune** nouvelle dépendance npm requises : `git pull` et redémarrage du service suffisent.
+
+**2. Note fonctionnelle (logo / favicon personnalisés)**
+
+- Les formats vectoriels `.svg` sont désormais bloqués à l'upload dans **Administration > Paramètres** (seuls `PNG`, `JPG`, `WebP` pour le logo et `ICO`, `PNG` pour le favicon sont acceptés ; le logo par défaut reste en SVG intégré). Si un logo ou favicon `.svg` déjà en place venait à poser problème ou avait été déposé avant la mise à jour, le remplacer par un fichier PNG ou rétablir celui par défaut.
+
+**3. Audit post-déploiement du dossier `uploads/`**
+
+Par mesure de précaution après fermeture de la vulnérabilité sur l'upload public `/report-issue`, vérifier qu'aucun fichier inattendu (`.html`, `.js`, `.svg` non maîtrisé, etc.) n'a été déposé avant la mise à jour :
+
+```bash
+find uploads/ -type f ! \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' -o -iname '*.ico' \)
+```
+
+En cas de fichier suspect (notamment dans `uploads/issues/`), le supprimer immédiatement.
+
