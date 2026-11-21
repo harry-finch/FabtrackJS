@@ -18,7 +18,7 @@ const mailService = require("../services/mailService.js");
 // Route to deactivate a warning
 // ******************************************************************************
 
-router.get(
+router.post(
   "/deactivate/:id",
   requireRoles("admin", {
     redirectUrl: (req) => req.session.lastPage || "/fabtrack",

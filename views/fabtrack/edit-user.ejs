@@ -179,9 +179,9 @@
                             </div>
                             <% if (!user.termsAccepted) { %>
                             <div>
-                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/resend/<%= user.id %>" class="btn btn-sm btn-outline-warning rounded-pill" title="Renvoyer l'e-mail avec le lien de signature">
+                                <button type="submit" form="resendAgreementForm" class="btn btn-sm btn-outline-warning rounded-pill" title="Renvoyer l'e-mail avec le lien de signature">
                                     <i class="fa-solid fa-paper-plane me-1"></i> Renvoyer l'e-mail de charte
-                                </a>
+                                </button>
                             </div>
                             <% } %>
                         </div>
@@ -200,6 +200,11 @@
                     </div>
                 </div>
             </form>
+            <% if (!user.termsAccepted) { %>
+            <form id="resendAgreementForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/resend/<%= user.id %>" method="POST" class="d-none">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+            </form>
+            <% } %>
 
             <div class="d-flex align-items-center gap-2 mb-3 mt-4">
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle section-badge-header px-2 py-1">
@@ -540,9 +545,12 @@
                                                 <td><%= warning.comments || '-' %></td>
                                                 <td class="text-center">
                                                     <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>warning/deactivate/<%= warning.id %>" class="btn btn-outline-success btn-sm rounded-pill px-3" title="Marquer comme résolu" onclick="return confirm('Résoudre et désactiver cet avertissement ?');">
-                                                            <i class="fa-solid fa-check me-1"></i> Résolu
-                                                        </a>
+                                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>warning/deactivate/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Résoudre et désactiver cet avertissement ?');">
+                                                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3" title="Marquer comme résolu">
+                                                                <i class="fa-solid fa-check me-1"></i> Résolu
+                                                            </button>
+                                                        </form>
                                                     <% } else { %>
                                                         <span class="badge bg-body-secondary text-secondary border rounded-pill px-2 py-1" title="La résolution des avertissements est réservée aux administrateurs">Réservé admin</span>
                                                     <% } %>
@@ -720,13 +728,19 @@
                                             </td>
                                             <td class="text-center">
                                                 <% if (project.active) { %>
-                                                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/archive/<%= project.id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Archiver ce projet">
-                                                        <i class="fa-solid fa-box-archive fa-xs me-1"></i> Archiver
-                                                    </a>
+                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/archive/<%= project.id %>" class="d-inline">
+                                                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Archiver ce projet">
+                                                            <i class="fa-solid fa-box-archive fa-xs me-1"></i> Archiver
+                                                        </button>
+                                                    </form>
                                                 <% } else { %>
-                                                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/unarchive/<%= project.id %>" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0" title="Désarchiver ce projet">
-                                                        <i class="fa-solid fa-box-open fa-xs me-1"></i> Rétablir
-                                                    </a>
+                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/unarchive/<%= project.id %>" class="d-inline">
+                                                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0" title="Désarchiver ce projet">
+                                                            <i class="fa-solid fa-box-open fa-xs me-1"></i> Rétablir
+                                                        </button>
+                                                    </form>
                                                 <% } %>
                                             </td>
                                         </tr>
@@ -1204,9 +1218,12 @@
                                                                         <i class="fa-solid fa-check me-1"></i> Valider
                                                                     </button>
                                                                 </form>
-                                                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-interest/remove/<%= item.workshop.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Retirer l'intérêt" onclick="return confirm('Retirer l\'intérêt pour cet atelier ?');">
-                                                                    <i class="fa-solid fa-trash-can"></i>
-                                                                </a>
+                                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-interest/remove/<%= item.workshop.id %>" class="d-inline" onsubmit="return confirm('Retirer l\'intérêt pour cet atelier ?');">
+                                                                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Retirer l'intérêt">
+                                                                        <i class="fa-solid fa-trash-can"></i>
+                                                                    </button>
+                                                                </form>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -1246,9 +1263,12 @@
                                                         <% } %>
                                                     </div>
                                                     <div>
-                                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-badge/revoke/<%= comp.workshop.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Révoquer le badge" onclick="return confirm('Révoquer le badge pour cet atelier ?');">
-                                                            <i class="fa-solid fa-xmark"></i>
-                                                        </a>
+                                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-badge/revoke/<%= comp.workshop.id %>" class="d-inline" onsubmit="return confirm('Révoquer le badge pour cet atelier ?');">
+                                                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Révoquer le badge">
+                                                                <i class="fa-solid fa-xmark"></i>
+                                                            </button>
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>

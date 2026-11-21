@@ -102,7 +102,7 @@ router.get(
 // Route to enable a staff account (Admin Only)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/enable/:id",
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.enableStaff({
@@ -118,7 +118,7 @@ router.get(
 // Route to disable a staff account (Admin Only)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/disable/:id",
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.disableStaff({
@@ -133,7 +133,7 @@ router.get(
 // Route making a staff admin (Admin Only)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/promote/:id",
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.promoteStaff({
@@ -148,7 +148,7 @@ router.get(
 // Route making a staff a regular user (Admin Only)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/demote/:id",
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.demoteStaff({
@@ -163,7 +163,7 @@ router.get(
 // Route to delete a staff (Admin Only)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.deleteStaff({

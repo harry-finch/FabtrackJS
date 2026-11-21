@@ -1,5 +1,6 @@
 const request = require("supertest");
 const app = require("../../app");
+const { getCsrfToken } = require("../helpers/authHelper");
 const { cleanTestData, prisma } = require("../helpers/testDb");
 const setupService = require("../../services/setupService");
 const settingsService = require("../../services/settingsService");
@@ -176,9 +177,11 @@ describe("Integration & Service: Platform Setup (/setup & setupService)", () => 
       const checkSpy = jest.spyOn(setupService, "checkIsInstalled").mockResolvedValue(false);
 
       const agent = request.agent(app);
+      const csrfToken = await getCsrfToken(agent, "/setup");
       const res = await agent
         .post("/setup")
         .set("Accept", "application/json")
+        .set("X-CSRF-Token", csrfToken)
         .send({
           adminName: "x", // too short
           adminEmail: "invalid-email",
@@ -193,9 +196,11 @@ describe("Integration & Service: Platform Setup (/setup & setupService)", () => 
     test("blocks installation attempts once platform is already installed", async () => {
       // Platform is installed from step 2
       const agent = request.agent(app);
+      const csrfToken = await getCsrfToken(agent, "/login");
       const res = await agent
         .post("/setup")
         .set("Accept", "application/json")
+        .set("X-CSRF-Token", csrfToken)
         .send({
           adminName: "AnotherAdmin",
           adminEmail: "another@example.com",

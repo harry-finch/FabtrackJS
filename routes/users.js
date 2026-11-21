@@ -110,7 +110,7 @@ router.post(
 // Route to delete a user (Admin Only)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   isAdmin,
   clearNotification,
@@ -500,7 +500,7 @@ router.post(
   }),
 );
 
-router.get(
+router.post(
   "/:id/workshop-interest/remove/:workshopId",
   requireRoles("admin", "user"),
   clearNotification,
@@ -592,7 +592,7 @@ router.post(
   }),
 );
 
-router.get(
+router.post(
   "/:id/workshop-badge/revoke/:workshopId",
   requireRoles("admin", "user", {
     redirectUrl: (req) => `/users/edit/${req.params.id}`,
@@ -624,7 +624,7 @@ router.get(
 // Route to send a new email to the user (for the agreement of the terms)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/resend/:id",
   requireRoles("admin", "user"),
   clearNotification,

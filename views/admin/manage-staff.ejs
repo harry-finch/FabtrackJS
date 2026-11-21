@@ -63,28 +63,40 @@
                                     <td><a href="mailto:<%= user.email %>" class="text-decoration-none"><%= user.email %></a></td>
                                     <td class="text-center">
                                         <% if(user.role == "admin") {%>
-                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/demote/<%= user.id %>" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="Cliquer pour rétrograder en médiateur">
-                                            <i class="fa-solid fa-shield-halved me-1"></i>Admin
-                                        </a>
+                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/demote/<%= user.id %>" class="d-inline">
+                                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" title="Cliquer pour rétrograder en médiateur">
+                                                <i class="fa-solid fa-shield-halved me-1"></i>Admin
+                                            </button>
+                                        </form>
                                         <% } else if(user.role == "staff") { %>
                                         <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1">
                                             <i class="fa-solid fa-desktop me-1"></i>Borne (Staff)
                                         </span>
                                         <% } else { %>
-                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/promote/<%= user.id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Cliquer pour promouvoir admin">
-                                            <i class="fa-solid fa-user-gear me-1"></i>Médiateur
-                                        </a>
+                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/promote/<%= user.id %>" class="d-inline">
+                                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Cliquer pour promouvoir admin">
+                                                <i class="fa-solid fa-user-gear me-1"></i>Médiateur
+                                            </button>
+                                        </form>
                                         <% } %>
                                     </td>
                                     <td class="text-center">
                                         <% if(user.approved) {%>
-                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/disable/<%= user.id %>" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill text-decoration-none px-2 py-1" title="Cliquer pour désactiver">
-                                            <i class="fa-solid fa-check me-1"></i>Actif
-                                        </a>
+                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/disable/<%= user.id %>" class="d-inline">
+                                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                            <button type="submit" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1" title="Cliquer pour désactiver" style="cursor: pointer;">
+                                                <i class="fa-solid fa-check me-1"></i>Actif
+                                            </button>
+                                        </form>
                                         <% } else { %>
-                                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/enable/<%= user.id %>" class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill text-decoration-none px-2 py-1" title="Cliquer pour activer">
-                                            <i class="fa-solid fa-xmark me-1"></i>Inactif
-                                        </a>
+                                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/enable/<%= user.id %>" class="d-inline">
+                                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                            <button type="submit" class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1" title="Cliquer pour activer" style="cursor: pointer;">
+                                                <i class="fa-solid fa-xmark me-1"></i>Inactif
+                                            </button>
+                                        </form>
                                         <% } %>
                                     </td>
                                     <td class="text-end pe-3">
@@ -92,9 +104,12 @@
                                             <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/edit/<%= user.id %>" class="btn btn-outline-primary" title="Modifier">
                                                 <i class="fa-solid fa-user-pen"></i>
                                             </a>
-                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/delete/<%= user.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer le compte staff de <%= user.name %> ?');">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </a>
+                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/delete/<%= user.id %>" class="d-inline" onsubmit="return confirm('Supprimer le compte staff de <%= user.name %> ?');">
+                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

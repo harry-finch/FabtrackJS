@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Confirmation de la charte d'utilisation" />
+        <title>Validation de la charte • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'Fabtrack' %></title>
+
+        <%- include('../includes/pagehead.html') %>
+        <style>
+            .agreement-card {
+                border-radius: 1.25rem;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                border: 1px solid rgba(0, 0, 0, 0.06);
+            }
+            [data-bs-theme="dark"] .agreement-card {
+                border-color: rgba(255, 255, 255, 0.1);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            }
+            .confirm-icon-box {
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 1.5rem auto;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.25rem;
+            }
+        </style>
+    </head>
+
+    <body class="d-flex justify-content-center align-items-center min-vh-100 bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+
+        <main class="main-container w-100 px-3" style="max-width: 620px;">
+            <!-- Top Branding Logo -->
+            <div class="text-center mb-4">
+                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="text-decoration-none">
+                    <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
+                        <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
+                    <% } else { %>
+                        <img src="images/logo-fabtrack.svg" alt="FabtrackJS" width="60" height="46" class="app-auth-logo" />
+                    <% } %>
+                </a>
+            </div>
+
+            <!-- Charter Confirmation Card -->
+            <div class="card border-0 agreement-card bg-body text-center p-4 p-md-5">
+                <div class="card-body p-0">
+                    <div class="confirm-icon-box bg-primary-subtle text-primary">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1.5 fw-semibold mb-3">
+                        <i class="fa-solid fa-shield-halved me-1"></i> Charte d'utilisation
+                    </span>
+
+                    <h2 class="fw-bold mb-3 text-body fs-3">
+                        Confirmez votre acceptation
+                    </h2>
+
+                    <% const displayName = (typeof userName !== 'undefined' && userName) ? userName : (typeof user !== 'undefined' && user ? `${user.name || ''} ${user.surname || ''}`.trim() : ''); %>
+                    <% if (displayName) { %>
+                    <p class="text-muted small mb-3">
+                        Bonjour <strong class="text-body"><%= displayName %></strong>,
+                    </p>
+                    <% } %>
+
+                    <p class="text-secondary mb-4" style="font-size: 1rem; line-height: 1.6;">
+                        En cliquant sur le bouton ci-dessous, vous confirmez avoir pris connaissance de la charte d'utilisation et des consignes de sécurité du
+                        <strong><%= typeof platformName !== 'undefined' && platformName ? platformName : ((typeof settings !== 'undefined' && settings && settings.platform_name) ? settings.platform_name : 'Fablab') %></strong>
+                        et vous vous engagez à les respecter lors de vos visites.
+                    </p>
+
+                    <form method="POST" action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/agreement/<%= encodeURIComponent(token) %>">
+                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 py-2.5 shadow-sm fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>J'accepte et je valide la charte d'utilisation</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <%- include('../includes/footer.html') %>
+    </body>
+</html>

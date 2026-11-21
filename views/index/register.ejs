@@ -14,6 +14,7 @@
         <%- include('../includes/light-dark.html') %>
         <main class="form-signin w-100 m-auto">
             <form action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/create-account" method="post">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                 <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
                     <img class="mb-2 app-auth-logo" src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" />
                 <% } else { %>
@@ -29,12 +30,15 @@
                 </div>
 
                 <div class="form-floating">
-                    <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="<%= __('auth.password') %>" required />
+                    <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="<%= __('auth.password') %>" minlength="8" autocomplete="new-password" required />
                     <label for="password_verif"><%= __('auth.password') %></label>
                 </div>
                 <div class="form-floating">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="<%= __('auth.confirm_password') %>" required />
+                    <input type="password" class="form-control" id="password" name="password" placeholder="<%= __('auth.confirm_password') %>" minlength="8" autocomplete="new-password" required />
                     <label for="password"><%= __('auth.confirm_password') %></label>
+                </div>
+                <div class="form-text text-body-secondary text-start mt-1 mb-2">
+                    Minimum 8 caractères.
                 </div>
 
                 <div class="form-floating">
@@ -54,7 +58,17 @@
         <script>
         document.querySelector('form')
           .addEventListener('submit', (event) => {
-            if (document.getElementById('password').value != document.getElementById('password_verif').value){
+            const pwd = document.getElementById('password').value;
+            const verif = document.getElementById('password_verif').value;
+            if (pwd.length < 8) {
+              event.preventDefault();
+              document
+                .getElementsByClassName("toast-body")[0]
+                .textContent = "Le mot de passe doit comporter au moins 8 caractères.";
+              showNotification();
+              return;
+            }
+            if (pwd !== verif) {
               event.preventDefault();
               document
                 .getElementsByClassName("toast-body")[0]

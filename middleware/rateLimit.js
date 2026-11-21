@@ -56,9 +56,32 @@ function createRateLimiter(options = {}) {
       );
 
       if (isApi || !options.redirectUrl) {
+        const wantsHtml =
+          !isApi &&
+          req.headers &&
+          typeof req.headers.accept === "string" &&
+          req.headers.accept.includes("text/html") &&
+          typeof res.send === "function";
+
+        if (wantsHtml) {
+          const escapedMsg = String(message).replace(/[&<>"']/g, (ch) => {
+            const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+            return map[ch] || ch;
+          });
+          const basePath = (res.locals && res.locals.basePath) || "";
+          const backHref = `${basePath}${typeof options.backUrl === "string" ? options.backUrl : "/login"}`;
+          return res
+            .status(429)
+            .send(
+              `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>429 - Trop de requêtes</title></head><body style="font-family:system-ui,sans-serif;max-width:520px;margin:4rem auto;padding:1.5rem;line-height:1.5;"><h1>Trop de tentatives (429)</h1><p>${escapedMsg}</p><p><a href="${backHref}">Retour</a></p></body></html>`,
+            );
+        }
+
         return res.status(429).json({
           success: false,
+          code: "RATE_LIMITED",
           error: message,
+          message,
         });
       }
 

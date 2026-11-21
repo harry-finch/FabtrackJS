@@ -159,17 +159,26 @@
                                         <td class="text-end pe-4">
                                             <div class="btn-group btn-group-sm">
                                                 <% if (warning.active) { %>
-                                                    <a href="/admin/warnings/deactivate/<%= warning.id %>" class="btn btn-outline-success" title="Marquer comme résolu" onclick="return confirm('Marquer cet avertissement comme résolu ?');">
-                                                        <i class="fa-solid fa-check"></i>
-                                                    </a>
+                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/deactivate/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Marquer cet avertissement comme résolu ?');">
+                                                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Marquer comme résolu">
+                                                            <i class="fa-solid fa-check"></i>
+                                                        </button>
+                                                    </form>
                                                 <% } else { %>
-                                                    <a href="/admin/warnings/activate/<%= warning.id %>" class="btn btn-outline-secondary" title="Réactiver cet avertissement" onclick="return confirm('Réactiver cet avertissement ?');">
-                                                        <i class="fa-solid fa-rotate-left"></i>
-                                                    </a>
+                                                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/activate/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Réactiver cet avertissement ?');">
+                                                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Réactiver cet avertissement">
+                                                            <i class="fa-solid fa-rotate-left"></i>
+                                                        </button>
+                                                    </form>
                                                 <% } %>
-                                                <a href="/admin/warnings/delete/<%= warning.id %>" class="btn btn-outline-danger" title="Supprimer définitivement" onclick="return confirm('Supprimer définitivement cet enregistrement d\'avertissement ?');">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </a>
+                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/delete/<%= warning.id %>" class="d-inline" onsubmit="return confirm('Supprimer définitivement cet enregistrement d\'avertissement ?');">
+                                                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer définitivement">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>

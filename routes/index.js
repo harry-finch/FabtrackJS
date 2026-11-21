@@ -3,10 +3,12 @@ const bcrypt = require("bcryptjs");
 const { prisma } = require("../utilities/db");
 const dotenv = require("dotenv");
 
-const isAuthenticated = require("../middleware/checkSession.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody } = require("../middleware/validate.js");
+const { createRateLimiter } = require("../middleware/rateLimit.js");
+const { ensureCsrfToken } = require("../middleware/csrf.js");
+const { isApiOrAjaxRequest } = require("../middleware/requireRoles.js");
 const {
   loginSchema,
   registerStaffSchema,
@@ -24,7 +26,168 @@ const mailService = require("../services/mailService.js");
 const settingsService = require("../services/settingsService.js");
 const logger = require("../utilities/simpleLogger.js");
 
-const saltRounds = 10;
+const saltRounds = 12;
+// Precomputed valid cost-12 bcrypt hash to prevent username timing oracle on POST /auth
+const DUMMY_PASSWORD_HASH = "$2b$12$MlyZRhS/NQ/tDatTw.OBle8YSGD72fM0LxyL5YdDx7itwTNGQ6Rwq";
+const AGREEMENT_TOKEN_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+const authLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  backUrl: "/login",
+  message: "Trop de tentatives de connexion. Veuillez patienter avant de réessayer.",
+});
+
+const resetRequestLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  backUrl: "/forgot",
+  message: "Trop de demandes de réinitialisation. Veuillez patienter avant de réessayer.",
+});
+
+const resetPasswordLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  backUrl: "/forgot",
+  message: "Trop de tentatives de réinitialisation du mot de passe. Veuillez patienter avant de réessayer.",
+});
+
+const registerLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  backUrl: "/register",
+  message: "Trop de tentatives de création de compte. Veuillez patienter avant de réessayer.",
+});
+
+const reportBugLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  backUrl: "/fabtrack",
+  message: "Trop de signalements envoyés. Veuillez patienter avant de réessayer.",
+});
+
+router.rateLimiters = {
+  authLimiter,
+  resetRequestLimiter,
+  resetPasswordLimiter,
+  registerLimiter,
+  reportBugLimiter,
+};
+
+async function isSelfRegistrationAllowed() {
+  const settings = await settingsService.getSettings();
+  return !settings || settings.allow_self_registration !== "false";
+}
+
+const requireSelfRegistration = asyncHandler(async (req, res, next) => {
+  const allowSelfRegistration = await isSelfRegistrationAllowed();
+  if (!allowSelfRegistration) {
+    const message = "L'auto-inscription est désactivée par l'administrateur.";
+    if (isApiOrAjaxRequest(req)) {
+      return res.status(403).json({
+        success: false,
+        code: "REGISTRATION_DISABLED",
+        error: message,
+        message,
+      });
+    }
+    if (req.session) {
+      req.session.notification = `Error: ${message}`;
+    }
+    return res.status(403).render("index/login", {
+      notification: `Error: ${message}`,
+      allowSelfRegistration: false,
+    });
+  }
+  return next();
+});
+
+function resolveSafeRedirectPath(req, fallback = "/") {
+  const referer = req.headers && req.headers.referer;
+  if (!referer || typeof referer !== "string") {
+    return fallback;
+  }
+  try {
+    const host = typeof req.get === "function" ? req.get("host") : req.headers.host;
+    if (!host) {
+      return fallback;
+    }
+    const parsed = new URL(referer, `${req.protocol || "http"}://${host}`);
+    if (parsed.host !== host) {
+      return fallback;
+    }
+    const relative = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    if (!relative.startsWith("/") || relative.startsWith("//")) {
+      return fallback;
+    }
+    return relative;
+  } catch {
+    return fallback;
+  }
+}
+
+async function findUserByAgreementToken(token) {
+  if (typeof prisma.user.findFirst === "function") {
+    return prisma.user.findFirst({ where: { token } });
+  }
+  return prisma.user.findUnique({ where: { token } });
+}
+
+function isAgreementTokenExpired(user) {
+  if (!user || user.termsAccepted) {
+    return false;
+  }
+  const rawDate = user.dateAdded || user.createdAt;
+  if (!rawDate) {
+    return false;
+  }
+  const timestamp = new Date(rawDate).getTime();
+  if (Number.isNaN(timestamp)) {
+    return false;
+  }
+  return Date.now() - timestamp > AGREEMENT_TOKEN_MAX_AGE_MS;
+}
+
+function buildAgreementSuccessViewModel(user, settings, { alreadyAccepted = false } = {}) {
+  const safeSettings = settings || {};
+  const labName = safeSettings.platform_name || "Fabtrack";
+  const defaultTitle = alreadyAccepted
+    ? "Charte déjà validée"
+    : "Merci d'avoir signé la charte !";
+  const title = alreadyAccepted
+    ? "Charte déjà validée"
+    : safeSettings.mail_user_agreement_success_title || defaultTitle;
+
+  const rawMessage = alreadyAccepted
+    ? "Votre acceptation de la charte d'utilisation a déjà été enregistrée. Vous pouvez accéder au laboratoire lors de vos visites."
+    : safeSettings.mail_user_agreement_success_message ||
+      "Votre acceptation de la charte d'utilisation a bien été enregistrée. Vous pouvez désormais vous enregistrer et accéder au laboratoire lors de vos visites.\n\nVous allez être redirigé vers notre site...";
+
+  const message = rawMessage
+    .replace(/\{name\}|\{\{name\}\}/gi, user.name || "")
+    .replace(/\{surname\}|\{\{surname\}\}/gi, user.surname || "")
+    .replace(/\{fullname\}|\{\{fullname\}\}/gi, `${user.name || ""} ${user.surname || ""}`.trim())
+    .replace(/\{lab_name\}|\{\{lab_name\}\}/gi, labName);
+
+  const redirectUrl =
+    (safeSettings.mail_user_agreement_redirect_url && safeSettings.mail_user_agreement_redirect_url.trim()) ||
+    safeSettings.bookstack_url ||
+    "https://wiki.fablab.sorbonne-universite.fr/BookStack/";
+
+  const delayNum = parseInt(safeSettings.mail_user_agreement_redirect_delay || "5", 10);
+  const redirectDelay = Number.isNaN(delayNum) ? 5 : delayNum;
+
+  return {
+    success: true,
+    status: alreadyAccepted ? "already_accepted" : "success",
+    user,
+    title,
+    message,
+    redirectUrl,
+    redirectDelay,
+    userName: `${user.name || ""} ${user.surname || ""}`.trim(),
+  };
+}
 
 // ******************************************************************************
 // Root route to check authentication
@@ -40,9 +203,27 @@ router.get("/", (req, res) => {
 // Login and registration routes
 // ******************************************************************************
 
-router.get("/login", clearNotification, (req, res) => res.render("index/login"));
+router.get(
+  "/login",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const allowSelfRegistration = await isSelfRegistrationAllowed();
+    return res.render("index/login", { allowSelfRegistration });
+  }),
+);
 
-router.get("/register", clearNotification, (req, res) => res.render("index/register"));
+router.get(
+  "/register",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const allowSelfRegistration = await isSelfRegistrationAllowed();
+    if (!allowSelfRegistration) {
+      req.session.notification = "Error: L'auto-inscription est désactivée par l'administrateur.";
+      return res.redirect("/login");
+    }
+    return res.render("index/register");
+  }),
+);
 
 // ******************************************************************************
 // Account creation for staff members
@@ -50,6 +231,8 @@ router.get("/register", clearNotification, (req, res) => res.render("index/regis
 
 router.post(
   "/create-account",
+  registerLimiter,
+  requireSelfRegistration,
   validateBody(registerStaffSchema, { redirectUrl: "/register" }),
   asyncHandler(async (req, res) => {
     const { username, password, mail, honeypot } = req.body;
@@ -75,7 +258,7 @@ router.post(
       req.session.notification = "Warning: Your account needs to be approved by an administrator before you can log in.";
 
       // Send notification email to admin asynchronously
-      const hostUrl = `${req.protocol}://${req.get("host")}`;
+      const hostUrl = `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
       mailService
         .sendStaffRegisteredAlert({ username, email: mail, hostUrl })
         .catch((err) => console.error("[routes/index/create-account] Failed to send staff alert email:", err));
@@ -108,6 +291,7 @@ router.get("/forgot", clearNotification, function (req, res) {
 
 router.post(
   "/reset",
+  resetRequestLimiter,
   validateBody(requestPasswordResetSchema, { redirectUrl: "/forgot" }),
   asyncHandler(async (req, res) => {
     const hostUrl =
@@ -151,6 +335,7 @@ router.get(
 
 router.post(
   "/reset_password",
+  resetPasswordLimiter,
   validateBody(resetPasswordSchema, {
     redirectUrl: (req) =>
       passwordResetService.isValidTokenFormat(req.body?.token)
@@ -180,39 +365,59 @@ router.post(
 
 router.post(
   "/auth",
+  authLimiter,
   validateBody(loginSchema, { redirectUrl: "/login" }),
   asyncHandler(async (req, res) => {
     const { username, password } = req.body;
     const user = await prisma.staff.findUnique({ where: { name: username } });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    const hashToCompare = user && user.password ? user.password : DUMMY_PASSWORD_HASH;
+    const passwordMatches = await bcrypt.compare(password, hashToCompare);
+
+    if (user && passwordMatches) {
       if (!user.approved) {
         req.session.notification = "Warning: Your account needs to be approved by an administrator before you can log in.";
         return res.redirect("/login");
       }
+
+      const savedLang = req.session && req.session.lang;
+      if (req.session && typeof req.session.regenerate === "function") {
+        await new Promise((resolve, reject) => {
+          req.session.regenerate((err) => (err ? reject(err) : resolve()));
+        });
+      }
+      if (savedLang) {
+        req.session.lang = savedLang;
+      }
+
       req.session.loggedin = true;
       req.session.staffId = user.id;
       req.session.role = user.role;
       req.session.username = user.name;
+      if (user.email) {
+        req.session.email = user.email;
+      }
       if (user.lastWorkspaceId) {
         req.session.lastWorkspaceId = user.lastWorkspaceId;
       }
-      res.redirect("/");
+      ensureCsrfToken(req);
+
+      return res.redirect("/");
     } else {
       req.session.notification = "Error: Incorrect username or password.";
-      res.redirect("/login");
+      return res.redirect("/login");
     }
   }),
 );
 
 // ******************************************************************************
-// Logout route
+// Logout route (POST only to protect against logout CSRF)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/logout",
   asyncHandler(async (req, res) => {
-    if (req.session.username && req.session.selectedWorkspace) {
+    if (req.session && req.session.username && req.session.selectedWorkspace) {
       try {
         await prisma.staff.update({
           where: { name: req.session.username },
@@ -222,18 +427,34 @@ router.get(
         console.error("Could not save last workspace on logout:", e);
       }
     }
-    if (req.session.selectedWorkspace) {
+    if (req.session && req.session.selectedWorkspace) {
       res.cookie("fabtrack_last_workspace_id", req.session.selectedWorkspace.id, {
         maxAge: 365 * 24 * 60 * 60 * 1000,
         sameSite: "lax",
       });
     }
-    req.session.destroy(() => res.redirect("/login"));
+    const clearCookieOptions = {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production" && process.env.ENABLE_HTTPS === "true",
+    };
+    if (req.session && typeof req.session.destroy === "function") {
+      await new Promise((resolve, reject) => {
+        req.session.destroy((err) => (err ? reject(err) : resolve()));
+      });
+    }
+    if (typeof res.clearCookie === "function") {
+      res.clearCookie("fabtrack.sid", clearCookieOptions);
+    }
+    return res.redirect("/login");
   }),
 );
 
 // ******************************************************************************
-// Route for users to validate the agreement to the terms
+// Routes for users to confirm and validate the agreement to the terms
+// GET is strictly read-only (protects against mail-scanner prefetching)
+// POST commits termsAccepted=true with CSRF protection
 // ******************************************************************************
 
 router.get(
@@ -242,67 +463,126 @@ router.get(
     const { token } = req.params;
 
     try {
-      const user = await prisma.user.findUnique({
-        where: { token },
-      });
+      const user = await findUserByAgreementToken(token);
 
       if (!user) {
         return res.status(404).render("index/agreement-success", {
           success: false,
+          status: "invalid",
           title: "Lien invalide ou expiré",
-          message: "Ce lien de validation de la charte est introuvable ou n'est plus actif. Si vous avez besoin d'un nouveau lien, veuillez vous adresser aux facilitateurs du Fablab.",
+          message:
+            "Ce lien de validation de la charte est introuvable ou n'est plus actif. Si vous avez besoin d'un nouveau lien, veuillez vous adresser aux facilitateurs du Fablab.",
           redirectUrl: null,
           redirectDelay: 0,
           userName: null,
         });
       }
 
-      // Mark charter as signed if not already done
-      if (!user.termsAccepted) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { termsAccepted: true },
-        });
-        logger.logThat(`Charte d'utilisation signée par ${user.name} ${user.surname} (id: ${user.id})`);
+      const settings = await settingsService.getSettings();
+
+      if (user.termsAccepted) {
+        return res.render(
+          "index/agreement-success",
+          buildAgreementSuccessViewModel(user, settings, { alreadyAccepted: true }),
+        );
       }
 
-      // Retrieve confirmation page settings
-      const settings = await settingsService.getSettings();
-      const labName = settings.platform_name || "Fabtrack";
+      if (isAgreementTokenExpired(user)) {
+        return res.status(410).render("index/agreement-success", {
+          success: false,
+          status: "expired",
+          title: "Lien expiré",
+          message:
+            "Ce lien de validation de la charte a expiré (validité 30 jours). Veuillez demander un nouveau lien aux facilitateurs du Fablab.",
+          redirectUrl: null,
+          redirectDelay: 0,
+          userName: `${user.name || ""} ${user.surname || ""}`.trim() || null,
+        });
+      }
 
-      const title = settings.mail_user_agreement_success_title || "Merci d'avoir signé la charte !";
-      const rawMessage =
-        settings.mail_user_agreement_success_message ||
-        "Votre acceptation de la charte d'utilisation a bien été enregistrée. Vous pouvez désormais vous enregistrer et accéder au laboratoire lors de vos visites.\n\nVous allez être redirigé vers notre site...";
-
-      const message = rawMessage
-        .replace(/\{name\}|\{\{name\}\}/gi, user.name || "")
-        .replace(/\{surname\}|\{\{surname\}\}/gi, user.surname || "")
-        .replace(/\{fullname\}|\{\{fullname\}\}/gi, `${user.name || ""} ${user.surname || ""}`.trim())
-        .replace(/\{lab_name\}|\{\{lab_name\}\}/gi, labName);
-
-      const redirectUrl =
-        (settings.mail_user_agreement_redirect_url && settings.mail_user_agreement_redirect_url.trim()) ||
-        settings.bookstack_url ||
-        "https://wiki.fablab.sorbonne-universite.fr/BookStack/";
-
-      const delayNum = parseInt(settings.mail_user_agreement_redirect_delay || "5", 10);
-      const redirectDelay = isNaN(delayNum) ? 5 : delayNum;
-
-      res.render("index/agreement-success", {
-        success: true,
-        title,
-        message,
-        redirectUrl,
-        redirectDelay,
-        userName: `${user.name} ${user.surname}`.trim(),
+      return res.render("index/agreement-confirm", {
+        user,
+        token,
+        settings,
+        userName: `${user.name || ""} ${user.surname || ""}`.trim(),
       });
     } catch (e) {
-      console.error("Error updating agreement:", e);
-      res.status(500).render("index/agreement-success", {
+      console.error("Error loading agreement confirmation:", e);
+      return res.status(500).render("index/agreement-success", {
         success: false,
+        status: "invalid",
         title: "Erreur lors de la validation",
-        message: "Une erreur est survenue lors de l'enregistrement de votre acceptation. Veuillez réessayer ou contacter un membre de l'équipe du Fablab.",
+        message:
+          "Une erreur est survenue lors du chargement de la page de validation. Veuillez réessayer ou contacter un membre de l'équipe du Fablab.",
+        redirectUrl: null,
+        redirectDelay: 0,
+        userName: null,
+      });
+    }
+  }),
+);
+
+router.post(
+  "/agreement/:token",
+  asyncHandler(async (req, res) => {
+    const { token } = req.params;
+
+    try {
+      const user = await findUserByAgreementToken(token);
+
+      if (!user) {
+        return res.status(404).render("index/agreement-success", {
+          success: false,
+          status: "invalid",
+          title: "Lien invalide ou expiré",
+          message:
+            "Ce lien de validation de la charte est introuvable ou n'est plus actif. Si vous avez besoin d'un nouveau lien, veuillez vous adresser aux facilitateurs du Fablab.",
+          redirectUrl: null,
+          redirectDelay: 0,
+          userName: null,
+        });
+      }
+
+      const settings = await settingsService.getSettings();
+
+      if (user.termsAccepted) {
+        return res.render(
+          "index/agreement-success",
+          buildAgreementSuccessViewModel(user, settings, { alreadyAccepted: true }),
+        );
+      }
+
+      if (isAgreementTokenExpired(user)) {
+        return res.status(410).render("index/agreement-success", {
+          success: false,
+          status: "expired",
+          title: "Lien expiré",
+          message:
+            "Ce lien de validation de la charte a expiré (validité 30 jours). Veuillez demander un nouveau lien aux facilitateurs du Fablab.",
+          redirectUrl: null,
+          redirectDelay: 0,
+          userName: `${user.name || ""} ${user.surname || ""}`.trim() || null,
+        });
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { termsAccepted: true },
+      });
+      logger.logThat(`Charte d'utilisation signée par ${user.name} ${user.surname} (id: ${user.id})`);
+
+      return res.render(
+        "index/agreement-success",
+        buildAgreementSuccessViewModel(user, settings, { alreadyAccepted: false }),
+      );
+    } catch (e) {
+      console.error("Error updating agreement:", e);
+      return res.status(500).render("index/agreement-success", {
+        success: false,
+        status: "invalid",
+        title: "Erreur lors de la validation",
+        message:
+          "Une erreur est survenue lors de l'enregistrement de votre acceptation. Veuillez réessayer ou contacter un membre de l'équipe du Fablab.",
         redirectUrl: null,
         redirectDelay: 0,
         userName: null,
@@ -331,8 +611,8 @@ router.get("/change-language/:lang", (req, res) => {
       req.setLocale(target);
     }
   }
-  const referer = req.headers.referer || "/fabtrack";
-  res.redirect(referer);
+  const safeRedirect = resolveSafeRedirectPath(req, "/");
+  res.redirect(safeRedirect);
 });
 
 // ******************************************************************************
@@ -341,13 +621,14 @@ router.get("/change-language/:lang", (req, res) => {
 
 router.post(
   "/report-bug",
+  reportBugLimiter,
   validateBody(reportBugSchema, {
-    redirectUrl: (req) => req.headers.referer || "/fabtrack",
+    redirectUrl: (req) => resolveSafeRedirectPath(req, "/fabtrack"),
   }),
   asyncHandler(async (req, res) => {
     const { title, category, description, pageUrl, severity, reporterName, reporterEmail } = req.body;
     const finalReporterName = reporterName || (req.session && req.session.username) || null;
-    const hostUrl = `${req.protocol}://${req.get("host")}`;
+    const hostUrl = `${req.protocol}://${req.get("host")}${res.locals.basePath || ""}`;
 
     try {
       await mailService.sendBugReportAlert({
@@ -366,7 +647,7 @@ router.post(
       req.session.notification = "Error: Impossible d'envoyer le signalement par e-mail.";
     }
 
-    res.redirect(req.headers.referer || "/fabtrack");
+    res.redirect(resolveSafeRedirectPath(req, "/fabtrack"));
   }),
 );
 

@@ -22,8 +22,8 @@
    Résoudre les 13 vulnérabilités npm de production (dont proxy-addr critique) et retirer la licence commerciale Font Awesome Pro.
 8. **[R-011 Isoler la base de test, corriger la flakiness et installer la CI](roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md)** · À tester · jalon v1.2
    Imposer DATABASE_URL_TEST, supprimer le backdoor TEST_ADMIN_USER sur la base réelle, corriger LIKE 'TEST_%' et créer la CI GitHub Actions.
-9. **[R-012 Protection CSRF, conversion des 31 routes GET mutantes et durcissement Auth](roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md)** · Idée · jalon v1.2
-   Passer les 31 actions GET mutantes en POST, ajouter un jeton CSRF et durcir sessions, cookies, rate-limiting et révocation staff.
+9. **[R-012 Protection CSRF, conversion des 31 routes GET mutantes et durcissement Auth](roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md)** · À tester · jalon v1.2
+   Passer les 31+ actions GET mutantes en POST, ajouter un jeton CSRF natif synchronisé en session et durcir sessions, cookies, rate-limiting et révocation staff.
 10. **[R-013 Éradiquer les XSS templates/DOM et sécuriser /report-bug & mailService](roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md)** · Idée · jalon v1.2
    Supprimer les injections <%- JSON.stringify %>, icônes HTML brutes, confirm() inline, innerHTML dynamiques et HTML injection dans les e-mails.
 11. **[R-014 Index SQL critiques, sessions MariaDB, cache global et clôture auto des visites](roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md)** · Idée · jalon v1.2
@@ -86,6 +86,8 @@
 - [ ] [A-015](roadmap/actions/A-015-executer-npm-install-omit-dev-lors-du.md) Exécuter npm install --omit=dev lors du déploiement R-010 en production (tester, R-010)
 - [ ] [A-016](roadmap/actions/A-016-verifier-l-absence-de-test-admin-user-en-base-de.md) Vérifier l'absence de TEST_ADMIN_USER en base de production (R-011) (tester, R-011)
 - [ ] [A-017](roadmap/actions/A-017-valider-la-suite-d-integration-sur-fabtrack-test.md) Valider la suite d'intégration sur fabtrack_test et la CI GitHub Actions (R-011) (tester, R-011)
+- [ ] [A-018](roadmap/actions/A-018-verifier-en-preproduction-production-la-presence.md) Vérifier en préproduction/production la présence d'un SECRET fort non-par-défaut, TRUST_PROXY et ENABLE_HTTPS dans .env avant redémarrage (tester, R-012)
+- [ ] [A-019](roadmap/actions/A-019-valider-dans-le-navigateur-la-connexion-post.md) Valider dans le navigateur la connexion, POST /logout, les actions admin POST avec CSRF, la confirmation charte GET->POST /agreement/:token et le rejet 403 sans jeton CSRF (tester, R-012)
 
 ## Livré
 

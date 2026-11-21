@@ -188,9 +188,12 @@
                     <a href="/admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary" title="<%= typeof __ !== 'undefined' ? __('machines.action_edit') : 'Modifier' %>">
                       <i class="fa-solid fa-pen-to-square"></i>
                     </a>
-                    <a href="/admin/machines/delete/<%= machine.id %>" class="btn btn-outline-danger" title="<%= typeof __ !== 'undefined' ? __('machines.action_delete') : 'Supprimer' %>" onclick="return confirm('<%= typeof __ !== 'undefined' ? __('machines.confirm_delete') : 'Êtes-vous sûr de vouloir supprimer cette machine ?' %>');">
-                      <i class="fa-solid fa-trash-can"></i>
-                    </a>
+                    <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/delete/<%= machine.id %>" class="d-inline" onsubmit="return confirm('<%= typeof __ !== 'undefined' ? __('machines.confirm_delete') : 'Êtes-vous sûr de vouloir supprimer cette machine ?' %>');">
+                      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="<%= typeof __ !== 'undefined' ? __('machines.action_delete') : 'Supprimer' %>">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </form>
                   </div>
                 </td>
               </tr>
@@ -214,7 +217,8 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form action="/admin/machines/create" method="post" enctype="multipart/form-data">
+            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/create?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
               <div class="row">
                 <div class="col-6">
                   <div class="form-floating mb-3">

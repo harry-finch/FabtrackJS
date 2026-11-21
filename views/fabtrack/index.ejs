@@ -390,9 +390,12 @@
                                                     <i class="fa-solid fa-screwdriver-wrench me-1"></i><%= __('kiosk.btn_exit') %>
                                                 </button>
                                             <% } else { %>
-                                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/exit/<%= entry.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="<%= __('kiosk.btn_exit') %>">
-                                                    <i class="fa-solid fa-person-walking-arrow-right me-1"></i><%= __('kiosk.btn_exit') %>
-                                                </a>
+                                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/exit/<%= entry.id %>" class="d-inline">
+                                                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="<%= __('kiosk.btn_exit') %>">
+                                                        <i class="fa-solid fa-person-walking-arrow-right me-1"></i><%= __('kiosk.btn_exit') %>
+                                                    </button>
+                                                </form>
                                             <% } %>
                                         </td>
                                     </tr>
@@ -463,7 +466,10 @@
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <a href="" class="btn btn-primary">Clear debt</a>
+                        <form method="POST" action="" id="clearBalanceForm" class="d-inline m-0">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                          <button type="submit" class="btn btn-primary">Clear debt</button>
+                        </form>
                       </div>
                     </div>
                   </div>
@@ -483,7 +489,10 @@
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <a href="" class="btn btn-primary">Resolve warning</a>
+                        <form method="POST" action="" id="warningDeactivatorForm" class="d-inline m-0">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                          <button type="submit" class="btn btn-primary">Resolve warning</button>
+                        </form>
                       </div>
                     </div>
                   </div>

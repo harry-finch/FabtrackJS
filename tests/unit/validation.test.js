@@ -7,6 +7,7 @@ const {
   updateStaffSchema,
   activitySchema,
   loginSchema,
+  registerStaffSchema,
   requestPasswordResetSchema,
   resetPasswordSchema,
   reportIssueSchema,
@@ -156,6 +157,27 @@ describe("Unit: Zod Validation Schemas", () => {
     test("keeps accepting existing accounts whose passwords are shorter than 8 characters", () => {
       const result = loginSchema.safeParse({ username: "legacy", password: "12345" });
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe("registerStaffSchema", () => {
+    test("accepts valid staff registration payload with 8+ char password", () => {
+      const result = registerStaffSchema.safeParse({
+        username: "new_facilitator",
+        mail: "facilitator@fablab.fr",
+        password: "Password1",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    test("rejects password shorter than 8 characters (7 chars)", () => {
+      const result = registerStaffSchema.safeParse({
+        username: "new_facilitator",
+        mail: "facilitator@fablab.fr",
+        password: "1234567",
+      });
+      expect(result.success).toBe(false);
+      expect(result.error.issues[0].message).toContain("8 caractères");
     });
   });
 

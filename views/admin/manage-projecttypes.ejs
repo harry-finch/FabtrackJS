@@ -69,9 +69,12 @@
                                                         title="Modifier">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
-                                            <a href="/admin/projecttypes/delete/<%= projecttype.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer le motif de visite <%= projecttype.name %> ?');">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </a>
+                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/projecttypes/delete/<%= projecttype.id %>" class="d-inline" onsubmit="return confirm('Supprimer le motif de visite <%= projecttype.name %> ?');">
+                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

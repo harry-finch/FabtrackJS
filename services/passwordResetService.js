@@ -5,7 +5,7 @@ const defaultMailService = require("./mailService");
 const defaultLogger = require("../utilities/simpleLogger");
 
 const TOKEN_TTL_MS = 10 * 60 * 1000;
-const SALT_ROUNDS = 10;
+const SALT_ROUNDS = 12;
 const TOKEN_HEX_REGEX = /^[a-f0-9]{64}$/i;
 
 /**

@@ -22,6 +22,7 @@ describe("Integration: Bug & Improvement Reporting (POST /report-bug)", () => {
   test("1. Successfully submits a bug report and dispatches email alert to admin", async () => {
     const res = await adminAgent
       .post("/report-bug")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .type("form")
       .send({
         title: "Bouton de validation inactif sur mobile",
@@ -52,6 +53,7 @@ describe("Integration: Bug & Improvement Reporting (POST /report-bug)", () => {
   test("2. Rejects submission when title is missing or description is too short", async () => {
     const res = await adminAgent
       .post("/report-bug")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .type("form")
       .send({
         title: "",

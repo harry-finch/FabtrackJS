@@ -61,7 +61,7 @@ router.get(
 // Route to deactivate / resolve a warning
 // ******************************************************************************
 
-router.get(
+router.post(
   "/deactivate/:id",
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -82,7 +82,7 @@ router.get(
 // Route to reactivate a warning
 // ******************************************************************************
 
-router.get(
+router.post(
   "/activate/:id",
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -103,7 +103,7 @@ router.get(
 // Route to delete a warning
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   asyncHandler(async (req, res) => {
     const { id } = req.params;

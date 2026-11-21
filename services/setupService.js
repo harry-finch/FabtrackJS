@@ -102,7 +102,7 @@ class SetupService {
       workspaces = [],
     } = data;
 
-    const saltRounds = 10;
+    const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(adminPassword, saltRounds);
 
     // Run setup within a transaction if not already in one

@@ -128,13 +128,59 @@
   });
 
   // ---------------------------------------------------------------------------
+  // 2b. Automatic CSRF Token Injection for State-Changing Forms
+  // ---------------------------------------------------------------------------
+  function ensureCsrfOnForm(form) {
+    if (!form || typeof form.getAttribute !== "function") return;
+    const method = (form.getAttribute("method") || form.method || "GET").toUpperCase();
+    if (method === "GET" || method === "HEAD" || method === "OPTIONS") return;
+
+    const token = typeof window.getCsrfToken === "function" ? window.getCsrfToken() : "";
+    if (!token) return;
+
+    // 1. Ensure hidden _csrf input for standard URL-encoded forms
+    let csrfInput = form.querySelector('input[name="_csrf"]');
+    if (!csrfInput) {
+      csrfInput = document.createElement("input");
+      csrfInput.type = "hidden";
+      csrfInput.name = "_csrf";
+      form.appendChild(csrfInput);
+    }
+    csrfInput.value = token;
+
+    // 2. For multipart/form-data forms, also attach _csrf as query param so
+    // server-side CSRF middleware can verify before multer streams the body
+    const enctype = (form.getAttribute("enctype") || form.enctype || "").toLowerCase();
+    if (enctype.includes("multipart/form-data")) {
+      try {
+        const rawAction = form.getAttribute("action") || window.location.pathname + window.location.search;
+        const parsed = new URL(rawAction, window.location.href);
+        if (parsed.origin === window.location.origin) {
+          parsed.searchParams.set("_csrf", token);
+          form.setAttribute("action", parsed.pathname + parsed.search + parsed.hash);
+        }
+      } catch (err) {}
+    }
+  }
+
+  function injectCsrfAllForms() {
+    if (typeof document.querySelectorAll !== "function") return;
+    document.querySelectorAll("form").forEach(ensureCsrfOnForm);
+  }
+
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", injectCsrfAllForms, { once: true });
+  } else {
+    injectCsrfAllForms();
+  }
+
+  // ---------------------------------------------------------------------------
   // 3. Form Submissions Feedback & Double-submission prevention
   // ---------------------------------------------------------------------------
   document.addEventListener("submit", (e) => {
     if (e.defaultPrevented) return;
 
     const form = e.target;
-    if (form.target === "_blank" || form.getAttribute("data-no-progress")) return;
 
     // Subpath Auto-Correction for form action in reverse proxy deployments
     if (window.getAppBaseUrl && form.action) {
@@ -149,6 +195,11 @@
         }
       } catch (err) {}
     }
+
+    // Always inject/refresh CSRF token even on forms with data-no-progress or target=_blank
+    ensureCsrfOnForm(form);
+
+    if (form.target === "_blank" || form.getAttribute("data-no-progress")) return;
 
     // Prevent duplicate accidental form submissions
     if (form.dataset.submitting === "true") {

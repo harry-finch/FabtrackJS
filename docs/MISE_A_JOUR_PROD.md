@@ -44,6 +44,7 @@ pm2 logs fabtrack --lines 50
 | [R-009](../roadmap/items/R-009-reparer-le-bootstrap-setup-et-resynchroniser.md) | `v1.1` | Aucune | Aucune sur base existante (`prisma/schema.sql` resynchronisé pour nouvelles installations) | Aucune | Vérifier que `/setup` reste verrouillé (redirection `/login` ou HTTP `403`) |
 | [R-010](../roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md) | `v1.1` | Aucune | Aucune | **`npm install --omit=dev`** (obligatoire : correctifs CVE + `@fortawesome/fontawesome-free`) | Vérifier l'affichage des icônes (kiosque, admin, avertissements) et `npm audit --omit=dev` |
 | [R-011](../roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md) | `v1.2` | Aucune en prod (`DATABASE_URL_TEST` requis uniquement pour les tests d'intégration) | Aucune | Aucune en prod (`eslint` uniquement en `devDependencies`) | Vérifier l'absence de `TEST_ADMIN_USER` dans `Staff` en production |
+| [R-012](../roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md) | `v1.2` | **Obligatoire :** définir `SECRET` (aléatoire fort, != valeur par défaut) ; vérifier `TRUST_PROXY` (`1` derrière Nginx) et `ENABLE_HTTPS=true` en HTTPS | Aucune | Aucune (CSRF & rate-limit 100 % natifs) | Reconnexion sessions actives ; tester login, `POST /logout`, suppression admin, confirmation charte `GET`→`POST /agreement/:token` et rejet `403` sans CSRF |
 
 ---
 
@@ -223,6 +224,44 @@ WHERE name = 'TEST_ADMIN_USER' OR email LIKE '%@test-fabtrack.local';
 ```
 
 Si une ligne apparaît, la supprimer immédiatement (`DELETE FROM Staff WHERE name = 'TEST_ADMIN_USER';`).
+
+---
+
+#### `R-012` — Protection CSRF, conversion des 33 routes GET mutantes et durcissement Auth
+
+**1. Variables `.env` obligatoires / à contrôler en production**
+
+- **Aucune** migration SQL et **aucune** nouvelle dépendance npm requises (implémentation 100 % native).
+- En `NODE_ENV=production`, l'application **refuse désormais de démarrer** si `SECRET` est absent, vide ou égal à l'ancienne valeur par défaut (`fabtrack-secret-key-2024`). Générer une clé forte avant redémarrage si ce n'est pas déjà fait :
+
+```bash
+# Générer un secret aléatoire de 64 caractères hexadécimaux
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+```env
+SECRET=<votre_secret_aleatoire_64_hex>
+TRUST_PROXY=1          # 1 derrière Nginx/Apache ; false si exposé directement sans proxy
+ENABLE_HTTPS=true      # Active cookie Secure + HSTS si l'accès public passe en HTTPS
+```
+
+**2. Impacts fonctionnels & sécurité**
+
+- Toutes les actions mutantes (`logout`, suppressions/transitions admin, `exit`, `cleardebt`, `warning/deactivate`, `users/resend`, etc.) s'exécutent désormais exclusivement en `POST` protégé par jeton CSRF synchronisé en session (`403` en cas d'absence ou d'altération).
+- La validation de la charte usager (`/agreement/:token`) s'effectue désormais en deux temps : page de confirmation en lecture seule (`GET`) puis soumission (`POST`) avec validité du jeton limitée à 30 jours.
+- Le réglage **Administration > Paramètres > Auto-inscription (`allow_self_registration`)** est désormais effectivement appliqué sur `/register`, `/create-account` et le lien de `/login`.
+- La révocation ou rétrogradation d'un compte staff dans **Administration > Staff** coupe immédiatement l'accès de la session concernée (invalidation directe + micro-cache 30 s).
+
+**3. Vérifications post-déploiement**
+
+- Vérifier que l'application démarre proprement (`pm2 logs fabtrack --lines 50`) sans erreur sur `SECRET`.
+- Tester une connexion (`/login`), une déconnexion (`POST /logout`), une action d'administration (ex. modification/suppression) et un appel `POST` sans jeton CSRF :
+
+```bash
+curl -i -X POST -H "Accept: application/json" "https://votre-domaine.org/fabtrack/logout"
+# Attendu : HTTP/1.1 403 Forbidden (code EBADCSRFTOKEN)
+```
+
 
 
 

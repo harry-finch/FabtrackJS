@@ -21,7 +21,7 @@ const registerStaffSchema = z.object({
     .email("Veuillez saisir une adresse e-mail valide."),
   password: z
     .string({ required_error: "Le mot de passe est requis." })
-    .min(6, "Le mot de passe doit comporter au moins 6 caractères."),
+    .min(8, "Le mot de passe doit comporter au moins 8 caractères."),
 });
 
 const requestPasswordResetSchema = z.object({

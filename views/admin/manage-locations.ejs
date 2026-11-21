@@ -68,9 +68,12 @@
                                                         title="Modifier">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
-                                            <a href="/admin/locations/delete/<%= location.id %>" class="btn btn-outline-danger" title="Supprimer" onclick="return confirm('Supprimer l\'emplacement <%= location.name %> ?');">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </a>
+                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/locations/delete/<%= location.id %>" class="d-inline" onsubmit="return confirm('Supprimer l\'emplacement <%= location.name %> ?');">
+                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

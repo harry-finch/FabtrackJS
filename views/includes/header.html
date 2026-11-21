@@ -223,10 +223,13 @@
                 <hr class="dropdown-divider my-2">
 
                 <!-- LOGOUT SECTION -->
-                <a class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>logout">
-                    <i class="fa-solid fa-right-from-bracket fa-sm" style="width: 16px;"></i>
-                    <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.logout') : 'Déconnexion' %></span>
-                </a>
+                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>logout" class="m-0">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <button type="submit" class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket fa-sm" style="width: 16px;"></i>
+                        <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.logout') : 'Déconnexion' %></span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

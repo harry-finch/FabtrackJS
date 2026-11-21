@@ -26,6 +26,7 @@ describe("Integration: User Creation Flow (POST /users/create)", () => {
 
     const res = await agent
       .post("/users/create")
+      .set("X-CSRF-Token", agent.csrfToken)
       .type("form")
       .send({
         newname: "TestAlice",
@@ -72,6 +73,7 @@ describe("Integration: User Creation Flow (POST /users/create)", () => {
     // First creation
     await agent
       .post("/users/create")
+      .set("X-CSRF-Token", agent.csrfToken)
       .type("form")
       .send({
         newname: "TestOriginal",
@@ -83,6 +85,7 @@ describe("Integration: User Creation Flow (POST /users/create)", () => {
     // Attempt second creation with exact same email
     const duplicateRes = await agent
       .post("/users/create")
+      .set("X-CSRF-Token", agent.csrfToken)
       .type("form")
       .send({
         newname: "TestImpostor",
@@ -98,12 +101,13 @@ describe("Integration: User Creation Flow (POST /users/create)", () => {
     expect(count).toBe(1);
   });
 
-  test("3. Resends charter agreement email via GET /users/resend/:id", async () => {
+  test("3. Resends charter agreement email via POST /users/resend/:id", async () => {
     const resendEmail = `resend_test_${Date.now()}${TEST_EMAIL_DOMAIN}`;
 
     // Create user
     await agent
       .post("/users/create")
+      .set("X-CSRF-Token", agent.csrfToken)
       .type("form")
       .send({
         newname: "TestResend",
@@ -117,8 +121,10 @@ describe("Integration: User Creation Flow (POST /users/create)", () => {
 
     mailService.sendAgreementEmail.mockClear();
 
-    // Call resend route
-    const resendRes = await agent.get(`/users/resend/${user.id}`);
+    // Call resend route (POST with CSRF token)
+    const resendRes = await agent
+      .post(`/users/resend/${user.id}`)
+      .set("X-CSRF-Token", agent.csrfToken);
     expect(resendRes.status).toBe(302);
 
     // Verify mailService was called with force: true

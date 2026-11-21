@@ -295,7 +295,7 @@ router.post(
 // Route to close a history entry (departure)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/exit/:id",
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -341,7 +341,7 @@ router.post(
 // Route to delete a history entry
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   requireRoles("admin"),
   asyncHandler(async (req, res) => {
@@ -432,7 +432,7 @@ router.post(
 // Route to unarchive a project
 // ******************************************************************************
 
-router.get(
+router.post(
   "/project/unarchive/:id",
   requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
@@ -452,7 +452,7 @@ router.get(
 // Route to archive a project
 // ******************************************************************************
 
-router.get(
+router.post(
   "/project/archive/:id",
   requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
@@ -616,7 +616,7 @@ router.post(
 // Route to clear a user's debt (strictly when balance < 0)
 // ******************************************************************************
 
-router.get(
+router.post(
   "/cleardebt/:id",
   requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {

@@ -1,6 +1,7 @@
 const { prisma: defaultPrisma } = require("../utilities/db");
 const defaultMailService = require("./mailService.js");
 const defaultLogger = require("../utilities/simpleLogger.js");
+const defaultStaffSessionService = require("./staffSessionService.js");
 const { ALLOWED_STAFF_ROLES } = require("../schemas/staff.schema.js");
 
 /**
@@ -11,10 +12,11 @@ class StaffAdminService {
   /**
    * @param {Object} [deps] Surcharges optionnelles pour les tests unitaires
    */
-  constructor({ prisma, mailService, logger } = {}) {
+  constructor({ prisma, mailService, logger, staffSessionService } = {}) {
     this.prisma = prisma || defaultPrisma;
     this.mailService = mailService || defaultMailService;
     this.logger = logger || defaultLogger;
+    this.staffSessionService = staffSessionService || defaultStaffSessionService;
   }
 
   /**
@@ -99,6 +101,7 @@ class StaffAdminService {
       where: { id: staffBefore.id },
       data: { approved: true },
     });
+    this.staffSessionService.invalidateStaffSessionCache(result.id);
 
     if (!staffBefore.approved && hostUrl) {
       this.mailService
@@ -127,6 +130,7 @@ class StaffAdminService {
       where: { id: targetStaff.id },
       data: { approved: false },
     });
+    this.staffSessionService.invalidateStaffSessionCache(result.id);
 
     this.logger.logThat(`User ${result.name} disabled by ${actor.username || "Admin"}`);
     return { success: true, staff: result, message: "Success: User is now disabled" };
@@ -140,6 +144,7 @@ class StaffAdminService {
       where: { id: targetStaff.id },
       data: { role: "admin" },
     });
+    this.staffSessionService.invalidateStaffSessionCache(result.id);
 
     this.logger.logThat(`User ${result.name} made admin by ${actor.username || "Admin"}`);
     return { success: true, staff: result, message: "Success: User is now admin" };
@@ -158,6 +163,7 @@ class StaffAdminService {
       where: { id: targetStaff.id },
       data: { role: "user" },
     });
+    this.staffSessionService.invalidateStaffSessionCache(result.id);
 
     this.logger.logThat(`User ${result.name} made simple user by ${actor.username || "Admin"}`);
     return { success: true, staff: result, message: "Success: User is now just a user again" };
@@ -175,6 +181,7 @@ class StaffAdminService {
     const result = await this.prisma.staff.delete({
       where: { id: targetStaff.id },
     });
+    this.staffSessionService.invalidateStaffSessionCache(result.id);
 
     this.logger.logThat(`User ${result.name} has been deleted by ${actor.username || "Admin"}`);
     return { success: true, staff: result, message: "Success: User has been deleted" };
@@ -212,6 +219,7 @@ class StaffAdminService {
         approved: Boolean(approved),
       },
     });
+    this.staffSessionService.invalidateStaffSessionCache(result.id);
 
     if (approved && !staffBefore.approved && hostUrl) {
       this.mailService

@@ -1,6 +1,6 @@
 const request = require("supertest");
 const app = require("../../app");
-const { getAdminAgent } = require("../helpers/authHelper");
+const { getAdminAgent, getCsrfToken } = require("../helpers/authHelper");
 const { prisma } = require("../helpers/testDb");
 const aiQueryService = require("../../services/aiQueryService");
 const settingsService = require("../../services/settingsService");
@@ -44,8 +44,11 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
   });
 
   test("1. Unauthenticated request to /admin/statistics/ai-query is redirected to /login", async () => {
-    const res = await request(app)
+    const anonAgent = request.agent(app);
+    const csrfToken = await getCsrfToken(anonAgent, "/login");
+    const res = await anonAgent
       .post("/admin/statistics/ai-query")
+      .set("X-CSRF-Token", csrfToken)
       .send({ question: "Combien d'usagers ?" });
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain("/login");
@@ -61,6 +64,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
   test("3. POST /admin/statistics/ai-query returns 400 on empty question", async () => {
     const res = await adminAgent
       .post("/admin/statistics/ai-query")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .send({ question: "   " });
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
@@ -70,6 +74,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
     await settingsService.updateSettings({ ai_provider: "none" });
     const res = await adminAgent
       .post("/admin/statistics/ai-query")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .send({ question: "Combien d'usagers ?" });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/Aucun moteur d'IA n'est configuré/i);
@@ -95,6 +100,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
 
     const res = await adminAgent
       .post("/admin/statistics/ai-query")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .send({ question: "Combien d'usagers au total ?" });
 
     expect(res.status).toBe(200);
@@ -128,6 +134,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
 
     const res = await adminAgent
       .post("/admin/statistics/ai-query")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .send({ question: "Quelles sont les typologies d'usagers ?" });
 
     expect(res.status).toBe(200);
@@ -142,6 +149,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
   test("7. POST /admin/settings/ai/test-connection rejects call when provider is 'none'", async () => {
     const res = await adminAgent
       .post("/admin/settings/ai/test-connection")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .send({ ai_provider: "none" });
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
@@ -150,6 +158,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
   test("8. POST /admin/settings saves AI provider and keys", async () => {
     const res = await adminAgent
       .post("/admin/settings")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .field("ai_provider", "gemini")
       .field("ai_gemini_api_key", "AIzaSySecretTestKey")
       .field("ai_gemini_model", "gemini-1.5-flash");
@@ -168,6 +177,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
 
     const res = await adminAgent
       .post("/admin/settings/ai/test-connection")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .send({
         ai_provider: "gemini",
         ai_gemini_api_key: "AIzaSyFakeKey",

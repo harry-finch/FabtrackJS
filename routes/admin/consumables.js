@@ -49,7 +49,7 @@ router.get(
 // Route to delete a consumable
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   asyncHandler(async (req, res) => {
     const { id } = req.params;

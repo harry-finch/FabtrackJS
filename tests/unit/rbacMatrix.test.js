@@ -174,6 +174,7 @@ jest.mock("../../services/repairCafeService", () => mockRepairCafeService);
 
 const { BalanceService } = require("../../services/balanceService");
 const { StaffAdminService } = require("../../services/staffAdminService");
+const staffSessionService = require("../../services/staffSessionService");
 
 const historyRouter = require("../../routes/history");
 const usersRouter = require("../../routes/users");
@@ -183,6 +184,12 @@ const staffRouter = require("../../routes/admin/staff");
 const warningRouter = require("../../routes/warning");
 const apiRouter = require("../../routes/api");
 
+const ROLE_DEFAULT_STAFF_IDS = {
+  admin: 1,
+  user: 2,
+  staff: 3,
+};
+
 function createTestApp() {
   const app = express();
   app.use(express.urlencoded({ extended: true }));
@@ -191,10 +198,11 @@ function createTestApp() {
   app.use((req, res, next) => {
     const role = req.headers["x-test-role"];
     if (role) {
+      const defaultStaffId = ROLE_DEFAULT_STAFF_IDS[role] || 1;
       req.session = {
         loggedin: true,
         role,
-        staffId: req.headers["x-test-staff-id"] ? Number(req.headers["x-test-staff-id"]) : 1,
+        staffId: req.headers["x-test-staff-id"] ? Number(req.headers["x-test-staff-id"]) : defaultStaffId,
         username: req.headers["x-test-username"] || `${role}_tester`,
         selectedWorkspace: { id: 1, name: "Fablab" },
       };
@@ -223,6 +231,7 @@ function createTestApp() {
 
 function resetMocks() {
   jest.clearAllMocks();
+  staffSessionService.clearCache();
 
   mockPrisma.user.findFirst.mockResolvedValue({
     id: 10,
@@ -253,8 +262,11 @@ function resetMocks() {
   mockPrisma.user.delete.mockResolvedValue({ id: 10, name: "Alice", surname: "Martin" });
 
   mockPrisma.staff.findUnique.mockImplementation(async ({ where }) => {
-    if (where.id === 1) {
+    if (where.id === 1 || where.name === "admin_tester") {
       return { id: 1, name: "admin_tester", email: "admin@lab.fr", role: "admin", approved: true };
+    }
+    if (where.id === 3 || where.name === "staff_tester") {
+      return { id: 3, name: "staff_tester", email: "staff@lab.fr", role: "staff", approved: true };
     }
     return { id: where.id || 2, name: "mediateur_2", email: "med@lab.fr", role: "user", approved: true };
   });
@@ -499,7 +511,7 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
       expect(createRes.headers.location).toBe("/fabtrack");
       expect(mockPrisma.history.create).toHaveBeenCalledTimes(1);
 
-      const exitRes = await request(app).get("/history/exit/100").set("x-test-role", "staff");
+      const exitRes = await request(app).post("/history/exit/100").set("x-test-role", "staff");
       expect(exitRes.status).toBe(302);
       expect(exitRes.headers.location).toBe("/fabtrack");
       expect(mockPrisma.history.update).toHaveBeenCalledTimes(1);
@@ -516,14 +528,14 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
 
       // Blocked routes for staff (AJAX => 403 JSON, HTML => 302 /fabtrack, 0 DB mutations)
       const staffBlockedJson = [
-        ["get", "/history/cleardebt/10"],
+        ["post", "/history/cleardebt/10"],
         ["post", "/history/credit", { userid: 10, money: 10 }],
         ["post", "/history/balance-adjust", { userid: 10, operation: "debit", amount: 5, reason: "test" }],
-        ["get", "/history/delete/100"],
+        ["post", "/history/delete/100"],
         ["post", "/history/update", { historyid: 100 }],
         ["post", "/history/update-comment", { historyid: 100, comments: "hi" }],
-        ["get", "/history/project/archive/5"],
-        ["get", "/history/project/unarchive/5"],
+        ["post", "/history/project/archive/5"],
+        ["post", "/history/project/unarchive/5"],
         ["post", "/history/activity", { activityhistoryid: 100, activityuserid: 10, machineId: 3 }],
         ["post", "/history/equipment/return/30", {}],
         ["get", "/admin/inventory/items"],
@@ -535,12 +547,12 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
         ["get", "/users/edit/10"],
         ["post", "/users/create", { newname: "A", newsurname: "B", newemail: "a@b.fr", newusertype: 1, newbirthyear: 2000 }],
         ["post", "/users/update/10", { name: "A", surname: "B", email: "a@b.fr", usertype: 1, birthyear: 2000 }],
-        ["get", "/users/resend/10"],
+        ["post", "/users/resend/10"],
         ["post", "/users/10/workshop-interest/add", { workshopId: 1 }],
-        ["get", "/users/10/workshop-interest/remove/1"],
+        ["post", "/users/10/workshop-interest/remove/1"],
         ["post", "/users/10/workshop-badge/award", { workshopId: 1 }],
-        ["get", "/users/10/workshop-badge/revoke/1"],
-        ["get", "/warning/deactivate/9"],
+        ["post", "/users/10/workshop-badge/revoke/1"],
+        ["post", "/warning/deactivate/9"],
         ["post", "/warning/create", { userid: 10, warningtype: 1 }],
         ["get", "/api/list/all-staff"],
       ];
@@ -588,7 +600,7 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
       expect(mockPrisma.history.update).toHaveBeenCalledTimes(1);
 
       const clearDebtRes = await request(app)
-        .get("/history/cleardebt/10")
+        .post("/history/cleardebt/10")
         .set("x-test-role", "user")
         .set("Accept", "application/json");
       expect(clearDebtRes.status).toBe(200);
@@ -608,11 +620,11 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
         .send({ userid: 10, money: "-5" });
       expect(badCreditRes.status).toBe(400);
 
-      const archiveRes = await request(app).get("/history/project/archive/5").set("x-test-role", "user");
+      const archiveRes = await request(app).post("/history/project/archive/5").set("x-test-role", "user");
       expect(archiveRes.status).toBe(302);
       expect(mockPrisma.project.update).toHaveBeenCalledWith({ where: { id: 5 }, data: { active: false } });
 
-      const unarchiveRes = await request(app).get("/history/project/unarchive/5").set("x-test-role", "user");
+      const unarchiveRes = await request(app).post("/history/project/unarchive/5").set("x-test-role", "user");
       expect(unarchiveRes.status).toBe(302);
 
       const consCheckoutRes = await request(app)
@@ -649,7 +661,7 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
       expect(mockPrisma.userWorkshopCompletion.upsert).toHaveBeenCalledTimes(1);
 
       const revokeBadgeRes = await request(app)
-        .get("/users/10/workshop-badge/revoke/4")
+        .post("/users/10/workshop-badge/revoke/4")
         .set("x-test-role", "user");
       expect(revokeBadgeRes.status).toBe(302);
       expect(mockPrisma.userWorkshopCompletion.deleteMany).toHaveBeenCalledTimes(1);
@@ -661,7 +673,7 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
         .send({ workshopId: 4 });
       expect(interestRes.status).toBe(302);
 
-      const resendRes = await request(app).get("/users/resend/10").set("x-test-role", "user");
+      const resendRes = await request(app).post("/users/resend/10").set("x-test-role", "user");
       expect(resendRes.status).toBe(302);
       expect(mockMailService.sendAgreementEmail).toHaveBeenCalledTimes(1);
 
@@ -675,14 +687,14 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
 
       // Blocked for user (mediator) => 403 JSON
       const mediatorBlocked = [
-        ["get", "/history/delete/100"],
+        ["post", "/history/delete/100"],
         ["post", "/history/update", { historyid: 100 }],
         ["post", "/history/balance-adjust", { userid: 10, operation: "debit", amount: 5, reason: "test" }],
-        ["get", "/warning/deactivate/9"],
+        ["post", "/warning/deactivate/9"],
         ["post", "/admin/inventory/checkout", { itemType: "EQUIPMENT", itemId: 2, equipmentAction: "DECOMMISSIONED", reason: "Casse / Dégradation" }],
         ["get", "/admin/staff/manage"],
         ["get", "/users/manage"],
-        ["get", "/users/delete/10"],
+        ["post", "/users/delete/10"],
         ["post", "/admin/machines/issues/7/delete"],
         ["get", "/api/list/all-staff"],
       ];
@@ -703,7 +715,7 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
     });
 
     test("admin accesses all privileged endpoints while business guards stay enforced", async () => {
-      const delHistRes = await request(app).get("/history/delete/100").set("x-test-role", "admin");
+      const delHistRes = await request(app).post("/history/delete/100").set("x-test-role", "admin");
       expect(delHistRes.status).toBe(302);
       expect(mockPrisma.history.delete).toHaveBeenCalledWith({ where: { id: 100 } });
 
@@ -727,13 +739,13 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
       // Guard: cleardebt refuses positive balance even for admin
       mockPrisma.user.findFirst.mockResolvedValueOnce({ id: 10, name: "Alice", surname: "Martin", balance: 30 });
       const posClearRes = await request(app)
-        .get("/history/cleardebt/10")
+        .post("/history/cleardebt/10")
         .set("x-test-role", "admin")
         .set("Accept", "application/json");
       expect(posClearRes.status).toBe(400);
       expect(posClearRes.body.code).toBe("POSITIVE_BALANCE");
 
-      const deactWarnRes = await request(app).get("/warning/deactivate/9").set("x-test-role", "admin");
+      const deactWarnRes = await request(app).post("/warning/deactivate/9").set("x-test-role", "admin");
       expect(deactWarnRes.status).toBe(302);
       expect(mockPrisma.warning.update).toHaveBeenCalledWith({ where: { id: 9 }, data: { active: false } });
 
@@ -769,7 +781,7 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
       expect(invalidRoleRes.status).toBe(400);
 
       const selfDemoteRes = await request(app)
-        .get("/admin/staff/demote/1")
+        .post("/admin/staff/demote/1")
         .set("x-test-role", "admin")
         .set("x-test-staff-id", "1")
         .set("Accept", "application/json");

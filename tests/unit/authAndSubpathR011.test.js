@@ -144,6 +144,9 @@ describe("R-011 — Garde-fou base de test, authentification POST /auth & patch 
 
     beforeEach(() => {
       jest.clearAllMocks();
+      if (indexRouter.rateLimiters) {
+        Object.values(indexRouter.rateLimiters).forEach((limiter) => limiter.reset());
+      }
     });
 
     test("compte approuvé avec bon mot de passe -> 302 / et session peuplée", async () => {

@@ -85,7 +85,7 @@ router.get(
 // Route to delete a machine type
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete-type/:id",
   isAdmin,
   asyncHandler(async (req, res) => {
@@ -724,7 +724,7 @@ router.post(
 // Route to delete a machine
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   isAdmin,
   asyncHandler(async (req, res) => {

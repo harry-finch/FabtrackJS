@@ -73,7 +73,8 @@
         </div>
 
         <!-- Main Form for Settings -->
-        <form method="post" enctype="multipart/form-data" id="settingsForm">
+        <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" id="settingsForm">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
 
           <!-- 1. IDENTITÉ VISUELLE & BRANDING -->
           <div class="card border-0 shadow-sm mb-4">
@@ -697,7 +698,8 @@
         <!-- Hidden reset and import forms -->
         <form id="resetLogoForm" action="/admin/settings/reset-logo" method="post" style="display: none;"></form>
         <form id="resetFaviconForm" action="/admin/settings/reset-favicon" method="post" style="display: none;"></form>
-        <form id="importCsvForm" action="/admin/settings/i18n/import" method="post" enctype="multipart/form-data" style="display: none;">
+        <form id="importCsvForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/i18n/import?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" style="display: none;">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
           <input type="file" id="hiddenCsvFile" name="translations_file" accept=".csv">
         </form>
 

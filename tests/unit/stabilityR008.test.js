@@ -55,6 +55,7 @@ jest.mock("../../utilities/db", () => ({
   ...ENUM_STUBS,
 }));
 
+const staffSessionService = require("../../services/staffSessionService");
 const apiRouter = require("../../routes/api");
 const indexRouter = require("../../routes/index");
 
@@ -167,6 +168,13 @@ describe("Unit R-008: Stability & Error Handling", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    staffSessionService.clearCache();
+    mockPrisma.staff.findUnique.mockResolvedValue({
+      id: 1,
+      name: "admin_test",
+      role: "admin",
+      approved: true,
+    });
     process.env = { ...originalEnv };
   });
 
@@ -434,7 +442,7 @@ describe("Unit R-008: Stability & Error Handling", () => {
       expect(res.body).toEqual({ error: `Failure on ${routePath}` });
     });
 
-    test("forwards error on GET /logout when req.session.destroy throws after await", async () => {
+    test("forwards error on POST /logout when req.session.destroy throws after await", async () => {
       const unhandled = [];
       const onUnhandled = (err) => unhandled.push(err);
       process.on("unhandledRejection", onUnhandled);
@@ -451,7 +459,7 @@ describe("Unit R-008: Stability & Error Handling", () => {
           },
         }));
 
-        const res = await request(app).get("/logout");
+        const res = await request(app).post("/logout");
 
         expect(res.status).toBe(500);
         expect(res.body).toEqual({ error: "Session destroy failure" });

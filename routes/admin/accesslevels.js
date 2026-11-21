@@ -37,7 +37,7 @@ router.get(
 // Route to delete an access level
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   asyncHandler(async (req, res) => {
     const { id } = req.params;

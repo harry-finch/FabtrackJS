@@ -131,7 +131,7 @@ router.post(
 // Route to delete a workshop
 // ******************************************************************************
 
-router.get(
+router.post(
   "/delete/:id",
   clearNotification,
   asyncHandler(async (req, res) => {
@@ -213,7 +213,7 @@ router.post(
 // Route to remove interest
 // ******************************************************************************
 
-router.get(
+router.post(
   "/remove-interest/:workshopId/:userId",
   asyncHandler(async (req, res) => {
     const { workshopId, userId } = req.params;

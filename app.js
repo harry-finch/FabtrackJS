@@ -19,9 +19,64 @@ const setupService = require("./services/setupService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
 const { applyUploadStaticHeaders } = require("./services/uploadSecurityService");
+const { csrfTokenMiddleware, csrfProtection } = require("./middleware/csrf");
 const i18n = require("./config/i18n");
 const compression = require("compression");
 const isProduction = process.env.NODE_ENV === "production";
+
+const DEFAULT_DEV_SESSION_SECRET = "fabtrack-secret-key-2024";
+
+/**
+ * Résout le secret de session en refusant tout démarrage en production
+ * sans variable SECRET explicitement configurée et distincte de la valeur par défaut.
+ *
+ * @param {NodeJS.ProcessEnv} [env=process.env]
+ * @returns {string}
+ */
+function resolveSessionSecret(env = process.env) {
+  const isProd = env.NODE_ENV === "production";
+  const rawSecret = typeof env.SECRET === "string" ? env.SECRET.trim() : "";
+
+  if (isProd) {
+    if (!rawSecret || rawSecret === DEFAULT_DEV_SESSION_SECRET) {
+      throw new Error(
+        "FATAL: La variable d'environnement SECRET doit être définie avec une valeur aléatoire forte (différente de la valeur par défaut) en production (NODE_ENV=production).",
+      );
+    }
+    return rawSecret;
+  }
+
+  return rawSecret || DEFAULT_DEV_SESSION_SECRET;
+}
+
+/**
+ * Résout le paramètre Express `trust proxy` à partir de `TRUST_PROXY`.
+ * Par défaut `1` (derrière un reverse proxy Nginx/Apache) ; configurable à `false`/`0`
+ * si l'instance est exposée directement, ou un nombre de sauts / sous-réseau.
+ *
+ * @param {NodeJS.ProcessEnv} [env=process.env]
+ * @returns {boolean|number|string}
+ */
+function resolveTrustProxy(env = process.env) {
+  const raw = env.TRUST_PROXY;
+  if (raw === undefined || raw === null || String(raw).trim() === "") {
+    return 1;
+  }
+  const normalized = String(raw).trim().toLowerCase();
+  if (normalized === "false" || normalized === "0") {
+    return false;
+  }
+  if (normalized === "true") {
+    return true;
+  }
+  if (/^\d+$/.test(normalized)) {
+    return parseInt(normalized, 10);
+  }
+  return String(raw).trim();
+}
+
+const sessionSecret = resolveSessionSecret(process.env);
+const trustProxyValue = resolveTrustProxy(process.env);
 
 const app = express();
 
@@ -109,21 +164,26 @@ app.use(
   }),
 );
 
-// Enable trust proxy when behind Nginx / reverse proxy
-app.set("trust proxy", 1);
+// Enable trust proxy when behind Nginx / reverse proxy (configurable via TRUST_PROXY)
+app.set("trust proxy", trustProxyValue);
 
 app.use(
   session({
     name: "fabtrack.sid", // Avoid session collision with other apps on the same domain
-    secret: process.env.SECRET || "fabtrack-secret-key-2024",
+    secret: sessionSecret,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      maxAge: parseInt(process.env.SESSION_DURATION || "86400000"),
+      sameSite: "lax",
+      secure: isHttpsProduction,
+      maxAge: parseInt(process.env.SESSION_DURATION || "86400000", 10),
     },
   }),
 );
+
+// Expose lazy res.locals.csrfToken & req.csrfToken() without creating sessions for anonymous probes
+app.use(csrfTokenMiddleware);
 
 // Initialize i18n
 app.use(i18n.init);
@@ -280,9 +340,19 @@ app.use(async (req, res, next) => {
   }
 });
 
+// Enforce session-synchronized CSRF protection on state-changing requests
+// (mounted after settings middleware so error views have baseUrl/platformName/i18n)
+app.use(csrfProtection);
+
 // Workspace middleware
 async function workspaceSwitcher(req, res, next) {
   try {
+    if (!req.session || !req.session.loggedin) {
+      res.locals.availableWorkspaces = [];
+      res.locals.selectedWorkspace = { id: 0, name: "Fablab" };
+      return next();
+    }
+
     if (!req.session.availableWorkspaces || req.session.invalidateCache) {
       req.session.availableWorkspaces = await prisma.workspace.findMany();
     }
@@ -341,6 +411,19 @@ app.use(workspaceSwitcher);
 // Load types, categories and such in cache to avoid repeated db queries
 async function loadCache(req, res, next) {
   try {
+    if (!req.session || !req.session.loggedin) {
+      res.locals.usertypes = [];
+      res.locals.projecttypes = [];
+      res.locals.machinetypes = [];
+      res.locals.warningtypes = [];
+      res.locals.categories = [];
+      res.locals.locations = [];
+      res.locals.access = [];
+      res.locals.machines = [];
+      res.locals.equipment = [];
+      return next();
+    }
+
     if (!req.session.usertypes || req.session.invalidateCache) {
       req.session.usertypes = await prisma.usertype.findMany();
       req.session.projecttypes = await prisma.projecttype.findMany();
@@ -488,5 +571,8 @@ app.use((err, req, res, next) => {
 // ******************************************************************************
 // Export App
 // ******************************************************************************
+
+app.resolveSessionSecret = resolveSessionSecret;
+app.resolveTrustProxy = resolveTrustProxy;
 
 module.exports = app;

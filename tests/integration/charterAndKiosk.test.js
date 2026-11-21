@@ -1,6 +1,6 @@
 const request = require("supertest");
 const app = require("../../app");
-const { getAdminAgent } = require("../helpers/authHelper");
+const { getAdminAgent, extractCsrfTokenFromHtml } = require("../helpers/authHelper");
 const { createTestUser, cleanTestData, prisma } = require("../helpers/testDb");
 
 describe("Integration: Charter Signature & Kiosk Access Blocking", () => {
@@ -24,6 +24,7 @@ describe("Integration: Charter Signature & Kiosk Access Blocking", () => {
 
     const kioskRes = await adminAgent
       .post("/history/create")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .type("form")
       .send({
         userid: userWithoutCharter.id,
@@ -40,7 +41,7 @@ describe("Integration: Charter Signature & Kiosk Access Blocking", () => {
     expect(visits.length).toBe(0);
   });
 
-  test("2. Validates charter signature via GET /agreement/:token", async () => {
+  test("2. GET /agreement/:token is read-only and POST /agreement/:token validates charter signature", async () => {
     const userToSign = await createTestUser({
       name: "TestFuturSigne",
       surname: "Moreau",
@@ -49,8 +50,28 @@ describe("Integration: Charter Signature & Kiosk Access Blocking", () => {
 
     expect(userToSign.termsAccepted).toBe(false);
 
-    // Public request to /agreement/:token (unauthenticated, user clicking link from email)
-    const signRes = await request(app).get(`/agreement/${userToSign.token}`);
+    // Public session agent simulating user clicking link from email
+    const publicAgent = request.agent(app);
+
+    // Step 1: GET renders confirmation page without mutating termsAccepted
+    const confirmRes = await publicAgent.get(`/agreement/${userToSign.token}`);
+
+    expect(confirmRes.status).toBe(200);
+    expect(confirmRes.text).toContain("charte");
+
+    const afterGet = await prisma.user.findUnique({
+      where: { id: userToSign.id },
+    });
+    expect(afterGet.termsAccepted).toBe(false);
+
+    const csrfToken = extractCsrfTokenFromHtml(confirmRes.text);
+    expect(csrfToken.length).toBeGreaterThanOrEqual(32);
+
+    // Step 2: POST with CSRF token commits termsAccepted = true
+    const signRes = await publicAgent
+      .post(`/agreement/${userToSign.token}`)
+      .type("form")
+      .send({ _csrf: csrfToken });
 
     expect(signRes.status).toBe(200);
     expect(signRes.text).toContain("charte");
@@ -71,6 +92,7 @@ describe("Integration: Charter Signature & Kiosk Access Blocking", () => {
 
     const kioskRes = await adminAgent
       .post("/history/create")
+      .set("X-CSRF-Token", adminAgent.csrfToken)
       .type("form")
       .send({
         userid: userWithCharter.id,

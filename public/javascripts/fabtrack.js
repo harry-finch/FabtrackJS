@@ -621,11 +621,17 @@ if (warningDeactivator) {
     // Update the modal's content.
     const modalTitle = warningDeactivator.querySelector(".modal-title");
     const modalCode = warningDeactivator.querySelector(".modal-body code");
-    const modalLink = warningDeactivator.querySelector(".modal-footer a");
+    const modalForm = warningDeactivator.querySelector(".modal-footer form");
 
-    modalTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Warning for ${warninguser}</h5>`;
-    modalCode.innerHTML = warningcomments;
-    modalLink.href = window.getAppBaseUrl ? window.getAppBaseUrl("warning/deactivate/" + warningid) : "/warning/deactivate/" + warningid;
+    modalTitle.textContent = "";
+    const warnIcon = document.createElement("i");
+    warnIcon.className = "fa-solid fa-triangle-exclamation me-1";
+    modalTitle.appendChild(warnIcon);
+    modalTitle.appendChild(document.createTextNode(`Warning for ${warninguser || ""}`));
+    modalCode.textContent = warningcomments || "";
+    if (modalForm) {
+      modalForm.action = window.getAppBaseUrl ? window.getAppBaseUrl("warning/deactivate/" + warningid) : "/warning/deactivate/" + warningid;
+    }
   });
 }
 
@@ -672,11 +678,17 @@ if (clearBalance) {
     // Update the modal's content.
     const modalTitle = clearBalance.querySelector(".modal-title");
     const modalCode = clearBalance.querySelector(".modal-body code");
-    const modalLink = clearBalance.querySelector(".modal-footer a");
+    const modalForm = clearBalance.querySelector(".modal-footer form");
 
-    modalTitle.innerHTML = `<i class="fa-solid fa-money-bill-wave"></i> Clear debt for ${username}</h5>`;
-    modalCode.innerHTML = "User balance is " + balance + " €";
-    modalLink.href = window.getAppBaseUrl ? window.getAppBaseUrl("history/cleardebt/" + userid) : "/history/cleardebt/" + userid;
+    modalTitle.textContent = "";
+    const moneyIcon = document.createElement("i");
+    moneyIcon.className = "fa-solid fa-money-bill-wave me-1";
+    modalTitle.appendChild(moneyIcon);
+    modalTitle.appendChild(document.createTextNode(`Clear debt for ${username || ""}`));
+    modalCode.textContent = `User balance is ${balance} €`;
+    if (modalForm) {
+      modalForm.action = window.getAppBaseUrl ? window.getAppBaseUrl("history/cleardebt/" + userid) : "/history/cleardebt/" + userid;
+    }
   });
 }
 
