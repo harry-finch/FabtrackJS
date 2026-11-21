@@ -2,15 +2,53 @@ const request = require("supertest");
 const app = require("../../app");
 const { cleanTestData, prisma } = require("../helpers/testDb");
 const setupService = require("../../services/setupService");
+const settingsService = require("../../services/settingsService");
 const { setupSchema } = require("../../schemas/setup.schema");
+
+const SETUP_SETTING_KEYS = [
+  "platform_name",
+  "platform_subtitle",
+  "default_language",
+  "currency_symbol",
+  "admin_email",
+  "mail_admin_recipient",
+  "platform_installed",
+];
 
 describe("Integration & Service: Platform Setup (/setup & setupService)", () => {
   const testEmail = "test.setup.admin@example.com";
+  let savedSettings = new Map();
+
+  beforeAll(async () => {
+    const existingSettings = await prisma.systemSetting.findMany({
+      where: { key: { in: SETUP_SETTING_KEYS } },
+    });
+    savedSettings = new Map(existingSettings.map((s) => [s.key, s.value]));
+  });
 
   afterAll(async () => {
+    // Restore exact SystemSetting state saved in beforeAll
+    for (const key of SETUP_SETTING_KEYS) {
+      if (savedSettings.has(key)) {
+        const value = savedSettings.get(key);
+        await prisma.systemSetting.upsert({
+          where: { key },
+          update: { value },
+          create: { key, value },
+        });
+      } else {
+        await prisma.systemSetting.deleteMany({
+          where: { key },
+        });
+      }
+    }
+    settingsService.invalidateCache();
+
     // Clean up created setup test entities
     await prisma.staff.deleteMany({
-      where: { email: testEmail },
+      where: {
+        OR: [{ email: testEmail }, { name: "TestSetupAdmin" }],
+      },
     });
     await prisma.workspace.deleteMany({
       where: { name: { in: ["Test Atelier Alpha", "Test Salle Beta"] } },
@@ -85,6 +123,17 @@ describe("Integration & Service: Platform Setup (/setup & setupService)", () => 
 
   describe("2. Setup Service Execution (setupService.runSetup)", () => {
     test("successfully creates admin, settings, and workspaces", async () => {
+      await prisma.staff.deleteMany({
+        where: {
+          OR: [{ email: testEmail }, { name: "TestSetupAdmin" }],
+        },
+      });
+      const existingAdminCount = await prisma.staff.count({ where: { role: "admin" } });
+      const existingInstalledSetting = await prisma.systemSetting.findUnique({
+        where: { key: "platform_installed" },
+      });
+      const allowReconfigure = existingAdminCount > 0 || existingInstalledSetting?.value === "true";
+
       const result = await setupService.runSetup(
         {
           adminName: "TestSetupAdmin",
@@ -96,7 +145,8 @@ describe("Integration & Service: Platform Setup (/setup & setupService)", () => 
           currencySymbol: "CHF",
           workspaces: ["Test Atelier Alpha", "Test Salle Beta"],
         },
-        prisma
+        prisma,
+        { allowReconfigure }
       );
 
       expect(result.admin).toBeDefined();

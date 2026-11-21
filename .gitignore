@@ -10,9 +10,9 @@ lerna-debug.log*
 # macOS system files
 .DS_Store
 
-# Test files
-test*.js
-test*.tmp
+# Test files (root scratch scripts only; never ignore files inside tests/)
+/test*.js
+/test*.tmp
 !tests/
 
 # Zed directory

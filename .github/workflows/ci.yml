@@ -1,0 +1,82 @@
+name: FabtrackJS CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Optional FabBoard roadmap lint
+        run: |
+          if command -v fabboard >/dev/null 2>&1; then
+            fabboard roadmap lint
+          fi
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: unit-and-lint
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: test_root_password
+          MARIADB_DATABASE: fabtrack_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Import Prisma SQL schema into fabtrack_test
+        run: mysql -h 127.0.0.1 -P 3306 -u root -ptest_root_password fabtrack_test < prisma/schema.sql
+
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: mysql://root:test_root_password@127.0.0.1:3306/fabtrack_test
+        run: npx prisma generate
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL_TEST: mysql://root:test_root_password@127.0.0.1:3306/fabtrack_test
+          DATABASE_URL: mysql://root:test_root_password@127.0.0.1:3306/fabtrack_test
+          SECRET: ci_test_secret_value
+          HOSTURL: http://localhost:3000
+        run: npm run test:integration

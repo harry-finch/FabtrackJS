@@ -1,29 +1,45 @@
 const request = require("supertest");
 const app = require("../../app");
 const { getAdminAgent } = require("../helpers/authHelper");
-const { prisma } = require("../../utilities/db");
+const { cleanTestData, ensureTestUsertype, prisma, TEST_EMAIL_DOMAIN } = require("../helpers/testDb");
+const historyImportService = require("../../services/historyImportService");
 
 describe("Integration: Admin History & Teaching Sessions CSV Import", () => {
   let adminAgent;
   const testRunId = Date.now();
   const createdEmails = [
-    `import-student-1-${testRunId}@example.org`,
-    `import-student-2-${testRunId}@example.org`,
+    `import-student-1-${testRunId}${TEST_EMAIL_DOMAIN}`,
+    `import-student-2-${testRunId}${TEST_EMAIL_DOMAIN}`,
   ];
+  const analyzeTestEmail = `existing-${testRunId}${TEST_EMAIL_DOMAIN}`;
+  const analyzeHomonymEmail = `other-${testRunId}${TEST_EMAIL_DOMAIN}`;
+  const analyzeNewEmail = `brandnew-${testRunId}${TEST_EMAIL_DOMAIN}`;
 
   beforeAll(async () => {
     adminAgent = await getAdminAgent(app);
   });
 
   afterAll(async () => {
-    // Cleanup imported users and visits
+    // Cleanup imported users, visits, userProjects, and orphaned projects
+    const allTestEmails = [
+      ...createdEmails,
+      analyzeTestEmail,
+      analyzeHomonymEmail,
+      analyzeNewEmail,
+    ];
     const users = await prisma.user.findMany({
-      where: { email: { in: createdEmails } },
+      where: { email: { in: allTestEmails } },
       select: { id: true },
     });
     const userIds = users.map((u) => u.id);
 
     if (userIds.length > 0) {
+      const userProjects = await prisma.userProject.findMany({
+        where: { userId: { in: userIds } },
+        select: { projectId: true },
+      });
+      const projectIds = [...new Set(userProjects.map((up) => up.projectId))];
+
       await prisma.history.deleteMany({
         where: { userId: { in: userIds } },
       });
@@ -33,7 +49,18 @@ describe("Integration: Admin History & Teaching Sessions CSV Import", () => {
       await prisma.user.deleteMany({
         where: { id: { in: userIds } },
       });
+
+      if (projectIds.length > 0) {
+        await prisma.project.deleteMany({
+          where: {
+            id: { in: projectIds },
+            users: { none: {} },
+          },
+        });
+      }
     }
+
+    await cleanTestData();
   });
 
   test("1. Unauthenticated request to /admin/history/import is redirected to /login", async () => {
@@ -134,5 +161,74 @@ describe("Integration: Admin History & Teaching Sessions CSV Import", () => {
       where: { userId: { in: [user1.id, user2.id] } },
     });
     expect(histories.length).toBe(2);
+  });
+
+  describe("analyzeImport() and Reconciliation logic", () => {
+    const testEmail = analyzeTestEmail;
+    const homonymEmail = analyzeHomonymEmail;
+    const homonymSurname = `Valjean_${testRunId}`;
+    let existingUser;
+
+    beforeAll(async () => {
+      const usertypeId = await ensureTestUsertype();
+
+      existingUser = await prisma.user.create({
+        data: {
+          name: "Jean",
+          surname: homonymSurname,
+          email: testEmail,
+          usertypeId,
+          token: `token-${testRunId}`,
+          termsAccepted: true,
+        },
+      });
+    });
+
+    test("identifies existing user by exact email match", async () => {
+      const csv = `nom,prenom,email,date,arrivee,depart\n${homonymSurname},Jean,${testEmail},2026-09-21,14:00,17:00`;
+      const result = await historyImportService.analyzeImport(csv);
+
+      expect(result.totalRows).toBe(1);
+      expect(result.existingUsersCount).toBe(1);
+      expect(result.newUsersCount).toBe(0);
+      expect(result.items[0].userStatus).toBe("EXISTING_USER");
+      expect(result.items[0].matchedUserId).toBe(existingUser.id);
+      expect(result.items[0].isValid).toBe(true);
+    });
+
+    test("triggers WARNING_HOMONYM when name/surname match but email is different", async () => {
+      const csv = `nom,prenom,email,date,arrivee,depart\n${homonymSurname},Jean,${homonymEmail},2026-09-21,14:00,17:00`;
+      const result = await historyImportService.analyzeImport(csv);
+
+      expect(result.totalRows).toBe(1);
+      expect(result.homonymWarningCount).toBe(1);
+      expect(result.newUsersCount).toBe(1);
+      expect(result.items[0].userStatus).toBe("HOMONYM_WARNING");
+      expect(result.items[0].homonymEmail).toBe(testEmail);
+      expect(result.items[0].warnings.length).toBeGreaterThan(0);
+      expect(result.items[0].isValid).toBe(true);
+    });
+
+    test("identifies brand new user when neither email nor name matches", async () => {
+      const csv = `nom,prenom,email,date,arrivee,depart\nCosette_${testRunId},Fauchelevent,${analyzeNewEmail},2026-09-21,14:00,17:00`;
+      const result = await historyImportService.analyzeImport(csv);
+
+      expect(result.newUsersCount).toBe(1);
+      expect(result.items[0].userStatus).toBe("NEW_USER");
+      expect(result.items[0].matchedUserId).toBeNull();
+      expect(result.items[0].isValid).toBe(true);
+    });
+
+    test("flags invalid rows with invalid email or missing name", async () => {
+      const csv = `nom,prenom,email\n,Jean,bad-email\nDupont,,dupont${TEST_EMAIL_DOMAIN}`;
+      const result = await historyImportService.analyzeImport(csv);
+
+      expect(result.errorCount).toBe(2);
+      expect(result.items[0].isValid).toBe(false);
+      expect(result.items[0].errors).toContain("Nom manquant");
+      expect(result.items[0].errors).toContain("Format d'e-mail invalide");
+      expect(result.items[1].isValid).toBe(false);
+      expect(result.items[1].errors).toContain("Prénom manquant");
+    });
   });
 });

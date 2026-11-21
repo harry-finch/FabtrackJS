@@ -43,6 +43,7 @@ pm2 logs fabtrack --lines 50
 | [R-008](../roadmap/items/R-008-corriger-le-bug-confirm-dans-main-js-securiser.md) | `v1.1` | Utiliser `SMTP_PORT` (et non `PORT`) si le port SMTP vient du `.env` | Aucune | Aucune | Tester « Annuler » sur un `confirm()` en sous-chemin et vérifier l'envoi d'un e-mail test |
 | [R-009](../roadmap/items/R-009-reparer-le-bootstrap-setup-et-resynchroniser.md) | `v1.1` | Aucune | Aucune sur base existante (`prisma/schema.sql` resynchronisé pour nouvelles installations) | Aucune | Vérifier que `/setup` reste verrouillé (redirection `/login` ou HTTP `403`) |
 | [R-010](../roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md) | `v1.1` | Aucune | Aucune | **`npm install --omit=dev`** (obligatoire : correctifs CVE + `@fortawesome/fontawesome-free`) | Vérifier l'affichage des icônes (kiosque, admin, avertissements) et `npm audit --omit=dev` |
+| [R-011](../roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md) | `v1.2` | Aucune en prod (`DATABASE_URL_TEST` requis uniquement pour les tests d'intégration) | Aucune | Aucune en prod (`eslint` uniquement en `devDependencies`) | Vérifier l'absence de `TEST_ADMIN_USER` dans `Staff` en production |
 
 ---
 
@@ -199,6 +200,30 @@ npm install --omit=dev
 
 - Contrôler que les icônes s'affichent correctement sur le kiosque, les fiches usagers et les écrans d'administration (vider le cache navigateur si besoin : `Ctrl+Shift+R`).
 - Si des types d'avertissements personnalisés avaient été saisis manuellement en base avec une classe Font Awesome Pro (ex. `fa-duotone` ou `fa-shield-check`), les mettre à jour dans **Administration > Types d'avertissements**.
+
+---
+
+### Jalon `v1.2` — Qualité, tests, CI & dette technique
+
+#### `R-011` — Isoler la base de test (`DATABASE_URL_TEST`), corriger la flakiness & CI GitHub Actions
+
+**1. Impact production**
+
+- **Aucune** modification `.env`, **aucune** migration SQL et **aucune** nouvelle dépendance de production (`eslint` et `@eslint/js` sont uniquement en `devDependencies`).
+- En environnement local ou CI, les tests d'intégration (`npm run test:integration` / `npm test`) exigent désormais explicitement une variable `DATABASE_URL_TEST` pointant vers une base se terminant par `_test`, et refusent de démarrer si `NODE_ENV=production`. Les tests unitaires purs (`npm run test:unit`) s'exécutent sans aucune base de données.
+
+**2. Vérification opérationnelle post-déploiement (absence de `TEST_ADMIN_USER`)**
+
+Vérifier en base de production qu'aucun compte de test hérité d'une ancienne exécution de `npm test` n'existe dans la table `Staff` :
+
+```sql
+SELECT id, name, email, role, approved
+FROM Staff
+WHERE name = 'TEST_ADMIN_USER' OR email LIKE '%@test-fabtrack.local';
+```
+
+Si une ligne apparaît, la supprimer immédiatement (`DELETE FROM Staff WHERE name = 'TEST_ADMIN_USER';`).
+
 
 
 

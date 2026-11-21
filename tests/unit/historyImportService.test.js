@@ -1,5 +1,6 @@
+jest.mock("../../utilities/db", () => ({ prisma: {} }));
+
 const historyImportService = require("../../services/historyImportService");
-const { prisma } = require("../../utilities/db");
 const moment = require("moment");
 
 describe("Unit: HistoryImportService - CSV Parsing, Reconciliation & Import Logic", () => {
@@ -100,87 +101,6 @@ describe("Unit: HistoryImportService - CSV Parsing, Reconciliation & Import Logi
       expect(typeof template).toBe("string");
       expect(template).toContain("nom,prenom,email,date,arrivee,depart");
       expect(template).toContain("marie.dupont@etu.sorbonne-universite.fr");
-    });
-  });
-
-  describe("analyzeImport() and Reconciliation logic", () => {
-    const testEmail = `existing-${Date.now()}@example.org`;
-    const homonymEmail = `other-${Date.now()}@example.org`;
-    let existingUser;
-    let studentUserType;
-
-    beforeAll(async () => {
-      studentUserType = await prisma.usertype.findFirst();
-      if (!studentUserType) {
-        studentUserType = await prisma.usertype.create({ data: { name: "Étudiant Test" } });
-      }
-
-      existingUser = await prisma.user.create({
-        data: {
-          name: "Jean",
-          surname: "Valjean",
-          email: testEmail,
-          usertypeId: studentUserType.id,
-          token: `token-${Date.now()}`,
-          termsAccepted: true,
-        },
-      });
-    });
-
-    afterAll(async () => {
-      if (existingUser) {
-        await prisma.user.deleteMany({
-          where: { email: { in: [testEmail, homonymEmail] } },
-        });
-      }
-    });
-
-    test("identifies existing user by exact email match", async () => {
-      const csv = `nom,prenom,email,date,arrivee,depart\nValjean,Jean,${testEmail},2026-09-21,14:00,17:00`;
-      const result = await historyImportService.analyzeImport(csv);
-
-      expect(result.totalRows).toBe(1);
-      expect(result.existingUsersCount).toBe(1);
-      expect(result.newUsersCount).toBe(0);
-      expect(result.items[0].userStatus).toBe("EXISTING_USER");
-      expect(result.items[0].matchedUserId).toBe(existingUser.id);
-      expect(result.items[0].isValid).toBe(true);
-    });
-
-    test("triggers WARNING_HOMONYM when name/surname match but email is different", async () => {
-      const csv = `nom,prenom,email,date,arrivee,depart\nValjean,Jean,${homonymEmail},2026-09-21,14:00,17:00`;
-      const result = await historyImportService.analyzeImport(csv);
-
-      expect(result.totalRows).toBe(1);
-      expect(result.homonymWarningCount).toBe(1);
-      expect(result.newUsersCount).toBe(1);
-      expect(result.items[0].userStatus).toBe("HOMONYM_WARNING");
-      expect(result.items[0].homonymEmail).toBe(testEmail);
-      expect(result.items[0].warnings.length).toBeGreaterThan(0);
-      expect(result.items[0].isValid).toBe(true);
-    });
-
-    test("identifies brand new user when neither email nor name matches", async () => {
-      const newEmail = `brandnew-${Date.now()}@example.org`;
-      const csv = `nom,prenom,email,date,arrivee,depart\nCosette,Fauchelevent,${newEmail},2026-09-21,14:00,17:00`;
-      const result = await historyImportService.analyzeImport(csv);
-
-      expect(result.newUsersCount).toBe(1);
-      expect(result.items[0].userStatus).toBe("NEW_USER");
-      expect(result.items[0].matchedUserId).toBeNull();
-      expect(result.items[0].isValid).toBe(true);
-    });
-
-    test("flags invalid rows with invalid email or missing name", async () => {
-      const csv = `nom,prenom,email\n,Jean,bad-email\nDupont,,dupont@example.com`;
-      const result = await historyImportService.analyzeImport(csv);
-
-      expect(result.errorCount).toBe(2);
-      expect(result.items[0].isValid).toBe(false);
-      expect(result.items[0].errors).toContain("Nom manquant");
-      expect(result.items[0].errors).toContain("Format d'e-mail invalide");
-      expect(result.items[1].isValid).toBe(false);
-      expect(result.items[1].errors).toContain("Prénom manquant");
     });
   });
 });

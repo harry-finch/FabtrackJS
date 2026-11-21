@@ -3,14 +3,20 @@
   "version": "0.0.1",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
+    "lint": "eslint .",
     "i18n:export": "node scripts/i18n-csv.js export",
     "i18n:import": "node scripts/i18n-csv.js import",
     "setup": "node scripts/setup.js",
     "seed:activity": "node scripts/seed-adaptive-activity.js",
     "postinstall": "prisma generate",
+    "test:unit": "jest --selectProjects unit --forceExit",
+    "test:integration": "jest --selectProjects integration --runInBand --forceExit",
     "test": "jest --runInBand --detectOpenHandles --forceExit"
   },
   "dependencies": {
@@ -41,7 +47,9 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.6.0",
+    "eslint": "^10.15.0",
     "jest": "^30.5.1",
     "nodemon": "^3.1.9",
     "prisma": "^7.10.0",

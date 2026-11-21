@@ -1,19 +1,46 @@
 const request = require("supertest");
 const app = require("../../app");
 const { getAdminAgent } = require("../helpers/authHelper");
+const { prisma } = require("../helpers/testDb");
 const aiQueryService = require("../../services/aiQueryService");
 const settingsService = require("../../services/settingsService");
 
+const AI_SETTING_KEYS = [
+  "ai_provider",
+  "ai_local_url",
+  "ai_local_model",
+  "ai_gemini_api_key",
+  "ai_gemini_model",
+];
+
 describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
   let adminAgent;
+  let savedAiSettings = new Map();
 
   beforeAll(async () => {
+    const existingSettings = await prisma.systemSetting.findMany({
+      where: { key: { in: AI_SETTING_KEYS } },
+    });
+    savedAiSettings = new Map(existingSettings.map((s) => [s.key, s.value]));
     adminAgent = await getAdminAgent(app);
   });
 
   afterAll(async () => {
-    // Restore default AI provider to none
-    await settingsService.updateSettings({ ai_provider: "none" });
+    for (const key of AI_SETTING_KEYS) {
+      if (savedAiSettings.has(key)) {
+        const value = savedAiSettings.get(key);
+        await prisma.systemSetting.upsert({
+          where: { key },
+          update: { value },
+          create: { key, value },
+        });
+      } else {
+        await prisma.systemSetting.deleteMany({
+          where: { key },
+        });
+      }
+    }
+    settingsService.invalidateCache();
   });
 
   test("1. Unauthenticated request to /admin/statistics/ai-query is redirected to /login", async () => {
@@ -90,7 +117,7 @@ describe("Integration: Statistics Natural Language AI Query (NL2SQL)", () => {
 
     const spy = jest.spyOn(aiQueryService, "callProvider").mockResolvedValue(
       JSON.stringify({
-        sql: "SELECT `name`, id as count FROM `UserType` LIMIT 5",
+        sql: "SELECT `name`, id as count FROM `Usertype` LIMIT 5",
         explanation: "Liste les typologies d'usagers et leurs identifiants.",
         chartType: "bar",
         title: "Typologies d'usagers",

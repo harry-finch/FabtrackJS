@@ -20,7 +20,7 @@
    Importer setupService dans app.js, corriger la création des espaces de travail au setup et réaligner schema.sql avec v1.0.
 7. **[R-010 Corriger les CVE npm production et remplacer Font Awesome Pro](roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md)** · À tester · jalon v1.1
    Résoudre les 13 vulnérabilités npm de production (dont proxy-addr critique) et retirer la licence commerciale Font Awesome Pro.
-8. **[R-011 Isoler la base de test, corriger la flakiness et installer la CI](roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md)** · Idée · jalon v1.2
+8. **[R-011 Isoler la base de test, corriger la flakiness et installer la CI](roadmap/items/R-011-isoler-la-base-de-test-corriger-la-flakiness-et.md)** · À tester · jalon v1.2
    Imposer DATABASE_URL_TEST, supprimer le backdoor TEST_ADMIN_USER sur la base réelle, corriger LIKE 'TEST_%' et créer la CI GitHub Actions.
 9. **[R-012 Protection CSRF, conversion des 31 routes GET mutantes et durcissement Auth](roadmap/items/R-012-protection-csrf-conversion-des-31-routes-get.md)** · Idée · jalon v1.2
    Passer les 31 actions GET mutantes en POST, ajouter un jeton CSRF et durcir sessions, cookies, rate-limiting et révocation staff.
@@ -84,6 +84,8 @@
 - [ ] [A-013](roadmap/actions/A-013-verifier-le-verrouillage-de-setup-sur-instance.md) Vérifier le verrouillage de /setup sur instance installée (tester, R-009)
 - [ ] [A-014](roadmap/actions/A-014-verifier-l-affichage-des-icones-font-awesome.md) Vérifier l'affichage des icônes Font Awesome Free en local (R-010) (tester, R-010)
 - [ ] [A-015](roadmap/actions/A-015-executer-npm-install-omit-dev-lors-du.md) Exécuter npm install --omit=dev lors du déploiement R-010 en production (tester, R-010)
+- [ ] [A-016](roadmap/actions/A-016-verifier-l-absence-de-test-admin-user-en-base-de.md) Vérifier l'absence de TEST_ADMIN_USER en base de production (R-011) (tester, R-011)
+- [ ] [A-017](roadmap/actions/A-017-valider-la-suite-d-integration-sur-fabtrack-test.md) Valider la suite d'intégration sur fabtrack_test et la CI GitHub Actions (R-011) (tester, R-011)
 
 ## Livré
 
