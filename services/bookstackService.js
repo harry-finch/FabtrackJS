@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const settingsService = require("./settingsService.js");
 const logger = require("../utilities/simpleLogger.js");
+const { assertOutboundUrlSafe } = require("../utilities/ssrfGuard.js");
 
 // In-memory cache for BookStack API responses (TTL: 5 minutes)
 const docCache = new Map();
@@ -48,6 +49,10 @@ class BookstackService {
 
     try {
       const endpoint = `${config.apiBaseUrl}books?count=1`;
+      await assertOutboundUrlSafe(endpoint, {
+        allowlistEnvKeys: ["BOOKSTACK_ALLOWED_HOSTS", "SSRF_ALLOWED_HOSTS"],
+        label: "URL BookStack",
+      });
       const response = await fetch(endpoint, {
         method: "GET",
         headers: {
@@ -57,14 +62,8 @@ class BookstackService {
       });
 
       if (!response.ok) {
-        let errDetails = `Code HTTP ${response.status} (${response.statusText})`;
-        try {
-          const body = await response.json();
-          if (body && body.error && body.error.message) {
-            errDetails += ` : ${body.error.message}`;
-          }
-        } catch (_) {}
-        return { success: false, error: errDetails };
+        console.error(`[BookstackService] HTTP ${response.status} (${response.statusText}) on testConnection`);
+        return { success: false, error: `Erreur API BookStack (HTTP ${response.status}).` };
       }
 
       const data = await response.json();
@@ -77,7 +76,9 @@ class BookstackService {
       console.error("[BookstackService] testConnection error:", err.message);
       return {
         success: false,
-        error: `Impossible de joindre le serveur BookStack : ${err.message}`,
+        error: err.message && err.message.includes("URL BookStack")
+          ? err.message
+          : "Impossible de joindre le serveur BookStack.",
       };
     }
   }
@@ -139,6 +140,15 @@ class BookstackService {
     const parsed = this.parseUrl(url);
     if (!parsed) {
       return { exists: false, error: "URL invalide ou non reconnue" };
+    }
+
+    try {
+      await assertOutboundUrlSafe(config.apiBaseUrl, {
+        allowlistEnvKeys: ["BOOKSTACK_ALLOWED_HOSTS", "SSRF_ALLOWED_HOSTS"],
+        label: "URL BookStack",
+      });
+    } catch (ssrfErr) {
+      return { exists: false, error: ssrfErr.message };
     }
 
     const headers = {

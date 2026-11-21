@@ -2,10 +2,10 @@ const aiQueryService = require("../../services/aiQueryService");
 
 describe("Unit: AiQueryService - SQL Firewall & Visualization Logic", () => {
   describe("validateAndSanitizeSql()", () => {
-    test("allows standard SELECT query", () => {
+    test("allows standard SELECT query and wraps with LIMIT 200", () => {
       const sql = "SELECT id, name FROM User WHERE active = 1";
       const sanitized = aiQueryService.validateAndSanitizeSql(sql);
-      expect(sanitized).toMatch(/^SELECT id, name FROM User WHERE active = 1 LIMIT 200$/i);
+      expect(sanitized).toBe("SELECT * FROM (SELECT id, name FROM User WHERE active = 1) AS _q LIMIT 200");
     });
 
     test("allows WITH ... SELECT (CTE)", () => {

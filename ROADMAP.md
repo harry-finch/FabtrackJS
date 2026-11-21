@@ -30,8 +30,8 @@
    Ajouter les index DB, remplacer MemoryStore par un store MariaDB natif Prisma, mutualiser le cache de référence et sortir la clôture auto des visites de GET /fabtrack/.
 12. **[R-015 Corriger les injections transverses et l'exposition de secrets](roadmap/items/R-015-corriger-les-injections-transverses-et-l.md)** · À tester · jalon v1.3
    Bloquer la Prototype Pollution i18n, les Open Redirects, les injections CSV et filtrer les secrets hors de res.locals et /api/list/*.
-13. **[R-016 Confiner l'IA NL2SQL (rôle MariaDB lecture seule) et corriger les SSRF](roadmap/items/R-016-confiner-l-ia-nl2sql-role-mariadb-lecture-seule.md)** · Idée · jalon v1.3
-   Exécuter les requêtes IA via un compte MariaDB lecture seule sur des vues sans PII, durcir le pare-feu SQL et bloquer les SSRF.
+13. **[R-016 Confiner l'IA NL2SQL (rôle MariaDB lecture seule) et corriger les SSRF](roadmap/items/R-016-confiner-l-ia-nl2sql-role-mariadb-lecture-seule.md)** · À tester · jalon v1.3
+   Exécuter les requêtes IA via un compte MariaDB lecture seule (fail-closed en prod), durcir le pare-feu SQL, bloquer les SSRF et chiffrer optionnellement les clés API au repos.
 14. **[R-017 Corriger les bugs métier avérés (warnings, sorbonne, inventory, users, machines, bookstack)](roadmap/items/R-017-corriger-les-bugs-metier-averes-warnings.md)** · Idée · jalon v1.3
    Corriger six dysfonctionnements fonctionnels confirmés par l'audit sur les e-mails d'avertissement, filtres, stocks, profils et stats machines.
 15. **[R-018 Garantir la transactionnalité des écritures critiques et historiser Activity.unitCost](roadmap/items/R-018-garantir-la-transactionnalite-des-ecritures.md)** · Idée · jalon v1.3
@@ -94,6 +94,8 @@
 - [ ] [A-023](roadmap/actions/A-023-verifier-qu-un-changement-admin-motif-de-visite.md) Vérifier qu'un changement admin (motif de visite / workspace) apparaît immédiatement sur un autre poste kiosque sans reconnexion et qu'EXPLAIN utilise les nouveaux index (tester, R-014)
 - [ ] [A-024](roadmap/actions/A-024-ouvrir-administration-parametres-verifier-dans.md) Ouvrir Administration > Paramètres, vérifier dans le code source HTML qu'aucune clé API ni api_machine_token n'apparaît en clair et confirmer que sauvegarder un réglage conserve les clés existantes (tester, R-015)
 - [ ] [A-025](roadmap/actions/A-025-tester-un-export-csv-statistiques-ue-sorbonne-ou.md) Tester un export CSV (Statistiques, UE, Sorbonne ou Inventaire) et vérifier son ouverture propre dans LibreOffice/Excel (tester, R-015)
+- [ ] [A-026](roadmap/actions/A-026-en-production-si-l-assistant-ia-nl2sql-est.md) En production (si l'assistant IA NL2SQL est activé), créer le compte MariaDB fabtrack_ai_ro et définir DATABASE_URL_AI_RO (et optionnellement SETTINGS_ENCRYPTION_KEY / AI_LOCAL_ALLOWED_HOSTS / BOOKSTACK_ALLOWED_HOSTS) (tester, R-016)
+- [ ] [A-027](roadmap/actions/A-027-verifier-qu-une-requete-ia-legitime-s-execute.md) Vérifier qu'une requête IA légitime s'exécute sous compte RO et qu'une URL interne non autorisée (http://169.254.169.254) est bloquée sur Paramètres / BookStack (tester, R-016)
 
 ## Livré
 

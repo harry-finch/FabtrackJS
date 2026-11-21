@@ -1,129 +1,55 @@
 const settingsService = require("./settingsService");
 const { prisma } = require("../utilities/db");
+const { executeReadOnlyQuery } = require("../utilities/aiReadOnlyDb");
+const { assertOutboundUrlSafe } = require("../utilities/ssrfGuard");
 
-// Schéma simplifié et sécurisé de la base de données transmis au LLM (sans données personnelles ni tables d'authentification sensibles)
+// Schéma v1.0 simplifié et sécurisé de la base de données transmis au LLM
+// (strictement sans données personnelles PII, ni tables d'authentification/système)
 const SAFE_SCHEMA_PROMPT = `
 Vous êtes un expert MySQL / MariaDB pour l'application FabtrackJS (gestion de Fablab).
 Votre rôle est de traduire les questions des administrateurs en requêtes SQL valides, sécurisées et performantes en lecture seule.
 
 ATTENTION CRITIQUE : RESPECTEZ SCRUPULEUSEMENT LES NOMS EXACTS DES TABLES ET DES COLONNES CI-DESSOUS (LA CASSE DES TABLES EST IMPORTANTE SOUS LINUX/MARIADB).
 
-SCHÉMA DES TABLES MARIADB :
+SCHÉMA DES TABLES / VUES MARIADB (SANS PII) :
 
-1. Table \`User\` (Contributeurs / Usagers du Fablab) :
+1. Table \`User\` (Contributeurs / Usagers du Fablab — NE JAMAIS sélectionner email, token ou rfid) :
    - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Prénom du contributeur / usager
+   - name (VARCHAR) : Prénom
    - surname (VARCHAR) : Nom de famille
-   - email (VARCHAR)
-   - usertypeId (INT) : Référence à Usertype(id) (ATTENTION : table = Usertype)
+   - usertypeId (INT) : Référence à Usertype(id)
    - createdAt (DATETIME) : Date d'inscription
    - birthYear (INT, NULL) : Année de naissance
-   - balance (DECIMAL) : Solde financier du compte en euros
+   - balance (DECIMAL) : Solde financier en euros
    - termsAccepted (BOOLEAN) : Charte acceptée (1=oui, 0=non)
    - isExpert (BOOLEAN) : Statut bénévole / expert
    - deletedAt (DATETIME, NULL) : Date d'archivage si supprimé
 
-2. Table \`Usertype\` (Typologies d'usagers, ex: "Étudiant", "Personnel", "Enseignant-Chercheur", "Externe") :
-   - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Libellé de la typologie
-
-3. Table \`Project\` (Projets réalisés dans le Fablab) :
-   - id (INT, PRIMARY KEY)
-   - url (VARCHAR) : Titre ou lien du projet
-   - projecttypeId (INT) : Référence à Projecttype(id) (ATTENTION : projecttypeId tout en minuscules)
-   - teachingUnitId (INT, NULL) : Référence à TeachingUnit(id)
-   - sorbonneEntity (VARCHAR, NULL) : Entité / UFR Sorbonne
-   - createdAt (DATETIME)
-   - active (BOOLEAN)
-
-4. Table \`Projecttype\` (Motifs de visite / types d'activité, ex: "Personnel", "Academic", "Sorbonne", "Repair Café", "Atelier") :
-   - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Nom du motif de la visite
-
-5. Table \`UserProject\` (Liaison N-à-N entre Usagers et Projets - TRÈS IMPORTANT : il n'y a PAS de colonne userId dans Project !) :
-   - id (INT, PRIMARY KEY)
-   - userId (INT) : Référence à User(id)
-   - projectId (INT) : Référence à Project(id)
-   COMMENT LIER UN UTILISATEUR À SES PROJETS :
-   \`User\` u 
-   JOIN \`UserProject\` up ON up.userId = u.id 
-   JOIN \`Project\` p ON up.projectId = p.id 
-   JOIN \`Projecttype\` pt ON p.projecttypeId = pt.id
-
-6. Table \`History\` (Visites et enregistrements de présence au Fablab) :
-   - id (INT, PRIMARY KEY)
-   - arrival (DATETIME) : Date et heure d'arrivée (ATTENTION : colonne = arrival, PAS createdAt !)
-   - departure (DATETIME, NULL) : Date et heure de départ (ATTENTION : colonne = departure !)
-   - userId (INT) : Référence à User(id)
-   - userprojectId (INT, NULL) : Référence à UserProject(id)
-   - teachingUnitId (INT, NULL) : Référence à TeachingUnit(id)
-   - sorbonneEntity (VARCHAR, NULL) : Entité Sorbonne rattachée à la visite
-   - workspaceId (INT, NULL) : Référence à Workspace(id)
-   - repairObject (VARCHAR, NULL) : Objet apporté en Repair Café
-   - repairStatus (VARCHAR, NULL) : Statut Repair Café ("PENDING", "REPAIRED", "PARTIALLY_REPAIRED", "NOT_REPAIRED")
-   - workshopId (INT, NULL) : Référence à Workshop(id)
-
-7. Table \`Activity\` (Utilisation de machines ou consommables enregistrée lors d'une visite) :
-   - id (INT, PRIMARY KEY)
-   - createdAt (DATETIME) : Date de l'activité
-   - historyId (INT, NULL) : Référence à History(id)
-   - userId (INT, NULL) : Référence à User(id)
-   - resourceId (INT) : ID de la Machine ou du Consumable
-   - resourceType (ENUM: 'MACHINE', 'EQUIPMENT', 'CONSUMABLE')
-   - quantity (INT, NULL) : Quantité consommée (pour un consommable)
-   - settled (BOOLEAN) : Règlement effectué pour Sorbonne (1=oui, 0=non)
-   - settledAt (DATETIME, NULL) : Date du règlement
-
-8. Table \`Machine\` (Parc des machines) :
-   - id (INT, PRIMARY KEY)
-   - name (VARCHAR) : Nom de la machine
-   - machinetypeId (INT) : Référence à MachineType(id) (ATTENTION : machinetypeId)
-   - categoryId (INT, NULL) : Référence à Category(id)
-   - locationId (INT, NULL) : Référence à Location(id)
-   - make (VARCHAR) : Marque / Fabricant
-   - model (VARCHAR) : Modèle
-   - accessId (INT) : Niveau d'accès requis
-
-9. Table \`MachineType\` : id, name (ex: "Imprimante 3D", "Découpeuse Laser", "Fraiseuse CNC")
-10. Table \`Consumable\` : id, name, cost (DECIMAL, prix unitaire), stock (INT), unit (VARCHAR), categoryId
-11. Table \`Workspace\` : id, name, location
-12. Table \`TeachingUnit\` : id, code, name, department, responsibleEmail
-13. Table \`Category\` : id, name, workspaceId
-14. Table \`Location\` : id, name, description
-15. Table \`MachineIssue\` : id, machineId, description, status ('OPEN', 'RESOLVED'), createdAt, resolvedAt
-
-EXEMPLES DE REQUÊTES TYPES :
-- Répartition des utilisateurs (par type) ayant fait un projet personnel :
-  SELECT ut.name AS user_type, COUNT(DISTINCT u.id) AS user_count
-  FROM \`User\` u
-  JOIN \`Usertype\` ut ON u.usertypeId = ut.id
-  JOIN \`UserProject\` up ON up.userId = u.id
-  JOIN \`Project\` p ON up.projectId = p.id
-  JOIN \`Projecttype\` pt ON p.projecttypeId = pt.id
-  WHERE pt.name LIKE '%Personnel%' OR pt.name LIKE '%Personal%'
-  GROUP BY ut.id, ut.name
-  ORDER BY user_count DESC;
-
-- Contributeurs / Usagers enregistrés venus une seule fois au fablab :
-  SELECT COUNT(*) AS total
-  FROM (
-    SELECT userId FROM \`History\` WHERE userId IS NOT NULL GROUP BY userId HAVING COUNT(*) = 1
-  ) AS single_visitors;
-
-- Top 5 des machines les plus utilisées :
-  SELECT m.name AS machine_name, COUNT(a.id) AS usage_count
-  FROM \`Activity\` a
-  JOIN \`Machine\` m ON a.resourceId = m.id AND a.resourceType = 'MACHINE'
-  GROUP BY m.id, m.name
-  ORDER BY usage_count DESC
-  LIMIT 5;
+2. Table \`Usertype\` : id, name
+3. Table \`Project\` : id, url, projecttypeId, teachingUnitId, sorbonneEntity, createdAt, active
+4. Table \`Projecttype\` : id, name
+5. Table \`UserProject\` : id, userId, projectId (liaison N-à-N entre User et Project)
+6. Table \`History\` : id, arrival, departure, userId, userprojectId, teachingUnitId, sorbonneEntity, workspaceId, repairObject, repairStatus, workshopId
+7. Table \`Activity\` : id, createdAt, historyId, userId, resourceId, resourceType ('MACHINE', 'EQUIPMENT', 'CONSUMABLE'), quantity, borrowDurationDays, expectedReturnAt, returnedAt, startedAt, endedAt, gcodeName, filamentQuantity, filamentType, printDuration, settled, settledAt
+8. Table \`Machine\` : id, name, machinetypeId, categoryId, locationId, make, model, accessId
+9. Table \`MachineType\` : id, name
+10. Table \`Consumable\` : id, name, cost, stock, reorderThreshold, status, unit, categoryId
+11. Table \`Equipment\` : id, name, workspaceId, status
+12. Table \`Workspace\` : id, name, location
+13. Table \`TeachingUnit\` : id, code, name, department, active
+14. Table \`Category\` : id, name, workspaceId
+15. Table \`Location\` : id, name, description
+16. Table \`Workshop\` : id, name, accessId, active, createdAt
+17. Table \`UserWorkshopCompletion\` : id, userId, workshopId, awardedAt
+18. Table \`MachineIssue\` : id, machineId, status ('OPEN', 'RESOLVED'), createdAt, resolvedAt
+19. Table \`MachineMaintenance\` : id, machineId, maintenanceDate, type, cost
+20. Table \`InventoryMovement\` : id, createdAt, itemType, itemId, itemName, quantity, unit, reason
 
 RÈGLES ABSOLUES POUR LA REQUÊTE SQL :
-1. STRICTEMENT EN LECTURE SEULE : Utilisez UNIQUEMENT SELECT (ou WITH ... SELECT). Aucun INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, REPLACE.
-2. INTERDICTION FORMELLE d'accéder aux tables Staff ou SystemSetting.
-3. Toujours utiliser les noms exacts des tables avec des majuscules ou backticks : \`User\`, \`Usertype\`, \`Project\`, \`Projecttype\`, \`UserProject\`, \`History\`, \`Activity\`, \`Machine\`, \`Consumable\`.
-4. Toujours ajouter une clause LIMIT 200 à la fin si la requête n'est pas une agrégation retournant une seule ligne.
-5. Ne jamais insérer de point-virgule multiple ou plusieurs requêtes.
+1. STRICTEMENT EN LECTURE SEULE : UNIQUEMENT SELECT (ou WITH ... SELECT). Aucun INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, REPLACE.
+2. INTERDICTION FORMELLE d'utiliser SELECT * (sauf COUNT(*)), des commentaires SQL (-- , /* */ , #), ou d'accéder aux tables Staff, SystemSetting, Session, Log, information_schema, mysql, performance_schema.
+3. INTERDICTION FORMELLE de sélectionner des champs sensibles ou PII : password, pwdToken, token, rfid, email, reporterEmail, responsibleEmail.
+4. Ne jamais insérer de point-virgule multiple ou plusieurs requêtes.
 
 FORMAT DE RÉPONSE OBLIGATOIRE :
 Répondre UNIQUEMENT par un objet JSON valide sans Markdown ni texte additionnel :
@@ -231,7 +157,8 @@ class AiQueryService {
         });
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error(`Erreur API OpenAI (${res.status}): ${errText}`);
+          console.error(`[AI OpenAI Error] HTTP ${res.status}: ${errText.slice(0, 500)}`);
+          throw new Error(`Erreur API OpenAI (HTTP ${res.status}). Vérifiez la clé API et le modèle configurés.`);
         }
         const data = await res.json();
         return data.choices?.[0]?.message?.content || "";
@@ -242,7 +169,8 @@ class AiQueryService {
           throw new Error("Clé API Google Gemini non renseignée.");
         }
         // Utilisation de l'endpoint compatible OpenAI de Google Gemini v1beta
-        const model = config.geminiModel || "gemini-1.5-flash";
+        const model = String(config.geminiModel || "gemini-1.5-flash").trim();
+        const encodedModel = encodeURIComponent(model);
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`,
           {
@@ -258,15 +186,18 @@ class AiQueryService {
               response_format: { type: "json_object" },
             }),
             signal: controller.signal,
-          }
+          },
         );
         if (!res.ok) {
-          // Fallback sur l'API native Google si l'endpoint OpenAI n'est pas activé
+          // Fallback sur l'API native Google avec la clé en en-tête x-goog-api-key (jamais en query string)
           const nativeRes = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.geminiApiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${encodedModel}:generateContent`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": config.geminiApiKey,
+              },
               body: JSON.stringify({
                 contents: messages.map((m) => ({
                   role: m.role === "assistant" ? "model" : "user",
@@ -278,11 +209,12 @@ class AiQueryService {
                 },
               }),
               signal: controller.signal,
-            }
+            },
           );
           if (!nativeRes.ok) {
             const errBody = await nativeRes.text();
-            throw new Error(`Erreur Gemini API (${nativeRes.status}): ${errBody}`);
+            console.error(`[AI Gemini Error] HTTP ${nativeRes.status}: ${errBody.slice(0, 500)}`);
+            throw new Error(`Erreur API Gemini (HTTP ${nativeRes.status}). Vérifiez la clé API et le modèle configurés.`);
           }
           const nativeData = await nativeRes.json();
           return nativeData.candidates?.[0]?.content?.parts?.[0]?.text || "";
@@ -320,7 +252,8 @@ class AiQueryService {
         });
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error(`Erreur API Claude (${res.status}): ${errText}`);
+          console.error(`[AI Anthropic Error] HTTP ${res.status}: ${errText.slice(0, 500)}`);
+          throw new Error(`Erreur API Claude (HTTP ${res.status}). Vérifiez la clé API et le modèle configurés.`);
         }
         const data = await res.json();
         return data.content?.[0]?.text || "";
@@ -331,6 +264,10 @@ class AiQueryService {
         if (!base.endsWith("/chat/completions")) {
           base = `${base}/chat/completions`;
         }
+        await assertOutboundUrlSafe(base, {
+          allowlistEnvKeys: ["AI_LOCAL_ALLOWED_HOSTS", "SSRF_ALLOWED_HOSTS"],
+          label: "URL LLM Local",
+        });
         const headers = { "Content-Type": "application/json" };
         if (config.localApiKey) {
           headers["Authorization"] = `Bearer ${config.localApiKey}`;
@@ -347,7 +284,8 @@ class AiQueryService {
         });
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error(`Erreur LLM Local (${res.status}): ${errText}`);
+          console.error(`[AI Local Error] HTTP ${res.status}: ${errText.slice(0, 500)}`);
+          throw new Error(`Erreur LLM Local (HTTP ${res.status}). Vérifiez l'endpoint et le modèle configurés.`);
         }
         const data = await res.json();
         return data.choices?.[0]?.message?.content || "";
@@ -386,7 +324,7 @@ class AiQueryService {
   }
 
   /**
-   * Pare-feu de validation SQL strict pour empêcher toute injection ou mutation
+   * Pare-feu de validation SQL strict pour empêcher toute injection, mutation ou fuite PII/système
    */
   validateAndSanitizeSql(sql) {
     if (!sql || typeof sql !== "string") {
@@ -399,41 +337,56 @@ class AiQueryService {
       cleanSql = cleanSql.slice(0, -1).trim();
     }
 
-    // 1. Vérification stricte que la requête commence par SELECT ou WITH
+    // 1. Interdiction stricte des commentaires SQL (-- , /* */ , #)
+    if (/\/\*|\*\/|--|#/.test(cleanSql)) {
+      throw new Error("Requête refusée : Les commentaires SQL sont interdits.");
+    }
+
+    // 2. Vérification stricte que la requête commence par SELECT ou WITH
     if (!/^(SELECT|WITH)\s+/i.test(cleanSql)) {
       throw new Error("Requête refusée : Seules les requêtes de lecture (SELECT) sont autorisées.");
     }
 
-    // 2. Interdiction des requêtes multiples (point-virgule interne)
+    // 3. Interdiction des requêtes multiples (point-virgule interne)
     if (/;/.test(cleanSql)) {
       throw new Error("Requête refusée : Les requêtes multiples chaînées sont interdites.");
     }
 
-    // 3. Mots-clés destructeurs ou modificateurs interdits
+    // 4. Mots-clés destructeurs, modificateurs ou d'exfiltration interdits
     const forbiddenKeywordsRegex =
-      /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|REPLACE|GRANT|REVOKE|LOCK|CREATE|SET|FLUSH|KILL|RESET|SHUTDOWN|SYSTEM_USER|BENCHMARK|SLEEP|INTO\s+OUTFILE|INTO\s+DUMPFILE|LOAD_FILE)\b/i;
+      /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|REPLACE|GRANT|REVOKE|LOCK|CREATE|SET|FLUSH|KILL|RESET|SHUTDOWN|SYSTEM_USER|BENCHMARK|SLEEP|HANDLER|CALL|DO|EXECUTE|PREPARE|INTO\s+OUTFILE|INTO\s+DUMPFILE|LOAD_FILE)\b/i;
     if (forbiddenKeywordsRegex.test(cleanSql)) {
       throw new Error("Requête refusée : Contient une commande interdite ou potentiellement destructive.");
     }
 
-    // 4. Interdiction formelle des tables et colonnes confidentielles
-    const forbiddenTablesRegex = /\b(Staff|SystemSetting)\b/i;
+    // 5. Interdiction formelle des tables d'administration, journaux, sessions et schémas système
+    const forbiddenTablesRegex =
+      /\b(Staff|SystemSetting|Session|Log|information_schema|mysql|performance_schema|sys)\b/i;
     if (forbiddenTablesRegex.test(cleanSql)) {
       throw new Error("Requête refusée : L'accès aux tables d'administration et de sécurité est bloqué.");
     }
 
-    const forbiddenColsRegex = /\b(password|pwdToken|token)\b/i;
+    // 6. Interdiction des colonnes sensibles / PII
+    const forbiddenColsRegex =
+      /\b(password|pwdToken|tokenExpiry|token|rfid|email|reporterEmail|responsibleEmail)\b/i;
     if (forbiddenColsRegex.test(cleanSql)) {
       throw new Error("Requête refusée : Tentative d'accès à des champs de sécurité ou jetons confidentiels.");
     }
 
-    // 5. Encadrement de la limite de résultats (LIMIT 200)
+    // 7. Interdiction de SELECT * / SELECT alias.* (COUNT(*) reste autorisé)
+    if (/(?:^|[\s,(])SELECT\s+(?:DISTINCT\s+)?(?:[\w`]+\.)?\*(?:\s|,|$)/i.test(cleanSql)) {
+      throw new Error("Requête refusée : SELECT * est interdit, veuillez sélectionner explicitement les colonnes autorisées.");
+    }
+
+    // 8. Encadrement strict de la limite de résultats (LIMIT 200)
     const isSingleRowAggregate =
       /^SELECT\s+(COUNT|SUM|AVG|MIN|MAX)\s*\([^)]*\)\s*(?:AS\s+[\w`]+)?\s+FROM\s+/i.test(cleanSql) &&
       !/GROUP\s+BY/i.test(cleanSql);
 
     if (!isSingleRowAggregate) {
-      if (!/LIMIT\s+\d+/i.test(cleanSql)) {
+      if (/^SELECT\s+/i.test(cleanSql)) {
+        cleanSql = `SELECT * FROM (${cleanSql}) AS _q LIMIT 200`;
+      } else if (!/LIMIT\s+\d+/i.test(cleanSql)) {
         cleanSql = `${cleanSql} LIMIT 200`;
       }
     }
@@ -442,19 +395,22 @@ class AiQueryService {
   }
 
   /**
-   * Exécute la requête sécurisée en base MariaDB
+   * Exécute la requête sécurisée en base MariaDB via le pool lecture seule dédié
    */
-  async executeSafeQuery(sql) {
+  async executeSafeQuery(sql, options = {}) {
     const startTime = Date.now();
     try {
-      const rawRows = await prisma.$queryRawUnsafe(sql);
+      const rawRows = await executeReadOnlyQuery(sql, {
+        fallbackPrisma: prisma,
+        ...options,
+      });
       const durationMs = Date.now() - startTime;
 
       // Normalisation des BigInt / Décimaux pour sérialisation JSON propre
       const rows = JSON.parse(
         JSON.stringify(rawRows, (key, value) =>
-          typeof value === "bigint" ? Number(value) : value
-        )
+          typeof value === "bigint" ? Number(value) : value,
+        ),
       );
 
       return {
@@ -463,7 +419,10 @@ class AiQueryService {
       };
     } catch (dbErr) {
       console.error(`[AI SQL Execution Error] Query: ${sql} | Error: ${dbErr.message}`);
-      throw new Error(`Erreur lors de l'exécution SQL MariaDB : ${dbErr.message}`);
+      if (dbErr.message && dbErr.message.includes("DATABASE_URL_AI_RO")) {
+        throw dbErr;
+      }
+      throw new Error("Erreur lors de l'exécution de la requête SQL MariaDB.");
     }
   }
 
@@ -635,14 +594,17 @@ class AiQueryService {
       rows = execResult.rows;
       durationMs = execResult.durationMs;
     } catch (dbErr) {
-      console.warn(`[AI Query Self-Correction] First SQL execution failed: ${dbErr.message}. Retrying with error feedback...`);
+      if (dbErr.message && dbErr.message.includes("DATABASE_URL_AI_RO")) {
+        throw dbErr;
+      }
+      console.warn("[AI Query Self-Correction] First SQL execution failed. Retrying with generic schema hint...");
       const retryMessages = [
         ...messages,
         { role: "assistant", content: rawAiResponse },
         {
           role: "user",
-          content: `L'exécution SQL a échoué avec l'erreur MariaDB suivante : "${dbErr.message}".
-Veuillez corriger la requête SQL pour respecter exactement le schéma fourni (attention aux noms exacts de tables et de colonnes, et rappelez-vous que Project n'a pas de userId, le lien avec User se fait via UserProject).
+          content: `La requête SQL précédente a échoué lors de son exécution MariaDB (erreur de syntaxe, nom de table ou de colonne invalide).
+Veuillez corriger la requête SQL pour respecter strictement le schéma fourni (sans SELECT *, sans commentaires SQL, et en passant par UserProject pour lier User et Project).
 Répondez UNIQUEMENT avec le JSON corrigé.`,
         },
       ];

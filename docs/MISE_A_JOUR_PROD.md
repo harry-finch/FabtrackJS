@@ -48,6 +48,7 @@ pm2 logs fabtrack --lines 50
 | [R-013](../roadmap/items/R-013-eradiquer-les-xss-templates-dom-et-securiser.md) | `v1.2` | Aucune | Aucune | Aucune | Vérifier les icônes d'avertissement, les dialogues `data-confirm`, le tableau paginé usager et le switch « Signalement de bug » dans Administration > E-mails |
 | [R-014](../roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md) | `v1.2` | Optionnel : `VISIT_AUTO_CLOSE_TIME=18:30` (défaut `18:30`) | **Obligatoire :** `CREATE TABLE IF NOT EXISTS Session` + 10 `CREATE INDEX` composites | **`npx prisma generate`** (nouveau modèle `Session`) | Vérifier qu'une session survit à `pm2 restart fabtrack` et qu'une modif admin est visible immédiatement sur le kiosque |
 | [R-015](../roadmap/items/R-015-corriger-les-injections-transverses-et-l.md) | `v1.3` | Aucune | Aucune | Aucune | Vérifier que `/admin/settings` n'affiche plus les clés API/tokens en clair dans le HTML et tester un export CSV |
+| [R-016](../roadmap/items/R-016-confiner-l-ia-nl2sql-role-mariadb-lecture-seule.md) | `v1.3` | Si IA NL2SQL activée : **`DATABASE_URL_AI_RO`** (obligatoire en prod) ; optionnel : `SETTINGS_ENCRYPTION_KEY`, `AI_LOCAL_ALLOWED_HOSTS`, `BOOKSTACK_ALLOWED_HOSTS` | Si IA NL2SQL activée : créer le compte MariaDB `fabtrack_ai_ro` en lecture seule | Aucune | Tester une requête IA sous compte RO et vérifier le blocage SSRF (`http://169.254.169.254`) |
 
 ---
 
@@ -345,6 +346,57 @@ npx prisma generate
 - Les secrets stockés en base (`api_machine_token`, `smtp_pass`, `bookstack_token_id`/`secret`, `ai_*_api_key`) sont désormais **filtrés hors de `res.locals.settings`** et passés en **écriture seule** dans **Administration > Paramètres** (laisser un champ vide conserve la valeur existante ; **Tester la connexion IA** réutilise la clé enregistrée si le champ est laissé vide).
 - Les endpoints `/api/list/all-staff` et `/api/list/all-users` n'exposent plus `password`, `pwdToken`, `tokenExpiry`, `token` ni `rfid`.
 - Tous les exports CSV neutralisent désormais les formules (`= + - @ \t \r`) et assainissent l'en-tête `Content-Disposition`.
+
+---
+
+#### `R-016` — Confinement IA NL2SQL (rôle MariaDB RO), anti-SSRF & chiffrement AES-256-GCM des clés API
+
+**1. Compte MariaDB lecture seule (`DATABASE_URL_AI_RO` — requis en prod si l'assistant IA est activé)**
+
+En `NODE_ENV=production`, l'assistant IA NL2SQL fonctionne désormais en **Fail-Closed** : il refuse toute exécution tant que `DATABASE_URL_AI_RO` n'est pas défini. Si vous utilisez l'assistant IA, créer un utilisateur MariaDB dédié limité en `SELECT` aux seules tables/vues non sensibles :
+
+```sql
+CREATE USER IF NOT EXISTS 'fabtrack_ai_ro'@'localhost' IDENTIFIED BY '<MOT_DE_PASSE_FORT>';
+
+GRANT SELECT (id, name, surname, usertypeId, createdAt, birthYear, balance, termsAccepted, isExpert, deletedAt)
+  ON <DB_NAME>.`User` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Usertype` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Project` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Projecttype` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`UserProject` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`History` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Activity` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Machine` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`MachineType` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Consumable` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Equipment` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Workspace` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT (id, code, name, department, active, createdAt) ON <DB_NAME>.`TeachingUnit` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Category` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Location` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`Workshop` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`UserWorkshopCompletion` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT (id, machineId, status, createdAt, resolvedAt) ON <DB_NAME>.`MachineIssue` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`MachineMaintenance` TO 'fabtrack_ai_ro'@'localhost';
+GRANT SELECT ON <DB_NAME>.`InventoryMovement` TO 'fabtrack_ai_ro'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+**2. Variables `.env` (`R-016`)**
+
+```env
+# Requis en production uniquement si l'assistant IA NL2SQL est activé :
+DATABASE_URL_AI_RO="mysql://fabtrack_ai_ro:<MOT_DE_PASSE_FORT>@localhost:3306/<DB_NAME>"
+
+# Optionnel (2A) : active le chiffrement AES-256-GCM au repos des clés API/SMTP dans SystemSetting
+# (rétrocompatible avec les clés déjà enregistrées en clair)
+SETTINGS_ENCRYPTION_KEY="<cle_aleatoire_64_hex>"
+
+# Optionnel : allowlist SSRF si votre Ollama local ou BookStack tourne sur une IP privée / localhost
+AI_LOCAL_ALLOWED_HOSTS="localhost:11434"
+BOOKSTACK_ALLOWED_HOSTS=""
+```
+
 
 
 

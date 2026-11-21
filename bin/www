@@ -6,6 +6,7 @@
 
 var app = require("../app");
 const { prisma, closePool } = require("../utilities/db");
+const { closeAiReadOnlyPool } = require("../utilities/aiReadOnlyDb");
 const visitAutoCloseService = require("../services/visitAutoCloseService");
 var debug = require("debug")("fabtrackjs:server");
 var http = require("http");
@@ -144,6 +145,7 @@ async function shutdown(signal, exitCode = 0) {
       });
     });
     await prisma.$disconnect();
+    await closeAiReadOnlyPool();
     await closePool();
   } catch (err) {
     console.error("[process] Error during graceful shutdown:", err);

@@ -4,6 +4,7 @@ const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const settingsService = require("../../services/settingsService.js");
 const bookstackService = require("../../services/bookstackService.js");
+const { validateOutboundUrl } = require("../../utilities/ssrfGuard.js");
 
 const router = express.Router();
 router.use(isAdmin);
@@ -20,7 +21,7 @@ router.get(
     const hasTokenSecret = Boolean(settings.bookstack_token_secret && settings.bookstack_token_secret.trim());
 
     res.render("admin/manage-bookstack", {
-      settings,
+      settings: settingsService.filterPublicSettings(settings),
       stats,
       hasTokenSecret,
     });
@@ -41,7 +42,18 @@ router.post(
 
     if (req.body.bookstack_url !== undefined) {
       let url = req.body.bookstack_url.trim();
-      if (url && !url.endsWith("/")) url += "/";
+      if (url) {
+        try {
+          validateOutboundUrl(url, {
+            allowlistEnvKeys: ["BOOKSTACK_ALLOWED_HOSTS", "SSRF_ALLOWED_HOSTS"],
+            label: "URL BookStack",
+          });
+        } catch (ssrfErr) {
+          req.session.notification = `Error: ${ssrfErr.message}`;
+          return res.redirect("/admin/bookstack");
+        }
+        if (!url.endsWith("/")) url += "/";
+      }
       updates.bookstack_url = url || "https://wiki.fablab.sorbonne-universite.fr/BookStack/";
     }
 

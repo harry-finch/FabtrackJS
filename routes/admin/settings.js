@@ -279,7 +279,21 @@ router.post(
       updates.ai_anthropic_model = req.body.ai_anthropic_model.trim() || "claude-3-5-haiku-20241022";
     }
     if (req.body.ai_local_url !== undefined) {
-      updates.ai_local_url = req.body.ai_local_url.trim() || "http://localhost:11434/v1";
+      const candidateLocalUrl = req.body.ai_local_url.trim() || "http://localhost:11434/v1";
+      if (req.body.ai_provider === "local") {
+        const { validateOutboundUrl } = require("../../utilities/ssrfGuard.js");
+        try {
+          validateOutboundUrl(candidateLocalUrl, {
+            allowlistEnvKeys: ["AI_LOCAL_ALLOWED_HOSTS", "SSRF_ALLOWED_HOSTS"],
+            label: "URL LLM Local",
+          });
+        } catch (ssrfErr) {
+          cleanupRequestFiles(req);
+          req.session.notification = `Error: ${ssrfErr.message}`;
+          return res.redirect("/admin/settings");
+        }
+      }
+      updates.ai_local_url = candidateLocalUrl;
     }
     if (req.body.ai_local_model !== undefined) {
       updates.ai_local_model = req.body.ai_local_model.trim() || "llama3.2";

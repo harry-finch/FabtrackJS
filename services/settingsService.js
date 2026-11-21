@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const { encryptSecret, decryptSecret } = require("../utilities/secretCrypto");
 
 const DEFAULT_SETTINGS = {
   platform_name: "FabtrackJS",
@@ -131,7 +132,7 @@ class SettingsService {
       const settings = { ...DEFAULT_SETTINGS };
 
       rows.forEach((row) => {
-        settings[row.key] = row.value;
+        settings[row.key] = SECRET_SETTING_KEYS.has(row.key) ? decryptSecret(row.value) : row.value;
       });
 
       cache = settings;
@@ -148,24 +149,26 @@ class SettingsService {
   }
 
   async setSetting(key, value) {
-    const strVal = String(value);
+    const plainVal = String(value);
+    const storedVal = SECRET_SETTING_KEYS.has(key) ? encryptSecret(plainVal) : plainVal;
     await prisma.systemSetting.upsert({
       where: { key },
-      update: { value: strVal },
-      create: { key, value: strVal },
+      update: { value: storedVal },
+      create: { key, value: storedVal },
     });
     if (cache) {
-      cache[key] = strVal;
+      cache[key] = plainVal;
     }
   }
 
   async updateSettings(newSettings) {
     const promises = Object.entries(newSettings).map(([key, val]) => {
-      const strVal = String(val);
+      const plainVal = String(val);
+      const storedVal = SECRET_SETTING_KEYS.has(key) ? encryptSecret(plainVal) : plainVal;
       return prisma.systemSetting.upsert({
         where: { key },
-        update: { value: strVal },
-        create: { key, value: strVal },
+        update: { value: storedVal },
+        create: { key, value: storedVal },
       });
     });
 
