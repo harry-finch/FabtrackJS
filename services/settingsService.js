@@ -85,6 +85,10 @@ class SettingsService {
       return { ...cache };
     }
 
+    return await this.reloadSettings();
+  }
+
+  async reloadSettings() {
     try {
       const rows = await prisma.systemSetting.findMany();
       const settings = { ...DEFAULT_SETTINGS };
@@ -97,7 +101,7 @@ class SettingsService {
       return { ...cache };
     } catch (err) {
       console.error("Error fetching system settings from DB:", err);
-      return { ...DEFAULT_SETTINGS };
+      return cache ? { ...cache } : { ...DEFAULT_SETTINGS };
     }
   }
 
@@ -129,8 +133,7 @@ class SettingsService {
     });
 
     await Promise.all(promises);
-    this.invalidateCache();
-    return await this.getSettings();
+    return await this.reloadSettings();
   }
 
   invalidateCache() {

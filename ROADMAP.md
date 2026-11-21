@@ -10,7 +10,7 @@
    Supprimer la prise de contrôle de compte sans authentification sur POST /reset_password et l'énumération d'e-mails sur POST /reset.
 2. **[R-005 Sécuriser les uploads de fichiers (/report-issue, machines, settings)](roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md)** · À tester · jalon v1.1
    Fermer la XSS stockée anonyme par upload public, filtrer les images machines/branding et empêcher la saturation disque.
-3. **[R-006 Verrouiller l'API machines/NFC en Fail-Closed et corriger machineUsageService](roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md)** · Idée · jalon v1.1
+3. **[R-006 Verrouiller l'API machines/NFC en Fail-Closed et corriger machineUsageService](roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md)** · À tester · jalon v1.1
    Sécuriser les endpoints /api/machines/* par défaut, supprimer la fuite PII de User et corriger les failles d'autorisation et d'IDOR.
 4. **[R-007 Verrouiller le rôle borne kiosque (staff) et corriger le RBAC médiateurs](roadmap/items/R-007-verrouiller-le-role-borne-kiosque-staff-et.md)** · Idée · jalon v1.1
    Empêcher la borne kiosque (staff) d'exécuter des actions financières ou destructives et rétablir les habilitations pour les médiateurs (user).
@@ -74,6 +74,8 @@
 - [ ] [A-003](roadmap/actions/A-003-appliquer-r-004-en-production-et-auditer-la.md) Appliquer R-004 en production et auditer la table Staff (tester, R-004)
 - [ ] [A-004](roadmap/actions/A-004-tester-les-uploads-securises-en-local-report.md) Tester les uploads sécurisés en local (/report-issue, machines, settings) (tester, R-005)
 - [ ] [A-005](roadmap/actions/A-005-auditer-le-dossier-uploads-en-production-apres.md) Auditer le dossier uploads/ en production après déploiement R-005 (tester, R-005)
+- [ ] [A-006](roadmap/actions/A-006-tester-les-endpoints-api-machines-nfc-en-local.md) Tester les endpoints API machines/NFC en local (tester, R-006)
+- [ ] [A-007](roadmap/actions/A-007-verifier-le-comportement-fail-closed-de-api.md) Vérifier le comportement Fail-Closed de /api/machines/* en production (tester, R-006)
 
 ## Livré
 

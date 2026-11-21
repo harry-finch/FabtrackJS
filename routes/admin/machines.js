@@ -224,9 +224,9 @@ router.get(
       return res.redirect("/admin/machines/manage");
     }
 
-    // Fetch usage activities for this machine using MachineUsageService
+    // Fetch usage activities for this machine using MachineUsageService (include email for admin view)
     const machineUsageService = require("../../services/machineUsageService.js");
-    const usageHistory = await machineUsageService.getMachineUsageHistory(Number(id));
+    const usageHistory = await machineUsageService.getMachineUsageHistory(Number(id), 100, { includeEmail: true });
 
     const uniqueUsersCount = new Set(
       usageHistory.map((u) => (u.user ? u.user.id : null)).filter(Boolean)

@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 const logger = require("../utilities/simpleLogger.js");
 const hookManager = require("../core/HookManager.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
-const { validateBody } = require("../middleware/validate.js");
+const { validateBody, validateQuery } = require("../middleware/validate.js");
 const { rfidScanSchema } = require("../schemas/api.schema.js");
 
 // ******************************************************************************
@@ -249,13 +249,34 @@ const machineUsageService = require("../services/machineUsageService.js");
 const checkApiKeyOrSession = require("../middleware/checkApiKeyOrSession.js");
 const {
   verifyCardUserSchema,
+  verifyCardQuerySchema,
   startMachineUsageSchema,
   endMachineUsageSchema,
   recordMachineUsageSchema,
+  machineUsageQuerySchema,
 } = require("../schemas/machineUsage.schema.js");
 
+function resolveMachineApiStatusCode(code) {
+  switch (code) {
+    case "USER_NOT_FOUND":
+    case "MACHINE_NOT_FOUND":
+    case "SESSION_NOT_FOUND":
+    case "ACTIVITY_NOT_FOUND":
+      return 404;
+    case "NOT_CHECKED_IN":
+    case "TERMS_NOT_ACCEPTED":
+    case "ACTIVE_WARNING":
+    case "MACHINE_ACCESS_DENIED":
+    case "INVALID_HISTORY":
+    case "UNAUTHORIZED_SESSION":
+      return 403;
+    default:
+      return 400;
+  }
+}
+
 /**
- * Verify if an NFC badge corresponds to a user currently checked-in at the lab
+ * Verify if an NFC badge corresponds to a user currently checked-in today at the lab
  * Supports both POST and GET for simple client app integration
  */
 router.post(
@@ -263,13 +284,11 @@ router.post(
   checkApiKeyOrSession,
   validateBody(verifyCardUserSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
-    const { rfid, machineId } = req.body;
+    const { rfid, machineId } = req.validatedBody || req.body;
     const result = await machineUsageService.verifyUserPresenceByCard({ rfid, machineId });
 
     if (!result.success) {
-      const statusCode =
-        result.code === "USER_NOT_FOUND" ? 404 : result.code === "NOT_CHECKED_IN" || result.code === "TERMS_NOT_ACCEPTED" ? 403 : 400;
-      return res.status(statusCode).json(result);
+      return res.status(resolveMachineApiStatusCode(result.code)).json(result);
     }
 
     return res.status(200).json(result);
@@ -279,16 +298,16 @@ router.post(
 router.get(
   "/machines/verify-user",
   checkApiKeyOrSession,
+  validateQuery(verifyCardQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
-    const rfid = req.query.rfid || req.query.cardId;
-    const machineId = req.query.machineId ? Number(req.query.machineId) : undefined;
+    const query = req.validatedQuery || req.query;
+    const rfid = query.rfid || query.cardId;
+    const machineId = query.machineId;
 
     const result = await machineUsageService.verifyUserPresenceByCard({ rfid, machineId });
 
     if (!result.success) {
-      const statusCode =
-        result.code === "USER_NOT_FOUND" ? 404 : result.code === "NOT_CHECKED_IN" || result.code === "TERMS_NOT_ACCEPTED" ? 403 : 400;
-      return res.status(statusCode).json(result);
+      return res.status(resolveMachineApiStatusCode(result.code)).json(result);
     }
 
     return res.status(200).json(result);
@@ -303,11 +322,11 @@ router.post(
   checkApiKeyOrSession,
   validateBody(startMachineUsageSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
-    const result = await machineUsageService.startMachineUsage(req.body);
+    const payload = req.validatedBody || req.body;
+    const result = await machineUsageService.startMachineUsage(payload);
 
     if (!result.success) {
-      const statusCode = result.code === "USER_NOT_FOUND" || result.code === "MACHINE_NOT_FOUND" ? 404 : 400;
-      return res.status(statusCode).json(result);
+      return res.status(resolveMachineApiStatusCode(result.code)).json(result);
     }
 
     return res.status(201).json(result);
@@ -322,11 +341,11 @@ router.post(
   checkApiKeyOrSession,
   validateBody(endMachineUsageSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
-    const result = await machineUsageService.endMachineUsage(req.body);
+    const payload = req.validatedBody || req.body;
+    const result = await machineUsageService.endMachineUsage(payload);
 
     if (!result.success) {
-      const statusCode = result.code === "SESSION_NOT_FOUND" ? 404 : 400;
-      return res.status(statusCode).json(result);
+      return res.status(resolveMachineApiStatusCode(result.code)).json(result);
     }
 
     return res.status(200).json(result);
@@ -341,11 +360,11 @@ router.post(
   checkApiKeyOrSession,
   validateBody(recordMachineUsageSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
-    const result = await machineUsageService.recordMachineUsage(req.body);
+    const payload = req.validatedBody || req.body;
+    const result = await machineUsageService.recordMachineUsage(payload);
 
     if (!result.success) {
-      const statusCode = result.code === "USER_NOT_FOUND" || result.code === "MACHINE_NOT_FOUND" ? 404 : 400;
-      return res.status(statusCode).json(result);
+      return res.status(resolveMachineApiStatusCode(result.code)).json(result);
     }
 
     return res.status(201).json(result);
@@ -353,23 +372,17 @@ router.post(
 );
 
 /**
- * Query usage history for a machine
+ * Query usage history for a machine (PII minimized: no email/rfid/token/balance)
  */
 router.get(
   "/machines/usage",
   checkApiKeyOrSession,
+  validateQuery(machineUsageQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
-    const { machineId, limit } = req.query;
-    if (!machineId) {
-      return res.status(400).json({ success: false, error: "Le paramètre 'machineId' est requis." });
-    }
+    const { machineId, limit } = req.validatedQuery || req.query;
+    const history = await machineUsageService.getMachineUsageHistory(machineId, limit || 50);
 
-    const history = await machineUsageService.getMachineUsageHistory(
-      Number(machineId),
-      limit ? parseInt(limit, 10) : 50,
-    );
-
-    return res.status(200).json({ success: true, machineId: Number(machineId), count: history.length, history });
+    return res.status(200).json({ success: true, machineId, count: history.length, history });
   }),
 );
 

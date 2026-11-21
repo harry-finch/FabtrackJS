@@ -38,6 +38,7 @@ pm2 logs fabtrack --lines 50
 | --- | --- | --- | --- | --- | --- |
 | [R-004](../roadmap/items/R-004-securiser-la-reinitialisation-de-mot-de-passe.md) | `v1.1` | Vérifier `HOSTURL` ou `APP_URL` | `ALTER TABLE Staff MODIFY COLUMN pwdToken VARCHAR(64) NULL;` | `npx prisma generate` | Auditer manuellement la table `Staff` |
 | [R-005](../roadmap/items/R-005-securiser-les-uploads-de-fichiers-report-issue.md) | `v1.1` | Aucune | Aucune | Aucune | Auditer le dossier `uploads/` (fichiers non-raster / `.svg`) |
+| [R-006](../roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md) | `v1.1` | Définir `FABTRACK_API_KEY` (ou `api_machine_token` en admin) avant tout client NFC | Aucune | Aucune | Vérifier que `/api/machines/*` retourne HTTP `401` sans clé |
 
 ---
 
@@ -105,4 +106,24 @@ find uploads/ -type f ! \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -
 ```
 
 En cas de fichier suspect (notamment dans `uploads/issues/`), le supprimer immédiatement.
+
+---
+
+#### `R-006` — Verrouiller l'API machines/NFC en Fail-Closed (`checkApiKeyOrSession` & `machineUsageService`)
+
+**1. Configuration API Fail-Closed (`.env` / Paramètres admin)**
+
+- Aucune migration SQL ni dépendance npm requise.
+- L'API `/api/machines/*` fonctionne désormais en **Fail-Closed** : si aucune clé n'est configurée côté serveur, toute requête non authentifiée par session staff retourne HTTP `401` (le passage de la clé via `?apiKey=` en URL est supprimé ; seuls les en-têtes `x-api-key` et `Authorization: Bearer <clé>` sont acceptés).
+- Tant qu'aucun lecteur NFC externe n'est branché, laisser aucune clé configurée maintient l'API fermée par défaut. Lorsqu'un lecteur NFC sera déployé, définir `FABTRACK_API_KEY` dans `.env` (ou renseigner `api_machine_token` dans **Administration > Paramètres**) et configurer le lecteur pour envoyer l'en-tête `x-api-key`.
+
+**2. Vérification post-déploiement**
+
+Contrôler que les endpoints machines refusent bien les appels anonymes après redémarrage :
+
+```bash
+curl -i "https://votre-domaine.org/fabtrack/api/machines/usage?machineId=1"
+# Attendu : HTTP/1.1 401 Unauthorized
+```
+
 
