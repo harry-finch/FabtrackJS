@@ -5,6 +5,12 @@ const moment = require("moment");
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { validateBody, validateParams, validateQuery } = require("../../middleware/validate.js");
+const {
+  idParamSchema,
+  sorbonneFilterQuerySchema,
+  sorbonneSettleEntitySchema,
+} = require("../../schemas/index.js");
 const sorbonneService = require("../../services/sorbonneService.js");
 
 router.use(isAdmin);
@@ -15,6 +21,7 @@ router.use(isAdmin);
 
 router.get(
   "/",
+  validateQuery(sorbonneFilterQuerySchema, { redirectUrl: "/admin/sorbonne" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/sorbonne";
@@ -58,6 +65,7 @@ router.get(
 
 router.post(
   "/toggle-settled/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/sorbonne" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const username = req.session ? req.session.username || "Staff" : "Staff";
@@ -83,6 +91,7 @@ router.post(
 
 router.post(
   "/settle-entity",
+  validateBody(sorbonneSettleEntitySchema, { redirectUrl: "/admin/sorbonne" }),
   asyncHandler(async (req, res) => {
     const { entity } = req.body;
     const username = req.session ? req.session.username || "Staff" : "Staff";
@@ -112,6 +121,7 @@ router.post(
 
 router.get(
   "/export-csv",
+  validateQuery(sorbonneFilterQuerySchema, { redirectUrl: "/admin/sorbonne" }),
   asyncHandler(async (req, res) => {
     const { entity, status, startDate, endDate } = req.query;
 

@@ -2,6 +2,8 @@ const express = require("express");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
+const { validateBody } = require("../../middleware/validate.js");
+const { emailSettingsSchema, emailTestSchema } = require("../../schemas/admin.schema.js");
 const settingsService = require("../../services/settingsService.js");
 const mailService = require("../../services/mailService.js");
 
@@ -33,85 +35,86 @@ router.get(
 // ******************************************************************************
 router.post(
   "/settings",
+  validateBody(emailSettingsSchema, { redirectUrl: "/admin/emails" }),
   asyncHandler(async (req, res) => {
     const current = await settingsService.getSettings();
     const updates = {};
 
+    const trimString = (val) => (typeof val === "string" ? val.trim() : "");
+    const normalizeMultiline = (val) =>
+      typeof val === "string" ? val.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim() : "";
+    const isChecked = (val) => val === true || val === "true" || val === "on";
+
     // General & Recipient
     if (req.body.mail_admin_recipient !== undefined) {
-      updates.mail_admin_recipient = req.body.mail_admin_recipient.trim() || current.admin_email || "admin@example.com";
+      updates.mail_admin_recipient =
+        trimString(req.body.mail_admin_recipient) || current.admin_email || "admin@example.com";
     }
     if (req.body.mail_from !== undefined) {
-      updates.mail_from = req.body.mail_from.trim() || "Fabtrack <noreply@fabtrack.local>";
+      updates.mail_from = trimString(req.body.mail_from) || "Fabtrack <noreply@fabtrack.local>";
     }
 
     // SMTP Server
     if (req.body.smtp_host !== undefined) {
-      updates.smtp_host = req.body.smtp_host.trim();
+      updates.smtp_host = trimString(req.body.smtp_host);
     }
     if (req.body.smtp_port !== undefined) {
-      const portNum = parseInt(req.body.smtp_port, 10);
+      const portNum =
+        typeof req.body.smtp_port === "number" ? req.body.smtp_port : parseInt(req.body.smtp_port, 10);
       updates.smtp_port = !isNaN(portNum) && portNum > 0 ? String(portNum) : "587";
     }
     if (req.body.smtp_user !== undefined) {
-      updates.smtp_user = req.body.smtp_user.trim();
+      updates.smtp_user = trimString(req.body.smtp_user);
     }
     // Only update password if a new one was provided
-    if (req.body.smtp_pass !== undefined && req.body.smtp_pass.trim() !== "") {
+    if (typeof req.body.smtp_pass === "string" && req.body.smtp_pass.trim() !== "") {
       updates.smtp_pass = req.body.smtp_pass.trim();
     }
 
-    updates.smtp_secure = req.body.smtp_secure === "true" || req.body.smtp_secure === "on" ? "true" : "false";
+    updates.smtp_secure = isChecked(req.body.smtp_secure) ? "true" : "false";
 
     // Notification Toggles (checkboxes send "on" when checked, undefined when unchecked)
-    updates.mail_notif_consumable_low_stock =
-      req.body.mail_notif_consumable_low_stock === "true" || req.body.mail_notif_consumable_low_stock === "on" ? "true" : "false";
+    updates.mail_notif_consumable_low_stock = isChecked(req.body.mail_notif_consumable_low_stock) ? "true" : "false";
 
-    updates.mail_notif_user_warning =
-      req.body.mail_notif_user_warning === "true" || req.body.mail_notif_user_warning === "on" ? "true" : "false";
+    updates.mail_notif_user_warning = isChecked(req.body.mail_notif_user_warning) ? "true" : "false";
 
-    updates.mail_notif_staff_registration =
-      req.body.mail_notif_staff_registration === "true" || req.body.mail_notif_staff_registration === "on" ? "true" : "false";
+    updates.mail_notif_staff_registration = isChecked(req.body.mail_notif_staff_registration) ? "true" : "false";
 
-    updates.mail_notif_staff_approved =
-      req.body.mail_notif_staff_approved === "true" || req.body.mail_notif_staff_approved === "on" ? "true" : "false";
+    updates.mail_notif_staff_approved = isChecked(req.body.mail_notif_staff_approved) ? "true" : "false";
 
-    updates.mail_notif_user_agreement =
-      req.body.mail_notif_user_agreement === "true" || req.body.mail_notif_user_agreement === "on" ? "true" : "false";
+    updates.mail_notif_user_agreement = isChecked(req.body.mail_notif_user_agreement) ? "true" : "false";
 
-    updates.mail_notif_machine_issue =
-      req.body.mail_notif_machine_issue === "true" || req.body.mail_notif_machine_issue === "on" ? "true" : "false";
+    updates.mail_notif_machine_issue = isChecked(req.body.mail_notif_machine_issue) ? "true" : "false";
 
-    updates.mail_notif_bug_report =
-      req.body.mail_notif_bug_report === "true" || req.body.mail_notif_bug_report === "on" ? "true" : "false";
+    updates.mail_notif_bug_report = isChecked(req.body.mail_notif_bug_report) ? "true" : "false";
 
     // User Agreement Email Template Customization
     if (req.body.mail_user_agreement_subject !== undefined) {
-      updates.mail_user_agreement_subject = req.body.mail_user_agreement_subject.trim();
+      updates.mail_user_agreement_subject = trimString(req.body.mail_user_agreement_subject);
     }
     if (req.body.mail_user_agreement_title !== undefined) {
-      updates.mail_user_agreement_title = req.body.mail_user_agreement_title.trim();
+      updates.mail_user_agreement_title = trimString(req.body.mail_user_agreement_title);
     }
     if (req.body.mail_user_agreement_body !== undefined) {
-      updates.mail_user_agreement_body = req.body.mail_user_agreement_body.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      updates.mail_user_agreement_body = normalizeMultiline(req.body.mail_user_agreement_body);
     }
     if (req.body.mail_user_agreement_cta_text !== undefined) {
-      updates.mail_user_agreement_cta_text = req.body.mail_user_agreement_cta_text.trim();
+      updates.mail_user_agreement_cta_text = trimString(req.body.mail_user_agreement_cta_text);
     }
     if (req.body.mail_user_agreement_notice !== undefined) {
-      updates.mail_user_agreement_notice = req.body.mail_user_agreement_notice.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      updates.mail_user_agreement_notice = normalizeMultiline(req.body.mail_user_agreement_notice);
     }
     if (req.body.mail_user_agreement_success_title !== undefined) {
-      updates.mail_user_agreement_success_title = req.body.mail_user_agreement_success_title.trim();
+      updates.mail_user_agreement_success_title = trimString(req.body.mail_user_agreement_success_title);
     }
     if (req.body.mail_user_agreement_success_message !== undefined) {
-      updates.mail_user_agreement_success_message = req.body.mail_user_agreement_success_message.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      updates.mail_user_agreement_success_message = normalizeMultiline(req.body.mail_user_agreement_success_message);
     }
     if (req.body.mail_user_agreement_redirect_url !== undefined) {
-      updates.mail_user_agreement_redirect_url = req.body.mail_user_agreement_redirect_url.trim();
+      updates.mail_user_agreement_redirect_url = trimString(req.body.mail_user_agreement_redirect_url);
     }
     if (req.body.mail_user_agreement_redirect_delay !== undefined) {
-      updates.mail_user_agreement_redirect_delay = req.body.mail_user_agreement_redirect_delay.trim();
+      updates.mail_user_agreement_redirect_delay = trimString(req.body.mail_user_agreement_redirect_delay);
     }
 
     await settingsService.updateSettings(updates);
@@ -126,6 +129,7 @@ router.post(
 // ******************************************************************************
 router.post(
   "/test",
+  validateBody(emailTestSchema, { redirectUrl: "/admin/emails" }),
   asyncHandler(async (req, res) => {
     const { test_recipient } = req.body;
     const target = test_recipient && test_recipient.trim() ? test_recipient.trim() : null;

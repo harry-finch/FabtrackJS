@@ -5,7 +5,8 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const requireRoles = require("../middleware/requireRoles.js");
 const logger = require("../utilities/simpleLogger.js");
-const { validateBody } = require("../middleware/validate.js");
+const { validateBody, validateParams } = require("../middleware/validate.js");
+const { idParamSchema } = require("../schemas/common.schema.js");
 const { createWarningSchema } = require("../schemas/warning.schema.js");
 
 router.use(isLoggedIn);
@@ -24,6 +25,7 @@ router.post(
     redirectUrl: (req) => req.session.lastPage || "/fabtrack",
     message: "La résolution d'un avertissement est réservée aux administrateurs.",
   }),
+  validateParams(idParamSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 

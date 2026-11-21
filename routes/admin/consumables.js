@@ -5,6 +5,13 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const {
+  idParamSchema,
+  addConsumableSchema,
+  updateConsumableSchema,
+  restockConsumableSchema,
+} = require("../../schemas/index.js");
 
 router.use(isAdmin);
 
@@ -51,6 +58,7 @@ router.get(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/consumables/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -77,6 +85,7 @@ router.post(
 
 router.post(
   "/create",
+  validateBody(addConsumableSchema, { redirectUrl: "/admin/consumables/manage" }),
   asyncHandler(async (req, res) => {
     const { name, cost, stock, reorderThreshold, categoryId, unit, stockUnit, unitsPerPack } = req.body;
 
@@ -122,6 +131,7 @@ router.post(
 
 router.post(
   "/update",
+  validateBody(updateConsumableSchema, { redirectUrl: "/admin/consumables/manage" }),
   asyncHandler(async (req, res) => {
     const targetId = Number(req.body.consumableid || req.body.id);
     if (!targetId || isNaN(targetId)) {
@@ -174,6 +184,7 @@ router.post(
 
 router.post(
   "/restock",
+  validateBody(restockConsumableSchema, { redirectUrl: "/admin/consumables/manage" }),
   asyncHandler(async (req, res) => {
     const targetId = Number(req.body.consumableid || req.body.id);
 

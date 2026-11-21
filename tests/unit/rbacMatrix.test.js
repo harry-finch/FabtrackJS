@@ -520,7 +520,7 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
         .post("/history/exit-repair")
         .set("x-test-role", "staff")
         .type("form")
-        .send({ historyid: 100, repairStatus: "FIXED" });
+        .send({ historyid: 100, repairStatus: "REPAIRED" });
       expect(repairExitRes.status).toBe(302);
       expect(mockRepairCafeService.recordRepairExit).toHaveBeenCalledTimes(1);
 

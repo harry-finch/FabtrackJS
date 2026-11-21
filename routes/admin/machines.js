@@ -9,7 +9,22 @@ const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const requireRoles = require("../../middleware/requireRoles.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
-const { createMaintenanceSchema } = require("../../schemas/issue.schema.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const {
+  idParamSchema,
+  issueIdParamSchema,
+  maintenanceIdParamSchema,
+} = require("../../schemas/common.schema.js");
+const {
+  createMachineTypeSchema,
+  updateMachineTypeSchema,
+  createMachineSchema,
+  updateMachineSchema,
+} = require("../../schemas/admin.schema.js");
+const {
+  createMaintenanceSchema,
+  updateIssueStatusSchema,
+} = require("../../schemas/issue.schema.js");
 
 router.use(requireRoles("admin", "user"));
 
@@ -88,6 +103,7 @@ router.get(
 router.post(
   "/delete-type/:id",
   isAdmin,
+  validateParams(idParamSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -110,6 +126,7 @@ router.post(
 router.post(
   "/create-type",
   isAdmin,
+  validateBody(createMachineTypeSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const { name } = req.body;
 
@@ -132,6 +149,7 @@ router.post(
 router.post(
   "/update-type",
   isAdmin,
+  validateBody(updateMachineTypeSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const { machinetypeid, name } = req.body;
 
@@ -199,6 +217,7 @@ function formatDate(date) {
 
 router.get(
   "/view/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/machines/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -293,6 +312,7 @@ router.get(
 // Route shortcut to jump directly to machine history section
 router.get(
   "/history/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/machines/manage" }),
   clearNotification,
   (req, res) => {
     res.redirect(`/admin/machines/view/${req.params.id}#history`);
@@ -302,6 +322,7 @@ router.get(
 // Route shortcut to jump directly to machine issues section
 router.get(
   "/issues/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/machines/manage" }),
   clearNotification,
   (req, res) => {
     res.redirect(`/admin/machines/view/${req.params.id}#issues`);
@@ -313,6 +334,13 @@ router.get(
 // ******************************************************************************
 router.post(
   "/issues/:issueId/status",
+  validateParams(issueIdParamSchema, { redirectUrl: "/admin/machines/manage" }),
+  validateBody(updateIssueStatusSchema, {
+    redirectUrl: (req) =>
+      req.body?.machineId && /^\d+$/.test(String(req.body.machineId))
+        ? `/admin/machines/view/${req.body.machineId}#issues`
+        : "/admin/machines/manage",
+  }),
   asyncHandler(async (req, res) => {
     const { issueId } = req.params;
     const { status, resolutionNotes, machineId } = req.body;
@@ -332,7 +360,12 @@ router.post(
       data: {
         status: newStatus,
         resolvedAt: newStatus === "RESOLVED" ? new Date() : null,
-        resolutionNotes: resolutionNotes !== undefined ? resolutionNotes.trim() || null : currentIssue.resolutionNotes,
+        resolutionNotes:
+          resolutionNotes !== undefined
+            ? typeof resolutionNotes === "string"
+              ? resolutionNotes.trim() || null
+              : null
+            : currentIssue.resolutionNotes,
       },
     });
 
@@ -353,6 +386,7 @@ router.post(
 router.post(
   "/issues/:issueId/delete",
   isAdmin,
+  validateParams(issueIdParamSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const { issueId } = req.params;
     const currentIssue = await prisma.machineIssue.findUnique({
@@ -389,15 +423,15 @@ router.post(
 // ******************************************************************************
 router.post(
   "/maintenance/create",
+  validateBody(createMaintenanceSchema, {
+    redirectUrl: (req) =>
+      req.body?.machineId && /^\d+$/.test(String(req.body.machineId))
+        ? `/admin/machines/view/${req.body.machineId}#issues`
+        : "/admin/machines/manage",
+  }),
   asyncHandler(async (req, res) => {
-    const parsed = createMaintenanceSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const errorMsg = parsed.error.issues.map((i) => i.message).join(" ");
-      req.session.notification = `Error: ${errorMsg}`;
-      return res.redirect(req.body.machineId ? `/admin/machines/view/${req.body.machineId}#issues` : "/admin/machines/manage");
-    }
-
-    const { machineId, title, type, description, operator, partsReplaced, cost, maintenanceDate, resolveOpenIssues } = parsed.data;
+    const { machineId, title, type, description, operator, partsReplaced, cost, maintenanceDate, resolveOpenIssues } =
+      req.validatedBody || req.body;
     const author = operator && operator.trim() ? operator.trim() : (req.session.username || "Staff");
 
     const opDate = maintenanceDate || new Date();
@@ -472,6 +506,7 @@ router.post(
 router.post(
   "/maintenance/:maintenanceId/delete",
   isAdmin,
+  validateParams(maintenanceIdParamSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const { maintenanceId } = req.params;
     const current = await prisma.machineMaintenance.findUnique({
@@ -516,6 +551,7 @@ router.post(
   "/create",
   isAdmin,
   handleMachineUpload,
+  validateBody(createMachineSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const {
       name,
@@ -595,6 +631,7 @@ router.post(
 router.get(
   "/edit/:id",
   isAdmin,
+  validateParams(idParamSchema, { redirectUrl: "/admin/machines/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -637,6 +674,7 @@ router.post(
   "/update",
   isAdmin,
   handleMachineUpload,
+  validateBody(updateMachineSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const {
       machineid,
@@ -737,6 +775,7 @@ router.post(
 router.post(
   "/delete/:id",
   isAdmin,
+  validateParams(idParamSchema, { redirectUrl: "/admin/machines/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 

@@ -5,6 +5,8 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const { idParamSchema, createWarningtypeSchema, updateWarningtypeSchema } = require("../../schemas/index.js");
 
 router.use(isAdmin);
 
@@ -40,6 +42,7 @@ router.get(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/warningtypes/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -66,6 +69,7 @@ router.post(
 
 router.post(
   "/create",
+  validateBody(createWarningtypeSchema, { redirectUrl: "/admin/warningtypes/manage" }),
   asyncHandler(async (req, res) => {
     const { name, icon } = req.body;
 
@@ -93,6 +97,7 @@ router.post(
 
 router.post(
   "/update",
+  validateBody(updateWarningtypeSchema, { redirectUrl: "/admin/warningtypes/manage" }),
   asyncHandler(async (req, res) => {
     const { warningtypeid, name, icon } = req.body;
 

@@ -1,4 +1,5 @@
 module.exports = {
+  ...require("./common.schema"),
   ...require("./user.schema"),
   ...require("./history.schema"),
   ...require("./auth.schema"),
@@ -12,4 +13,5 @@ module.exports = {
   ...require("./setup.schema"),
   ...require("./machineUsage.schema"),
   ...require("./staff.schema"),
+  ...require("./admin.schema"),
 };

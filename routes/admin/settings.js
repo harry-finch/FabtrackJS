@@ -6,6 +6,8 @@ const multer = require("multer");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
+const { validateBody } = require("../../middleware/validate.js");
+const { adminSettingsSchema, aiTestConnectionSchema } = require("../../schemas/admin.schema.js");
 const settingsService = require("../../services/settingsService.js");
 const hookManager = require("../../core/HookManager.js");
 const { PrismaClient } = require("@prisma/client");
@@ -129,6 +131,7 @@ router.get(
 router.post(
   "/",
   handleBrandingUpload,
+  validateBody(adminSettingsSchema, { redirectUrl: "/admin/settings" }),
   asyncHandler(async (req, res) => {
     const current = await settingsService.getSettings();
     const updates = {};
@@ -165,24 +168,32 @@ router.post(
 
     // Text fields
     if (req.body.platform_name !== undefined) {
-      updates.platform_name = req.body.platform_name.trim() || "FabtrackJS";
+      updates.platform_name =
+        (typeof req.body.platform_name === "string" ? req.body.platform_name.trim() : "") || "FabtrackJS";
     }
     if (req.body.platform_subtitle !== undefined) {
-      updates.platform_subtitle = req.body.platform_subtitle.trim() || "Track your fablab's activity";
+      updates.platform_subtitle =
+        (typeof req.body.platform_subtitle === "string" ? req.body.platform_subtitle.trim() : "") ||
+        "Track your fablab's activity";
     }
     if (req.body.session_timeout_hours !== undefined) {
-      const hours = parseInt(req.body.session_timeout_hours, 10);
+      const hours =
+        typeof req.body.session_timeout_hours === "number"
+          ? req.body.session_timeout_hours
+          : parseInt(req.body.session_timeout_hours, 10);
       updates.session_timeout_hours = !isNaN(hours) && hours > 0 ? String(hours) : "24";
     }
     // Write-only API token: preserve existing token if submitted empty
-    if (req.body.api_machine_token !== undefined && req.body.api_machine_token.trim() !== "") {
+    if (typeof req.body.api_machine_token === "string" && req.body.api_machine_token.trim() !== "") {
       updates.api_machine_token = req.body.api_machine_token.trim();
     }
     if (req.body.currency_symbol !== undefined) {
-      updates.currency_symbol = req.body.currency_symbol.trim() || "€";
+      updates.currency_symbol =
+        (typeof req.body.currency_symbol === "string" ? req.body.currency_symbol.trim() : "") || "€";
     }
     if (req.body.admin_email !== undefined) {
-      updates.admin_email = req.body.admin_email.trim() || "admin@example.com";
+      updates.admin_email =
+        (typeof req.body.admin_email === "string" ? req.body.admin_email.trim() : "") || "admin@example.com";
     }
     if (req.body.allow_self_registration !== undefined) {
       updates.allow_self_registration = req.body.allow_self_registration === "true" ? "true" : "false";
@@ -217,69 +228,99 @@ router.post(
 
     // Plugins management - ONLY process if the plugins section was present in the submitted form
     if (req.body.plugin_settings_submitted === "true") {
-      const isUeEnabled = req.body.plugin_ue_enabled === "true" || req.body.plugin_ue_enabled === "on";
+      const isUeEnabled =
+        req.body.plugin_ue_enabled === true ||
+        req.body.plugin_ue_enabled === "true" ||
+        req.body.plugin_ue_enabled === "on";
       updates.plugin_ue_enabled = isUeEnabled ? "true" : "false";
       hookManager.setPluginEnabled("ue", isUeEnabled);
 
-      const isRfidEnabled = req.body.plugin_rfid_enabled === "true" || req.body.plugin_rfid_enabled === "on";
+      const isRfidEnabled =
+        req.body.plugin_rfid_enabled === true ||
+        req.body.plugin_rfid_enabled === "true" ||
+        req.body.plugin_rfid_enabled === "on";
       updates.plugin_rfid_enabled = isRfidEnabled ? "true" : "false";
       hookManager.setPluginEnabled("rfid", isRfidEnabled);
 
-      const isBookstackEnabled = req.body.plugin_bookstack_enabled === "true" || req.body.plugin_bookstack_enabled === "on";
+      const isBookstackEnabled =
+        req.body.plugin_bookstack_enabled === true ||
+        req.body.plugin_bookstack_enabled === "true" ||
+        req.body.plugin_bookstack_enabled === "on";
       updates.plugin_bookstack_enabled = isBookstackEnabled ? "true" : "false";
       hookManager.setPluginEnabled("bookstack", isBookstackEnabled);
 
-      const isRepairCafeEnabled = req.body.plugin_repaircafe_enabled === "true" || req.body.plugin_repaircafe_enabled === "on";
+      const isRepairCafeEnabled =
+        req.body.plugin_repaircafe_enabled === true ||
+        req.body.plugin_repaircafe_enabled === "true" ||
+        req.body.plugin_repaircafe_enabled === "on";
       updates.plugin_repaircafe_enabled = isRepairCafeEnabled ? "true" : "false";
       hookManager.setPluginEnabled("repaircafe", isRepairCafeEnabled);
 
-      const isWorkshopEnabled = req.body.plugin_workshop_enabled === "true" || req.body.plugin_workshop_enabled === "on";
+      const isWorkshopEnabled =
+        req.body.plugin_workshop_enabled === true ||
+        req.body.plugin_workshop_enabled === "true" ||
+        req.body.plugin_workshop_enabled === "on";
       updates.plugin_workshop_enabled = isWorkshopEnabled ? "true" : "false";
       hookManager.setPluginEnabled("workshop", isWorkshopEnabled);
 
-      const isSorbonneEnabled = req.body.plugin_sorbonne_enabled === "true" || req.body.plugin_sorbonne_enabled === "on";
+      const isSorbonneEnabled =
+        req.body.plugin_sorbonne_enabled === true ||
+        req.body.plugin_sorbonne_enabled === "true" ||
+        req.body.plugin_sorbonne_enabled === "on";
       updates.plugin_sorbonne_enabled = isSorbonneEnabled ? "true" : "false";
       hookManager.setPluginEnabled("sorbonne", isSorbonneEnabled);
     }
 
     // Associated project type names for plugins
     if (req.body.repaircafe_projecttype_name !== undefined) {
-      updates.repaircafe_projecttype_name = req.body.repaircafe_projecttype_name.trim() || "Repair Café";
+      updates.repaircafe_projecttype_name =
+        (typeof req.body.repaircafe_projecttype_name === "string" ? req.body.repaircafe_projecttype_name.trim() : "") ||
+        "Repair Café";
     }
     if (req.body.workshop_projecttype_name !== undefined) {
-      updates.workshop_projecttype_name = req.body.workshop_projecttype_name.trim() || "Atelier";
+      updates.workshop_projecttype_name =
+        (typeof req.body.workshop_projecttype_name === "string" ? req.body.workshop_projecttype_name.trim() : "") ||
+        "Atelier";
     }
     if (req.body.ue_projecttype_name !== undefined) {
-      updates.ue_projecttype_name = req.body.ue_projecttype_name.trim() || "Academic";
+      updates.ue_projecttype_name =
+        (typeof req.body.ue_projecttype_name === "string" ? req.body.ue_projecttype_name.trim() : "") || "Academic";
     }
     if (req.body.sorbonne_projecttype_name !== undefined) {
-      updates.sorbonne_projecttype_name = req.body.sorbonne_projecttype_name.trim() || "Sorbonne";
+      updates.sorbonne_projecttype_name =
+        (typeof req.body.sorbonne_projecttype_name === "string" ? req.body.sorbonne_projecttype_name.trim() : "") ||
+        "Sorbonne";
     }
 
     // Natural Language AI Query settings (API keys are write-only; preserve existing when submitted blank)
     if (req.body.ai_provider !== undefined) {
       updates.ai_provider = req.body.ai_provider;
     }
-    if (req.body.ai_openai_api_key !== undefined && req.body.ai_openai_api_key.trim() !== "") {
+    if (typeof req.body.ai_openai_api_key === "string" && req.body.ai_openai_api_key.trim() !== "") {
       updates.ai_openai_api_key = req.body.ai_openai_api_key.trim();
     }
     if (req.body.ai_openai_model !== undefined) {
-      updates.ai_openai_model = req.body.ai_openai_model.trim() || "gpt-4o-mini";
+      updates.ai_openai_model =
+        (typeof req.body.ai_openai_model === "string" ? req.body.ai_openai_model.trim() : "") || "gpt-4o-mini";
     }
-    if (req.body.ai_gemini_api_key !== undefined && req.body.ai_gemini_api_key.trim() !== "") {
+    if (typeof req.body.ai_gemini_api_key === "string" && req.body.ai_gemini_api_key.trim() !== "") {
       updates.ai_gemini_api_key = req.body.ai_gemini_api_key.trim();
     }
     if (req.body.ai_gemini_model !== undefined) {
-      updates.ai_gemini_model = req.body.ai_gemini_model.trim() || "gemini-1.5-flash";
+      updates.ai_gemini_model =
+        (typeof req.body.ai_gemini_model === "string" ? req.body.ai_gemini_model.trim() : "") || "gemini-1.5-flash";
     }
-    if (req.body.ai_anthropic_api_key !== undefined && req.body.ai_anthropic_api_key.trim() !== "") {
+    if (typeof req.body.ai_anthropic_api_key === "string" && req.body.ai_anthropic_api_key.trim() !== "") {
       updates.ai_anthropic_api_key = req.body.ai_anthropic_api_key.trim();
     }
     if (req.body.ai_anthropic_model !== undefined) {
-      updates.ai_anthropic_model = req.body.ai_anthropic_model.trim() || "claude-3-5-haiku-20241022";
+      updates.ai_anthropic_model =
+        (typeof req.body.ai_anthropic_model === "string" ? req.body.ai_anthropic_model.trim() : "") ||
+        "claude-3-5-haiku-20241022";
     }
     if (req.body.ai_local_url !== undefined) {
-      const candidateLocalUrl = req.body.ai_local_url.trim() || "http://localhost:11434/v1";
+      const candidateLocalUrl =
+        (typeof req.body.ai_local_url === "string" ? req.body.ai_local_url.trim() : "") || "http://localhost:11434/v1";
       if (req.body.ai_provider === "local") {
         const { validateOutboundUrl } = require("../../utilities/ssrfGuard.js");
         try {
@@ -296,9 +337,10 @@ router.post(
       updates.ai_local_url = candidateLocalUrl;
     }
     if (req.body.ai_local_model !== undefined) {
-      updates.ai_local_model = req.body.ai_local_model.trim() || "llama3.2";
+      updates.ai_local_model =
+        (typeof req.body.ai_local_model === "string" ? req.body.ai_local_model.trim() : "") || "llama3.2";
     }
-    if (req.body.ai_local_api_key !== undefined && req.body.ai_local_api_key.trim() !== "") {
+    if (typeof req.body.ai_local_api_key === "string" && req.body.ai_local_api_key.trim() !== "") {
       updates.ai_local_api_key = req.body.ai_local_api_key.trim();
     }
 
@@ -424,6 +466,7 @@ router.post(
 router.post(
   "/ai/test-connection",
   express.json(),
+  validateBody(aiTestConnectionSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     const aiQueryService = require("../../services/aiQueryService");
     try {

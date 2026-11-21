@@ -5,6 +5,8 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const { idParamSchema, createWorkspaceSchema, updateWorkspaceSchema } = require("../../schemas/index.js");
 
 router.use(isAdmin);
 
@@ -39,6 +41,7 @@ router.get(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/workspaces/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -65,6 +68,7 @@ router.post(
 
 router.post(
   "/create",
+  validateBody(createWorkspaceSchema, { redirectUrl: "/admin/workspaces/manage" }),
   asyncHandler(async (req, res) => {
     const { name, location } = req.body;
 
@@ -91,6 +95,7 @@ router.post(
 
 router.post(
   "/update",
+  validateBody(updateWorkspaceSchema, { redirectUrl: "/admin/workspaces/manage" }),
   asyncHandler(async (req, res) => {
     const { workspaceid, name, location } = req.body;
 

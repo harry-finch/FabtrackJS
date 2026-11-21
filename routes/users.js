@@ -10,8 +10,14 @@ const clearNotification = require("../middleware/clearNotification.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
 const requireRoles = require("../middleware/requireRoles.js");
-const { validateBody } = require("../middleware/validate.js");
-const { createUserSchema, updateUserSchema } = require("../schemas/user.schema.js");
+const { validateBody, validateParams } = require("../middleware/validate.js");
+const { idParamSchema, userWorkshopParamsSchema } = require("../schemas/common.schema.js");
+const {
+  createUserSchema,
+  updateUserSchema,
+  userWorkshopInterestSchema,
+  userWorkshopBadgeSchema,
+} = require("../schemas/user.schema.js");
 const dateService = require("../services/dateService.js");
 const { isNull } = require("util");
 
@@ -131,6 +137,7 @@ router.post(
 router.post(
   "/delete/:id",
   isAdmin,
+  validateParams(idParamSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -153,6 +160,7 @@ router.post(
 router.get(
   "/edit/:id",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -452,6 +460,7 @@ router.get(
 router.post(
   "/update/:id",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
   validateBody(updateUserSchema, { redirectUrl: (req) => `/users/edit/${req.params.id}` }),
   asyncHandler(async (req, res) => {
@@ -498,7 +507,11 @@ router.post(
 router.post(
   "/:id/workshop-interest/add",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
+  validateBody(userWorkshopInterestSchema, {
+    redirectUrl: (req) => `/users/edit/${req.params.id}#collapseInterests`,
+  }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { workshopId } = req.body;
@@ -531,6 +544,7 @@ router.post(
 router.post(
   "/:id/workshop-interest/remove/:workshopId",
   requireRoles("admin", "user"),
+  validateParams(userWorkshopParamsSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id, workshopId } = req.params;
@@ -559,7 +573,11 @@ router.post(
     redirectUrl: (req) => `/users/edit/${req.params.id}`,
     message: "Seuls les administrateurs et médiateurs peuvent attribuer une habilitation.",
   }),
+  validateParams(idParamSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
+  validateBody(userWorkshopBadgeSchema, {
+    redirectUrl: (req) => `/users/edit/${req.params.id}#collapseInterests`,
+  }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { workshopId, removeInterest, awardedAt, awardedBy } = req.body;
@@ -626,6 +644,7 @@ router.post(
     redirectUrl: (req) => `/users/edit/${req.params.id}`,
     message: "Seuls les administrateurs et médiateurs peuvent révoquer une habilitation.",
   }),
+  validateParams(userWorkshopParamsSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id, workshopId } = req.params;
@@ -655,6 +674,7 @@ router.post(
 router.post(
   "/resend/:id",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: "/users/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;

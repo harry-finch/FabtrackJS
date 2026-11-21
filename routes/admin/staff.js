@@ -5,7 +5,8 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { isApiOrAjaxRequest } = require("../../middleware/requireRoles.js");
-const { validateBody } = require("../../middleware/validate.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const { idParamSchema } = require("../../schemas/common.schema.js");
 const { updateStaffSchema } = require("../../schemas/staff.schema.js");
 const staffAdminService = require("../../services/staffAdminService.js");
 const { prisma } = require("../../utilities/db.js");
@@ -77,6 +78,7 @@ router.get(
 
 router.get(
   "/edit/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/staff/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -104,6 +106,7 @@ router.get(
 
 router.post(
   "/enable/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/staff/manage" }),
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.enableStaff({
       targetId: req.params.id,
@@ -120,6 +123,7 @@ router.post(
 
 router.post(
   "/disable/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/staff/manage" }),
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.disableStaff({
       targetId: req.params.id,
@@ -135,6 +139,7 @@ router.post(
 
 router.post(
   "/promote/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/staff/manage" }),
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.promoteStaff({
       targetId: req.params.id,
@@ -150,6 +155,7 @@ router.post(
 
 router.post(
   "/demote/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/staff/manage" }),
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.demoteStaff({
       targetId: req.params.id,
@@ -165,6 +171,7 @@ router.post(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/staff/manage" }),
   asyncHandler(async (req, res) => {
     const result = await staffAdminService.deleteStaff({
       targetId: req.params.id,

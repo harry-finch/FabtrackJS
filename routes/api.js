@@ -15,7 +15,11 @@ const logger = require("../utilities/simpleLogger.js");
 const hookManager = require("../core/HookManager.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody, validateQuery } = require("../middleware/validate.js");
-const { rfidScanSchema } = require("../schemas/api.schema.js");
+const {
+  rfidScanSchema,
+  checkRfidQuerySchema,
+  projectDocumentationQuerySchema,
+} = require("../schemas/api.schema.js");
 
 // ******************************************************************************
 // Route returning a list of all staff members (admin only)
@@ -259,6 +263,7 @@ router.post(
 router.get(
   "/rfid/check-availability",
   isLoggedIn,
+  validateQuery(checkRfidQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     const { rfid, excludeUserId } = req.query;
     const results = await hookManager.triggerAsyncHook("rfid:checkAvailability", {
@@ -281,6 +286,7 @@ const bookstackService = require("../services/bookstackService.js");
 router.get(
   "/bookstack/check-doc",
   isLoggedIn,
+  validateQuery(projectDocumentationQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     if (!hookManager.isPluginEnabled("bookstack")) {
       return res.json({ enabled: false, message: "Plugin BookStack désactivé" });

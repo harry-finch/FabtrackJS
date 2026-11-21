@@ -5,6 +5,11 @@ const moment = require("moment");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
+const { validateBody } = require("../../middleware/validate.js");
+const {
+  historyImportPreviewSchema,
+  historyImportExecuteSchema,
+} = require("../../schemas/admin.schema.js");
 const historyImportService = require("../../services/historyImportService.js");
 const { prisma } = require("../../utilities/db.js");
 
@@ -75,6 +80,7 @@ router.get(
 router.post(
   "/preview",
   upload.single("csv_file"),
+  validateBody(historyImportPreviewSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     if (!req.file || !req.file.buffer) {
       return res.status(400).json({
@@ -115,6 +121,7 @@ router.post(
 router.post(
   "/execute",
   express.json({ limit: "15mb" }),
+  validateBody(historyImportExecuteSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     const { items, options } = req.body;
     if (!items || !Array.isArray(items) || items.length === 0) {

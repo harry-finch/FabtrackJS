@@ -5,6 +5,8 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const { idParamSchema, createLocationSchema, updateLocationSchema } = require("../../schemas/index.js");
 
 router.use(isAdmin);
 
@@ -39,6 +41,7 @@ router.get(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/locations/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -65,6 +68,7 @@ router.post(
 
 router.post(
   "/create",
+  validateBody(createLocationSchema, { redirectUrl: "/admin/locations/manage" }),
   asyncHandler(async (req, res) => {
     const { name, description } = req.body;
 
@@ -91,6 +95,7 @@ router.post(
 
 router.post(
   "/update",
+  validateBody(updateLocationSchema, { redirectUrl: "/admin/locations/manage" }),
   asyncHandler(async (req, res) => {
     const { locationid, name, description } = req.body;
 

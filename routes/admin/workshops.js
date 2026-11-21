@@ -5,6 +5,15 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const {
+  idParamSchema,
+  workshopUserParamsSchema,
+  createWorkshopSchema,
+  updateWorkshopSchema,
+  awardWorkshopBadgeSchema,
+  addWorkshopInterestSchema,
+} = require("../../schemas/index.js");
 const logger = require("../../utilities/simpleLogger.js");
 
 router.use(isAdmin);
@@ -70,6 +79,7 @@ router.get(
 
 router.post(
   "/create",
+  validateBody(createWorkshopSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/workshops/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { name, description, accessId } = req.body;
@@ -102,6 +112,7 @@ router.post(
 
 router.post(
   "/update",
+  validateBody(updateWorkshopSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/workshops/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { workshopid, name, description, accessId } = req.body;
@@ -133,6 +144,7 @@ router.post(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/workshops/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -159,6 +171,7 @@ router.post(
 
 router.post(
   "/award-badge",
+  validateBody(awardWorkshopBadgeSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/workshops/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     const { userId, workshopId, removeInterest } = req.body;
@@ -215,6 +228,7 @@ router.post(
 
 router.post(
   "/remove-interest/:workshopId/:userId",
+  validateParams(workshopUserParamsSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/workshops/manage" }),
   asyncHandler(async (req, res) => {
     const { workshopId, userId } = req.params;
 
@@ -242,6 +256,7 @@ router.post(
 
 router.post(
   "/add-interest",
+  validateBody(addWorkshopInterestSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/workshops/manage" }),
   asyncHandler(async (req, res) => {
     const { userId, workshopId } = req.body;
 

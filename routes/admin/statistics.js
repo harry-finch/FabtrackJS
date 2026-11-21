@@ -4,6 +4,12 @@ var router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { validateBody, validateQuery } = require("../../middleware/validate.js");
+const {
+  statisticsQuerySchema,
+  statisticsExportQuerySchema,
+  aiQuerySchema,
+} = require("../../schemas/admin.schema.js");
 
 router.use(isAdmin);
 
@@ -33,6 +39,7 @@ function getWeekNumber(date) {
 
 router.get(
   "/",
+  validateQuery(statisticsQuerySchema, { redirectUrl: "/admin/statistics" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/statistics";
@@ -441,6 +448,7 @@ router.get(
 router.post(
   "/ai-query",
   express.json(),
+  validateBody(aiQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     const { question } = req.body;
     if (!question || typeof question !== "string" || !question.trim()) {
@@ -464,6 +472,7 @@ router.post(
 
 router.get(
   "/export",
+  validateQuery(statisticsExportQuerySchema, { redirectUrl: "/admin/statistics" }),
   asyncHandler(async (req, res) => {
     const { workspaceId, startDate, endDate } = req.query;
 

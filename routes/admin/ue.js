@@ -5,6 +5,14 @@ const moment = require("moment");
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { validateBody, validateParams, validateQuery } = require("../../middleware/validate.js");
+const {
+  idParamSchema,
+  createUeSchema,
+  updateUeSchema,
+  regularizeUeSchema,
+  ueExportQuerySchema,
+} = require("../../schemas/index.js");
 
 router.use(isAdmin);
 
@@ -205,6 +213,7 @@ router.get(
 
 router.post(
   "/create",
+  validateBody(createUeSchema, { redirectUrl: "/admin/ue" }),
   asyncHandler(async (req, res) => {
     const { code, name, department, responsibleEmail } = req.body;
 
@@ -244,6 +253,8 @@ router.post(
 
 router.post(
   "/update/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/ue" }),
+  validateBody(updateUeSchema, { redirectUrl: "/admin/ue" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { code, name, department, responsibleEmail, active } = req.body;
@@ -276,6 +287,7 @@ router.post(
 
 router.post(
   "/toggle/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/ue" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -307,6 +319,7 @@ router.post(
 
 router.post(
   "/regularize",
+  validateBody(regularizeUeSchema, { redirectUrl: "/admin/ue" }),
   asyncHandler(async (req, res) => {
     const { historyId, unregisteredName, regularizeAction, targetUeId, newCode, newName, newDepartment, newResponsibleEmail } = req.body;
 
@@ -406,6 +419,7 @@ router.post(
 
 router.get(
   "/export-csv",
+  validateQuery(ueExportQuerySchema, { redirectUrl: "/admin/ue" }),
   asyncHandler(async (req, res) => {
     const { ueId, startDate, endDate } = req.query;
 

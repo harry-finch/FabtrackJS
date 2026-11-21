@@ -1,4 +1,3 @@
-const { z } = require("zod");
 const { cleanupRequestFiles } = require("../services/uploadSecurityService.js");
 const { resolveSafeRedirectUrl } = require("../utilities/securityHelpers.js");
 
@@ -15,138 +14,111 @@ function formatZodErrors(error) {
   });
 }
 
+function isJsonValidationRequest(req, options = {}) {
+  return (
+    options.isApi === true ||
+    (req.baseUrl && req.baseUrl.startsWith("/api")) ||
+    (req.originalUrl && req.originalUrl.startsWith("/api")) ||
+    req.xhr ||
+    (req.headers && req.headers.accept && req.headers.accept.includes("application/json"))
+  );
+}
+
+function handleValidationFailure(req, res, error, defaultMessage, options = {}) {
+  cleanupRequestFiles(req);
+  const formattedErrors = formatZodErrors(error);
+  const firstError = formattedErrors[0]?.message || defaultMessage;
+
+  if (isJsonValidationRequest(req, options)) {
+    return res.status(400).json({
+      success: false,
+      error: firstError,
+      message: firstError,
+      errors: formattedErrors,
+    });
+  }
+
+  if (req.session) {
+    req.session.notification = `Error: ${firstError}`;
+  }
+
+  const rawTarget =
+    typeof options.redirectUrl === "function" ? options.redirectUrl(req) : options.redirectUrl;
+  const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
+
+  return res.redirect(redirectTarget);
+}
+
 /**
- * Middleware factory to validate request body using a Zod schema
- * @param {z.ZodSchema} schema Zod schema to validate against
+ * Middleware factory to validate request body using a Zod schema.
+ * Strips unknown properties (mass-assignment protection): req.body = result.data.
+ * @param {import("zod").ZodSchema} schema Zod schema to validate against
  * @param {Object} options Configuration options
  * @param {string|Function} [options.redirectUrl] Fallback URL to redirect on validation error for HTML forms
  * @param {boolean} [options.isApi] Explicitly treat as API request (returns JSON 400)
  */
 function validateBody(schema, options = {}) {
   return (req, res, next) => {
-    const result = schema.safeParse(req.body);
+    const result = schema.safeParse(req.body ?? {});
 
     if (!result.success) {
-      cleanupRequestFiles(req);
-      const formattedErrors = formatZodErrors(result.error);
-      const firstError = formattedErrors[0]?.message || "Données de formulaire invalides.";
-
-      const isApi =
-        options.isApi === true ||
-        (req.baseUrl && req.baseUrl.startsWith("/api")) ||
-        (req.originalUrl && req.originalUrl.startsWith("/api")) ||
-        req.xhr ||
-        (req.headers.accept && req.headers.accept.includes("application/json"));
-
-      if (isApi) {
-        return res.status(400).json({
-          success: false,
-          error: firstError,
-          errors: formattedErrors,
-        });
-      }
-
-      if (req.session) {
-        req.session.notification = `Error: ${firstError}`;
-      }
-
-      const rawTarget =
-        typeof options.redirectUrl === "function" ? options.redirectUrl(req) : options.redirectUrl;
-      const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
-
-      return res.redirect(redirectTarget);
+      return handleValidationFailure(
+        req,
+        res,
+        result.error,
+        "Données de formulaire invalides.",
+        options,
+      );
     }
 
-    // Merge validated & coerced fields into req.body and expose req.validatedBody
-    req.body = { ...req.body, ...result.data };
+    // Strict stripping against mass-assignment: only schema-declared fields survive
+    req.body = result.data;
     req.validatedBody = result.data;
     return next();
   };
 }
 
 /**
- * Middleware factory to validate request params (e.g. :id)
+ * Middleware factory to validate request params (e.g. :id).
  */
 function validateParams(schema, options = {}) {
   return (req, res, next) => {
-    const result = schema.safeParse(req.params);
+    const result = schema.safeParse(req.params ?? {});
 
     if (!result.success) {
-      cleanupRequestFiles(req);
-      const formattedErrors = formatZodErrors(result.error);
-      const firstError = formattedErrors[0]?.message || "Paramètres d'URL invalides.";
-
-      const isApi =
-        options.isApi === true ||
-        (req.baseUrl && req.baseUrl.startsWith("/api")) ||
-        (req.originalUrl && req.originalUrl.startsWith("/api")) ||
-        req.xhr ||
-        (req.headers.accept && req.headers.accept.includes("application/json"));
-
-      if (isApi) {
-        return res.status(400).json({
-          success: false,
-          error: firstError,
-          errors: formattedErrors,
-        });
-      }
-
-      if (req.session) {
-        req.session.notification = `Error: ${firstError}`;
-      }
-
-      const rawTarget =
-        typeof options.redirectUrl === "function" ? options.redirectUrl(req) : options.redirectUrl;
-      const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
-
-      return res.redirect(redirectTarget);
+      return handleValidationFailure(
+        req,
+        res,
+        result.error,
+        "Paramètres d'URL invalides.",
+        options,
+      );
     }
 
-    req.params = { ...req.params, ...result.data };
+    req.params = result.data;
     req.validatedParams = result.data;
     return next();
   };
 }
 
 /**
- * Middleware factory to validate query parameters
+ * Middleware factory to validate query parameters.
  */
 function validateQuery(schema, options = {}) {
   return (req, res, next) => {
-    const result = schema.safeParse(req.query);
+    const result = schema.safeParse(req.query ?? {});
 
     if (!result.success) {
-      cleanupRequestFiles(req);
-      const formattedErrors = formatZodErrors(result.error);
-      const firstError = formattedErrors[0]?.message || "Paramètres de requête invalides.";
-
-      const isApi =
-        options.isApi === true ||
-        (req.baseUrl && req.baseUrl.startsWith("/api")) ||
-        (req.originalUrl && req.originalUrl.startsWith("/api")) ||
-        req.xhr ||
-        (req.headers.accept && req.headers.accept.includes("application/json"));
-
-      if (isApi) {
-        return res.status(400).json({
-          success: false,
-          error: firstError,
-          errors: formattedErrors,
-        });
-      }
-
-      if (req.session) {
-        req.session.notification = `Error: ${firstError}`;
-      }
-
-      const rawTarget =
-        typeof options.redirectUrl === "function" ? options.redirectUrl(req) : options.redirectUrl;
-      const redirectTarget = resolveSafeRedirectUrl(rawTarget, req, "/fabtrack");
-
-      return res.redirect(redirectTarget);
+      return handleValidationFailure(
+        req,
+        res,
+        result.error,
+        "Paramètres de requête invalides.",
+        options,
+      );
     }
 
-    req.query = { ...req.query, ...result.data };
+    req.query = result.data;
     req.validatedQuery = result.data;
     return next();
   };

@@ -2,6 +2,8 @@ const express = require("express");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
+const { validateBody } = require("../../middleware/validate.js");
+const { repairCafeSettingsSchema, repairCafeEntrySchema } = require("../../schemas/index.js");
 const settingsService = require("../../services/settingsService.js");
 const repairCafeService = require("../../services/repairCafeService.js");
 
@@ -32,13 +34,18 @@ router.get(
 // ******************************************************************************
 router.post(
   "/settings",
+  validateBody(repairCafeSettingsSchema, { redirectUrl: "/admin/repair-cafe" }),
   asyncHandler(async (req, res) => {
     const updates = {};
 
     updates.plugin_repaircafe_enabled =
-      req.body.plugin_repaircafe_enabled === "true" || req.body.plugin_repaircafe_enabled === "on" ? "true" : "false";
+      req.body.plugin_repaircafe_enabled === "true" ||
+      req.body.plugin_repaircafe_enabled === "on" ||
+      req.body.plugin_repaircafe_enabled === true
+        ? "true"
+        : "false";
 
-    if (req.body.repaircafe_projecttype_name !== undefined) {
+    if (typeof req.body.repaircafe_projecttype_name === "string") {
       updates.repaircafe_projecttype_name = req.body.repaircafe_projecttype_name.trim() || "Repair Café";
     }
 
@@ -55,6 +62,7 @@ router.post(
 // ******************************************************************************
 router.post(
   "/update-entry",
+  validateBody(repairCafeEntrySchema, { redirectUrl: "/admin/repair-cafe" }),
   asyncHandler(async (req, res) => {
     const { historyid, repairObject, repairStatus, repairNotes } = req.body;
 

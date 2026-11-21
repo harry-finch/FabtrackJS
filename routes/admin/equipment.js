@@ -5,7 +5,8 @@ const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
-const { validateBody } = require("../../middleware/validate.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const { idParamSchema } = require("../../schemas/common.schema.js");
 const { addEquipmentSchema, updateEquipmentSchema } = require("../../schemas/equipment.schema.js");
 const { returnEquipmentSchema } = require("../../schemas/history.schema.js");
 
@@ -234,6 +235,7 @@ router.post(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/equipment/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const equipId = Number(id);
@@ -285,6 +287,7 @@ router.post(
 
 router.post(
   "/return/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/equipment/manage" }),
   validateBody(returnEquipmentSchema, { redirectUrl: "/admin/equipment/manage" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;

@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
+const { validateQuery } = require("../../middleware/validate.js");
+const { communicationQuerySchema } = require("../../schemas/index.js");
 const dateService = require("../../services/dateService.js");
 
 router.use(isAdmin);
@@ -20,6 +22,7 @@ function formatDateTime(date) {
 
 router.get(
   "/",
+  validateQuery(communicationQuerySchema, { redirectUrl: "/admin/communication" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/communication";

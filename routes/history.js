@@ -6,7 +6,8 @@ const isLoggedIn = require("../middleware/checkSession.js");
 const requireRoles = require("../middleware/requireRoles.js");
 const { isApiOrAjaxRequest } = requireRoles;
 const { invalidateCache } = require("../middleware/cacheHelper.js");
-const { validateBody } = require("../middleware/validate.js");
+const { validateBody, validateParams } = require("../middleware/validate.js");
+const { idParamSchema } = require("../schemas/common.schema.js");
 const {
   createVisitSchema,
   creditSchema,
@@ -14,6 +15,8 @@ const {
   activitySchema,
   returnEquipmentSchema,
   updateCommentSchema,
+  exitRepairSchema,
+  updateHistorySchema,
 } = require("../schemas/history.schema.js");
 
 router.use(isLoggedIn);
@@ -314,6 +317,7 @@ router.post(
 
 router.post(
   "/exit/:id",
+  validateParams(idParamSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const now = new Date();
@@ -338,6 +342,7 @@ router.post(
 
 router.post(
   "/exit-repair",
+  validateBody(exitRepairSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { historyid, repairStatus, repairNotes } = req.body;
     const repairCafeService = require("../services/repairCafeService.js");
@@ -361,6 +366,7 @@ router.post(
 router.post(
   "/delete/:id",
   requireRoles("admin"),
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/view-history" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -385,6 +391,7 @@ router.post(
 router.post(
   "/update",
   requireRoles("admin"),
+  validateBody(updateHistorySchema, { redirectUrl: (req) => req.session.lastPage || "/admin/view-history" }),
   asyncHandler(async (req, res) => {
     const { historyid, arrival, departure, workspaceId, comments } = req.body;
 
@@ -452,6 +459,7 @@ router.post(
 router.post(
   "/project/unarchive/:id",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -472,6 +480,7 @@ router.post(
 router.post(
   "/project/archive/:id",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -726,6 +735,7 @@ router.post(
 router.post(
   "/cleardebt/:id",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const result = await balanceService.clearUserDebt({
@@ -815,6 +825,9 @@ router.post(
 router.post(
   "/equipment/return/:id",
   requireRoles("admin", "user"),
+  validateParams(idParamSchema, {
+    redirectUrl: (req) => require("../utilities/securityHelpers.js").getSafeRedirectPath(req, "/fabtrack"),
+  }),
   validateBody(returnEquipmentSchema, { redirectUrl: (req) => require("../utilities/securityHelpers.js").getSafeRedirectPath(req, "/fabtrack") }),
   asyncHandler(async (req, res) => {
     const { getSafeRedirectPath } = require("../utilities/securityHelpers.js");

@@ -7,8 +7,14 @@ const isAdmin = require("../../middleware/checkAdmin.js");
 const requireRoles = require("../../middleware/requireRoles.js");
 const { isApiOrAjaxRequest } = requireRoles;
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
+const { validateBody, validateParams, validateQuery } = require("../../middleware/validate.js");
 const inventoryService = require("../../services/inventoryService.js");
-const { inventoryCheckoutSchema } = require("../../schemas/inventory.schema.js");
+const {
+  idParamSchema,
+  inventoryCheckoutSchema,
+  restoreEquipmentSchema,
+  inventoryMovementsQuerySchema,
+} = require("../../schemas/index.js");
 const { prisma } = require("../../utilities/db.js");
 
 // ******************************************************************************
@@ -33,22 +39,16 @@ router.get(
 router.post(
   "/checkout",
   requireRoles("admin", "user"),
+  validateBody(inventoryCheckoutSchema, {
+    redirectUrl: (req) =>
+      require("../../utilities/securityHelpers.js").getSafeRedirectPath(req, req.session.lastPage || "/fabtrack"),
+  }),
   asyncHandler(async (req, res) => {
     const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
     const isJson = isApiOrAjaxRequest(req);
     const redirectUrl = getSafeRedirectPath(req, req.session.lastPage || "/fabtrack");
 
-    const parsed = inventoryCheckoutSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const errorMsg = parsed.error.issues.map((i) => i.message).join(" ");
-      if (isJson) {
-        return res.status(400).json({ success: false, message: errorMsg });
-      }
-      req.session.notification = `Error: ${errorMsg}`;
-      return res.redirect(redirectUrl);
-    }
-
-    const { itemType, itemId, quantity, reason, equipmentAction, notes } = parsed.data;
+    const { itemType, itemId, quantity, reason, equipmentAction, notes } = req.validatedBody || req.body;
     if (itemType !== "CONSUMABLE" && req.session.role !== "admin") {
       const errMsg = "La sortie d'équipement ou la mise au rebut est réservée aux administrateurs.";
       if (isJson) {
@@ -114,6 +114,7 @@ router.use(isAdmin);
 // Route: Movements history list
 router.get(
   "/movements",
+  validateQuery(inventoryMovementsQuerySchema, { redirectUrl: "/admin/inventory/movements" }),
   clearNotification,
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/admin/inventory/movements";
@@ -190,6 +191,8 @@ router.get(
 // Route: Restore an equipment back to AVAILABLE service
 router.post(
   "/equipment/restore/:id",
+  validateParams(idParamSchema, { redirectUrl: "/admin/equipment/manage" }),
+  validateBody(restoreEquipmentSchema, { redirectUrl: "/admin/equipment/manage" }),
   asyncHandler(async (req, res) => {
     const targetId = Number(req.params.id);
     const author = req.session.username || "Admin";

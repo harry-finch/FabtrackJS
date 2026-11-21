@@ -2,6 +2,8 @@ const express = require("express");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
+const { validateBody } = require("../../middleware/validate.js");
+const { bookstackSettingsSchema, bookstackTestSchema } = require("../../schemas/admin.schema.js");
 const settingsService = require("../../services/settingsService.js");
 const bookstackService = require("../../services/bookstackService.js");
 const { validateOutboundUrl } = require("../../utilities/ssrfGuard.js");
@@ -33,12 +35,17 @@ router.get(
 // ******************************************************************************
 router.post(
   "/settings",
+  validateBody(bookstackSettingsSchema, { redirectUrl: "/admin/bookstack" }),
   asyncHandler(async (req, res) => {
     const current = await settingsService.getSettings();
     const updates = {};
 
     updates.plugin_bookstack_enabled =
-      req.body.plugin_bookstack_enabled === "true" || req.body.plugin_bookstack_enabled === "on" ? "true" : "false";
+      req.body.plugin_bookstack_enabled === true ||
+      req.body.plugin_bookstack_enabled === "true" ||
+      req.body.plugin_bookstack_enabled === "on"
+        ? "true"
+        : "false";
 
     if (req.body.bookstack_url !== undefined) {
       let url = req.body.bookstack_url.trim();
@@ -66,7 +73,11 @@ router.post(
     }
 
     updates.bookstack_auto_prefill =
-      req.body.bookstack_auto_prefill === "true" || req.body.bookstack_auto_prefill === "on" ? "true" : "false";
+      req.body.bookstack_auto_prefill === true ||
+      req.body.bookstack_auto_prefill === "true" ||
+      req.body.bookstack_auto_prefill === "on"
+        ? "true"
+        : "false";
 
     await settingsService.updateSettings(updates);
 
@@ -80,6 +91,7 @@ router.post(
 // ******************************************************************************
 router.post(
   "/test",
+  validateBody(bookstackTestSchema, { redirectUrl: "/admin/bookstack" }),
   asyncHandler(async (req, res) => {
     const result = await bookstackService.testConnection();
 

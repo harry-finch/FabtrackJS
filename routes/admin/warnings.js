@@ -4,6 +4,8 @@ const router = express.Router();
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
+const { validateBody, validateParams } = require("../../middleware/validate.js");
+const { idParamSchema, createWarningSchema } = require("../../schemas/index.js");
 
 router.use(isAdmin);
 
@@ -63,6 +65,7 @@ router.get(
 
 router.post(
   "/deactivate/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/warnings" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -84,6 +87,7 @@ router.post(
 
 router.post(
   "/activate/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/warnings" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -105,6 +109,7 @@ router.post(
 
 router.post(
   "/delete/:id",
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/warnings" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -125,6 +130,7 @@ router.post(
 
 router.post(
   "/create",
+  validateBody(createWarningSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/warnings" }),
   asyncHandler(async (req, res) => {
     const { userid, warningtype, comments } = req.body;
 

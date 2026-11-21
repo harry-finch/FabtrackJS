@@ -9,6 +9,8 @@ const { prisma } = require("../utilities/db");
 const isLoggedIn = require("../middleware/checkSession.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
+const { validateBody } = require("../middleware/validate.js");
+const { switchWorkspaceSchema } = require("../schemas/admin.schema.js");
 const referenceCacheService = require("../services/referenceCacheService.js");
 const { getStartOfDay } = require("../services/visitAutoCloseService.js");
 
@@ -146,6 +148,7 @@ router.get(
 
 router.post(
   "/switchworkspace",
+  validateBody(switchWorkspaceSchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     const newWorkspaceId = Number(req.body.workspaceId);
     const availableWorkspaces = await referenceCacheService.getWorkspaces();

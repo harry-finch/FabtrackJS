@@ -8,8 +8,8 @@ const prisma = new PrismaClient();
 const mailService = require("../services/mailService.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const logger = require("../utilities/simpleLogger.js");
-const { validateBody } = require("../middleware/validate.js");
-const { reportIssueSchema } = require("../schemas/issue.schema.js");
+const { validateBody, validateQuery } = require("../middleware/validate.js");
+const { reportIssueSchema, reportIssueQuerySchema } = require("../schemas/issue.schema.js");
 const { createRateLimiter } = require("../middleware/rateLimit.js");
 const {
   UPLOAD_PROFILES,
@@ -74,6 +74,7 @@ const reportIssueLimiter = createRateLimiter({
 // ******************************************************************************
 router.get(
   ["/", "/:machineId"],
+  validateQuery(reportIssueQuerySchema, { redirectUrl: "/report-issue" }),
   asyncHandler(async (req, res) => {
     const requestedMachineId = req.params.machineId || req.query.machineId || null;
 
