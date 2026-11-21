@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 32** (9 %)
+**Avancement : 3 livrés sur 33** (9 %)
 
 ## Restant à faire
 
@@ -64,6 +64,8 @@
    Remplacer l'en-tête centré et le sélecteur flottant par le bandeau 44 px Fab Design System en bleu Sorbonne et harmoniser cartes, boutons, tableaux et barre d'état.
 29. **[R-032 Rafraîchir le kiosque et les tableaux sans rechargement avec synchro temps réel multi-postes](roadmap/items/R-032-rafraichir-le-kiosque-et-les-tableaux-sans.md)** · Idée · jalon v1.5
    Remplacer les rechargements complets de page sur le kiosque et les tableaux admin par des mises à jour dynamiques (fragments serveur + fetch) synchronisées en temps réel entre postes via SSE.
+30. **[R-033 Refondre le panneau d'administration en cockpit avec menu latéral persistant (Prop. 3)](roadmap/items/R-033-refondre-le-panneau-d-administration-en-cockpit.md)** · Idée · jalon v1.5
+   Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
 
 ## Actions à faire
 

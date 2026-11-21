@@ -16,4 +16,4 @@
 
 ## À suivre
 
-- Jalons `v1.1` à `v1.5` (`R-004` à `R-032`, statut `idee`) issus de l'audit technique `AUDIT-01` et des propositions UX/UI validées pour `v1.5` (Fab Design System Option B `R-031`, rafraîchissement sans rechargement & synchro temps réel SSE `R-032`), prêts à être spécifiés. Voir [ROADMAP.md](ROADMAP.md).
+- Jalons `v1.1` à `v1.5` (`R-004` à `R-033`, statut `idee`) issus de l'audit technique `AUDIT-01` et des propositions UX/UI validées pour `v1.5` (Fab Design System Option B `R-031`, rafraîchissement sans rechargement & synchro temps réel SSE `R-032`, panneau admin menu latéral + cockpit `R-033`), prêts à être spécifiés. Voir [ROADMAP.md](ROADMAP.md).
