@@ -38,7 +38,7 @@
    Encapsuler stock, soldes, emprunts et import CSV dans des transactions Prisma, corriger le 413 import CSV et figer les tarifs consommables.
 16. **[R-019 Migrer les schémas vers Zod v4 et généraliser la validation HTTP](roadmap/items/R-019-migrer-les-schemas-vers-zod-v4-et-generaliser-la.md)** · À tester · jalon v1.3
    Rétablir les messages d'erreur français sous Zod v4, activer le stripping contre le mass-assignment et valider paramètres, queries et POST restants.
-17. **[R-020 Supprimer l'état global muté par requête et masquer les erreurs internes en prod](roadmap/items/R-020-supprimer-l-etat-global-mute-par-requete-et.md)** · Idée · jalon v1.3
+17. **[R-020 Supprimer l'état global muté par requête et masquer les erreurs internes en prod](roadmap/items/R-020-supprimer-l-etat-global-mute-par-requete-et.md)** · À tester · jalon v1.3
    Passer la locale par requête dans dateService, synchroniser les plugins au changement uniquement et masquer stack/erreurs Prisma en production.
 18. **[R-021 Agréger les statistiques en SQL, unifier APP_TIMEZONE et paginer côté serveur](roadmap/items/R-021-agreger-les-statistiques-en-sql-unifier-app.md)** · Idée · jalon v1.4
    Migrer les calculs statistiques de JS vers SQL, corriger le fuseau horaire, paginer historique/usagers et remplacer le dump autocomplete kiosque.
@@ -102,6 +102,8 @@
 - [ ] [A-031](roadmap/actions/A-031-tester-un-double-emprunt-d-equipement-refuse-un.md) Tester un double emprunt d'équipement (refusé), un import CSV > 200 Ko avec projet existant et la non-rétroactivité d'une hausse de prix consommable (tester, R-018)
 - [ ] [A-032](roadmap/actions/A-032-tester-les-messages-d-erreur-zod-v4-en-francais.md) Tester les messages d'erreur Zod v4 en français et le rejet d'un :id invalide (tester, R-019)
 - [ ] [A-033](roadmap/actions/A-033-verifier-l-edition-d-un-usager-isexpert.md) Vérifier l'édition d'un usager (isExpert, termsAccepted), d'un consommable et d'une machine (tester, R-019)
+- [ ] [A-034](roadmap/actions/A-034-verifier-l-isolation-des-dates-longues-sur-deux.md) Vérifier l'isolation des dates longues sur deux sessions concurrentes FR et EN (tester, R-020)
+- [ ] [A-035](roadmap/actions/A-035-verifier-le-masquage-des-piles-d-appels-et.md) Vérifier le masquage des piles d'appels et messages internes sur erreur serveur hors développement (tester, R-020)
 
 ## Livré
 

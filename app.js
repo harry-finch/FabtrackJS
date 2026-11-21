@@ -13,8 +13,13 @@ const fs = require("fs");
 
 const loadPlugins = require("./core/pluginLoader");
 loadPlugins();
-const hookManager = require("./core/HookManager");
 const settingsService = require("./services/settingsService");
+if (process.env.NODE_ENV !== "test") {
+  // Synchronize plugin states with persisted DB settings once at startup (never per request)
+  settingsService.getSettings().catch((err) => {
+    console.error("[app] Failed to synchronize startup settings/plugins:", err);
+  });
+}
 const setupService = require("./services/setupService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
@@ -317,40 +322,34 @@ app.use(async (req, res, next) => {
     res.locals.currencySymbol = settings.currency_symbol || "€";
     res.locals.currentDateFormat = settings.date_format || "DD/MM/YYYY";
 
-    // Date formatting helpers
-    dateService.setLocale(targetLang);
-    res.locals.formatDate = dateService.formatDate;
-    res.locals.formatDateTime = dateService.formatDateTime;
-    res.locals.formatTime = dateService.formatTime;
+    // Per-request date formatting helpers (no global moment.locale mutation)
+    const dateHelpers = dateService.createRequestDateHelpers(targetLang);
+    res.locals.formatDate = dateHelpers.formatDate;
+    res.locals.formatDateTime = dateHelpers.formatDateTime;
+    res.locals.formatTime = dateHelpers.formatTime;
 
-    // Sync plugin states with settings
+    // Expose per-request plugin view flags (global HookManager is synced at startup & on updateSettings only)
     const isUeEnabled = settings.plugin_ue_enabled !== "false";
-    hookManager.setPluginEnabled("ue", isUeEnabled);
     res.locals.isPluginUeEnabled = isUeEnabled;
     res.locals.ueProjectTypeName = settings.ue_projecttype_name || "Academic";
 
     const isRfidEnabled = settings.plugin_rfid_enabled !== "false";
-    hookManager.setPluginEnabled("rfid", isRfidEnabled);
     res.locals.isPluginRfidEnabled = isRfidEnabled;
 
     const isBookstackEnabled = settings.plugin_bookstack_enabled !== "false";
-    hookManager.setPluginEnabled("bookstack", isBookstackEnabled);
     res.locals.isPluginBookstackEnabled = isBookstackEnabled;
     res.locals.bookstackBaseUrl = settings.bookstack_url || "https://wiki.fablab.sorbonne-universite.fr/BookStack/";
     res.locals.bookstackAutoPrefill = settings.bookstack_auto_prefill !== "false";
 
     const isRepairCafeEnabled = settings.plugin_repaircafe_enabled !== "false";
-    hookManager.setPluginEnabled("repaircafe", isRepairCafeEnabled);
     res.locals.isPluginRepairCafeEnabled = isRepairCafeEnabled;
     res.locals.repairCafeProjectTypeName = settings.repaircafe_projecttype_name || "Repair Café";
 
     const isWorkshopEnabled = settings.plugin_workshop_enabled !== "false";
-    hookManager.setPluginEnabled("workshop", isWorkshopEnabled);
     res.locals.isPluginWorkshopEnabled = isWorkshopEnabled;
     res.locals.workshopProjectTypeName = settings.workshop_projecttype_name || "Atelier";
 
     const isSorbonneEnabled = settings.plugin_sorbonne_enabled !== "false";
-    hookManager.setPluginEnabled("sorbonne", isSorbonneEnabled);
     res.locals.isPluginSorbonneEnabled = isSorbonneEnabled;
     res.locals.sorbonneProjectTypeName = settings.sorbonne_projecttype_name || "Sorbonne";
 
@@ -552,51 +551,68 @@ app.use((req, res, next) => {
   next(new ApiError(404, `Not Found: ${req.originalUrl}`));
 });
 
-// General error handler
-app.use((err, req, res, next) => {
+const GENERIC_SERVER_ERROR_MESSAGE = "Une erreur interne est survenue. Veuillez réessayer ultérieurement.";
+
+// General error handler — masks stack traces & internal 5xx/Prisma messages whenever NODE_ENV !== "development"
+function globalErrorHandler(err, req, res, _next) {
   const statusCode = err.statusCode || err.status || 500;
-  const errorDetail = {
-    message: err.message || 'Internal Server Error',
-    status: statusCode,
-    stack: req.app.get('env') === 'development' ? err.stack : undefined,
-    path: req.originalUrl,
-    timestamp: new Date().toISOString()
-  };
-  
-  // Log error details in any environment but more verbose in production
-  console.error(`[${errorDetail.timestamp}] ${statusCode} - ${errorDetail.message}`);
-  if (req.app.get('env') === 'production' && statusCode >= 500) {
+  const isExplicitDev = process.env.NODE_ENV === "development";
+  const timestamp = new Date().toISOString();
+  const internalMessage = err.message || "Internal Server Error";
+
+  // Always log real error details server-side for operators
+  console.error(`[${timestamp}] ${statusCode} - ${internalMessage}`);
+  if (statusCode >= 500 && err.stack) {
     console.error(err.stack);
   }
+
+  const publicMessage =
+    statusCode >= 500 && !isExplicitDev
+      ? GENERIC_SERVER_ERROR_MESSAGE
+      : internalMessage;
+
+  const publicError = isExplicitDev
+    ? {
+        message: publicMessage,
+        status: statusCode,
+        stack: err.stack,
+        path: req.originalUrl,
+        timestamp,
+      }
+    : {
+        message: publicMessage,
+        status: statusCode,
+      };
 
   // Respond appropriately based on request type (API/web)
   const isApiOrJson = Boolean(
     req.xhr ||
-    (req.headers.accept && req.headers.accept.includes("application/json")) ||
-    (req.headers["content-type"] && req.headers["content-type"].includes("application/json")) ||
-    req.is("json") ||
-    req.path.startsWith("/api/") ||
-    req.path.includes("/ai/")
+    (req.headers && req.headers.accept && req.headers.accept.includes("application/json")) ||
+    (req.headers && req.headers["content-type"] && req.headers["content-type"].includes("application/json")) ||
+    (typeof req.is === "function" && req.is("json")) ||
+    (req.path && (req.path.startsWith("/api/") || req.path.includes("/ai/"))),
   );
 
   if (isApiOrJson) {
-    res.status(statusCode).json({ error: errorDetail, message: errorDetail.message, success: false });
+    res.status(statusCode).json({ error: publicError, message: publicMessage, success: false });
   } else {
     res.status(statusCode);
-    res.locals.error = req.app.get('env') === 'development' ? errorDetail : { message: errorDetail.message, status: statusCode };
-    res.locals.message = errorDetail.message;
+    res.locals.error = publicError;
+    res.locals.message = publicMessage;
     res.locals.role = req.session ? req.session.role : null;
     res.locals.loggedin = req.session ? req.session.loggedin : false;
     res.locals.requestedPath = req.originalUrl;
     res.locals.notification = req.session ? req.session.notification || "" : "";
 
     if (statusCode === 404) {
-      res.render('404');
+      res.render("404");
     } else {
-      res.render('error');
+      res.render("error");
     }
   }
-});
+}
+
+app.use(globalErrorHandler);
 
 // ******************************************************************************
 // Export App
@@ -606,5 +622,7 @@ app.resolveSessionSecret = resolveSessionSecret;
 app.resolveTrustProxy = resolveTrustProxy;
 app.createSessionStore = createSessionStore;
 app.sessionStore = sessionStore;
+app.globalErrorHandler = globalErrorHandler;
+app.GENERIC_SERVER_ERROR_MESSAGE = GENERIC_SERVER_ERROR_MESSAGE;
 
 module.exports = app;

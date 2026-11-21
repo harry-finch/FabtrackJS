@@ -1,6 +1,16 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const { encryptSecret, decryptSecret } = require("../utilities/secretCrypto");
+const hookManager = require("../core/HookManager");
+
+const PLUGIN_SETTING_KEYS = {
+  ue: "plugin_ue_enabled",
+  rfid: "plugin_rfid_enabled",
+  bookstack: "plugin_bookstack_enabled",
+  repaircafe: "plugin_repaircafe_enabled",
+  workshop: "plugin_workshop_enabled",
+  sorbonne: "plugin_sorbonne_enabled",
+};
 
 const DEFAULT_SETTINGS = {
   platform_name: "FabtrackJS",
@@ -110,6 +120,19 @@ class SettingsService {
     return filterPublicSettings(settings);
   }
 
+  /**
+   * Synchronizes HookManager plugin enabled flags from the loaded settings object.
+   * Invoked only on initial load / reload and when settings change (never per HTTP request).
+   *
+   * @param {Object} settings
+   */
+  syncPluginStates(settings = {}) {
+    for (const [pluginId, settingKey] of Object.entries(PLUGIN_SETTING_KEYS)) {
+      const enabled = settings[settingKey] !== "false";
+      hookManager.setPluginEnabled(pluginId, enabled);
+    }
+  }
+
   getDefaults() {
     return { ...DEFAULT_SETTINGS };
   }
@@ -136,10 +159,13 @@ class SettingsService {
       });
 
       cache = settings;
+      this.syncPluginStates(cache);
       return { ...cache };
     } catch (err) {
       console.error("Error fetching system settings from DB:", err);
-      return cache ? { ...cache } : { ...DEFAULT_SETTINGS };
+      const fallback = cache ? { ...cache } : { ...DEFAULT_SETTINGS };
+      this.syncPluginStates(fallback);
+      return fallback;
     }
   }
 
@@ -158,6 +184,12 @@ class SettingsService {
     });
     if (cache) {
       cache[key] = plainVal;
+    }
+    for (const [pluginId, settingKey] of Object.entries(PLUGIN_SETTING_KEYS)) {
+      if (settingKey === key) {
+        hookManager.setPluginEnabled(pluginId, plainVal !== "false");
+        break;
+      }
     }
   }
 
@@ -182,3 +214,4 @@ class SettingsService {
 }
 
 module.exports = new SettingsService();
+module.exports.PLUGIN_SETTING_KEYS = PLUGIN_SETTING_KEYS;

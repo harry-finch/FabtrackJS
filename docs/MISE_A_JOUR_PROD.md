@@ -52,6 +52,7 @@ pm2 logs fabtrack --lines 50
 | [R-017](../roadmap/items/R-017-corriger-les-bugs-metier-averes-warnings.md) | `v1.3` | Aucune | Aucune | Aucune | Correctifs métier sans action de déploiement (avertissements, KPI Sorbonne par dates, inventaire `KEEP_STATUS`/alerte stock, fiches usagers, stats/maintenances machines, BookStack) |
 | [R-018](../roadmap/items/R-018-garantir-la-transactionnalite-des-ecritures.md) | `v1.3` | Aucune | **Obligatoire :** `ALTER TABLE Activity ADD COLUMN unitCost DECIMAL(10, 2) NULL;` | **`npx prisma generate`** (nouvelle colonne `Activity.unitCost`) | Tester refus double emprunt, import CSV > 200 Ko et non-rétroactivité d'une hausse de prix consommable |
 | [R-019](../roadmap/items/R-019-migrer-les-schemas-vers-zod-v4-et-generaliser-la.md) | `v1.3` | Aucune | Aucune | Aucune | Validation Zod v4 & stripping anti mass-assignment sans action de déploiement (tester un formulaire invalide → message français et un `:id` invalide sans 500) |
+| [R-020](../roadmap/items/R-020-supprimer-l-etat-global-mute-par-requete-et.md) | `v1.3` | Vérifier que `NODE_ENV=production` est défini en prod (les erreurs 5xx sont désormais masquées dès que `NODE_ENV !== "development"`) | Aucune | Aucune | Vérifier deux sessions concurrentes FR/EN sur les dates longues et l'absence de stack trace sur une erreur serveur |
 
 ---
 
