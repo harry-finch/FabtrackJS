@@ -12,6 +12,7 @@ const readline = require("readline/promises");
 const { stdin: input, stdout: output } = require("process");
 const { prisma } = require("../utilities/db");
 const setupService = require("../services/setupService");
+const { parseWorkspacesInput } = require("../schemas/setup.schema");
 
 const BANNER = `
 ============================================================
@@ -121,10 +122,7 @@ async function main() {
       );
     }
 
-    const workspaces = workspacesInput
-      .split(/[,;]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const workspaces = parseWorkspacesInput(workspacesInput);
 
     console.log("\n⏳ Initialisation de la plateforme en cours...");
 
@@ -139,7 +137,8 @@ async function main() {
         currencySymbol,
         workspaces,
       },
-      prisma
+      prisma,
+      { allowReconfigure: isInstalled }
     );
 
     console.log(`

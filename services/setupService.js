@@ -1,6 +1,7 @@
 const { prisma } = require("../utilities/db");
 const bcrypt = require("bcryptjs");
 const settingsService = require("./settingsService");
+const { parseWorkspacesInput } = require("../schemas/setup.schema");
 
 class SetupService {
   /**
@@ -8,6 +9,7 @@ class SetupService {
    * A platform is considered installed if:
    * 1. A setting 'platform_installed' === 'true' exists
    * 2. AND at least one staff with role 'admin' exists.
+   * Fail-closed on DB errors to never expose /setup when status cannot be verified.
    */
   async checkIsInstalled(customPrisma = prisma) {
     try {
@@ -31,7 +33,7 @@ class SetupService {
       return installedSetting?.value === "true";
     } catch (err) {
       console.error("Error checking platform installation status:", err);
-      return false;
+      return true;
     }
   }
 
@@ -84,8 +86,11 @@ class SetupService {
    * Execute full platform setup with provided parameters.
    * @param {Object} data Setup configuration data
    * @param {PrismaClient} customPrisma Prisma client or transaction instance
+   * @param {Object} [options] Setup options
+   * @param {boolean} [options.allowReconfigure=false] Allow reconfiguring an already-installed platform (CLI only)
    */
-  async runSetup(data, customPrisma = prisma) {
+  async runSetup(data, customPrisma = prisma, options = {}) {
+    const { allowReconfigure = false } = options || {};
     const {
       adminName,
       adminEmail,
@@ -102,22 +107,40 @@ class SetupService {
 
     // Run setup within a transaction if not already in one
     const execute = async (tx) => {
-      // 1. Create or update the Administrator Staff account
-      let admin = await tx.staff.findFirst({
-        where: { email: adminEmail },
-      });
+      // 0. Atomic guard against concurrent or unauthorized re-installation
+      if (!allowReconfigure) {
+        const [installedSetting, existingAdminCount] = await Promise.all([
+          tx.systemSetting.findUnique({ where: { key: "platform_installed" } }),
+          tx.staff.count({ where: { role: "admin" } }),
+        ]);
+        if ((installedSetting && installedSetting.value === "true") || existingAdminCount > 0) {
+          const err = new Error("La plateforme est déjà initialisée.");
+          err.code = "ALREADY_INSTALLED";
+          err.status = 403;
+          throw err;
+        }
+      }
 
-      if (admin) {
-        admin = await tx.staff.update({
-          where: { id: admin.id },
-          data: {
-            name: adminName,
-            password: hashedPassword,
-            role: "admin",
-            approved: true,
-          },
+      // 1. Create Administrator Staff account (only update existing on explicit CLI reconfigure)
+      let admin = null;
+      if (allowReconfigure) {
+        const existingStaff = await tx.staff.findFirst({
+          where: { email: adminEmail },
         });
-      } else {
+        if (existingStaff) {
+          admin = await tx.staff.update({
+            where: { id: existingStaff.id },
+            data: {
+              name: adminName,
+              password: hashedPassword,
+              role: "admin",
+              approved: true,
+            },
+          });
+        }
+      }
+
+      if (!admin) {
         admin = await tx.staff.create({
           data: {
             name: adminName,
@@ -150,11 +173,7 @@ class SetupService {
 
       // 3. Create Workspaces
       const createdWorkspaces = [];
-      let workspaceList = Array.isArray(workspaces)
-        ? workspaces
-        : typeof workspaces === "string"
-        ? workspaces.split(/[\n,;]+/).map((w) => w.trim()).filter(Boolean)
-        : [];
+      let workspaceList = parseWorkspacesInput(workspaces);
 
       // If no workspace provided, default to a sensible primary workspace
       if (workspaceList.length === 0) {
@@ -162,11 +181,9 @@ class SetupService {
       }
 
       for (const wsName of workspaceList) {
-        const trimmed = String(wsName).trim();
-        if (!trimmed) continue;
-        const existing = await tx.workspace.findFirst({ where: { name: trimmed } });
+        const existing = await tx.workspace.findFirst({ where: { name: wsName } });
         if (!existing) {
-          const ws = await tx.workspace.create({ data: { name: trimmed } });
+          const ws = await tx.workspace.create({ data: { name: wsName } });
           createdWorkspaces.push(ws);
         } else {
           createdWorkspaces.push(existing);
@@ -175,7 +192,7 @@ class SetupService {
 
       // Link admin to first workspace
       if (createdWorkspaces.length > 0) {
-        await tx.staff.update({
+        admin = await tx.staff.update({
           where: { id: admin.id },
           data: { lastWorkspaceId: createdWorkspaces[0].id },
         });
@@ -210,4 +227,7 @@ class SetupService {
   }
 }
 
-module.exports = new SetupService();
+const setupService = new SetupService();
+setupService.SetupService = SetupService;
+
+module.exports = setupService;

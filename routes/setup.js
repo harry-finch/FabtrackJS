@@ -36,6 +36,7 @@ router.post(
       if (req.isApiRequest || req.xhr || req.headers.accept?.includes("application/json")) {
         return res.status(403).json({
           success: false,
+          code: "ALREADY_INSTALLED",
           message: "La plateforme est déjà installée.",
         });
       }
@@ -49,14 +50,42 @@ router.post(
     defaultMessage: "Erreur dans le formulaire d'installation.",
   }),
   asyncHandler(async (req, res) => {
-    const result = await setupService.runSetup(req.body);
+    const payload = req.validatedBody || req.body;
+    let result;
+
+    try {
+      result = await setupService.runSetup(payload);
+    } catch (err) {
+      if (err && err.code === "ALREADY_INSTALLED") {
+        if (req.isApiRequest || req.xhr || req.headers.accept?.includes("application/json")) {
+          return res.status(403).json({
+            success: false,
+            code: "ALREADY_INSTALLED",
+            message: "La plateforme est déjà installée.",
+          });
+        }
+        req.session.notification = "Error: La plateforme est déjà initialisée.";
+        return res.redirect("/login");
+      }
+      throw err;
+    }
+
+    // Regenerate session before populating authenticated admin state
+    if (req.session && typeof req.session.regenerate === "function") {
+      await new Promise((resolve, reject) =>
+        req.session.regenerate((err) => (err ? reject(err) : resolve()))
+      );
+    }
 
     // Auto-login newly created administrator
     req.session.loggedin = true;
     req.session.role = "admin";
-    req.session.name = result.admin.name;
+    req.session.username = result.admin.name;
+    req.session.staffId = result.admin.id;
     req.session.email = result.admin.email;
-    req.session.userid = result.admin.id;
+    if (result.workspaces && result.workspaces.length > 0) {
+      req.session.lastWorkspaceId = result.workspaces[0].id;
+    }
     req.session.invalidateCache = true;
 
     if (req.isApiRequest || req.xhr || req.headers.accept?.includes("application/json")) {

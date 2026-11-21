@@ -16,7 +16,7 @@
    Empêcher la borne kiosque (staff) d'exécuter des actions financières ou destructives et rétablir les habilitations pour les médiateurs (user).
 5. **[R-008 Corriger le bug confirm() dans main.js, sécuriser simpleLogger et SMTP_PORT](roadmap/items/R-008-corriger-le-bug-confirm-dans-main-js-securiser.md)** · À tester · jalon v1.1
    Empêcher les suppressions accidentelles en sous-chemin, les crashs serveur sur promesses rejetées et la collision PORT/SMTP.
-6. **[R-009 Réparer le bootstrap /setup et resynchroniser prisma/schema.sql](roadmap/items/R-009-reparer-le-bootstrap-setup-et-resynchroniser.md)** · Idée · jalon v1.1
+6. **[R-009 Réparer le bootstrap /setup et resynchroniser prisma/schema.sql](roadmap/items/R-009-reparer-le-bootstrap-setup-et-resynchroniser.md)** · À tester · jalon v1.1
    Importer setupService dans app.js, corriger la création des espaces de travail au setup et réaligner schema.sql avec v1.0.
 7. **[R-010 Corriger les CVE npm production et remplacer Font Awesome Pro](roadmap/items/R-010-corriger-les-cve-npm-production-et-remplacer.md)** · Idée · jalon v1.1
    Résoudre les 13 vulnérabilités npm de production (dont proxy-addr critique) et retirer la licence commerciale Font Awesome Pro.
@@ -80,6 +80,8 @@
 - [ ] [A-009](roadmap/actions/A-009-verifier-les-comptes-staff-et-roles-apres.md) Vérifier les comptes Staff et rôles après déploiement R-007 en production (tester, R-007)
 - [ ] [A-010](roadmap/actions/A-010-tester-le-clic-annuler-sur-confirm-en-sous.md) Tester le clic Annuler sur confirm() en sous-chemin (R-008) (tester, R-008)
 - [ ] [A-011](roadmap/actions/A-011-verifier-smtp-port-avant-deploiement-r-008-en.md) Vérifier SMTP_PORT avant déploiement R-008 en production (tester, R-008)
+- [ ] [A-012](roadmap/actions/A-012-tester-le-bootstrap-setup-base-vierge-ou-rendu.md) Tester le bootstrap /setup (base vierge ou rendu) en local (tester, R-009)
+- [ ] [A-013](roadmap/actions/A-013-verifier-le-verrouillage-de-setup-sur-instance.md) Vérifier le verrouillage de /setup sur instance installée (tester, R-009)
 
 ## Livré
 

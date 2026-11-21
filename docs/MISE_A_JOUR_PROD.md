@@ -41,6 +41,7 @@ pm2 logs fabtrack --lines 50
 | [R-006](../roadmap/items/R-006-verrouiller-l-api-machines-nfc-en-fail-closed-et.md) | `v1.1` | Définir `FABTRACK_API_KEY` (ou `api_machine_token` en admin) avant tout client NFC | Aucune | Aucune | Vérifier que `/api/machines/*` retourne HTTP `401` sans clé |
 | [R-007](../roadmap/items/R-007-verrouiller-le-role-borne-kiosque-staff-et.md) | `v1.1` | Aucune | Aucune | Aucune | Contrôler les rôles Staff (`admin`, `user`, `staff`) et reconnecter les sessions actives |
 | [R-008](../roadmap/items/R-008-corriger-le-bug-confirm-dans-main-js-securiser.md) | `v1.1` | Utiliser `SMTP_PORT` (et non `PORT`) si le port SMTP vient du `.env` | Aucune | Aucune | Tester « Annuler » sur un `confirm()` en sous-chemin et vérifier l'envoi d'un e-mail test |
+| [R-009](../roadmap/items/R-009-reparer-le-bootstrap-setup-et-resynchroniser.md) | `v1.1` | Aucune | Aucune sur base existante (`prisma/schema.sql` resynchronisé pour nouvelles installations) | Aucune | Vérifier que `/setup` reste verrouillé (redirection `/login` ou HTTP `403`) |
 
 ---
 
@@ -160,6 +161,24 @@ SMTP_PORT=587
 
 - En déploiement sous-chemin (ex. `/fabtrack/`), cliquer sur une action protégée par `confirm()` puis sur **Annuler** : vérifier qu'aucune navigation ni suppression n'a lieu.
 - Envoyer un e-mail de test depuis **Administration > E-mails** pour confirmer la résolution du port SMTP.
+
+---
+
+#### `R-009` — Réparer le bootstrap `/setup` et resynchroniser `prisma/schema.sql`
+
+**1. Variable `.env`, SQL et dépendances**
+
+- **Aucune** modification `.env`, **aucune** nouvelle dépendance npm et **aucune** migration SQL nécessaire sur une base de production déjà initialisée (`prisma/schema.sql` est désormais entièrement aligné avec `prisma/schema.prisma` pour les nouvelles installations vierges).
+
+**2. Vérification post-déploiement**
+
+Contrôler qu'une instance déjà initialisée refuse bien l'accès à `/setup` :
+
+```bash
+curl -i -H "Accept: application/json" -X POST "https://votre-domaine.org/fabtrack/setup"
+# Attendu : HTTP/1.1 403 Forbidden (code ALREADY_INSTALLED)
+```
+
 
 
 

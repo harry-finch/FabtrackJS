@@ -15,6 +15,7 @@ const loadPlugins = require("./core/pluginLoader");
 loadPlugins();
 const hookManager = require("./core/HookManager");
 const settingsService = require("./services/settingsService");
+const setupService = require("./services/setupService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
 const { applyUploadStaticHeaders } = require("./services/uploadSecurityService");
