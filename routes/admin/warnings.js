@@ -152,8 +152,9 @@ router.post(
       mailService
         .sendWarningAlert({
           user: warning.user,
-          warningType: warning.warningtype?.name,
-          comment: warning.comments,
+          warningtype: warning.warningtype,
+          comments: warning.comments,
+          staffUsername: req.session ? req.session.username : null,
         })
         .catch((e) => console.error("Mail warning alert error:", e));
     } catch (e) {

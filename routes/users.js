@@ -26,7 +26,25 @@ function formatDateTime(date) {
 }
 
 function removeDuplicates(array) {
-  return array.filter((item, index) => array.indexOf(item) === index);
+  const seen = new Set();
+  const result = [];
+  for (const item of array) {
+    if (!item) continue;
+    const key = typeof item === "object" && item.id !== undefined ? `id:${item.id}` : item;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+function parseOptionalInt(val) {
+  if (val === null || val === undefined) return null;
+  const trimmed = String(val).trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  return Number.isInteger(parsed) ? parsed : null;
 }
 
 // ******************************************************************************
@@ -71,7 +89,7 @@ router.post(
           surname: newsurname,
           email: newemail,
           usertypeId: Number(newusertype),
-          birthYear: Number(newbirthyear),
+          birthYear: parseOptionalInt(newbirthyear),
           comment: newcomments,
           token: token,
           rfid: cleanRfid,
@@ -124,7 +142,7 @@ router.post(
     logger.logThat(`User ${user.name} ${user.surname} deleted by ${req.session.username}`);
 
     req.session.notification = `Success: User ${user.name} ${user.surname} has been deleted.`;
-    res.redirect(req.session.lastPage);
+    res.redirect(req.session.lastPage || "/users/manage");
   }),
 );
 
@@ -169,6 +187,11 @@ router.get(
         },
       },
     });
+
+    if (!user) {
+      req.session.notification = "Error: Contributeur introuvable.";
+      return res.redirect("/users/manage");
+    }
 
     const history = await prisma.history.findMany({
       where: { userId: Number(id) },
@@ -439,7 +462,7 @@ router.post(
           surname,
           email,
           usertypeId: Number(usertype),
-          birthYear: Number(birthyear),
+          birthYear: parseOptionalInt(birthyear),
           comment: comments,
           isExpert: isExpert === "true" || isExpert === "on" || isExpert === true,
           rfid: cleanRfid,

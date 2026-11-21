@@ -788,6 +788,46 @@ class MachineUsageService {
       };
     });
   }
+
+  /**
+   * Computes exact machine usage statistics via SQL aggregation (no 100-row cap).
+   *
+   * @param {number} machineId
+   * @returns {Promise<{ totalSessions: number, uniqueUsers: number, lastUsed: string }>}
+   */
+  async getMachineUsageStats(machineId) {
+    const parsedMachineId = Number(machineId);
+    if (!Number.isInteger(parsedMachineId) || parsedMachineId <= 0) {
+      return { totalSessions: 0, uniqueUsers: 0, lastUsed: "Jamais" };
+    }
+
+    const baseWhere = {
+      resourceId: parsedMachineId,
+      resourceType: "MACHINE",
+    };
+
+    const [totalSessions, distinctUsers, latestActivity] = await Promise.all([
+      this.prisma.activity.count({ where: baseWhere }),
+      this.prisma.activity.findMany({
+        where: { ...baseWhere, userId: { not: null } },
+        select: { userId: true },
+        distinct: ["userId"],
+      }),
+      this.prisma.activity.findFirst({
+        where: baseWhere,
+        orderBy: [{ startedAt: "desc" }, { createdAt: "desc" }],
+        select: { startedAt: true, createdAt: true },
+      }),
+    ]);
+
+    const lastDate = latestActivity ? latestActivity.startedAt || latestActivity.createdAt : null;
+
+    return {
+      totalSessions,
+      uniqueUsers: Array.isArray(distinctUsers) ? distinctUsers.length : 0,
+      lastUsed: lastDate ? this.dateService.formatDateTime(lastDate) : "Jamais",
+    };
+  }
 }
 
 const machineUsageService = new MachineUsageService();

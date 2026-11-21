@@ -1,5 +1,6 @@
 const { prisma } = require("../utilities/db");
 const logger = require("../utilities/simpleLogger");
+const mailService = require("./mailService");
 
 /**
  * Computes the ConsumableStatus based on current stock and threshold.
@@ -66,21 +67,28 @@ async function checkoutConsumable({ id, quantity, reason, notes, author }) {
     `Sortie d'inventaire: -${qty} ${consumable.unit || "u"} de "${consumable.name}" (Motif: ${reason}) par ${author}. Nouveau stock: ${stockAfter}.`,
   );
 
+  if (newStatus === "LOW_STOCK" || newStatus === "OUT_OF_STOCK") {
+    mailService
+      .sendLowStockAlert(updatedConsumable, stockAfter)
+      .catch((err) => console.error("[inventoryService/checkoutConsumable] Low stock alert error:", err));
+  }
+
   return { consumable: updatedConsumable, movement };
 }
 
 /**
  * Check out / decommission / mark out of service an equipment or tool.
+ * Supports `"KEEP_STATUS"` to record a movement without altering the equipment status.
  * @param {Object} params
  * @param {number} params.id - Equipment ID
- * @param {string} [params.action] - "OUT_OF_SERVICE" | "DECOMMISSIONED"
+ * @param {string} [params.action] - "OUT_OF_SERVICE" | "DECOMMISSIONED" | "KEEP_STATUS"
  * @param {string} params.reason - Motive (Casse, Rebut, Panne...)
  * @param {string} [params.notes] - Comments
  * @param {string} params.author - Staff/Admin username
  */
 async function checkoutEquipment({ id, action = "DECOMMISSIONED", reason, notes, author }) {
   const equipmentId = Number(id);
-  const statusTarget = action === "OUT_OF_SERVICE" ? "OUT_OF_SERVICE" : "DECOMMISSIONED";
+  const keepStatus = action === "KEEP_STATUS";
 
   const equipment = await prisma.equipment.findUnique({
     where: { id: equipmentId },
@@ -92,17 +100,17 @@ async function checkoutEquipment({ id, action = "DECOMMISSIONED", reason, notes,
   }
 
   const equipmentStatusBefore = equipment.status || "AVAILABLE";
+  const statusTarget = keepStatus
+    ? equipmentStatusBefore
+    : action === "OUT_OF_SERVICE"
+      ? "OUT_OF_SERVICE"
+      : "DECOMMISSIONED";
 
-  const [updatedEquipment, movement] = await prisma.$transaction([
-    prisma.equipment.update({
-      where: { id: equipmentId },
-      data: {
-        status: statusTarget,
-        decommissionedAt: new Date(),
-        decommissionReason: reason.trim(),
-      },
-    }),
-    prisma.inventoryMovement.create({
+  let updatedEquipment = equipment;
+  let movement;
+
+  if (keepStatus) {
+    movement = await prisma.inventoryMovement.create({
       data: {
         itemType: "EQUIPMENT",
         itemId: equipment.id,
@@ -115,11 +123,38 @@ async function checkoutEquipment({ id, action = "DECOMMISSIONED", reason, notes,
         equipmentStatusBefore,
         equipmentStatusAfter: statusTarget,
       },
-    }),
-  ]);
+    });
+  } else {
+    [updatedEquipment, movement] = await prisma.$transaction([
+      prisma.equipment.update({
+        where: { id: equipmentId },
+        data: {
+          status: statusTarget,
+          decommissionedAt: new Date(),
+          decommissionReason: reason.trim(),
+        },
+      }),
+      prisma.inventoryMovement.create({
+        data: {
+          itemType: "EQUIPMENT",
+          itemId: equipment.id,
+          itemName: equipment.name,
+          quantity: 1,
+          unit: "u",
+          reason: reason.trim(),
+          notes: notes ? notes.trim() : null,
+          author: author || "Système",
+          equipmentStatusBefore,
+          equipmentStatusAfter: statusTarget,
+        },
+      }),
+    ]);
+  }
 
   logger.logThat(
-    `Sortie d'inventaire équipement: "${equipment.name}" (#${equipment.id}) passé à ${statusTarget} (Motif: ${reason}) par ${author}.`,
+    keepStatus
+      ? `Sortie d'inventaire équipement: "${equipment.name}" (#${equipment.id}) statut conservé (${statusTarget}, Motif: ${reason}) par ${author}.`
+      : `Sortie d'inventaire équipement: "${equipment.name}" (#${equipment.id}) passé à ${statusTarget} (Motif: ${reason}) par ${author}.`,
   );
 
   return { equipment: updatedEquipment, movement };

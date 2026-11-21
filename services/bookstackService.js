@@ -255,13 +255,15 @@ class BookstackService {
       return { success: false, error: "Projet introuvable" };
     }
 
-    // Retrieve the user's previous visit date from History
+    // Retrieve the user's previous visit date on THIS specific project from History
     let lastVisitDate = null;
     if (uId && !isNaN(uId)) {
       const lastHistory = await prisma.history.findFirst({
         where: {
           userId: uId,
-          arrival: { not: undefined },
+          userproject: {
+            projectId: pId,
+          },
         },
         orderBy: { arrival: "desc" },
       });

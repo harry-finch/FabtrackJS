@@ -224,19 +224,12 @@ router.get(
       return res.redirect("/admin/machines/manage");
     }
 
-    // Fetch usage activities for this machine using MachineUsageService (include email for admin view)
+    // Fetch recent usage history + exact SQL-aggregated usageStats (no 100-row cap)
     const machineUsageService = require("../../services/machineUsageService.js");
-    const usageHistory = await machineUsageService.getMachineUsageHistory(Number(id), 100, { includeEmail: true });
-
-    const uniqueUsersCount = new Set(
-      usageHistory.map((u) => (u.user ? u.user.id : null)).filter(Boolean)
-    ).size;
-
-    const usageStats = {
-      totalSessions: usageHistory.length,
-      uniqueUsers: uniqueUsersCount,
-      lastUsed: usageHistory.length > 0 ? usageHistory[0].formattedStartedAt || usageHistory[0].formattedDate : "Jamais",
-    };
+    const [usageHistory, usageStats] = await Promise.all([
+      machineUsageService.getMachineUsageHistory(Number(id), 100, { includeEmail: true }),
+      machineUsageService.getMachineUsageStats(Number(id)),
+    ]);
 
     const formattedIssues = (machine.issues || []).map((issue) => ({
       ...issue,
@@ -428,13 +421,18 @@ router.post(
       },
     });
 
-    // Automatically update lastMaintenance on machine
-    await prisma.machine.update({
-      where: { id: machineId },
-      data: {
-        lastMaintenance: opDate,
-      },
-    });
+    // Preserve the most recent maintenance date when a backdated maintenance entry is recorded
+    const shouldUpdateLastMaintenance =
+      !machine.lastMaintenance || new Date(opDate).getTime() >= new Date(machine.lastMaintenance).getTime();
+
+    if (shouldUpdateLastMaintenance) {
+      await prisma.machine.update({
+        where: { id: machineId },
+        data: {
+          lastMaintenance: opDate,
+        },
+      });
+    }
 
     // Optionally resolve open issues if requested
     if (resolveOpenIssues) {

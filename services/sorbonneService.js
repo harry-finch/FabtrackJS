@@ -73,12 +73,27 @@ class SorbonneService {
    * Fetches all consumable activities associated with Sorbonne projects, enriched with costs and entity
    */
   async getSorbonneConsumptions(options = {}) {
-    const { entity, status } = options;
+    const { entity, status, startDate = null, endDate = null } = options;
+
+    const createdAtFilter = {};
+    if (startDate) {
+      const parsedStart = new Date(`${startDate}T00:00:00.000`);
+      if (!Number.isNaN(parsedStart.getTime())) {
+        createdAtFilter.gte = parsedStart;
+      }
+    }
+    if (endDate) {
+      const parsedEnd = new Date(`${endDate}T23:59:59.999`);
+      if (!Number.isNaN(parsedEnd.getTime())) {
+        createdAtFilter.lte = parsedEnd;
+      }
+    }
 
     // 1. Fetch all consumable activities that have a history linking to a project with a sorbonneEntity (or history with sorbonneEntity)
     const rawActivities = await prisma.activity.findMany({
       where: {
         resourceType: ResourceType.CONSUMABLE,
+        ...(Object.keys(createdAtFilter).length > 0 ? { createdAt: createdAtFilter } : {}),
         history: {
           OR: [
             { sorbonneEntity: { not: null } },
@@ -160,6 +175,20 @@ class SorbonneService {
       enriched = enriched.filter((a) => !a.settled);
     }
 
+    // Also enforce date bounds in memory (ensures consistency even with mocked Prisma)
+    if (startDate) {
+      const start = new Date(`${startDate}T00:00:00.000`);
+      if (!Number.isNaN(start.getTime())) {
+        enriched = enriched.filter((a) => new Date(a.createdAt) >= start);
+      }
+    }
+    if (endDate) {
+      const end = new Date(`${endDate}T23:59:59.999`);
+      if (!Number.isNaN(end.getTime())) {
+        enriched = enriched.filter((a) => new Date(a.createdAt) <= end);
+      }
+    }
+
     // 4. Compute statistics
     let pendingTotalCost = 0;
     let settledTotalCost = 0;
@@ -232,7 +261,9 @@ class SorbonneService {
     const act = await prisma.activity.findUnique({
       where: { id: Number(activityId) },
     });
-    if (!act) return null;
+    if (!act || act.resourceType !== ResourceType.CONSUMABLE) {
+      return null;
+    }
 
     const newSettled = !act.settled;
     const updated = await prisma.activity.update({

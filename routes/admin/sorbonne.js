@@ -28,24 +28,15 @@ router.get(
       sorbonneService.getSorbonneConsumptions({
         entity: selectedEntity,
         status: selectedStatus,
+        startDate: startDate || null,
+        endDate: endDate || null,
       }),
       sorbonneService.getDistinctEntities(),
     ]);
 
-    // Apply date range filter in memory if provided
-    let filteredActivities = consumptionData.activities;
-    if (startDate) {
-      const start = new Date(`${startDate}T00:00:00.000`);
-      filteredActivities = filteredActivities.filter((a) => new Date(a.createdAt) >= start);
-    }
-    if (endDate) {
-      const end = new Date(`${endDate}T23:59:59.999`);
-      filteredActivities = filteredActivities.filter((a) => new Date(a.createdAt) <= end);
-    }
-
     res.render("admin/manage-sorbonne-projects", {
       title: "Gestion des Projets Sorbonne & Facturation",
-      activities: filteredActivities,
+      activities: consumptionData.activities,
       entitySummary: consumptionData.entitySummary,
       entities,
       selectedEntity,
@@ -127,17 +118,11 @@ router.get(
     const consumptionData = await sorbonneService.getSorbonneConsumptions({
       entity: entity || "all",
       status: status || "all",
+      startDate: startDate || null,
+      endDate: endDate || null,
     });
 
-    let activities = consumptionData.activities;
-    if (startDate) {
-      const start = new Date(`${startDate}T00:00:00.000`);
-      activities = activities.filter((a) => new Date(a.createdAt) >= start);
-    }
-    if (endDate) {
-      const end = new Date(`${endDate}T23:59:59.999`);
-      activities = activities.filter((a) => new Date(a.createdAt) <= end);
-    }
+    const activities = consumptionData.activities;
 
     const { escapeCsvCell, sanitizeContentDispositionFilename } = require("../../utilities/securityHelpers.js");
     // CSV header with UTF-8 BOM for Microsoft Excel

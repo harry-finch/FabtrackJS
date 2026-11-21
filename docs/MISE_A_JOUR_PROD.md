@@ -49,6 +49,7 @@ pm2 logs fabtrack --lines 50
 | [R-014](../roadmap/items/R-014-index-sql-critiques-sessions-mariadb-cache.md) | `v1.2` | Optionnel : `VISIT_AUTO_CLOSE_TIME=18:30` (défaut `18:30`) | **Obligatoire :** `CREATE TABLE IF NOT EXISTS Session` + 10 `CREATE INDEX` composites | **`npx prisma generate`** (nouveau modèle `Session`) | Vérifier qu'une session survit à `pm2 restart fabtrack` et qu'une modif admin est visible immédiatement sur le kiosque |
 | [R-015](../roadmap/items/R-015-corriger-les-injections-transverses-et-l.md) | `v1.3` | Aucune | Aucune | Aucune | Vérifier que `/admin/settings` n'affiche plus les clés API/tokens en clair dans le HTML et tester un export CSV |
 | [R-016](../roadmap/items/R-016-confiner-l-ia-nl2sql-role-mariadb-lecture-seule.md) | `v1.3` | Si IA NL2SQL activée : **`DATABASE_URL_AI_RO`** (obligatoire en prod) ; optionnel : `SETTINGS_ENCRYPTION_KEY`, `AI_LOCAL_ALLOWED_HOSTS`, `BOOKSTACK_ALLOWED_HOSTS` | Si IA NL2SQL activée : créer le compte MariaDB `fabtrack_ai_ro` en lecture seule | Aucune | Tester une requête IA sous compte RO et vérifier le blocage SSRF (`http://169.254.169.254`) |
+| [R-017](../roadmap/items/R-017-corriger-les-bugs-metier-averes-warnings.md) | `v1.3` | Aucune | Aucune | Aucune | Correctifs métier sans action de déploiement (avertissements, KPI Sorbonne par dates, inventaire `KEEP_STATUS`/alerte stock, fiches usagers, stats/maintenances machines, BookStack) |
 
 ---
 
