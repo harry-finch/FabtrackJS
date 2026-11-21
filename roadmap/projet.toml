@@ -1,5 +1,28 @@
 format = 1
 nom = "FabtrackJS"
+resume = "Suivi d'activité, machines et consommables pour fablabs"
+identite = "#4c8df5"
+logo = "public/images/logo-fabtrack.svg"
+agent = "agy"
+type = "logiciel"
+
+[[test]]
+type = "url"
+titre = "Version locale"
+url = "http://localhost:8080"
+commande = "npm run dev"
 
 [[test]]
 type = "release"
+
+[[jalons]]
+id = "v0.1"
+titre = "Base Node.js & suivi utilisateurs"
+
+[[jalons]]
+id = "v0.2"
+titre = "Plateforme complète, Prisma v7 & plugins"
+
+[[jalons]]
+id = "v1.0"
+titre = "Suivi machines NFC, finitions & v1"
