@@ -8,8 +8,7 @@ var router = express.Router();
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db.js");
 
 const logger = require("../utilities/simpleLogger.js");
 const hookManager = require("../core/HookManager.js");

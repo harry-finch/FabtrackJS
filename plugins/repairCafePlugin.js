@@ -14,11 +14,6 @@ module.exports = {
   description: "Gestion des visites Repair Café : saisie de l'objet à réparer, modal de bilan de réparation à la sortie et suivi statistique.",
 
   register(hookManager) {
-    const repairCafeService = require("../services/repairCafeService.js");
-    repairCafeService.ensureProjectType().catch((err) => {
-      console.error("[repairCafePlugin] Error ensuring project type:", err);
-    });
-
     // Menu item for admin panel in Section 1 (Activité & Suivi)
     hookManager.addHook("admin:menuItems", () => {
       return {
@@ -31,5 +26,10 @@ module.exports = {
         section: "activity",
       };
     });
+  },
+
+  async bootstrap() {
+    const repairCafeService = require("../services/repairCafeService.js");
+    await repairCafeService.ensureProjectType();
   },
 };

@@ -1,8 +1,8 @@
 const express = require("express");
 const moment = require("moment");
-const { PrismaClient } = require("@prisma/client");
 const logger = require("../utilities/simpleLogger.js");
-const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
+const uuidv4 = () => crypto.randomUUID();
 const mailService = require("../services/mailService.js");
 
 const asyncHandler = require("../middleware/asyncHandler.js");
@@ -22,7 +22,7 @@ const {
 const dateService = require("../services/dateService.js");
 const { isNull } = require("util");
 
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db.js");
 const router = express.Router();
 
 router.use(isLoggedIn); // Ensure user is logged in

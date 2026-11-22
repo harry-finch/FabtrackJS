@@ -1,8 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
 
-const { PrismaClient } = require("@prisma/client");
-
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
@@ -12,7 +10,7 @@ const { getZonedDayBounds, formatDateInTimezone } = require("../../utilities/tim
 const dateService = require("../../services/dateService.js");
 
 dotenv.config();
-const prisma = new PrismaClient();
+const { prisma } = require("../../utilities/db.js");
 const router = express.Router();
 
 // Admin access check middleware

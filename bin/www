@@ -4,43 +4,26 @@
  * Module dependencies.
  */
 
-var app = require("../app");
+const app = require("../app");
 const { prisma, closePool } = require("../utilities/db");
 const { closeAiReadOnlyPool } = require("../utilities/aiReadOnlyDb");
 const visitAutoCloseService = require("../services/visitAutoCloseService");
-var debug = require("debug")("fabtrackjs:server");
-var http = require("http");
-
-const { Server } = require("socket.io");
+const { runPluginBootstrap } = require("../core/pluginLoader");
+const debug = require("debug")("fabtrackjs:server");
+const http = require("http");
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || "8080");
+const port = normalizePort(process.env.PORT || "8080");
 app.set("port", port);
 
 /**
- * Create HTTP server and Socket.io server
+ * Create HTTP server.
  */
 
-var server = http.createServer(app);
-const io = new Server(server);
-
-// Make socket.io available everywhere
-app.set("socketio", io);
-
-io.on("connection", (socket) => {
-  console.log("a user connected");
-
-  socket.on("message", (msg) => {
-    console.log("Message : " + msg);
-  });
-});
-
-io.on("message", (msg) => {
-  console.log("Message : " + msg);
-});
+const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -55,16 +38,16 @@ server.on("listening", onListening);
  */
 
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+  const parsed = parseInt(val, 10);
 
-  if (isNaN(port)) {
+  if (isNaN(parsed)) {
     // named pipe
     return val;
   }
 
-  if (port >= 0) {
+  if (parsed >= 0) {
     // port number
-    return port;
+    return parsed;
   }
 
   return false;
@@ -79,7 +62,7 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
+  const bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
@@ -101,9 +84,14 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+  const addr = server.address();
+  const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);
+
+  // Run plugin DB bootstrap tasks once server is listening (never during module import)
+  runPluginBootstrap().catch((err) => {
+    console.error("[process] Plugin bootstrap warning:", err.message);
+  });
 
   // Start background schedulers (forgotten visits auto-close & expired sessions cleanup)
   visitAutoCloseService.startScheduler();
@@ -115,7 +103,7 @@ function onListening() {
 let isShuttingDown = false;
 
 /**
- * Gracefully shuts down Socket.IO, the HTTP server, Prisma, and the MariaDB pool.
+ * Gracefully shuts down the HTTP server, schedulers, Prisma, and MariaDB pools.
  */
 async function shutdown(signal, exitCode = 0) {
   if (isShuttingDown) {
@@ -136,13 +124,11 @@ async function shutdown(signal, exitCode = 0) {
       app.sessionStore.stopCleanupTimer();
     }
     await new Promise((resolve) => {
-      io.close(() => {
-        if (!server.listening) {
-          resolve();
-          return;
-        }
-        server.close(() => resolve());
-      });
+      if (!server.listening) {
+        resolve();
+        return;
+      }
+      server.close(() => resolve());
     });
     await prisma.$disconnect();
     await closeAiReadOnlyPool();

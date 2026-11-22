@@ -18,8 +18,7 @@ const logger = require("../../utilities/simpleLogger.js");
 
 router.use(isAdmin);
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../../utilities/db.js");
 const dateService = require("../../services/dateService.js");
 
 function formatDateTime(date) {

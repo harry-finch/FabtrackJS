@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db.js");
 
 module.exports = {
   id: "sorbonne",
@@ -9,11 +8,6 @@ module.exports = {
   description: "Rattachement d'une Entité ou UFR aux projets Sorbonne avec traçabilité et règlement des consommations.",
 
   register(hookManager) {
-    const sorbonneService = require("../services/sorbonneService.js");
-    sorbonneService.ensureProjectType().catch((err) => {
-      console.error("Error ensuring Sorbonne project type:", err);
-    });
-
     // Hook to provide distinct Sorbonne entities already in the database
     hookManager.addHook("fabtrack:sorbonneEntities", async () => {
       try {
@@ -44,5 +38,10 @@ module.exports = {
         badge: "Sorbonne",
       };
     });
+  },
+
+  async bootstrap() {
+    const sorbonneService = require("../services/sorbonneService.js");
+    await sorbonneService.ensureProjectType();
   },
 };

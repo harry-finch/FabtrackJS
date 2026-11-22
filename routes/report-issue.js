@@ -2,8 +2,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db.js");
 
 const mailService = require("../services/mailService.js");
 const asyncHandler = require("../middleware/asyncHandler.js");

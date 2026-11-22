@@ -11,8 +11,7 @@ const { createWarningSchema } = require("../schemas/warning.schema.js");
 
 router.use(isLoggedIn);
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db.js");
 const mailService = require("../services/mailService.js");
 
 // ******************************************************************************

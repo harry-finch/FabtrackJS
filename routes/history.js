@@ -21,8 +21,7 @@ const {
 
 router.use(isLoggedIn);
 
-const { PrismaClient, ResourceType, ConsumableStatus } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma, ResourceType, ConsumableStatus } = require("../utilities/db.js");
 const mailService = require("../services/mailService.js");
 const balanceService = require("../services/balanceService.js");
 const logger = require("../utilities/simpleLogger.js");

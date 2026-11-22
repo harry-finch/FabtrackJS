@@ -23,8 +23,8 @@
  */
 
 const { prisma } = require("../utilities/db");
-const { v4: uuidv4 } = require("uuid");
 const crypto = require("crypto");
+const uuidv4 = () => crypto.randomUUID();
 
 // --- Utilitaires de hasard ---
 function randomInt(min, max) {

@@ -131,7 +131,7 @@ class AiQueryService {
    * Appelle l'API du fournisseur sélectionné
    */
   async callProvider(provider, config, messages) {
-    const fetch = global.fetch || require("node-fetch");
+    const fetch = global.fetch;
     const timeoutMs = 30000;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);

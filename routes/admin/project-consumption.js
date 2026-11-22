@@ -5,8 +5,7 @@ const moment = require("moment");
 const asyncHandler = require("../../middleware/asyncHandler.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../../utilities/db.js");
 const dateService = require("../../services/dateService.js");
 
 router.use(isAdmin);

@@ -12,8 +12,7 @@ const { returnEquipmentSchema } = require("../../schemas/history.schema.js");
 
 router.use(isAdmin);
 
-const { PrismaClient, ResourceType } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma, ResourceType } = require("../../utilities/db.js");
 
 const logger = require("../../utilities/simpleLogger.js");
 

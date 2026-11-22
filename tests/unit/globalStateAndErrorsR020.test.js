@@ -9,6 +9,12 @@ const mockPrismaClient = {
   },
 };
 
+jest.mock("../../utilities/db", () => ({
+  prisma: mockPrismaClient,
+  ResourceType: { MACHINE: "MACHINE", EQUIPMENT: "EQUIPMENT", CONSUMABLE: "CONSUMABLE" },
+  ConsumableStatus: { AVAILABLE: "AVAILABLE", LOW_STOCK: "LOW_STOCK", OUT_OF_STOCK: "OUT_OF_STOCK" },
+}));
+
 jest.mock("@prisma/client", () => {
   const actual = jest.requireActual("@prisma/client");
   return {

@@ -1,5 +1,4 @@
-const { PrismaClient, ResourceType } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma, ResourceType } = require("../utilities/db.js");
 const settingsService = require("./settingsService");
 const referenceCacheService = require("./referenceCacheService");
 const dateService = require("./dateService");

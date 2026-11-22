@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../utilities/db.js");
 const { encryptSecret, decryptSecret } = require("../utilities/secretCrypto");
 const hookManager = require("../core/HookManager");
 

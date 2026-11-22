@@ -42,7 +42,7 @@
    Passer la locale par requête dans dateService, synchroniser les plugins au changement uniquement et masquer stack/erreurs Prisma en production.
 18. **[R-021 Agréger les statistiques en SQL, unifier APP_TIMEZONE et paginer côté serveur](roadmap/items/R-021-agreger-les-statistiques-en-sql-unifier-app.md)** · À tester · jalon v1.4
    Migrer les calculs statistiques de JS vers SQL, corriger le fuseau horaire, paginer historique/usagers et remplacer le dump autocomplete kiosque.
-19. **[R-022 Unifier l'accès Prisma (fin du hack require.cache) et nettoyer code mort & socket.io](roadmap/items/R-022-unifier-l-acces-prisma-fin-du-hack-require-cache.md)** · Idée · jalon v1.4
+19. **[R-022 Unifier l'accès Prisma (fin du hack require.cache) et nettoyer code mort & socket.io](roadmap/items/R-022-unifier-l-acces-prisma-fin-du-hack-require-cache.md)** · À tester · jalon v1.4
    Remplacer les 37 new PrismaClient() par utilities/db, retirer socket.io inutilisé et supprimer les fichiers morts suivis dans Git.
 20. **[R-023 Migrations SQL versionnées (NetBSD) et typage strict du schéma Prisma](roadmap/items/R-023-migrations-sql-versionnees-netbsd-et-typage.md)** · Idée · jalon v1.4
    Instaurer un historique de migrations SQL incrémentales compatible NetBSD et typer strictement enums, décimaux et relations d'Activity.
@@ -106,6 +106,7 @@
 - [ ] [A-035](roadmap/actions/A-035-verifier-le-masquage-des-piles-d-appels-et.md) Vérifier le masquage des piles d'appels et messages internes sur erreur serveur hors développement (tester, R-020)
 - [ ] [A-036](roadmap/actions/A-036-verifier-admin-statistics-periodes-graphiques-et.md) Vérifier /admin/statistics (périodes, graphiques et export CSV) sous agrégation SQL (tester, R-021)
 - [ ] [A-037](roadmap/actions/A-037-tester-la-pagination-serveur-admin-view-history.md) Tester la pagination serveur (/admin/view-history, /users/manage) et l'autocomplétion kiosque (tester, R-021)
+- [ ] [A-038](roadmap/actions/A-038-verifier-le-demarrage-propre-sans-socket-io.md) Vérifier le démarrage propre sans socket.io après npm install --omit=dev (tester, R-022)
 
 ## Livré
 

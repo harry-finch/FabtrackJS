@@ -13,8 +13,7 @@ const {
 
 router.use(isAdmin);
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { prisma } = require("../../utilities/db.js");
 
 const statisticsService = require("../../services/statisticsService.js");
 const { getZonedDayBounds } = require("../../utilities/timezoneHelper.js");

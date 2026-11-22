@@ -12,10 +12,12 @@ module.exports = {
   envKey: "ENABLE_PLUGIN_WORKSHOP",
   description: "Gestion des visites d'ateliers.",
 
-  register(hookManager) {
+  register(_hookManager) {
+    // No synchronous DB writes at module load time; see bootstrap()
+  },
+
+  async bootstrap() {
     const workshopService = require("../services/workshopService.js");
-    workshopService.ensureProjectType().catch((err) => {
-      console.error("[workshopPlugin] Error ensuring project type:", err);
-    });
+    await workshopService.ensureProjectType();
   },
 };

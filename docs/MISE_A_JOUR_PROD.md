@@ -54,6 +54,7 @@ pm2 logs fabtrack --lines 50
 | [R-019](../roadmap/items/R-019-migrer-les-schemas-vers-zod-v4-et-generaliser-la.md) | `v1.3` | Aucune | Aucune | Aucune | Validation Zod v4 & stripping anti mass-assignment sans action de déploiement (tester un formulaire invalide → message français et un `:id` invalide sans 500) |
 | [R-020](../roadmap/items/R-020-supprimer-l-etat-global-mute-par-requete-et.md) | `v1.3` | Vérifier que `NODE_ENV=production` est défini en prod (les erreurs 5xx sont désormais masquées dès que `NODE_ENV !== "development"`) | Aucune | Aucune | Vérifier deux sessions concurrentes FR/EN sur les dates longues et l'absence de stack trace sur une erreur serveur |
 | [R-021](../roadmap/items/R-021-agreger-les-statistiques-en-sql-unifier-app.md) | `v1.4` | Optionnel : `APP_TIMEZONE=Europe/Paris` (défaut `Europe/Paris`) | Aucune | Aucune | Vérifier `/admin/statistics` (périodes + export CSV), pagination `/admin/view-history` et `/users/manage`, et autocomplétion usager au kiosque (`/fabtrack`) |
+| [R-022](../roadmap/items/R-022-unifier-l-acces-prisma-fin-du-hack-require-cache.md) | `v1.4` | Aucune | Aucune | **`npm install --omit=dev`** (retrait `socket.io`, `socket.io-client`, `randomized-string`, `node-fetch`, `uuid`) | Vérifier un démarrage propre (`npm start`) sans `socket.io` et l'accès kiosque + admin |
 
 ---
 

@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { PrismaClient: BasePrismaClient, ResourceType, ConsumableStatus } = require("@prisma/client");
+const { PrismaClient, ResourceType, ConsumableStatus, Prisma } = require("@prisma/client");
 const { PrismaMariaDb } = require("@prisma/adapter-mariadb");
 const mariadb = require("mariadb");
 
@@ -34,42 +34,11 @@ function createMariaDbAdapter() {
 
 let globalPrisma = global.__fabtrack_prisma__;
 
-/**
- * AutoPrismaClient injects the MariaDB driver adapter and returns the singleton instance,
- * avoiding connection pool exhaustion when multiple files call new PrismaClient().
- */
-class AutoPrismaClient extends BasePrismaClient {
-  constructor(options = {}) {
-    if (!options.adapter && !options.accelerateUrl) {
-      if (globalPrisma) {
-        return globalPrisma;
-      }
-      super({ adapter: createMariaDbAdapter(), ...options });
-      globalPrisma = this;
-      if (process.env.NODE_ENV !== "production") {
-        global.__fabtrack_prisma__ = globalPrisma;
-      }
-      return this;
-    }
-    super(options);
-  }
-}
-
-// Intercept require("@prisma/client") so any code calling
-// `const { PrismaClient } = require("@prisma/client")` receives AutoPrismaClient.
-try {
-  const prismaClientPath = require.resolve("@prisma/client");
-  const defaultExport = require(prismaClientPath);
-  require.cache[prismaClientPath].exports = {
-    ...defaultExport,
-    PrismaClient: AutoPrismaClient,
-  };
-} catch (e) {
-  // Ignored if not yet resolved
-}
-
 if (!globalPrisma) {
-  globalPrisma = new AutoPrismaClient();
+  globalPrisma = new PrismaClient({ adapter: createMariaDbAdapter() });
+  if (process.env.NODE_ENV !== "production") {
+    global.__fabtrack_prisma__ = globalPrisma;
+  }
 }
 
 if (process.env.NODE_ENV === "test") {
@@ -94,7 +63,7 @@ async function closePool() {
 
 module.exports = {
   prisma: globalPrisma,
-  PrismaClient: AutoPrismaClient,
+  Prisma,
   ResourceType,
   ConsumableStatus,
   createMariaDbAdapter,

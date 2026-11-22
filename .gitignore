@@ -9,6 +9,11 @@ lerna-debug.log*
 
 # macOS system files
 .DS_Store
+Icon?
+
+# User-uploaded runtime files (never commit uploads to Git)
+uploads/*
+!uploads/.gitkeep
 
 # Test files (root scratch scripts only; never ignore files inside tests/)
 /test*.js
