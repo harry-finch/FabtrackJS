@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 34** (9 %)
+**Avancement : 3 livrés sur 35** (9 %)
 
 ## Restant à faire
 
@@ -56,7 +56,7 @@
    Remplacer les 33 confirm(), 9 alert() et 1 prompt() natifs par une modale Bootstrap réutilisable et corriger les retours d'erreur.
 25. **[R-028 Améliorer l'accessibilité WCAG AA, le clavier, le mode sombre et le tactile](roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md)** · À tester · jalon v1.5
    Corriger <html lang>, ajouter les 65 labels manquants, réparer les contrastes mode sombre et la navigation clavier des tableaux.
-26. **[R-029 Uniformiser la terminologie, éliminer le franglais et compléter l'i18n](roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md)** · Idée · jalon v1.5
+26. **[R-029 Uniformiser la terminologie, éliminer le franglais et compléter l'i18n](roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md)** · En cours · jalon v1.5
    Généraliser Contributeur / Motif de la visite, traduire les 35 vues et 242 messages flash en dur et nettoyer le catalogue i18n.
 27. **[R-030 Harmoniser la navigation admin et les liens en sous-chemin reverse proxy](roadmap/items/R-030-harmoniser-la-navigation-admin-et-les-liens-en.md)** · Idée · jalon v1.5
    Corriger les liens et formulaires absolus incompatibles avec APP_BASE_PATH, masquer la modale inventaire aux non-admins et vérifier les retours admin.
@@ -68,6 +68,8 @@
    Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
 31. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · Spécifiée · jalon v1.6
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
+32. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
+   Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
 
 ## Actions à faire
 
