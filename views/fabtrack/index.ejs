@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -68,7 +68,7 @@
             <div id="register">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <a class="jsButton fs-4 text-primary" id="registerbutton" style="text-decoration: none;" title="<%= __('kiosk.switch_to_create') %>"><i class="fa fa-toggle-on"></i></a>
+                        <a class="jsButton fs-4 text-primary d-inline-flex align-items-center justify-content-center" id="registerbutton" role="button" tabindex="0" style="text-decoration: none; min-width: 44px; min-height: 44px;" title="<%= __('kiosk.switch_to_create') %>" aria-label="<%= __('kiosk.switch_to_create') %>"><i class="fa fa-toggle-on" aria-hidden="true"></i></a>
                         <div>
                             <h4 class="fw-bold mb-0"><%= __('kiosk.register_user_title') %></h4>
                             <small class="text-muted"><%= __('kiosk.register_user_subtitle') %></small>
@@ -88,7 +88,7 @@
                                 <input type='hidden' id="userid" name='userid' value='null' />
                                 <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="<%= __('kiosk.field_name') %>" autocomplete="off" required />
                                 <label for="name"><%= __('kiosk.field_name') %></label>
-                                <a id="urlprofile" href="#">
+                                <a id="urlprofile" href="#" aria-label="Voir la fiche contributeur">
                                     <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
                                 </a>
                             </div>
@@ -119,8 +119,8 @@
                                 <input type='hidden' id="userprojectid" name='userprojectid' value='null' />
                                 <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" autocomplete="off" placeholder="<%= __('kiosk.field_documentation') %>" required />
                                 <label for="documentation"><%= __('kiosk.field_documentation') %></label>
-                                <a id="urldocumentation" href="" target="_blank" rel="noopener noreferrer">
-                                    <span class="formbutton input-group-text" id="docStatusBtn" title="Consulter la documentation du projet"><i class="fa-solid fa-book-open fa-lg"></i></span>
+                                <a id="urldocumentation" href="" target="_blank" rel="noopener noreferrer" aria-label="Consulter la documentation du projet">
+                                    <span class="formbutton input-group-text" id="docStatusBtn" title="Consulter la documentation du projet"><i class="fa-solid fa-book-open fa-lg" aria-hidden="true"></i></span>
                                 </a>
                             </div>
                         </div>
@@ -269,7 +269,7 @@
                                                 </a>
                                             <% } %>
                                             <% if (entry.user.isExpert) { %>
-                                                <span class="badge bg-warning text-dark border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="<%= __('kiosk.expert_badge') %>">
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="<%= __('kiosk.expert_badge') %>">
                                                     <i class="fa-solid fa-star fa-2xs"></i> <%= __('kiosk.expert_badge') %>
                                                 </span>
                                             <% } %>
@@ -562,8 +562,9 @@
                                                 id="clearEquipmentBtn"
                                                 style="display: none; z-index: 5;"
                                                 title="Effacer la sélection"
+                                                aria-label="Effacer la sélection"
                                             >
-                                                <i class="fa-solid fa-xmark fa-lg"></i>
+                                                <i class="fa-solid fa-xmark fa-lg" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -614,8 +615,9 @@
                                                 id="clearConsumableBtn"
                                                 style="display: none; z-index: 5;"
                                                 title="Effacer la sélection"
+                                                aria-label="Effacer la sélection"
                                             >
-                                                <i class="fa-solid fa-xmark fa-lg"></i>
+                                                <i class="fa-solid fa-xmark fa-lg" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -661,7 +663,7 @@
             <div id="newuser">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <a class="jsButton fs-4 text-secondary" id="newuserbutton" style="text-decoration: none;" title="<%= __('kiosk.switch_to_search') %>"><i class="fa fa-toggle-off"></i></a>
+                        <a class="jsButton fs-4 text-secondary d-inline-flex align-items-center justify-content-center" id="newuserbutton" role="button" tabindex="0" style="text-decoration: none; min-width: 44px; min-height: 44px;" title="<%= __('kiosk.switch_to_search') %>" aria-label="<%= __('kiosk.switch_to_search') %>"><i class="fa fa-toggle-off" aria-hidden="true"></i></a>
                         <div>
                             <h4 class="fw-bold mb-0"><%= __('kiosk.create_user_title') %></h4>
                             <small class="text-muted"><%= __('kiosk.create_user_subtitle') %></small>
@@ -762,7 +764,7 @@
                     <div class="modal-content border-0 shadow">
                         <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/exit-repair" method="POST">
                             <input type="hidden" name="historyid" id="repairExitHistoryId" value="" />
-                            <div class="modal-header bg-warning-subtle text-dark border-0">
+                            <div class="modal-header bg-warning-subtle text-warning-emphasis border-0">
                                 <h5 class="modal-title fw-bold" id="modalRepairCheckoutLabel">
                                     <i class="fa-solid fa-wrench me-2"></i>Bilan Repair Café — Clôture de visite
                                 </h5>
@@ -774,7 +776,7 @@
                                         <i class="fa-solid fa-screwdriver-wrench fa-xl"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark fs-6" id="repairExitUserName">Contributeur</div>
+                                        <div class="fw-bold text-body-emphasis fs-6" id="repairExitUserName">Contributeur</div>
                                         <div class="text-muted small">Objet : <strong id="repairExitObjectName" class="text-primary">-</strong></div>
                                     </div>
                                 </div>
@@ -879,6 +881,20 @@
         </script>
 
         <script src="javascripts/fabtrack.js"></script>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
+            (function () {
+                ["registerbutton", "newuserbutton"].forEach(function (btnId) {
+                    const el = document.getElementById(btnId);
+                    if (!el) return;
+                    el.addEventListener("keydown", function (event) {
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            el.click();
+                        }
+                    });
+                });
+            })();
+        </script>
         <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
         <script src="javascripts/rfid-listener.js"></script>
         <% } %>

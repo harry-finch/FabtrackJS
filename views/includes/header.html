@@ -110,8 +110,8 @@
     <!-- User Profile & Navigation Menu -->
     <div class="d-flex align-items-center justify-content-end gap-2" style="flex: 1 1 0; min-width: 0;">
         <!-- Incident Reporting Button for Mediators & Admins -->
-        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank" class="btn btn-outline-danger btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.report_issue') %>" title="<%= __('nav.report_issue') %>">
-            <i class="fa-solid fa-triangle-exclamation fa-sm"></i>
+        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.report_issue') %>" title="<%= __('nav.report_issue') %>" aria-label="<%= __('nav.report_issue') %>">
+            <i class="fa-solid fa-triangle-exclamation fa-sm" aria-hidden="true"></i>
         </a>
 
         <!-- Bug / Issue Reporting Button for Platform -->
@@ -131,8 +131,8 @@
         </span>
         <% } %>
         <% if (typeof role !== 'undefined' && role === 'admin') { %>
-        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>">
-            <i class="fa-solid fa-screwdriver-wrench fa-sm"></i>
+        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>" aria-label="<%= __('nav.admin_panel') %>">
+            <i class="fa-solid fa-screwdriver-wrench fa-sm" aria-hidden="true"></i>
         </a>
         <% } %>
 
@@ -198,7 +198,7 @@
                         <i class="fa-solid fa-desktop text-primary fa-sm" style="width: 16px;"></i>
                         <span class="small"><%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque Fabtrack' %></span>
                     </a>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-danger" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank">
+                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-danger" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank" rel="noopener noreferrer">
                         <i class="fa-solid fa-triangle-exclamation text-danger fa-sm" style="width: 16px;"></i>
                         <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.report_issue') : 'Signaler une panne machine' %></span>
                     </a>

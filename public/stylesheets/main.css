@@ -1,5 +1,5 @@
 html {
-    background-color: var(--bs-body-tertiary-bg);
+    background-color: var(--bs-tertiary-bg);
     color-scheme: light dark;
 }
 
@@ -20,7 +20,7 @@ body {
 
 body {
     min-height: 100vh;
-    background-color: var(--bs-body-tertiary-bg);
+    background-color: var(--bs-tertiary-bg);
 }
 
 h1, .h1 { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.02em; }
@@ -631,4 +631,50 @@ a[href="/admin"].btn:not(.header-action-btn),
     background-color: rgba(255, 255, 255, 0.25) !important;
     color: #fff !important;
 }
+
+/* ========================================================================== */
+/* WCAG 2.1 AA Focus Visibility & Touch Target Ergonomics (R-028)             */
+/* ========================================================================== */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+th[data-sort]:focus-visible,
+.action-card:focus-visible,
+.jsButton:focus-visible {
+    outline: 2px solid var(--bs-primary) !important;
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+/* Minimum 44x44px touch targets for kiosk & tactile interactions */
+.kiosk-touch-target,
+#registerbutton,
+#newuserbutton,
+.comment-action-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (pointer: coarse) {
+    .btn,
+    .header-action-btn,
+    .header-action-btn.btn-icon-only,
+    .form-check-input {
+        min-height: 44px;
+    }
+
+    .header-action-btn.btn-icon-only {
+        width: 44px;
+        min-width: 44px;
+    }
+
+    .form-check-input {
+        min-height: 1.5rem;
+        min-width: 1.5rem;
+    }
+}
+
 

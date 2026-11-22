@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -39,7 +39,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="#newWarningCard" id="btnScrollToNewWarning" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm text-dark fw-semibold">
+                        <a href="#newWarningCard" id="btnScrollToNewWarning" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm fw-semibold">
                             <i class="fa-solid fa-plus me-1"></i> Émettre un avertissement
                         </a>
                         <a href="/admin/warningtypes/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
@@ -86,7 +86,7 @@
                     <!-- Search Input -->
                     <div class="input-group input-group-sm" style="max-width: 280px;">
                         <span class="input-group-text bg-body-secondary border-end-0"><i class="fa-solid fa-search fa-sm text-muted"></i></span>
-                        <input type="text" id="warningSearch" class="form-control border-start-0" placeholder="Rechercher un contributeur, motif..." />
+                        <input type="text" id="warningSearch" class="form-control border-start-0" placeholder="Rechercher un contributeur, motif..." aria-label="Rechercher un avertissement par contributeur ou motif" />
                     </div>
                 </div>
 
@@ -253,7 +253,7 @@
                                 <button type="reset" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                                     Réinitialiser
                                 </button>
-                                <button type="submit" class="btn btn-warning btn-sm rounded-pill px-4 text-dark fw-semibold shadow-sm">
+                                <button type="submit" class="btn btn-warning btn-sm rounded-pill px-4 fw-semibold shadow-sm">
                                     <i class="fa-solid fa-paper-plane me-1"></i> Émettre l'avertissement
                                 </button>
                             </div>

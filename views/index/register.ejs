@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -47,7 +47,7 @@
                 </div>
 
                 <!-- Honeypot field (hidden) -->
-                <input type="text" name="honeypot" style="display: none;" autocomplete="off">
+                <input type="text" name="honeypot" style="display: none;" autocomplete="off" aria-hidden="true" tabindex="-1" aria-label="Ne pas remplir">
 
                 <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.create_account') %></button>
                 <p class="mt-2 text-center"><small><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/login"><%= __('auth.i_have_account') %></a></small></p>

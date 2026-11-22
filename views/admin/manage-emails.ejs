@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -71,7 +71,7 @@
                                                 <i class="fa-solid fa-boxes-stacked"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-0">Alerte Stock Bas</h6>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchLowStock">Alerte Stock Bas</label></h6>
                                                 <small class="text-muted">Consommables & matières</small>
                                             </div>
                                         </div>
@@ -100,7 +100,7 @@
                                                 <i class="fa-solid fa-triangle-exclamation"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-0">Alerte Nouvel Avertissement</h6>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchWarning">Alerte Nouvel Avertissement</label></h6>
                                                 <small class="text-muted">Sécurité & contributeurs</small>
                                             </div>
                                         </div>
@@ -129,7 +129,7 @@
                                                 <i class="fa-solid fa-users-gear"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-0">Nouveau Compte Staff</h6>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchStaff">Nouveau Compte Staff</label></h6>
                                                 <small class="text-muted">Validation d'accès</small>
                                             </div>
                                         </div>
@@ -156,7 +156,7 @@
                                                 <i class="fa-solid fa-user-check"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-0">Validation de Compte Staff</h6>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchStaffApproved">Validation de Compte Staff</label></h6>
                                                 <small class="text-muted">Activation & accès</small>
                                             </div>
                                         </div>
@@ -185,7 +185,7 @@
                                                 <i class="fa-solid fa-file-signature"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-0">Charte & Inscription Contributeur</h6>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchAgreement">Charte & Inscription Contributeur</label></h6>
                                                 <small class="text-muted">Accord CGU & accès</small>
                                             </div>
                                         </div>
@@ -219,7 +219,7 @@
                                                 <i class="fa-solid fa-wrench"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-0">Panne & Incident Machine</h6>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchMachineIssue">Panne & Incident Machine</label></h6>
                                                 <small class="text-muted">Parc machines & maintenance</small>
                                             </div>
                                         </div>
@@ -590,14 +590,14 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
                                 <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5">FabtrackJS</span>
-                                    <span class="badge bg-warning text-dark fw-bold text-uppercase px-2 py-1 rounded-pill">Stock faible</span>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-bold text-uppercase px-2 py-1 rounded-pill">Stock faible</span>
                                 </div>
                                 <h5 class="fw-bold mb-3">Alerte de stock : PLA Filament 1.75mm Black</h5>
                                 <p class="text-secondary small mb-3">Le consommable suivant a atteint ou franchi à la baisse son seuil d'alerte de réapprovisionnement :</p>
-                                <table class="table table-bordered table-sm bg-white mb-3">
+                                <table class="table table-bordered table-sm bg-body mb-3">
                                     <tbody>
                                         <tr>
                                             <th class="bg-body-secondary text-muted small w-40">Consommable</th>
@@ -641,14 +641,14 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
                                 <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5">FabtrackJS</span>
                                     <span class="badge bg-danger text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Avertissement</span>
                                 </div>
                                 <h5 class="fw-bold mb-3">Nouvel avertissement contributeur : Jean Dupont</h5>
                                 <p class="text-secondary small mb-3">Un nouvel avertissement a été attribué à un contributeur de la plateforme :</p>
-                                <table class="table table-bordered table-sm bg-white mb-3">
+                                <table class="table table-bordered table-sm bg-body mb-3">
                                     <tbody>
                                         <tr>
                                             <th class="bg-body-secondary text-muted small w-40">Contributeur concerné</th>
@@ -696,14 +696,14 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
                                 <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5">FabtrackJS</span>
                                     <span class="badge bg-danger text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Panne Machine</span>
                                 </div>
                                 <h5 class="fw-bold mb-3">Panne signalée sur Découpeuse Laser Speedy 300</h5>
                                 <p class="text-secondary small mb-3">Un nouvel incident ou une panne a été signalé(e) sur une machine du fablab :</p>
-                                <table class="table table-bordered table-sm bg-white mb-3">
+                                <table class="table table-bordered table-sm bg-body mb-3">
                                     <tbody>
                                         <tr>
                                             <th class="bg-body-secondary text-muted small w-40">Machine concernée</th>
@@ -755,7 +755,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-light text-dark shadow-sm">
+                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
                                 <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5"><%= settings.platform_name || 'FabtrackJS' %></span>
                                     <span class="badge bg-success text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Compte activé</span>
@@ -763,7 +763,7 @@
                                 <h5 class="fw-bold mb-3">Votre compte staff a été validé !</h5>
                                 <p class="text-secondary small mb-2">Bonjour <strong>Jean Dupont</strong>,</p>
                                 <p class="text-secondary small mb-3">Bonne nouvelle ! Votre compte d'accès sur la plateforme <strong><%= settings.platform_name || 'FabtrackJS' %></strong> a été validé avec succès par un administrateur (<strong>Admin Principal</strong>).</p>
-                                <table class="table table-bordered table-sm bg-white mb-3">
+                                <table class="table table-bordered table-sm bg-body mb-3">
                                     <tbody>
                                         <tr>
                                             <th class="bg-body-secondary text-muted small w-40">Identifiant</th>
@@ -812,12 +812,12 @@
                                 <span><i class="fa-solid fa-circle-info me-1 text-primary"></i> Simulation avec un contributeur exemple (<strong>Camille Martin</strong>)</span>
                                 <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill">Aperçu dynamique</span>
                             </div>
-                            <div class="border rounded-3 p-4 bg-white text-dark shadow-sm">
+                            <div class="border rounded-3 p-4 bg-body text-body shadow-sm">
                                 <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5"><%= settings.platform_name || 'FabtrackJS' %></span>
-                                    <span class="badge bg-white text-dark fw-bold text-uppercase px-2 py-1 rounded-pill">Charte Fablab</span>
+                                    <span class="badge bg-body-secondary text-body border fw-bold text-uppercase px-2 py-1 rounded-pill">Charte Fablab</span>
                                 </div>
-                                <h5 class="fw-bold mb-3 text-dark" id="previewAgreementTitle">Validation de la charte d'utilisation du Fablab</h5>
+                                <h5 class="fw-bold mb-3 text-body" id="previewAgreementTitle">Validation de la charte d'utilisation du Fablab</h5>
                                 <div class="text-secondary small mb-3" id="previewAgreementBody" style="line-height: 1.6;">
                                     <!-- Dynamic content updated via JS -->
                                 </div>

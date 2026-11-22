@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -145,6 +145,7 @@
                                     value="<%= safeFilters.search || '' %>"
                                     class="form-control"
                                     placeholder="Rechercher par nom, prénom, e-mail ou profil..."
+                                    aria-label="Rechercher un contributeur par nom, prénom, e-mail ou profil"
                                 />
                             </div>
                         </div>

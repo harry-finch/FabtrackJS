@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -171,7 +171,7 @@
                             <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" id="copyBtn">
                                 <i class="fa-solid fa-copy me-1" id="copyIcon"></i> <span id="copyText">Copier la liste</span>
                             </button>
-                            <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="mailtoBtn" target="_blank" title="Ouvrir votre logiciel de messagerie avec les destinataires en Cci">
+                            <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="mailtoBtn" target="_blank" rel="noopener noreferrer" title="Ouvrir votre logiciel de messagerie avec les destinataires en Cci">
                                 <i class="fa-solid fa-paper-plane me-1"></i> Ouvrir dans la messagerie
                             </a>
                         </div>
@@ -183,6 +183,7 @@
                             class="form-control email-output-box p-3 shadow-inner"
                             rows="4"
                             readonly
+                            aria-label="Liste des adresses e-mail générées"
                             placeholder="Sélectionnez une liste pour afficher les adresses e-mails..."
                             data-select-on-click="true"
                         ></textarea>
@@ -205,7 +206,7 @@
                     <div class="d-flex align-items-center gap-2">
                         <div class="input-group input-group-sm" style="max-width: 250px;">
                             <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-magnifying-glass"></i></span>
-                            <input type="text" id="filterInput" class="form-control" placeholder="Filtrer la liste..." />
+                            <input type="text" id="filterInput" class="form-control" placeholder="Filtrer la liste..." aria-label="Filtrer la liste des destinataires" />
                         </div>
                         <div class="btn-group btn-group-sm" role="group">
                             <button type="button" class="btn btn-outline-secondary" data-select-all="true" data-bs-toggle="tooltip" title="Tout cocher">
@@ -223,7 +224,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 40px;" class="ps-3 text-center">
-                                        <input type="checkbox" class="form-check-input" id="masterCheckbox" checked />
+                                        <input type="checkbox" class="form-check-input" id="masterCheckbox" aria-label="Sélectionner ou désélectionner tous les destinataires" checked />
                                     </th>
                                     <th>Contributeur</th>
                                     <th>E-mail</th>

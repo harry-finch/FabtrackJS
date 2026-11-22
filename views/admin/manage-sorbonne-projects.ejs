@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -142,7 +142,7 @@
             <div class="col-md-4 col-sm-6">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-body-secondary border-0"><i class="fa-solid fa-landmark"></i></span>
-                <select name="entity" class="form-select border-0 bg-body-secondary">
+                <select name="entity" class="form-select border-0 bg-body-secondary" aria-label="Filtrer par entité ou UFR">
                   <option value="all" <%= selectedEntity === 'all' ? 'selected' : '' %>>Toutes les entités / UFR</option>
                   <% entities.forEach(function(e) { %>
                     <option value="<%= e %>" <%= selectedEntity.toLowerCase() === e.toLowerCase() ? 'selected' : '' %>><%= e %></option>
@@ -154,7 +154,7 @@
             <div class="col-md-3 col-sm-6">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-body-secondary border-0"><i class="fa-solid fa-filter"></i></span>
-                <select name="status" class="form-select border-0 bg-body-secondary">
+                <select name="status" class="form-select border-0 bg-body-secondary" aria-label="Filtrer par statut de règlement">
                   <option value="all" <%= selectedStatus === 'all' ? 'selected' : '' %>>Tous les statuts</option>
                   <option value="pending" <%= selectedStatus === 'pending' ? 'selected' : '' %>>À régler uniquement</option>
                   <option value="settled" <%= selectedStatus === 'settled' ? 'selected' : '' %>>Réglé uniquement</option>
@@ -163,11 +163,11 @@
             </div>
 
             <div class="col-md-2 col-sm-4">
-              <input type="date" name="startDate" value="<%= startDate %>" class="form-control form-control-sm border-0 bg-body-secondary" title="Date de début">
+              <input type="date" name="startDate" value="<%= startDate %>" class="form-control form-control-sm border-0 bg-body-secondary" title="Date de début" aria-label="Date de début">
             </div>
 
             <div class="col-md-2 col-sm-4">
-              <input type="date" name="endDate" value="<%= endDate %>" class="form-control form-control-sm border-0 bg-body-secondary" title="Date de fin">
+              <input type="date" name="endDate" value="<%= endDate %>" class="form-control form-control-sm border-0 bg-body-secondary" title="Date de fin" aria-label="Date de fin">
             </div>
 
             <div class="col-md-1 col-sm-4 d-flex gap-1">
@@ -190,7 +190,7 @@
         <% if (currentEntitySummary && currentEntitySummary.pendingCost > 0) { %>
         <div class="alert alert-warning border-0 shadow-sm rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 px-4 py-3">
           <div class="d-flex align-items-center gap-3">
-            <div class="icon-box bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <div class="icon-box bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
               <i class="fa-solid fa-file-invoice-dollar"></i>
             </div>
             <div>
@@ -369,7 +369,7 @@
                       <td class="text-center">
                         <%= st.totalCount %>
                         <% if (st.pendingCount > 0) { %>
-                          <span class="badge bg-warning text-dark rounded-pill ms-1" title="<%= st.pendingCount %> en attente"><%= st.pendingCount %></span>
+                          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill ms-1" title="<%= st.pendingCount %> en attente"><%= st.pendingCount %></span>
                         <% } %>
                       </td>
                       <td class="text-end fw-bold <%= st.pendingCost > 0 ? 'text-warning-emphasis' : 'text-muted' %>">

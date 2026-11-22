@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,7 +48,7 @@
                             <div class="d-flex align-items-center gap-2">
                                 <h4 class="fw-bold mb-0"><%= user.name %> <%= user.surname %></h4>
                                 <% if (user.isExpert) { %>
-                                    <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">
                                         <i class="fa-solid fa-star fa-2xs"></i> Expert
                                     </span>
                                 <% } %>
@@ -309,7 +309,7 @@
                                     <%= userStats.badgesCount %> badge(s)
                                 </div>
                                 <% if (user.isExpert) { %>
-                                    <span class="badge bg-warning text-dark border border-warning-subtle px-3 py-2 rounded-pill">
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill">
                                         <i class="fa-solid fa-star me-1"></i> Expert du Fablab
                                     </span>
                                 <% } %>
@@ -979,7 +979,7 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <h6 class="fw-bold mb-0">Matériels & Équipements empruntés</h6>
                                         <% if (typeof userActiveLoans !== 'undefined' && userActiveLoans.length > 0) { %>
-                                            <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" style="font-size: 0.72rem;">
                                                 <i class="fa-solid fa-clock me-1"></i><%= userActiveLoans.length %> en cours
                                             </span>
                                         <% } else { %>
@@ -1043,7 +1043,7 @@
                                                 </td>
                                                 <td><%= loan.formattedDate %></td>
                                                 <td>
-                                                    <span class="badge bg-light text-dark border">
+                                                    <span class="badge bg-body-tertiary text-body border">
                                                         <i class="fa-regular fa-clock me-1 text-muted"></i><%= loan.borrowDurationDays ? loan.borrowDurationDays + ' jour(s)' : '-' %>
                                                     </span>
                                                 </td>
@@ -1148,14 +1148,14 @@
                             <div class="card border-0 bg-warning-subtle text-warning-emphasis rounded-3 mb-4 border-start border-warning border-3 shadow-sm">
                                 <div class="card-body p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                                     <div>
-                                        <h6 class="fw-bold mb-1 text-dark">
+                                        <h6 class="fw-bold mb-1 text-warning-emphasis">
                                             <i class="fa-solid fa-award text-warning me-1"></i> Attribution manuelle d'habilitation (Admin)
                                         </h6>
                                         <p class="small text-muted mb-0">
                                             Ajoutez directement une habilitation ou un badge d'atelier avec date rétroactive (utile si la formation a été effectuée avant la mise en place de la plateforme).
                                         </p>
                                     </div>
-                                    <button type="button" class="btn btn-warning text-dark fw-semibold btn-sm rounded-pill px-3 py-2 shadow-sm text-nowrap align-self-start align-self-md-center" data-bs-toggle="modal" data-bs-target="#modalAddHabilitation">
+                                    <button type="button" class="btn btn-warning fw-semibold btn-sm rounded-pill px-3 py-2 shadow-sm text-nowrap align-self-start align-self-md-center" data-bs-toggle="modal" data-bs-target="#modalAddHabilitation">
                                         <i class="fa-solid fa-plus-circle me-1"></i> Ajouter une habilitation
                                     </button>
                                 </div>
@@ -1173,7 +1173,7 @@
                                     </p>
                                     <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/<%= user.id %>/workshop-interest/add" method="post" class="row g-2 align-items-center">
                                         <div class="col-md-9">
-                                            <select class="form-select form-select-sm" name="workshopId" required>
+                                            <select class="form-select form-select-sm" name="workshopId" aria-label="Sélectionner un atelier" required>
                                                 <option value="" disabled selected>Sélectionner un atelier organisé par le fablab...</option>
                                                 <% availableWorkshops.forEach(function(ws) { %>
                                                     <% const isInterested = user.workshopInterests.some(wi => wi.workshopId === ws.id); %>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -116,7 +116,7 @@
             </div>
           </div>
           <% if (typeof activeLoans !== 'undefined' && activeLoans.length > 0) { %>
-            <span class="badge bg-warning text-dark border border-warning-subtle rounded-pill px-3 py-1">
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1">
               <%= activeLoans.length %> emprunt(s) actif(s)
             </span>
           <% } %>
@@ -177,7 +177,7 @@
                       <span class="small text-body"><%= loan.formattedDate %></span>
                     </td>
                     <td>
-                      <span class="badge bg-light text-dark border">
+                      <span class="badge bg-body-secondary text-body border">
                         <i class="fa-regular fa-clock me-1 text-muted"></i><%= loan.borrowDurationDays ? loan.borrowDurationDays + ' jour(s)' : '-' %>
                       </span>
                     </td>
@@ -231,6 +231,7 @@
                   id="name"
                   name="name"
                   placeholder="Nom de l'outil (ex: Dremel, Multimètre...)"
+                  aria-label="Nom de l'équipement ou de l'outil"
                   required
                   autocomplete="off"
                 />
@@ -241,7 +242,7 @@
                 <span class="input-group-text bg-body-secondary">
                   <i class="fa-solid fa-cube text-muted"></i>
                 </span>
-                <select class="form-select" id="workspaceId" name="workspaceId">
+                <select class="form-select" id="workspaceId" name="workspaceId" aria-label="Espace associé à l'équipement">
                   <option value="">-- Aucun espace / Partagé --</option>
                   <% workspaces.forEach(function(ws) { %>
                     <option value="<%= ws.id %>"><%= ws.name %></option>

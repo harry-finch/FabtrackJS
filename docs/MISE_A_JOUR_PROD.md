@@ -60,6 +60,7 @@ pm2 logs fabtrack --lines 50
 | [R-025](../roadmap/items/R-025-exploitation-production-healthz-logs-structures.md) | `v1.4` | Optionnel : `LOG_LEVEL=info` (voir `.env.example`) | Aucune | Aucune | Vérifier `curl -i http://localhost:8080/healthz`, l'export RGPD `/users/:id/export-rgpd` et `npm run rgpd:anonymize -- --dry-run` |
 | [R-026](../roadmap/items/R-026-unifier-les-assets-front-en-local-pour-un.md) | `v1.5` | Aucune | Aucune | **`npm install --omit=dev`** (ajout `chart.js` servi localement) | Vérifier kiosque, `/admin/statistics` et page 404 sans requête CDN externe (fonctionnement hors-ligne) |
 | [R-027](../roadmap/items/R-027-refondre-les-modales-de-confirmation-et-les.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier les modales de confirmation Bootstrap (0 `confirm()`/`alert()`/`prompt()` natif), les toasts sans préfixe brut (`Success:`/`Error:`) et les erreurs sur `/report-issue` |
+| [R-028](../roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier `<html lang>` dynamique, mode sombre (tableaux + graphiques `/admin/statistics` en direct), tri clavier (`Tab`/`Entrée`/`Espace`) et cibles tactiles kiosque |
 
 ---
 

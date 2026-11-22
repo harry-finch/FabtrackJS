@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -50,7 +50,7 @@
                     <form action="/admin/statistics" method="get" id="statsFilterForm" class="row g-2 align-items-end">
                         <!-- Filtre Espace -->
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold text-muted mb-1">
+                            <label for="workspaceSelect" class="form-label small fw-semibold text-muted mb-1">
                                 <i class="fa-solid fa-cubes-stacked me-1"></i> Espace du Fablab
                             </label>
                             <select class="form-select form-select-sm" name="workspaceId" id="workspaceSelect">
@@ -63,7 +63,7 @@
 
                         <!-- Filtre Période Prédéfinie -->
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold text-muted mb-1">
+                            <label for="periodSelect" class="form-label small fw-semibold text-muted mb-1">
                                 <i class="fa-solid fa-calendar-days me-1"></i> Période
                             </label>
                             <select class="form-select form-select-sm" name="period" id="periodSelect">
@@ -80,13 +80,13 @@
 
                         <!-- Date début -->
                         <div class="col-md-2 col-6">
-                            <label class="form-label small fw-semibold text-muted mb-1">Date début</label>
+                            <label for="startDateInput" class="form-label small fw-semibold text-muted mb-1">Date début</label>
                             <input type="date" class="form-control form-control-sm" name="startDate" id="startDateInput" value="<%= filterStartDate %>">
                         </div>
 
                         <!-- Date fin -->
                         <div class="col-md-2 col-6">
-                            <label class="form-label small fw-semibold text-muted mb-1">Date fin</label>
+                            <label for="endDateInput" class="form-label small fw-semibold text-muted mb-1">Date fin</label>
                             <input type="date" class="form-control form-control-sm" name="endDate" id="endDateInput" value="<%= filterEndDate %>">
                         </div>
 
@@ -155,7 +155,7 @@
                                 <span class="input-group-text bg-transparent border-0 ps-3 text-primary">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                                 </span>
-                                <input type="text" id="aiQuestionInput" class="form-control bg-transparent border-0 py-2 fs-6" placeholder="Ex : Combien d'utilisateurs enregistrés ne sont venus au fablab qu'une seule fois ?" autocomplete="off">
+                                <input type="text" id="aiQuestionInput" class="form-control bg-transparent border-0 py-2 fs-6" placeholder="Ex : Combien d'utilisateurs enregistrés ne sont venus au fablab qu'une seule fois ?" aria-label="Poser une question en langage naturel sur les statistiques du Fablab" autocomplete="off">
                                 <button class="btn btn-primary rounded-pill px-3 py-2 d-flex align-items-center gap-2 fw-medium shadow-none" id="btnSubmitAiQuery" type="button">
                                     <i class="fa-solid fa-paper-plane"></i>
                                     <span>Poser la question</span>
@@ -553,12 +553,27 @@
             // Données transmises depuis le serveur
             const chartData = <%- safeJson(chartData) %>;
 
-            // Détection du thème clair/sombre pour adapter Chart.js
-            const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark" ||
-                           (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.getAttribute("data-bs-theme") === "auto");
+            // Détection dynamique du thème clair/sombre pour adapter Chart.js (R-028)
+            function getChartThemePalette() {
+                const dark =
+                    document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+                    (window.matchMedia &&
+                        window.matchMedia("(prefers-color-scheme: dark)").matches &&
+                        document.documentElement.getAttribute("data-bs-theme") === "auto");
+                return {
+                    isDark: dark,
+                    textColor: dark ? "#adb5bd" : "#495057",
+                    gridColor: dark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)",
+                    timelineFill: dark ? "rgba(13, 110, 253, 0.15)" : "rgba(13, 110, 253, 0.08)",
+                    doughnutBorder: dark ? 0 : 2,
+                };
+            }
 
-            const textColor = isDark ? "#adb5bd" : "#495057";
-            const gridColor = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.05)";
+            let themePalette = getChartThemePalette();
+            let isDark = themePalette.isDark;
+            let textColor = themePalette.textColor;
+            let gridColor = themePalette.gridColor;
+            const statsCharts = [];
 
             Chart.defaults.color = textColor;
             Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -571,7 +586,7 @@
 
             // 1. Graphique Évolution temporelle
             const ctxTimeline = document.getElementById("timelineChart").getContext("2d");
-            new Chart(ctxTimeline, {
+            statsCharts.push(new Chart(ctxTimeline, {
                 type: 'line',
                 data: {
                     labels: chartData.timelineLabels.length ? chartData.timelineLabels : ['Aucune donnée'],
@@ -579,7 +594,7 @@
                         label: 'Visites',
                         data: chartData.timelineValues.length ? chartData.timelineValues : [0],
                         borderColor: '#0d6efd',
-                        backgroundColor: isDark ? 'rgba(13, 110, 253, 0.15)' : 'rgba(13, 110, 253, 0.08)',
+                        backgroundColor: themePalette.timelineFill,
                         fill: true,
                         tension: 0.35,
                         borderWidth: 2.5,
@@ -597,7 +612,7 @@
                         y: { beginAtZero: true, grid: { color: gridColor }, ticks: { stepSize: 1, color: textColor } }
                     }
                 }
-            });
+            }));
 
             // 2. Graphique Affluence par jour de la semaine (Moyenne par jour)
             const ctxDays = document.getElementById("daysOfWeekChart").getContext("2d");
@@ -605,7 +620,7 @@
             const maxVal = Math.max(...dayValues);
             const dayColors = dayValues.map(v => (v > 0 && v === maxVal) ? '#ffc107' : '#0d6efd');
 
-            new Chart(ctxDays, {
+            statsCharts.push(new Chart(ctxDays, {
                 type: 'bar',
                 data: {
                     labels: chartData.dayNames,
@@ -644,18 +659,18 @@
                         }
                     }
                 }
-            });
+            }));
 
             // 3. Graphique Répartition Types de Contributeurs
             const ctxUserTypes = document.getElementById("userTypesChart").getContext("2d");
-            new Chart(ctxUserTypes, {
+            statsCharts.push(new Chart(ctxUserTypes, {
                 type: 'doughnut',
                 data: {
                     labels: chartData.userTypeLabels.length ? chartData.userTypeLabels : ['Aucun contributeur'],
                     datasets: [{
                         data: chartData.userTypeCounts.length ? chartData.userTypeCounts : [1],
                         backgroundColor: colors.slice(0, Math.max(1, chartData.userTypeLabels.length)),
-                        borderWidth: isDark ? 0 : 2,
+                        borderWidth: themePalette.doughnutBorder,
                     }]
                 },
                 options: {
@@ -669,18 +684,18 @@
                     },
                     cutout: '65%',
                 }
-            });
+            }));
 
             // 4. Graphique Répartition Motifs de Visite
             const ctxProjectTypes = document.getElementById("projectTypesChart").getContext("2d");
-            new Chart(ctxProjectTypes, {
+            statsCharts.push(new Chart(ctxProjectTypes, {
                 type: 'doughnut',
                 data: {
                     labels: chartData.projectTypeLabels.length ? chartData.projectTypeLabels : ['Aucune visite'],
                     datasets: [{
                         data: chartData.projectTypeCounts.length ? chartData.projectTypeCounts : [1],
                         backgroundColor: colors.slice(2, 2 + Math.max(1, chartData.projectTypeLabels.length)),
-                        borderWidth: isDark ? 0 : 2,
+                        borderWidth: themePalette.doughnutBorder,
                     }]
                 },
                 options: {
@@ -694,11 +709,11 @@
                     },
                     cutout: '65%',
                 }
-            });
+            }));
 
             // 5. Graphique Top Machines
             const ctxMachines = document.getElementById("topMachinesChart").getContext("2d");
-            new Chart(ctxMachines, {
+            statsCharts.push(new Chart(ctxMachines, {
                 type: 'bar',
                 data: {
                     labels: chartData.topMachineLabels.length ? chartData.topMachineLabels : ['Aucune session machine'],
@@ -719,12 +734,12 @@
                         y: { grid: { display: false }, ticks: { color: textColor } }
                     }
                 }
-            });
+            }));
 
             // 6. Graphique Top Consommables (ramenés aux unités de stockage)
             const ctxConsumables = document.getElementById("topConsumablesChart").getContext("2d");
             const consumableDetails = chartData.topConsumableDetails || [];
-            new Chart(ctxConsumables, {
+            statsCharts.push(new Chart(ctxConsumables, {
                 type: 'bar',
                 data: {
                     labels: chartData.topConsumableLabels.length ? chartData.topConsumableLabels : ['Aucune consommation'],
@@ -764,7 +779,36 @@
                         y: { grid: { display: false }, ticks: { color: textColor } }
                     }
                 }
-            });
+            }));
+
+            function applyStatsChartsTheme() {
+                const palette = getChartThemePalette();
+                Chart.defaults.color = palette.textColor;
+                statsCharts.forEach((chart, index) => {
+                    if (!chart || !chart.options) return;
+                    if (index === 0 && chart.data && chart.data.datasets && chart.data.datasets[0]) {
+                        chart.data.datasets[0].backgroundColor = palette.timelineFill;
+                    }
+                    if (chart.config && chart.config.type === "doughnut" && chart.data && chart.data.datasets && chart.data.datasets[0]) {
+                        chart.data.datasets[0].borderWidth = palette.doughnutBorder;
+                    }
+                    if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                        chart.options.plugins.legend.labels.color = palette.textColor;
+                    }
+                    if (chart.options.scales) {
+                        Object.values(chart.options.scales).forEach((scale) => {
+                            if (scale.ticks) scale.ticks.color = palette.textColor;
+                            if (scale.title) scale.title.color = palette.textColor;
+                            if (scale.grid && scale.grid.display !== false) {
+                                scale.grid.color = palette.gridColor;
+                            }
+                        });
+                    }
+                    chart.update("none");
+                });
+            }
+
+            window.addEventListener("fabtrack:themechange", applyStatsChartsTheme);
 
             // Synchronisation dynamique du sélecteur de période avec les inputs de date
             document.getElementById("periodSelect").addEventListener("change", function() {

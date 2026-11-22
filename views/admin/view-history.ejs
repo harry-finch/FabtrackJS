@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -143,6 +143,7 @@
                     value="<%= safeFilters.startDate || '' %>"
                     class="form-control form-control-sm"
                     title="Date de début"
+                    aria-label="Date de début"
                   />
                   <span class="text-muted small">à</span>
                   <input
@@ -152,6 +153,7 @@
                     value="<%= safeFilters.endDate || '' %>"
                     class="form-control form-control-sm"
                     title="Date de fin"
+                    aria-label="Date de fin"
                   />
                 </div>
               </div>
@@ -166,6 +168,7 @@
                     value="<%= safeFilters.search || '' %>"
                     class="form-control"
                     placeholder="Rechercher (nom, e-mail, commentaire, projet)..."
+                    aria-label="Rechercher dans l'historique par nom, e-mail, commentaire ou projet"
                   />
                 </div>
               </div>
@@ -227,7 +230,7 @@
               </td>
               <td>
                 <% if (entry.workspace) { %>
-                  <span class="badge bg-light text-dark border"><%= entry.workspace.name %></span>
+                  <span class="badge bg-body-secondary text-body border"><%= entry.workspace.name %></span>
                 <% } else { %>
                   <span class="text-muted small">-</span>
                 <% } %>

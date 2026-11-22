@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
 
 <head>
   <meta charset="utf-8" />
@@ -536,7 +536,7 @@
 
                 <div class="col-12">
                   <hr class="my-1 opacity-25">
-                  <label class="form-label fw-semibold mt-2 d-block"><i class="fa-solid fa-file-import me-1 text-success"></i> <%= typeof __ !== 'undefined' ? __('settings.import_csv_label') : 'Téléverser un fichier translations.csv :' %></label>
+                  <label for="translationsFileInput" class="form-label fw-semibold mt-2 d-block"><i class="fa-solid fa-file-import me-1 text-success"></i> <%= typeof __ !== 'undefined' ? __('settings.import_csv_label') : 'Téléverser un fichier translations.csv :' %></label>
                   <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
                     <input class="form-control" type="file" id="translationsFileInput" accept=".csv" style="max-width: 400px;">
                     <button type="button" class="btn btn-outline-success rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-2" id="importCsvBtn">
@@ -606,7 +606,7 @@
                           <input type="password" class="form-control" id="ai_openai_api_key" name="ai_openai_api_key" value="" placeholder="<%= typeof hasOpenAiKey !== 'undefined' && hasOpenAiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-proj-...' %>" autocomplete="new-password">
                           <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_openai_api_key"><i class="fa-solid fa-eye"></i></button>
                         </div>
-                        <small class="text-muted">Disponible sur <a href="https://platform.openai.com/api-keys" target="_blank" class="text-decoration-none">platform.openai.com</a>.</small>
+                        <small class="text-muted">Disponible sur <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-decoration-none">platform.openai.com</a>.</small>
                       </div>
                       <div class="col-md-5">
                         <label for="ai_openai_model" class="form-label small fw-semibold">Modèle</label>
@@ -628,7 +628,7 @@
                           <input type="password" class="form-control" id="ai_gemini_api_key" name="ai_gemini_api_key" value="" placeholder="<%= typeof hasGeminiKey !== 'undefined' && hasGeminiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'AIzaSy...' %>" autocomplete="new-password">
                           <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_gemini_api_key"><i class="fa-solid fa-eye"></i></button>
                         </div>
-                        <small class="text-muted">Disponible gratuitement sur <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-decoration-none">Google AI Studio</a>.</small>
+                        <small class="text-muted">Disponible gratuitement sur <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-decoration-none">Google AI Studio</a>.</small>
                       </div>
                       <div class="col-md-5">
                         <label for="ai_gemini_model" class="form-label small fw-semibold">Modèle</label>
@@ -650,7 +650,7 @@
                           <input type="password" class="form-control" id="ai_anthropic_api_key" name="ai_anthropic_api_key" value="" placeholder="<%= typeof hasAnthropicKey !== 'undefined' && hasAnthropicKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-ant-api...' %>" autocomplete="new-password">
                           <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_anthropic_api_key"><i class="fa-solid fa-eye"></i></button>
                         </div>
-                        <small class="text-muted">Disponible sur <a href="https://console.anthropic.com/" target="_blank" class="text-decoration-none">console.anthropic.com</a>.</small>
+                        <small class="text-muted">Disponible sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">console.anthropic.com</a>.</small>
                       </div>
                       <div class="col-md-5">
                         <label for="ai_anthropic_model" class="form-label small fw-semibold">Modèle</label>
@@ -703,7 +703,7 @@
         <form id="resetFaviconForm" action="/admin/settings/reset-favicon" method="post" style="display: none;"></form>
         <form id="importCsvForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/i18n/import?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" style="display: none;">
           <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-          <input type="file" id="hiddenCsvFile" name="translations_file" accept=".csv">
+          <input type="file" id="hiddenCsvFile" name="translations_file" accept=".csv" aria-label="Fichier CSV des traductions à importer">
         </form>
 
         <%- include('../includes/footer.html') %>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -118,7 +118,7 @@
             <div class="col-md-3 col-sm-6">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-layer-group text-muted"></i></span>
-                <select class="form-select" name="itemType" data-auto-submit="true">
+                <select class="form-select" name="itemType" aria-label="Filtrer par type d'article" data-auto-submit="true">
                   <option value="">Tous les types</option>
                   <option value="CONSUMABLE" <%= itemType === 'CONSUMABLE' ? 'selected' : '' %>>Consommables</option>
                   <option value="EQUIPMENT" <%= itemType === 'EQUIPMENT' ? 'selected' : '' %>>Outils & Équipements</option>
@@ -129,7 +129,7 @@
             <div class="col-md-3 col-sm-6">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-tag text-muted"></i></span>
-                <select class="form-select" name="reason" data-auto-submit="true">
+                <select class="form-select" name="reason" aria-label="Filtrer par motif de mouvement" data-auto-submit="true">
                   <option value="">Tous les motifs</option>
                   <option value="Casse" <%= reason === 'Casse' ? 'selected' : '' %>>Casse / Dégradation</option>
                   <option value="Rebut" <%= reason === 'Rebut' ? 'selected' : '' %>>Mise au rebut / Usure</option>
@@ -151,6 +151,7 @@
                   name="search"
                   value="<%= search %>"
                   placeholder="Rechercher par article, auteur, note..."
+                  aria-label="Rechercher par article, auteur ou note"
                   autocomplete="off"
                 />
               </div>

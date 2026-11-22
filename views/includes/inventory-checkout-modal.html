@@ -84,7 +84,7 @@
                 <label class="form-label small fw-bold">Action sur le matériel <span class="text-danger">*</span></label>
                 <div class="row g-2">
                   <div class="col-md-6">
-                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" data-radio-target="actionDecom">
+                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" data-radio-target="actionDecom" tabindex="0" role="button" aria-pressed="true">
                       <div class="form-check">
                         <input class="form-check-input" type="radio" name="equipmentAction" id="actionDecom" value="DECOMMISSIONED" checked>
                         <label class="form-check-label fw-bold text-danger d-block" for="actionDecom">
@@ -95,7 +95,7 @@
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" data-radio-target="actionOutOfService">
+                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" data-radio-target="actionOutOfService" tabindex="0" role="button" aria-pressed="false">
                       <div class="form-check">
                         <input class="form-check-input" type="radio" name="equipmentAction" id="actionOutOfService" value="OUT_OF_SERVICE">
                         <label class="form-check-label fw-bold text-warning-emphasis d-block" for="actionOutOfService">
@@ -223,10 +223,14 @@
     if (cards.length >= 2) {
       if (isDecom) {
         cards[0].classList.add("border-danger", "bg-danger-subtle");
+        cards[0].setAttribute("aria-pressed", "true");
         cards[1].classList.remove("border-warning", "bg-warning-subtle");
+        cards[1].setAttribute("aria-pressed", "false");
       } else {
         cards[0].classList.remove("border-danger", "bg-danger-subtle");
+        cards[0].setAttribute("aria-pressed", "false");
         cards[1].classList.add("border-warning", "bg-warning-subtle");
+        cards[1].setAttribute("aria-pressed", "true");
       }
     }
   };
@@ -234,15 +238,22 @@
   const modalEl = document.getElementById("modalInventoryCheckout");
   if (!modalEl) return;
 
-  // Bind click handlers for equipment action cards (CSP-safe, no inline onclick)
+  // Bind click & keyboard handlers for equipment action cards (WCAG + CSP-safe)
   modalEl.querySelectorAll(".action-card[data-radio-target]").forEach(card => {
-    card.addEventListener("click", function() {
-      const targetId = this.getAttribute("data-radio-target");
+    const selectCard = () => {
+      const targetId = card.getAttribute("data-radio-target");
       const radio = targetId ? document.getElementById(targetId) : null;
       if (radio) {
         radio.checked = true;
       }
       updateActionCardStyles();
+    };
+    card.addEventListener("click", selectCard);
+    card.addEventListener("keydown", function(event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        selectCard();
+      }
     });
   });
   modalEl.querySelectorAll('input[name="equipmentAction"]').forEach(radio => {

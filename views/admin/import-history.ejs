@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -70,7 +70,7 @@
         <form id="csvUploadForm" enctype="multipart/form-data">
           <!-- Zone de glisser-déposer pour le fichier CSV -->
           <div class="dropzone-box p-4 text-center mb-4" id="dropzoneBox">
-            <input type="file" id="csvFileInput" name="csv_file" accept=".csv,text/csv,text/plain" class="d-none" required />
+            <input type="file" id="csvFileInput" name="csv_file" accept=".csv,text/csv,text/plain" class="d-none" aria-label="Sélectionner un fichier CSV à importer" required />
             <div id="dropzonePrompt">
               <i class="fa-solid fa-cloud-arrow-up text-primary fs-1 mb-2"></i>
               <h6 class="fw-bold mb-1">Glissez votre fichier CSV ici ou cliquez pour parcourir</h6>

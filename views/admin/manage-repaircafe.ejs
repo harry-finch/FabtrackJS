@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -145,7 +145,7 @@
                         <h5 class="fw-bold mb-0 ms-1">Sessions et objets déposés</h5>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <input type="text" id="repairSearchInput" class="form-control form-control-sm rounded-pill px-3" style="width: 220px;" placeholder="Filtrer contributeur, objet..." />
+                        <input type="text" id="repairSearchInput" class="form-control form-control-sm rounded-pill px-3" style="width: 220px;" placeholder="Filtrer contributeur, objet..." aria-label="Filtrer par contributeur ou objet à réparer" />
                     </div>
                 </div>
 
@@ -245,7 +245,7 @@
                             <div class="col-12">
                                 <div class="p-3 border rounded-3 bg-body d-flex flex-wrap align-items-center justify-content-between gap-3">
                                     <div>
-                                        <h6 class="fw-bold mb-0">Activer les fonctionnalités Repair Café</h6>
+                                        <h6 class="fw-bold mb-0"><label class="form-check-label" for="plugin_repaircafe_enabled">Activer les fonctionnalités Repair Café</label></h6>
                                         <p class="text-muted small mb-0 mt-1">
                                             Affiche le champ "Objet à réparer" lors de la sélection du motif de la visite et ouvre le modal de bilan de réparation lors de la sortie.
                                         </p>
@@ -303,7 +303,7 @@
                     <div class="modal-content border-0 shadow">
                         <form action="/admin/repair-cafe/update-entry" method="POST">
                             <input type="hidden" name="historyid" id="editHistoryId" value="" />
-                            <div class="modal-header bg-warning-subtle text-dark border-0">
+                            <div class="modal-header bg-warning-subtle text-warning-emphasis border-0">
                                 <h5 class="modal-title fw-bold" id="editRepairModalLabel">
                                     <i class="fa-solid fa-wrench me-2"></i>Modifier la fiche de réparation
                                 </h5>
@@ -311,8 +311,8 @@
                             </div>
                             <div class="modal-body p-4">
                                 <div class="mb-3">
-                                    <label class="form-label text-muted small fw-semibold">Contributeur</label>
-                                    <input type="text" class="form-control bg-light" id="editUserName" readonly />
+                                    <label for="editUserName" class="form-label text-muted small fw-semibold">Contributeur</label>
+                                    <input type="text" class="form-control bg-body-tertiary" id="editUserName" readonly />
                                 </div>
 
                                 <div class="form-floating mb-3">

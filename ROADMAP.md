@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 33** (9 %)
+**Avancement : 3 livrés sur 34** (9 %)
 
 ## Restant à faire
 
@@ -54,7 +54,7 @@
    Servir une version unique de Bootstrap et Chart.js depuis node_modules, retirer @docsearch/css et alléger le GIF 404 de 4,6 Mo.
 24. **[R-027 Refondre les modales de confirmation et les retours utilisateur](roadmap/items/R-027-refondre-les-modales-de-confirmation-et-les.md)** · À tester · jalon v1.5
    Remplacer les 33 confirm(), 9 alert() et 1 prompt() natifs par une modale Bootstrap réutilisable et corriger les retours d'erreur.
-25. **[R-028 Améliorer l'accessibilité WCAG AA, le clavier, le mode sombre et le tactile](roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md)** · Idée · jalon v1.5
+25. **[R-028 Améliorer l'accessibilité WCAG AA, le clavier, le mode sombre et le tactile](roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md)** · À tester · jalon v1.5
    Corriger <html lang>, ajouter les 65 labels manquants, réparer les contrastes mode sombre et la navigation clavier des tableaux.
 26. **[R-029 Uniformiser la terminologie, éliminer le franglais et compléter l'i18n](roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md)** · Idée · jalon v1.5
    Généraliser Contributeur / Motif de la visite, traduire les 35 vues et 242 messages flash en dur et nettoyer le catalogue i18n.
@@ -66,6 +66,8 @@
    Remplacer les rechargements complets de page sur le kiosque et les tableaux admin par des mises à jour dynamiques (fragments serveur + fetch) synchronisées en temps réel entre postes via SSE.
 30. **[R-033 Refondre le panneau d'administration en cockpit avec menu latéral persistant (Prop. 3)](roadmap/items/R-033-refondre-le-panneau-d-administration-en-cockpit.md)** · Idée · jalon v1.5
    Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
+31. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · Spécifiée · jalon v1.6
+   Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
 
 ## Actions à faire
 
@@ -112,6 +114,7 @@
 - [ ] [A-041](roadmap/actions/A-041-tester-healthz-l-export-rgpd-individuel-et-la.md) Tester /healthz, l'export RGPD individuel et la simulation d'anonymisation CLI (tester, R-025)
 - [ ] [A-042](roadmap/actions/A-042-verifier-le-fonctionnement-hors-ligne-0-requete.md) Vérifier le fonctionnement hors-ligne (0 requête CDN) sur kiosque, statistiques et 404 (tester, R-026)
 - [ ] [A-043](roadmap/actions/A-043-valider-les-modales-bootstrap-les-toasts-propres.md) Valider les modales Bootstrap, les toasts propres et /report-issue (R-027) (tester, R-027)
+- [ ] [A-044](roadmap/actions/A-044-valider-l-accessibilite-wcag-aa-le-mode-sombre.md) Valider l'accessibilité WCAG AA, le mode sombre Chart.js et la navigation clavier (R-028) (tester, R-028)
 
 ## Livré
 

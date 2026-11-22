@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -160,7 +160,7 @@
 
         <div class="row mb-4">
           <div class="col-12">
-            <label class="form-label text-muted small"><%= typeof __ !== 'undefined' ? __('machines.field_picture') : 'Photo de la machine (optionnel) :' %></label>
+            <label for="machinePicture" class="form-label text-muted small"><%= typeof __ !== 'undefined' ? __('machines.field_picture') : 'Photo de la machine (optionnel) :' %></label>
             <input type="file" class="form-control" id="machinePicture" name="machinePicture" accept="image/*" />
             <% if (machine.picture) { %>
               <div class="mt-2">

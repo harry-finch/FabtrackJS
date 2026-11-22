@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -158,8 +158,8 @@
                 <div class="input-group">
                   <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-lock text-secondary"></i></span>
                   <input type="password" class="form-control" id="adminPassword" name="adminPassword" placeholder="••••••••" minlength="6" required />
-                  <button type="button" class="btn btn-outline-secondary" data-toggle-password="adminPassword">
-                    <i class="fa-solid fa-eye"></i>
+                  <button type="button" class="btn btn-outline-secondary" data-toggle-password="adminPassword" aria-label="Afficher ou masquer le mot de passe">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
                   </button>
                 </div>
                 <div class="invalid-feedback">Le mot de passe doit comporter au moins 6 caractères.</div>
@@ -169,8 +169,8 @@
                 <div class="input-group">
                   <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-lock text-secondary"></i></span>
                   <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="••••••••" minlength="6" required />
-                  <button type="button" class="btn btn-outline-secondary" data-toggle-password="confirmPassword">
-                    <i class="fa-solid fa-eye"></i>
+                  <button type="button" class="btn btn-outline-secondary" data-toggle-password="confirmPassword" aria-label="Afficher ou masquer la confirmation du mot de passe">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i>
                   </button>
                 </div>
                 <div class="invalid-feedback" id="confirmPasswordFeedback">Les mots de passe ne correspondent pas.</div>
@@ -354,9 +354,18 @@
 
           const closeBtn = document.createElement("span");
           closeBtn.className = "btn-close-tag ms-1";
+          closeBtn.setAttribute("role", "button");
+          closeBtn.setAttribute("tabindex", "0");
+          closeBtn.setAttribute("aria-label", "Supprimer " + name);
           closeBtn.title = "Supprimer";
           closeBtn.textContent = "×";
           closeBtn.addEventListener("click", () => removeWorkspace(index));
+          closeBtn.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              removeWorkspace(index);
+            }
+          });
 
           tag.appendChild(labelSpan);
           tag.appendChild(closeBtn);

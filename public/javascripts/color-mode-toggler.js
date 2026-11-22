@@ -20,10 +20,15 @@
   };
 
   const setTheme = (theme) => {
-    if (theme === "auto") {
-      document.documentElement.setAttribute("data-bs-theme", window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    } else {
-      document.documentElement.setAttribute("data-bs-theme", theme);
+    const effectiveTheme =
+      theme === "auto"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light"
+        : theme;
+    document.documentElement.setAttribute("data-bs-theme", effectiveTheme);
+    if (typeof window.CustomEvent === "function") {
+      window.dispatchEvent(new window.CustomEvent("fabtrack:themechange", { detail: { theme: effectiveTheme, preference: theme } }));
     }
   };
 

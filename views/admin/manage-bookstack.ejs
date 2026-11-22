@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -160,7 +160,7 @@
                             <div class="col-12 col-md-6">
                                 <div class="p-3 bg-body-tertiary rounded-3 border h-100 d-flex align-items-center justify-content-between">
                                     <div>
-                                        <div class="fw-semibold small">Activer le plugin BookStack</div>
+                                        <div class="fw-semibold small"><label class="form-check-label" for="plugin_bookstack_enabled">Activer le plugin BookStack</label></div>
                                         <small class="text-muted">Active la vérification de fraîcheur documentaire et le statut dynamique (vert/rouge)</small>
                                     </div>
                                     <div class="form-check form-switch fs-5 mb-0 ms-3">
@@ -173,7 +173,7 @@
                             <div class="col-12 col-md-6">
                                 <div class="p-3 bg-body-tertiary rounded-3 border h-100 d-flex align-items-center justify-content-between">
                                     <div>
-                                        <div class="fw-semibold small">Pré-remplissage automatique de l'adresse</div>
+                                        <div class="fw-semibold small"><label class="form-check-label" for="bookstack_auto_prefill">Pré-remplissage automatique de l'adresse</label></div>
                                         <small class="text-muted">Pré-remplit le champ documentation avec l'URL de base du wiki lors de la création d'un projet</small>
                                     </div>
                                     <div class="form-check form-switch fs-5 mb-0 ms-3">

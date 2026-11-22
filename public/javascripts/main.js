@@ -70,9 +70,12 @@
     // Delegated CSP-safe actions (replaces legacy inline onclick=... attributes)
     const sortHeader = e.target.closest("th[data-sort]");
     if (sortHeader && typeof window.sortTable === "function") {
-      const colIdx = Number(sortHeader.getAttribute("data-sort"));
-      if (!Number.isNaN(colIdx)) {
-        window.sortTable(colIdx);
+      // Avoid double-sorting when table-sorting.js already bound the header directly
+      if (!sortHeader.dataset || sortHeader.dataset.sortBound !== "true") {
+        const colIdx = Number(sortHeader.getAttribute("data-sort"));
+        if (!Number.isNaN(colIdx)) {
+          window.sortTable(colIdx, typeof sortHeader.closest === "function" ? sortHeader.closest("table") : null);
+        }
       }
       return;
     }

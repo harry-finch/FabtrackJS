@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -134,7 +134,7 @@
               </td>
               <td>
                 <strong><%= costNum < 0.1 ? costNum.toFixed(4) : costNum.toFixed(2) %> €</strong>
-                <span class="badge bg-light text-dark border">/ <%= unitStr %></span>
+                <span class="badge bg-body-secondary text-body border">/ <%= unitStr %></span>
                 <% if (ratio > 1) { %>
                   <div class="small text-muted">~<%= (costNum * ratio).toFixed(2) %> € / <%= stockUnitStr %></div>
                 <% } %>
@@ -150,7 +150,7 @@
                 <% if (consumable.status === 'AVAILABLE') { %>
                   <span class="badge bg-success">In Stock</span>
                 <% } else if (consumable.status === 'LOW_STOCK') { %>
-                  <span class="badge bg-warning text-dark">Low Stock</span>
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Low Stock</span>
                 <% } else { %>
                   <span class="badge bg-danger">Out of Stock</span>
                 <% } %>

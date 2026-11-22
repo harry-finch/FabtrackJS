@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -95,7 +95,7 @@
                         </a>
 
                         <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
                             <i class="fa-solid fa-screwdriver-wrench me-1"></i> Panneau admin
                         </a>
                         <% } %>

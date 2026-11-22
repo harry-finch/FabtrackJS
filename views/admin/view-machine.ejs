@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -54,7 +54,7 @@
             <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddMaintenance">
               <i class="fa-solid fa-wrench me-1"></i> Déclarer une maintenance
             </button>
-            <a href="/report-issue/<%= machine.id %>" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ouvrir la page publique de signalement pour cette machine">
+            <a href="/report-issue/<%= machine.id %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ouvrir la page publique de signalement pour cette machine">
               <i class="fa-solid fa-triangle-exclamation me-1"></i> Signaler un problème
             </a>
             <a href="/admin/machines/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
@@ -101,7 +101,7 @@
               <div class="mb-3">
                 <span class="badge bg-primary me-1"><%= machine.machinetype ? machine.machinetype.name : 'Unknown Type' %></span>
                 <% if (machine.category) { %>
-                  <span class="badge bg-info text-dark me-1"><i class="fa-solid fa-layer-group"></i> <%= machine.category.name %></span>
+                  <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle me-1"><i class="fa-solid fa-layer-group"></i> <%= machine.category.name %></span>
                 <% } %>
                 <span class="badge bg-secondary"><i class="fa-solid fa-lock"></i> <%= machine.access ? machine.access.name : 'No Access Specified' %></span>
               </div>
@@ -137,7 +137,7 @@
                   <strong><%= typeof __ !== 'undefined' ? __('machines.field_documentation') : 'Documentation :' %></strong>
                   <p class="mb-0">
                     <% if (machine.documentation) { %>
-                      <a href="<%= machine.documentation %>" target="_blank" class="link-primary">
+                      <a href="<%= machine.documentation %>" target="_blank" rel="noopener noreferrer" class="link-primary">
                         <i class="fa-solid fa-arrow-up-right-from-square me-1"></i><%= machine.documentation %>
                       </a>
                     <% } else { %>
@@ -190,7 +190,7 @@
             <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddMaintenance">
               <i class="fa-solid fa-plus me-1"></i> Déclarer une maintenance
             </button>
-            <a href="/report-issue/<%= machine.id %>" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+            <a href="/report-issue/<%= machine.id %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm rounded-pill px-3">
               <i class="fa-solid fa-camera me-1"></i> Signaler panne
             </a>
           </div>
@@ -237,7 +237,7 @@
                     <tr class="event-row <%= ev.kind === 'MAINTENANCE' ? 'event-maintenance table-info-subtle' : 'event-issue ' + (ev.status === 'OPEN' ? 'table-danger-subtle' : '') %>" data-event-kind="<%= ev.kind %>">
                       <td>
                         <% if (ev.kind === 'MAINTENANCE') { %>
-                          <span class="badge bg-info text-dark border rounded-pill px-2.5 py-1">
+                          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2.5 py-1">
                             <i class="fa-solid fa-wrench me-1"></i> Maintenance
                           </span>
                         <% } else if (ev.status === 'OPEN') { %>
@@ -281,7 +281,7 @@
                             %>
                             <span class="badge <%= typeBadge %> border rounded-pill" style="font-size: 0.68rem;"><%= typeLabel %></span>
                             <% if (ev.cost) { %>
-                              <span class="badge bg-light text-dark border rounded-pill" style="font-size: 0.68rem;"><%= ev.cost %> €</span>
+                              <span class="badge bg-body-secondary text-body border rounded-pill" style="font-size: 0.68rem;"><%= ev.cost %> €</span>
                             <% } %>
                           </div>
                           <% if (ev.partsReplaced) { %>
@@ -522,7 +522,7 @@
                               </span>
                             <% } %>
                             <% if (entry.printDurationFormatted) { %>
-                              <span class="badge bg-light text-secondary border" title="Durée d'impression">
+                              <span class="badge bg-body-secondary text-body border" title="Durée d'impression">
                                 <i class="fa-solid fa-stopwatch me-1"></i><%= entry.printDurationFormatted %>
                               </span>
                             <% } %>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -125,6 +125,7 @@
                 id="searchMachineInput"
                 class="form-control"
                 placeholder="Rechercher par nom, marque, modèle, lieu..."
+                aria-label="Rechercher une machine par nom, marque, modèle ou lieu"
               />
             </div>
           </div>
@@ -331,7 +332,7 @@
               </div>
               <div class="row mb-3">
                 <div class="col-12">
-                  <label class="form-label small text-muted"><%= typeof __ !== 'undefined' ? __('machines.field_picture') : 'Photo de la machine (optionnel) :' %></label>
+                  <label for="fileInput" class="form-label small text-muted"><%= typeof __ !== 'undefined' ? __('machines.field_picture') : 'Photo de la machine (optionnel) :' %></label>
                   <input type="file" class="form-control" id="fileInput" name="machinePicture" accept="image/*">
                 </div>
               </div>

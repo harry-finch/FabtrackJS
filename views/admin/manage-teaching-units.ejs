@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -126,7 +126,7 @@
           <button class="nav-link fw-semibold <%= pendingCount > 0 ? 'text-warning-emphasis' : '' %>" id="tab-pending" data-bs-toggle="tab" data-bs-target="#panel-pending" type="button" role="tab">
             <i class="fa-solid fa-clipboard-question me-1"></i> En attente de régularisation
             <% if (pendingCount > 0) { %>
-              <span class="badge bg-warning text-dark rounded-pill ms-1"><%= pendingCount %></span>
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill ms-1"><%= pendingCount %></span>
             <% } %>
           </button>
         </li>
@@ -186,7 +186,7 @@
                         </span>
                       </td>
                       <td class="text-center">
-                        <span class="badge bg-light text-dark border">
+                        <span class="badge bg-body-secondary text-body border">
                           <%= ue.studentsCount %>
                         </span>
                       </td>
@@ -270,9 +270,9 @@
                   <span class="small fw-bold text-muted text-nowrap">
                     <i class="fa-solid fa-calendar-days text-primary me-1"></i> Période :
                   </span>
-                  <input type="date" id="filterLogStartDate" class="form-control form-control-sm" title="Date de début" />
+                  <input type="date" id="filterLogStartDate" class="form-control form-control-sm" title="Date de début" aria-label="Date de début" />
                   <span class="text-muted small">à</span>
-                  <input type="date" id="filterLogEndDate" class="form-control form-control-sm" title="Date de fin" />
+                  <input type="date" id="filterLogEndDate" class="form-control form-control-sm" title="Date de fin" aria-label="Date de fin" />
                   <button type="button" id="clearLogFilterBtn" class="btn btn-sm btn-outline-secondary" title="Réinitialiser les filtres" style="display: none;">
                     <i class="fa-solid fa-xmark"></i>
                   </button>
@@ -361,7 +361,7 @@
                       <td class="text-end pe-3 fw-bold text-danger text-nowrap">
                         <%= act.totalCost.toFixed(2) %> €
                         <% if (act.isUnregistered) { %>
-                          <span class="badge bg-warning text-dark d-block text-end mt-1" style="font-size: 0.65rem;">En attente</span>
+                          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-block text-end mt-1" style="font-size: 0.65rem;">En attente</span>
                         <% } %>
                       </td>
                     </tr>
@@ -447,7 +447,7 @@
                         <% } %>
                       </td>
                       <td class="text-center">
-                        <span class="badge bg-light text-dark border">
+                        <span class="badge bg-body-secondary text-body border">
                           <%= item.consumablesCount %> acte(s)
                         </span>
                       </td>
