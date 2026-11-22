@@ -6,6 +6,7 @@ const {
   requiredTrimmedString,
   optionalDateString,
   optionalEmail,
+  optionalPageNumber,
   preprocessCheckbox,
   preprocessOptionalInt,
 } = require("./common.schema.js");
@@ -476,6 +477,34 @@ const communicationQuerySchema = z.object({
   target: z.string().trim().max(100, "Cible de communication invalide.").optional(),
 });
 
+const viewHistoryQuerySchema = z.object({
+  page: optionalPageNumber,
+  limit: z.preprocess(
+    (val) => {
+      const parsed = preprocessOptionalInt(val);
+      return parsed === null || parsed === undefined ? 50 : parsed;
+    },
+    z
+      .number({ error: "La taille de page est invalide." })
+      .int("La taille de page doit être un entier.")
+      .min(10, "La taille de page doit être comprise entre 10 et 200.")
+      .max(200, "La taille de page doit être comprise entre 10 et 200.")
+      .default(50),
+  ),
+  workspaceId: z
+    .string()
+    .trim()
+    .max(30)
+    .refine(
+      (val) => val === "" || val === "all" || (/^\d+$/.test(val) && Number(val) > 0),
+      "Identifiant d'espace de travail invalide.",
+    )
+    .optional(),
+  startDate: optionalDateString("La date de début"),
+  endDate: optionalDateString("La date de fin"),
+  search: z.string().trim().max(200, "La recherche est trop longue.").optional(),
+});
+
 module.exports = {
   createAccessLevelSchema,
   updateAccessLevelSchema,
@@ -520,4 +549,5 @@ module.exports = {
   historyImportPreviewSchema,
   historyImportExecuteSchema,
   communicationQuerySchema,
+  viewHistoryQuerySchema,
 };

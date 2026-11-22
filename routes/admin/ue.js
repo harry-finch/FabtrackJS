@@ -18,6 +18,7 @@ router.use(isAdmin);
 
 const { PrismaClient, ResourceType } = require("@prisma/client");
 const prisma = new PrismaClient();
+const { getZonedDayBounds } = require("../../utilities/timezoneHelper.js");
 
 // ******************************************************************************
 // Route to manage Teaching Units (UE) & View Refacturation
@@ -446,14 +447,16 @@ router.get(
       };
     }
 
-    // Filter by date range if specified
-    if (startDate || endDate) {
+    // Filter by date range if specified (anchored to APP_TIMEZONE day bounds)
+    const startBounds = startDate ? getZonedDayBounds(startDate) : null;
+    const endBounds = endDate ? getZonedDayBounds(endDate) : null;
+    if (startBounds || endBounds) {
       whereConditions.createdAt = {};
-      if (startDate) {
-        whereConditions.createdAt.gte = new Date(`${startDate}T00:00:00.000`);
+      if (startBounds) {
+        whereConditions.createdAt.gte = startBounds.start;
       }
-      if (endDate) {
-        whereConditions.createdAt.lte = new Date(`${endDate}T23:59:59.999`);
+      if (endBounds) {
+        whereConditions.createdAt.lte = endBounds.end;
       }
     }
 

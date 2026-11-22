@@ -10,13 +10,14 @@ const clearNotification = require("../middleware/clearNotification.js");
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
 const requireRoles = require("../middleware/requireRoles.js");
-const { validateBody, validateParams } = require("../middleware/validate.js");
+const { validateBody, validateParams, validateQuery } = require("../middleware/validate.js");
 const { idParamSchema, userWorkshopParamsSchema } = require("../schemas/common.schema.js");
 const {
   createUserSchema,
   updateUserSchema,
   userWorkshopInterestSchema,
   userWorkshopBadgeSchema,
+  manageUsersQuerySchema,
 } = require("../schemas/user.schema.js");
 const dateService = require("../services/dateService.js");
 const { isNull } = require("util");
@@ -60,16 +61,62 @@ function parseOptionalInt(val) {
 router.get(
   "/manage",
   isAdmin, // Ensure user has admin role
+  validateQuery(manageUsersQuerySchema, { redirectUrl: "/users/manage" }),
   clearNotification,
   asyncHandler(async (req, res) => {
-    req.session.lastPage = "/users/manage";
+    if (req.session) {
+      req.session.lastPage = req.originalUrl || "/users/manage";
+    }
 
-    const users = await prisma.user.findMany({
-      orderBy: { id: "desc" },
-      include: { usertype: true },
+    const query = req.validatedQuery || req.query || {};
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 50;
+    const search = query.search ? String(query.search).trim() : "";
+    const charter = query.charter && query.charter !== "" ? String(query.charter).trim() : "all";
+
+    const where = { deletedAt: null };
+    if (charter === "signed") {
+      where.termsAccepted = true;
+    } else if (charter === "pending") {
+      where.termsAccepted = false;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { surname: { contains: search } },
+        { email: { contains: search } },
+        { usertype: { name: { contains: search } } },
+      ];
+    }
+
+    const [users, totalFiltered, totalActiveUsers, signedCount] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy: { id: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { usertype: true },
+      }),
+      prisma.user.count({ where }),
+      prisma.user.count({ where: { deletedAt: null } }),
+      prisma.user.count({ where: { deletedAt: null, termsAccepted: true } }),
+    ]);
+
+    res.render("admin/manage-users", {
+      users,
+      totalFiltered,
+      totalActiveUsers,
+      signedCount,
+      pendingCount: Math.max(0, totalActiveUsers - signedCount),
+      currentPage: page,
+      totalPages: Math.max(1, Math.ceil(totalFiltered / limit)),
+      limit,
+      filters: {
+        search: search || "",
+        charter: charter || "all",
+      },
     });
-
-    res.render("admin/manage-users", { users });
   }),
 );
 

@@ -19,6 +19,7 @@ const {
   rfidScanSchema,
   checkRfidQuerySchema,
   projectDocumentationQuerySchema,
+  userSearchQuerySchema,
 } = require("../schemas/api.schema.js");
 
 // ******************************************************************************
@@ -132,14 +133,36 @@ router.get(
 );
 
 // ******************************************************************************
-// Route to get users and projects in dictionary format (main fabtrack page)
+// Lightweight kiosk user search endpoint (debounced autocomplete, PII minimized)
 // ******************************************************************************
 
 router.get(
-  "/list/autocomplete-lists",
+  "/users/search",
   isLoggedIn,
+  validateQuery(userSearchQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
+    const query = req.validatedQuery || req.query || {};
+    const q = typeof query.q === "string" ? query.q.trim() : "";
+    const limit = Math.min(50, Math.max(1, Number(query.limit) || 20));
+
+    const where = { deletedAt: null };
+    if (q) {
+      const tokens = q.split(/\s+/).filter(Boolean);
+      if (tokens.length > 0) {
+        where.AND = tokens.map((token) => ({
+          OR: [
+            { name: { contains: token } },
+            { surname: { contains: token } },
+            { email: { contains: token } },
+          ],
+        }));
+      }
+    }
+
     const users = await prisma.user.findMany({
+      where,
+      orderBy: [{ surname: "asc" }, { name: "asc" }],
+      take: limit,
       select: {
         id: true,
         name: true,
@@ -154,42 +177,90 @@ router.get(
         },
       },
     });
-  const projects = await prisma.project.findMany({
-    where: { active: true },
-    select: {
-      id: true,
-      url: true,
-      projecttypeId: true,
-      teachingUnitId: true,
-      unregisteredUeName: true,
-      unregisteredUeContact: true,
-      sorbonneEntity: true,
-    },
-  });
-  const userprojects = await prisma.userProject.findMany({
-    select: {
-      id: true,
-      userId: true,
-      projectId: true,
-    },
-  });
 
-  const sorbonneService = require("../services/sorbonneService.js");
-  const sorbonneEntities = await sorbonneService.getDistinctEntities();
+    const mapped = users.map((u) => ({
+      id: u.id,
+      fullname: `${u.name} ${u.surname}`,
+      termsAccepted: !!u.termsAccepted,
+      projects: JSON.stringify(u.projects || []),
+    }));
 
-  let userlist = [];
-  users.forEach(function (user) {
-    userlist.push({
-      fullname: user.name + " " + user.surname,
-      id: user.id,
-      termsAccepted: !!user.termsAccepted,
-      projects: JSON.stringify(user.projects),
-    });
-  });
+    return res.json({ users: mapped });
+  }),
+);
 
-  let projectlist = [];
-  projects.forEach(function (project) {
-    projectlist.push({
+// ******************************************************************************
+// Route to get users and projects in dictionary format (main fabtrack page)
+// ******************************************************************************
+
+router.get(
+  "/list/autocomplete-lists",
+  isLoggedIn,
+  asyncHandler(async (req, res) => {
+    const isProjectsScope = req.query && req.query.scope === "projects";
+    const sorbonneService = require("../services/sorbonneService.js");
+
+    const [users, projects, sorbonneEntities] = await Promise.all([
+      isProjectsScope
+        ? Promise.resolve([])
+        : prisma.user.findMany({
+            where: { deletedAt: null },
+            orderBy: [{ surname: "asc" }, { name: "asc" }],
+            take: 200,
+            select: {
+              id: true,
+              name: true,
+              surname: true,
+              termsAccepted: true,
+              projects: {
+                select: {
+                  id: true,
+                  userId: true,
+                  projectId: true,
+                },
+              },
+            },
+          }),
+      prisma.project.findMany({
+        where: { active: true },
+        orderBy: { id: "desc" },
+        take: 500,
+        select: {
+          id: true,
+          url: true,
+          projecttypeId: true,
+          teachingUnitId: true,
+          unregisteredUeName: true,
+          unregisteredUeContact: true,
+          sorbonneEntity: true,
+        },
+      }),
+      sorbonneService.getDistinctEntities(),
+    ]);
+
+    const projectIds = projects.map((p) => p.id);
+    const userprojects =
+      projectIds.length > 0
+        ? await prisma.userProject.findMany({
+            where: { projectId: { in: projectIds } },
+            select: {
+              id: true,
+              userId: true,
+              projectId: true,
+            },
+          })
+        : [];
+
+    const userlist = isProjectsScope
+      ? []
+      : users.map((user) => ({
+          fullname: `${user.name} ${user.surname}`,
+          id: user.id,
+          termsAccepted: !!user.termsAccepted,
+          projects: JSON.stringify(user.projects || []),
+        }));
+
+    const projectlist = projects.map((project) => ({
       id: project.id,
       url: project.url,
       type: project.projecttypeId,
@@ -198,17 +269,17 @@ router.get(
       unregisteredUeContact: project.unregisteredUeContact,
       sorbonneEntity: project.sorbonneEntity,
       group: "all",
-    });
-  });
+    }));
 
-  let userprojectlist = [];
-  userprojects.forEach(function (userproject) {
-    userprojectlist.push({ id: userproject.id, userid: userproject.userId, projectid: userproject.projectId });
-  });
+    const userprojectlist = userprojects.map((userproject) => ({
+      id: userproject.id,
+      userid: userproject.userId,
+      projectid: userproject.projectId,
+    }));
 
-  let data = { userlist, projectlist, userprojectlist, sorbonneEntities };
+    const data = { userlist, projectlist, userprojectlist, sorbonneEntities };
 
-  res.json(data);
+    res.json(data);
   }),
 );
 

@@ -5,6 +5,7 @@ const {
   preprocessOptionalInt,
   preprocessCheckbox,
   optionalDateString,
+  optionalPageNumber,
 } = require("./common.schema.js");
 
 const dynamicBirthYearSchema = z.preprocess(
@@ -106,9 +107,28 @@ const userWorkshopBadgeSchema = z.object({
     .nullable(),
 });
 
+const manageUsersQuerySchema = z.object({
+  page: optionalPageNumber,
+  limit: z.preprocess(
+    (val) => {
+      const parsed = preprocessOptionalInt(val);
+      return parsed === null || parsed === undefined ? 50 : parsed;
+    },
+    z
+      .number({ error: "La taille de page est invalide." })
+      .int("La taille de page doit être un entier.")
+      .min(10, "La taille de page doit être comprise entre 10 et 200.")
+      .max(200, "La taille de page doit être comprise entre 10 et 200.")
+      .default(50),
+  ),
+  search: z.string().trim().max(200, "La recherche est trop longue.").optional(),
+  charter: z.enum(["", "all", "signed", "pending"], { error: "Filtre de charte invalide." }).optional(),
+});
+
 module.exports = {
   createUserSchema,
   updateUserSchema,
   userWorkshopInterestSchema,
   userWorkshopBadgeSchema,
+  manageUsersQuerySchema,
 };

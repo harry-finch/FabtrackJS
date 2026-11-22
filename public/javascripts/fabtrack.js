@@ -65,9 +65,11 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 });
 
 (async () => {
-  // Fetch the needed data from the API
-  const apiUrl = window.getAppBaseUrl ? window.getAppBaseUrl("api/list/autocomplete-lists") : "/api/list/autocomplete-lists";
-  let data = { userlist: [], projectlist: [], userprojectlist: [] };
+  // Fetch only projects & Sorbonne entities on initial kiosk load (users are queried on demand via /api/users/search)
+  const apiUrl = window.getAppBaseUrl
+    ? window.getAppBaseUrl("api/list/autocomplete-lists?scope=projects")
+    : "/api/list/autocomplete-lists?scope=projects";
+  let data = { userlist: [], projectlist: [], userprojectlist: [], sorbonneEntities: [] };
   try {
     const response = await fetch(apiUrl);
     if (!response.ok) {
@@ -80,10 +82,11 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     return;
   }
 
-  // User search autocomplete
+  // User search autocomplete (debounced remote query via /api/users/search)
   var nameInput = document.getElementById("name");
-  var names = data.userlist;
   var allowedChars = new RegExp(/^[a-zA-Z\s]+$/);
+  let selectedUserRecord = null;
+  let userSearchAbortController = null;
 
   const charterWarningRow = document.getElementById("charterWarningRow");
   const charterProfileBtn = document.getElementById("charterProfileBtn");
@@ -130,54 +133,96 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     }
   }
 
-  autocomplete({
-    input: nameInput,
-    minLength: 1,
-    emptyMsg: "No names found",
-    fetch: function (text, callback) {
-      text = text.toLowerCase().trim();
-      callback(
-        names.filter(function (candidate) {
-          return candidate.fullname.toLowerCase().indexOf(text) !== -1;
-        }),
-      );
-    },
-    render: function (item, value) {
-      var itemElement = document.createElement("div");
-      itemElement.className = "d-flex align-items-center justify-content-between";
+  if (nameInput && typeof autocomplete === "function") {
+    autocomplete({
+      input: nameInput,
+      minLength: 1,
+      debounceWaitMs: 250,
+      emptyMsg: "No names found",
+      fetch: function (text, callback) {
+        const query = (text || "").trim();
+        if (!query) {
+          if (userSearchAbortController) {
+            userSearchAbortController.abort();
+            userSearchAbortController = null;
+          }
+          callback([]);
+          return;
+        }
 
-      var nameSpan = document.createElement("span");
-      if (allowedChars.test(value)) {
-        appendHighlightedText(nameSpan, item.fullname, value);
-      } else {
-        nameSpan.textContent = item.fullname || "";
-      }
-      itemElement.appendChild(nameSpan);
+        if (userSearchAbortController) {
+          userSearchAbortController.abort();
+        }
 
-      if (item.termsAccepted === false) {
-        var badge = document.createElement("span");
-        badge.className = "badge bg-warning text-dark border border-warning-subtle rounded-pill ms-2 px-2 py-1";
-        badge.style.fontSize = "0.7rem";
-        setElementIconAndText(badge, "fa-solid fa-triangle-exclamation me-1", "Charte non signée");
-        itemElement.appendChild(badge);
-      }
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        userSearchAbortController = controller;
 
-      return itemElement;
-    },
-    onSelect: function (item) {
-      // When clicking, entering or tabbing on the selected name
-      // set the value of the field and the user index field
-      // as well as set the link to edit the user profile
+        const searchEndpoint = "api/users/search?limit=20&q=" + encodeURIComponent(query);
+        const searchUrl = window.getAppBaseUrl ? window.getAppBaseUrl(searchEndpoint) : "/" + searchEndpoint;
+        const fetchOptions = { headers: { Accept: "application/json" } };
+        if (controller) {
+          fetchOptions.signal = controller.signal;
+        }
 
-      nameInput.value = item.fullname;
-      document.getElementById("userid").value = item.id;
-      const profileUrl = window.getAppBaseUrl ? window.getAppBaseUrl("users/edit/" + item.id) : "users/edit/" + item.id;
-      document.getElementById("urlprofile").href = profileUrl;
-      setCharterStatus(item);
-      nameInput.dispatchEvent(new Event("change"));
-      console.log(item.projects);
-    },
-  });
+        fetch(searchUrl, fetchOptions)
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(function (payload) {
+            if (controller && userSearchAbortController !== controller) {
+              return;
+            }
+            const users = payload && Array.isArray(payload.users) ? payload.users : [];
+            callback(users);
+          })
+          .catch(function (err) {
+            if (err && err.name === "AbortError") {
+              return;
+            }
+            console.error("[Fabtrack] Erreur lors de la recherche de contributeurs:", err);
+            callback([]);
+          });
+      },
+      render: function (item, value) {
+        var itemElement = document.createElement("div");
+        itemElement.className = "d-flex align-items-center justify-content-between";
+
+        var nameSpan = document.createElement("span");
+        if (allowedChars.test(value)) {
+          appendHighlightedText(nameSpan, item.fullname, value);
+        } else {
+          nameSpan.textContent = item.fullname || "";
+        }
+        itemElement.appendChild(nameSpan);
+
+        if (item.termsAccepted === false) {
+          var badge = document.createElement("span");
+          badge.className = "badge bg-warning text-dark border border-warning-subtle rounded-pill ms-2 px-2 py-1";
+          badge.style.fontSize = "0.7rem";
+          setElementIconAndText(badge, "fa-solid fa-triangle-exclamation me-1", "Charte non signée");
+          itemElement.appendChild(badge);
+        }
+
+        return itemElement;
+      },
+      onSelect: function (item) {
+        // When clicking, entering or tabbing on the selected name
+        // set the value of the field and the user index field
+        // as well as set the link to edit the user profile
+
+        selectedUserRecord = item;
+        nameInput.value = item.fullname;
+        document.getElementById("userid").value = item.id;
+        const profileUrl = window.getAppBaseUrl ? window.getAppBaseUrl("users/edit/" + item.id) : "users/edit/" + item.id;
+        document.getElementById("urlprofile").href = profileUrl;
+        setCharterStatus(item);
+        nameInput.dispatchEvent(new Event("change"));
+      },
+    });
+  }
 
   const urlProfileEl = document.getElementById("urlprofile");
   if (urlProfileEl) {
@@ -190,15 +235,24 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     });
   }
 
-  nameInput.addEventListener("input", () => {
-    const currentUserId = Number(document.getElementById("userid").value);
-    const currentUser = names.find((u) => u.id === currentUserId);
-    if (!currentUser || currentUser.fullname.toLowerCase() !== nameInput.value.trim().toLowerCase()) {
-      document.getElementById("userid").value = "null";
-      if (urlProfileEl) urlProfileEl.href = "#";
-      setCharterStatus(null);
-    }
-  });
+  if (nameInput) {
+    nameInput.addEventListener("input", () => {
+      const currentValue = nameInput.value.trim();
+      if (!currentValue && userSearchAbortController) {
+        userSearchAbortController.abort();
+        userSearchAbortController = null;
+      }
+      if (
+        !selectedUserRecord ||
+        (selectedUserRecord.fullname || "").trim().toLowerCase() !== currentValue.toLowerCase()
+      ) {
+        selectedUserRecord = null;
+        document.getElementById("userid").value = "null";
+        if (urlProfileEl) urlProfileEl.href = "#";
+        setCharterStatus(null);
+      }
+    });
+  }
 
   const kioskForm =
     document.querySelector('form[action$="/history/create"]') ||
@@ -206,7 +260,8 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
   if (kioskForm) {
     kioskForm.addEventListener("submit", (e) => {
       const selectedId = Number(document.getElementById("userid").value);
-      const selectedUser = names.find((u) => u.id === selectedId);
+      const selectedUser =
+        selectedUserRecord && Number(selectedUserRecord.id) === selectedId ? selectedUserRecord : null;
       if (selectedUser && selectedUser.termsAccepted === false) {
         e.preventDefault();
         setCharterStatus(selectedUser);

@@ -8,11 +8,62 @@
     <title>Fabtrack - Historique des passages</title>
 
     <%- include('../includes/pagehead.html') %>
-    <script src="/javascripts/pagination.js"></script>
   </head>
 
   <body class="d-flex justify-content-center bg-body-tertiary py-4">
     <%- include('../includes/light-dark.html') %>
+
+    <%
+      const safeBaseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/';
+      const safeHistory = Array.isArray(history) ? history : [];
+      const safeWorkspaces = typeof availableWorkspaces !== 'undefined' && Array.isArray(availableWorkspaces) ? availableWorkspaces : [];
+      const safeFilters = typeof filters !== 'undefined' && filters ? filters : { workspaceId: 'all', startDate: '', endDate: '', search: '' };
+      const activeWsId = safeFilters.workspaceId ? String(safeFilters.workspaceId) : 'all';
+      const safeTotalCount = typeof totalCount !== 'undefined' ? Number(totalCount) : safeHistory.length;
+      const safeGrandTotalCount = typeof grandTotalCount !== 'undefined' ? Number(grandTotalCount) : safeTotalCount;
+      const safeWorkspaceCountsMap = typeof workspaceCountsMap !== 'undefined' && workspaceCountsMap ? workspaceCountsMap : {};
+      const safeCurrentPage = typeof currentPage !== 'undefined' ? Number(currentPage) : 1;
+      const safeTotalPages = typeof totalPages !== 'undefined' ? Math.max(1, Number(totalPages)) : 1;
+      const safeLimit = typeof limit !== 'undefined' ? Number(limit) : 50;
+
+      function buildHistoryUrl(overrides) {
+        const opts = overrides || {};
+        const params = new URLSearchParams();
+        const ws = opts.workspaceId !== undefined ? opts.workspaceId : activeWsId;
+        const sd = opts.startDate !== undefined ? opts.startDate : (safeFilters.startDate || '');
+        const ed = opts.endDate !== undefined ? opts.endDate : (safeFilters.endDate || '');
+        const q = opts.search !== undefined ? opts.search : (safeFilters.search || '');
+        const p = opts.page !== undefined ? opts.page : safeCurrentPage;
+        const lim = opts.limit !== undefined ? opts.limit : safeLimit;
+
+        if (ws && ws !== 'all') params.set('workspaceId', String(ws));
+        if (sd) params.set('startDate', sd);
+        if (ed) params.set('endDate', ed);
+        if (q) params.set('search', q);
+        if (lim) params.set('limit', String(lim));
+        if (p) params.set('page', String(p));
+        const qs = params.toString();
+        return safeBaseUrl + 'admin/view-history' + (qs ? '?' + qs : '');
+      }
+
+      const pageWindow = [];
+      const windowRadius = 2;
+      for (let p = 1; p <= safeTotalPages; p++) {
+        if (
+          p === 1 ||
+          p === safeTotalPages ||
+          (p >= safeCurrentPage - windowRadius && p <= safeCurrentPage + windowRadius)
+        ) {
+          pageWindow.push(p);
+        }
+      }
+      const hasActiveFilters = Boolean(
+        (activeWsId && activeWsId !== 'all') ||
+        safeFilters.startDate ||
+        safeFilters.endDate ||
+        safeFilters.search
+      );
+    %>
 
     <main class="main-container">
       <%- include('../includes/header.html') %>
@@ -25,20 +76,23 @@
               <i class="fa-solid fa-clock-rotate-left"></i>
             </div>
             <div>
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex flex-wrap align-items-center gap-2">
                 <h4 class="fw-bold mb-0">Historique des visites</h4>
                 <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill" id="historyCounter" style="font-size: 0.72rem;">
-                  <%= history.length %> enregistrements
+                  <%= safeTotalCount %> enregistrements
+                </span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
+                  Page <%= safeCurrentPage %> / <%= safeTotalPages %>
                 </span>
               </div>
               <p class="text-muted small mb-0">Journal chronologique des entrées, sorties et sessions au Fablab</p>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <a href="/admin/history/import" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
+            <a href="<%= safeBaseUrl %>admin/history/import" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
               <i class="fa-solid fa-file-import me-1"></i> Importer un enseignement (CSV)
             </a>
-            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <a href="<%= safeBaseUrl %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
             </a>
           </div>
@@ -49,47 +103,90 @@
       <div class="card bg-body-secondary border-0 p-3 mb-3 shadow-sm">
         <div class="row g-3 align-items-center">
           <!-- Workspace filters -->
-          <div class="col-lg-5 col-md-12">
+          <div class="col-12">
             <div class="d-flex flex-wrap gap-1 align-items-center">
               <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-building"></i> Workspace:</span>
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill active filter-workspace-btn" data-ws-id="all">
-                All (<%= history.length %>)
-              </button>
-              <% availableWorkspaces.forEach(function(ws) {
-                   const count = history.filter(h => h.workspaceId === ws.id).length;
+              <a
+                href="<%= buildHistoryUrl({ workspaceId: 'all', page: 1 }) %>"
+                class="btn btn-sm btn-outline-secondary rounded-pill <%= activeWsId === 'all' ? 'active' : '' %>"
+              >
+                Tous (<%= safeGrandTotalCount %>)
+              </a>
+              <% safeWorkspaces.forEach(function(ws) {
+                   const count = safeWorkspaceCountsMap[ws.id] || 0;
+                   const isActiveWs = activeWsId === String(ws.id);
               %>
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-workspace-btn" data-ws-id="<%= ws.id %>">
+                <a
+                  href="<%= buildHistoryUrl({ workspaceId: String(ws.id), page: 1 }) %>"
+                  class="btn btn-sm btn-outline-secondary rounded-pill <%= isActiveWs ? 'active' : '' %>"
+                >
                   <%= ws.name %> (<%= count %>)
-                </button>
+                </a>
               <% }); %>
             </div>
           </div>
 
-          <!-- Date range filter -->
-          <div class="col-lg-4 col-md-7 col-sm-12">
-            <div class="d-flex align-items-center gap-1">
-              <span class="small fw-semibold text-muted me-1 text-nowrap"><i class="fa-solid fa-calendar-days"></i> Période :</span>
-              <input type="date" id="historyStartDate" class="form-control form-control-sm" title="Date de début" />
-              <span class="text-muted small">à</span>
-              <input type="date" id="historyEndDate" class="form-control form-control-sm" title="Date de fin" />
-              <button type="button" id="clearDateBtn" class="btn btn-sm btn-outline-secondary" title="Réinitialiser la période" style="display: none;">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-          </div>
+          <!-- Date range + Search form -->
+          <div class="col-12">
+            <form method="GET" action="<%= safeBaseUrl %>admin/view-history" class="row g-2 align-items-center">
+              <% if (activeWsId && activeWsId !== 'all') { %>
+                <input type="hidden" name="workspaceId" value="<%= activeWsId %>" />
+              <% } %>
+              <input type="hidden" name="limit" value="<%= safeLimit %>" />
+              <div class="col-lg-5 col-md-6 col-sm-12">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="small fw-semibold text-muted me-1 text-nowrap"><i class="fa-solid fa-calendar-days"></i> Période :</span>
+                  <input
+                    type="date"
+                    id="historyStartDate"
+                    name="startDate"
+                    value="<%= safeFilters.startDate || '' %>"
+                    class="form-control form-control-sm"
+                    title="Date de début"
+                  />
+                  <span class="text-muted small">à</span>
+                  <input
+                    type="date"
+                    id="historyEndDate"
+                    name="endDate"
+                    value="<%= safeFilters.endDate || '' %>"
+                    class="form-control form-control-sm"
+                    title="Date de fin"
+                  />
+                </div>
+              </div>
 
-          <!-- Search filter -->
-          <div class="col-lg-3 col-md-5 col-sm-12">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
-              <input type="text" id="historySearchInput" class="form-control" placeholder="Recherche..." />
-            </div>
+              <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                  <input
+                    type="text"
+                    id="historySearchInput"
+                    name="search"
+                    value="<%= safeFilters.search || '' %>"
+                    class="form-control"
+                    placeholder="Rechercher (nom, e-mail, commentaire, projet)..."
+                  />
+                </div>
+              </div>
+
+              <div class="col-lg-3 col-md-12 d-flex gap-2 justify-content-lg-end">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="fa-solid fa-filter me-1"></i> Filtrer
+                </button>
+                <% if (hasActiveFilters) { %>
+                  <a href="<%= safeBaseUrl %>admin/view-history" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Réinitialiser
+                  </a>
+                <% } %>
+              </div>
+            </form>
           </div>
         </div>
       </div>
 
       <!-- History Table directly rendered -->
-      <div class="card border-0 shadow-sm mb-4">
+      <div class="card border-0 shadow-sm mb-3">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="historyTable">
@@ -107,12 +204,12 @@
           </tr>
         </thead>
         <tbody id="table-content">
-          <% if (history.length === 0) { %>
+          <% if (safeHistory.length === 0) { %>
           <tr id="emptyHistoryRow">
             <td colspan="9" class="text-center text-muted py-4"><%= typeof __ !== 'undefined' ? __('history.no_records') : 'Aucun enregistrement trouvé dans l\'historique.' %></td>
           </tr>
           <% } else { %>
-            <% history.forEach(function(entry) { %>
+            <% safeHistory.forEach(function(entry) { %>
             <tr data-ws-id="<%= entry.workspaceId || '' %>" data-arrival="<%= entry.rawArrival || '' %>">
               <td class="text-center"><%= entry.id %></td>
               <td><strong><%= entry.arrival %></strong></td>
@@ -124,7 +221,7 @@
                 <% } %>
               </td>
               <td>
-                <a href="/users/edit/<%= entry.userId %>" class="fw-semibold">
+                <a href="<%= safeBaseUrl %>users/edit/<%= entry.userId %>" class="fw-semibold">
                   <%= entry.user ? (entry.user.name + ' ' + entry.user.surname) : 'Unknown' %>
                 </a>
               </td>
@@ -170,7 +267,7 @@
                 </a>
               </td>
               <td class="text-center">
-                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/delete/<%= entry.id %>" class="d-inline" data-confirm="Are you sure you want to delete this history record?">
+                <form method="POST" action="<%= safeBaseUrl %>history/delete/<%= entry.id %>" class="d-inline" data-confirm="Are you sure you want to delete this history record?">
                   <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                   <button type="submit" class="btn btn-link p-0 border-0 text-decoration-none" title="Delete Record">
                     <i class="fa-solid fa-trash-can text-danger"></i>
@@ -186,11 +283,50 @@
   </div>
 </div>
 
+      <!-- Pagination Controls -->
+      <nav aria-label="Pagination historique" class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+        <div class="small text-muted">
+          Page <strong><%= safeCurrentPage %></strong> / <strong><%= safeTotalPages %></strong>
+          — <strong><%= safeTotalCount %></strong> enregistrements
+        </div>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item <%= safeCurrentPage <= 1 ? 'disabled' : '' %>">
+            <a
+              class="page-link"
+              href="<%= safeCurrentPage > 1 ? buildHistoryUrl({ page: safeCurrentPage - 1 }) : '#' %>"
+              aria-label="Précédent"
+            >
+              &laquo; Précédent
+            </a>
+          </li>
+          <% let prevPageNum = null; %>
+          <% pageWindow.forEach(function(p) { %>
+            <% if (prevPageNum !== null && p - prevPageNum > 1) { %>
+              <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            <% } %>
+            <li class="page-item <%= p === safeCurrentPage ? 'active' : '' %>" <%= p === safeCurrentPage ? 'aria-current="page"' : '' %>>
+              <a class="page-link" href="<%= buildHistoryUrl({ page: p }) %>"><%= p %></a>
+            </li>
+            <% prevPageNum = p; %>
+          <% }); %>
+          <li class="page-item <%= safeCurrentPage >= safeTotalPages ? 'disabled' : '' %>">
+            <a
+              class="page-link"
+              href="<%= safeCurrentPage < safeTotalPages ? buildHistoryUrl({ page: safeCurrentPage + 1 }) : '#' %>"
+              aria-label="Suivant"
+            >
+              Suivant &raquo;
+            </a>
+          </li>
+        </ul>
+      </nav>
+
       <!-- Modal for editing a history entry -->
       <div class="modal fade" id="editHistoryModal" tabindex="-1" aria-labelledby="editHistoryLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
-            <form action="/history/update" method="post">
+            <form action="<%= safeBaseUrl %>history/update" method="post">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
               <input type="hidden" id="editHistoryId" name="historyid" />
               <div class="modal-header">
                 <h5 class="modal-title" id="editHistoryLabel">
@@ -202,7 +338,7 @@
                 <div class="form-floating mb-3">
                   <select class="form-select" id="editWorkspaceId" name="workspaceId">
                     <option value="">(No Workspace)</option>
-                    <% availableWorkspaces.forEach(function(ws) { %>
+                    <% safeWorkspaces.forEach(function(ws) { %>
                       <option value="<%= ws.id %>"><%= ws.name %></option>
                     <% }); %>
                   </select>
@@ -238,80 +374,6 @@
             document.getElementById('editHistoryId').value = id;
             document.getElementById('editComments').value = comments;
             document.getElementById('editWorkspaceId').value = workspaceId;
-          });
-        }
-
-        // Filtering and search logic
-        const wsButtons = document.querySelectorAll('.filter-workspace-btn');
-        const searchInput = document.getElementById('historySearchInput');
-        const startDateInput = document.getElementById('historyStartDate');
-        const endDateInput = document.getElementById('historyEndDate');
-        const clearDateBtn = document.getElementById('clearDateBtn');
-        const rows = document.querySelectorAll('#table-content tr[data-ws-id]');
-        const counter = document.getElementById('historyCounter');
-
-        let activeWorkspace = 'all';
-        let searchQuery = '';
-        let startDate = '';
-        let endDate = '';
-
-        function applyFilters() {
-          let visibleCount = 0;
-          rows.forEach(row => {
-            const rowWs = row.getAttribute('data-ws-id');
-            const rowDate = row.getAttribute('data-arrival');
-            const rowText = row.textContent.toLowerCase();
-
-            const matchesWs = (activeWorkspace === 'all' || rowWs === activeWorkspace);
-            const matchesSearch = (!searchQuery || rowText.includes(searchQuery));
-            const matchesStartDate = (!startDate || (rowDate && rowDate >= startDate));
-            const matchesEndDate = (!endDate || (rowDate && rowDate <= endDate));
-
-            if (matchesWs && matchesSearch && matchesStartDate && matchesEndDate) {
-              row.style.display = '';
-              visibleCount++;
-            } else {
-              row.style.display = 'none';
-            }
-          });
-
-          if (counter) {
-            counter.textContent = `${visibleCount} records`;
-          }
-        }
-
-        wsButtons.forEach(btn => {
-          btn.addEventListener('click', function() {
-            wsButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            activeWorkspace = this.getAttribute('data-ws-id');
-            applyFilters();
-          });
-        });
-
-        if (searchInput) {
-          searchInput.addEventListener('input', function() {
-            searchQuery = this.value.trim().toLowerCase();
-            applyFilters();
-          });
-        }
-
-        function updateDateFilters() {
-          startDate = startDateInput ? startDateInput.value : '';
-          endDate = endDateInput ? endDateInput.value : '';
-          if (clearDateBtn) {
-            clearDateBtn.style.display = (startDate || endDate) ? '' : 'none';
-          }
-          applyFilters();
-        }
-
-        if (startDateInput) startDateInput.addEventListener('change', updateDateFilters);
-        if (endDateInput) endDateInput.addEventListener('change', updateDateFilters);
-        if (clearDateBtn) {
-          clearDateBtn.addEventListener('click', function() {
-            if (startDateInput) startDateInput.value = '';
-            if (endDateInput) endDateInput.value = '';
-            updateDateFilters();
           });
         }
       </script>

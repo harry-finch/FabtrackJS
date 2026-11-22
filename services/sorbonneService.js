@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 const settingsService = require("./settingsService");
 const referenceCacheService = require("./referenceCacheService");
 const dateService = require("./dateService");
+const { getZonedDayBounds } = require("../utilities/timezoneHelper.js");
 
 class SorbonneService {
   /**
@@ -75,18 +76,15 @@ class SorbonneService {
   async getSorbonneConsumptions(options = {}) {
     const { entity, status, startDate = null, endDate = null } = options;
 
+    const startBounds = startDate ? getZonedDayBounds(startDate) : null;
+    const endBounds = endDate ? getZonedDayBounds(endDate) : null;
+
     const createdAtFilter = {};
-    if (startDate) {
-      const parsedStart = new Date(`${startDate}T00:00:00.000`);
-      if (!Number.isNaN(parsedStart.getTime())) {
-        createdAtFilter.gte = parsedStart;
-      }
+    if (startBounds) {
+      createdAtFilter.gte = startBounds.start;
     }
-    if (endDate) {
-      const parsedEnd = new Date(`${endDate}T23:59:59.999`);
-      if (!Number.isNaN(parsedEnd.getTime())) {
-        createdAtFilter.lte = parsedEnd;
-      }
+    if (endBounds) {
+      createdAtFilter.lte = endBounds.end;
     }
 
     // 1. Fetch all consumable activities that have a history linking to a project with a sorbonneEntity (or history with sorbonneEntity)
@@ -181,17 +179,11 @@ class SorbonneService {
     }
 
     // Also enforce date bounds in memory (ensures consistency even with mocked Prisma)
-    if (startDate) {
-      const start = new Date(`${startDate}T00:00:00.000`);
-      if (!Number.isNaN(start.getTime())) {
-        enriched = enriched.filter((a) => new Date(a.createdAt) >= start);
-      }
+    if (startBounds) {
+      enriched = enriched.filter((a) => new Date(a.createdAt) >= startBounds.start);
     }
-    if (endDate) {
-      const end = new Date(`${endDate}T23:59:59.999`);
-      if (!Number.isNaN(end.getTime())) {
-        enriched = enriched.filter((a) => new Date(a.createdAt) <= end);
-      }
+    if (endBounds) {
+      enriched = enriched.filter((a) => new Date(a.createdAt) <= endBounds.end);
     }
 
     // 4. Compute statistics

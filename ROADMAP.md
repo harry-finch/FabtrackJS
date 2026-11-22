@@ -40,7 +40,7 @@
    Rétablir les messages d'erreur français sous Zod v4, activer le stripping contre le mass-assignment et valider paramètres, queries et POST restants.
 17. **[R-020 Supprimer l'état global muté par requête et masquer les erreurs internes en prod](roadmap/items/R-020-supprimer-l-etat-global-mute-par-requete-et.md)** · À tester · jalon v1.3
    Passer la locale par requête dans dateService, synchroniser les plugins au changement uniquement et masquer stack/erreurs Prisma en production.
-18. **[R-021 Agréger les statistiques en SQL, unifier APP_TIMEZONE et paginer côté serveur](roadmap/items/R-021-agreger-les-statistiques-en-sql-unifier-app.md)** · Idée · jalon v1.4
+18. **[R-021 Agréger les statistiques en SQL, unifier APP_TIMEZONE et paginer côté serveur](roadmap/items/R-021-agreger-les-statistiques-en-sql-unifier-app.md)** · À tester · jalon v1.4
    Migrer les calculs statistiques de JS vers SQL, corriger le fuseau horaire, paginer historique/usagers et remplacer le dump autocomplete kiosque.
 19. **[R-022 Unifier l'accès Prisma (fin du hack require.cache) et nettoyer code mort & socket.io](roadmap/items/R-022-unifier-l-acces-prisma-fin-du-hack-require-cache.md)** · Idée · jalon v1.4
    Remplacer les 37 new PrismaClient() par utilities/db, retirer socket.io inutilisé et supprimer les fichiers morts suivis dans Git.
@@ -104,6 +104,8 @@
 - [ ] [A-033](roadmap/actions/A-033-verifier-l-edition-d-un-usager-isexpert.md) Vérifier l'édition d'un usager (isExpert, termsAccepted), d'un consommable et d'une machine (tester, R-019)
 - [ ] [A-034](roadmap/actions/A-034-verifier-l-isolation-des-dates-longues-sur-deux.md) Vérifier l'isolation des dates longues sur deux sessions concurrentes FR et EN (tester, R-020)
 - [ ] [A-035](roadmap/actions/A-035-verifier-le-masquage-des-piles-d-appels-et.md) Vérifier le masquage des piles d'appels et messages internes sur erreur serveur hors développement (tester, R-020)
+- [ ] [A-036](roadmap/actions/A-036-verifier-admin-statistics-periodes-graphiques-et.md) Vérifier /admin/statistics (périodes, graphiques et export CSV) sous agrégation SQL (tester, R-021)
+- [ ] [A-037](roadmap/actions/A-037-tester-la-pagination-serveur-admin-view-history.md) Tester la pagination serveur (/admin/view-history, /users/manage) et l'autocomplétion kiosque (tester, R-021)
 
 ## Livré
 

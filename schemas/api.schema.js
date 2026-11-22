@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { optionalPositiveIntId } = require("./common.schema.js");
+const { optionalPositiveIntId, preprocessOptionalInt } = require("./common.schema.js");
 
 const rfidScanSchema = z.object({
   rfid: z
@@ -24,8 +24,30 @@ const projectDocumentationQuerySchema = z.object({
   userId: optionalPositiveIntId("L'identifiant usager"),
 });
 
+const userSearchQuerySchema = z.object({
+  q: z
+    .string({ error: "Le terme de recherche est invalide." })
+    .trim()
+    .max(100, "Le terme de recherche ne peut pas dépasser 100 caractères.")
+    .optional()
+    .default(""),
+  limit: z.preprocess(
+    (val) => {
+      const parsed = preprocessOptionalInt(val);
+      return parsed === null || parsed === undefined ? 20 : parsed;
+    },
+    z
+      .number({ error: "La limite doit être un entier positif." })
+      .int("La limite doit être un entier.")
+      .min(1, "La limite doit être comprise entre 1 et 50.")
+      .max(50, "La limite doit être comprise entre 1 et 50.")
+      .default(20),
+  ),
+});
+
 module.exports = {
   rfidScanSchema,
   checkRfidQuerySchema,
   projectDocumentationQuerySchema,
+  userSearchQuerySchema,
 };

@@ -1,14 +1,101 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const settingsService = require("./settingsService.js");
-const logger = require("../utilities/simpleLogger.js");
 const { assertOutboundUrlSafe } = require("../utilities/ssrfGuard.js");
 
-// In-memory cache for BookStack API responses (TTL: 5 minutes)
+// Bounded LRU in-memory cache for BookStack API responses (TTL: 5 minutes, max 500 entries)
 const docCache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 500;
+const DEFAULT_FETCH_TIMEOUT_MS = 5000;
+const CONCURRENCY_LIMIT = 5;
+
+function getCachedDoc(cacheKey) {
+  const cached = docCache.get(cacheKey);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp >= CACHE_TTL_MS) {
+    docCache.delete(cacheKey);
+    return null;
+  }
+  // Refresh LRU insertion order
+  docCache.delete(cacheKey);
+  docCache.set(cacheKey, cached);
+  return cached.data;
+}
+
+function setCachedDoc(cacheKey, data) {
+  if (docCache.has(cacheKey)) {
+    docCache.delete(cacheKey);
+  } else if (docCache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = docCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      docCache.delete(oldestKey);
+    }
+  }
+  docCache.set(cacheKey, { timestamp: Date.now(), data });
+}
+
+/**
+ * Wraps global `fetch` with an AbortController timeout so slow/hung remote endpoints
+ * never stall request handlers indefinitely.
+ *
+ * @param {string} url
+ * @param {RequestInit} [options={}]
+ * @param {number} [timeoutMs=5000]
+ * @returns {Promise<Response>}
+ */
+async function fetchWithTimeout(url, options = {}, timeoutMs = DEFAULT_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  if (typeof timer.unref === "function") {
+    timer.unref();
+  }
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Executes an async worker across `items` with a bounded pool of concurrent workers,
+ * preserving result order.
+ *
+ * @template T, R
+ * @param {T[]} items
+ * @param {number} limit
+ * @param {(item: T, index: number) => Promise<R>} worker
+ * @returns {Promise<R[]>}
+ */
+async function runWithConcurrency(items, limit, worker) {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 1, items.length));
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runWorker() {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      results[currentIndex] = await worker(items[currentIndex], currentIndex);
+    }
+  }
+
+  const workers = [];
+  for (let i = 0; i < safeLimit; i++) {
+    workers.push(runWorker());
+  }
+  await Promise.all(workers);
+  return results;
+}
 
 class BookstackService {
+  /**
+   * Clears the in-memory BookStack metadata LRU cache.
+   */
+  clearCache() {
+    docCache.clear();
+  }
   /**
    * Retrieves BookStack settings and prepares HTTP headers.
    */
@@ -53,7 +140,7 @@ class BookstackService {
         allowlistEnvKeys: ["BOOKSTACK_ALLOWED_HOSTS", "SSRF_ALLOWED_HOSTS"],
         label: "URL BookStack",
       });
-      const response = await fetch(endpoint, {
+      const response = await fetchWithTimeout(endpoint, {
         method: "GET",
         headers: {
           Authorization: `Token ${config.tokenId}:${config.tokenSecret}`,
@@ -130,11 +217,11 @@ class BookstackService {
       };
     }
 
-    // Check cache
+    // Check LRU cache
     const cacheKey = url.trim();
-    const cached = docCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-      return cached.data;
+    const cachedData = getCachedDoc(cacheKey);
+    if (cachedData) {
+      return cachedData;
     }
 
     const parsed = this.parseUrl(url);
@@ -161,7 +248,10 @@ class BookstackService {
     try {
       // Strategy 1: If page slug, filter by slug
       if (parsed.type === "page") {
-        const res = await fetch(`${config.apiBaseUrl}pages?filter[slug]=${encodeURIComponent(parsed.slug)}`, { headers });
+        const res = await fetchWithTimeout(
+          `${config.apiBaseUrl}pages?filter[slug]=${encodeURIComponent(parsed.slug)}`,
+          { headers },
+        );
         if (res.ok) {
           const body = await res.json();
           if (body.data && body.data.length > 0) {
@@ -179,7 +269,10 @@ class BookstackService {
 
       // Strategy 2: If book slug
       if (!result && (parsed.type === "book" || parsed.type === "page")) {
-        const res = await fetch(`${config.apiBaseUrl}books?filter[slug]=${encodeURIComponent(parsed.slug)}`, { headers });
+        const res = await fetchWithTimeout(
+          `${config.apiBaseUrl}books?filter[slug]=${encodeURIComponent(parsed.slug)}`,
+          { headers },
+        );
         if (res.ok) {
           const body = await res.json();
           if (body.data && body.data.length > 0) {
@@ -199,7 +292,10 @@ class BookstackService {
       if (!result) {
         const queryTerm = parsed.slug || parsed.query || "";
         if (queryTerm) {
-          const res = await fetch(`${config.apiBaseUrl}search?query=${encodeURIComponent(queryTerm)}&count=1`, { headers });
+          const res = await fetchWithTimeout(
+            `${config.apiBaseUrl}search?query=${encodeURIComponent(queryTerm)}&count=1`,
+            { headers },
+          );
           if (res.ok) {
             const body = await res.json();
             if (body.data && body.data.length > 0) {
@@ -220,8 +316,8 @@ class BookstackService {
         result = { exists: false, error: "Documentation introuvable sur le wiki" };
       }
 
-      // Save to cache
-      docCache.set(cacheKey, { timestamp: Date.now(), data: result });
+      // Save to bounded LRU cache
+      setCachedDoc(cacheKey, result);
       return result;
     } catch (err) {
       console.error("[BookstackService] fetchDocMetadata error:", err.message);
@@ -356,12 +452,7 @@ class BookstackService {
       return u.startsWith(wikiBase) || u.includes("bookstack") || u.includes("wiki.fablab");
     });
 
-    const projectList = [];
-    let upToDateCount = 0;
-    let outdatedCount = 0;
-    let unverifiedCount = 0;
-
-    for (const p of wikiProjects) {
+    const evaluatedProjects = await runWithConcurrency(wikiProjects, CONCURRENCY_LIMIT, async (p) => {
       // Find latest arrival among all associated users
       let latestArrival = null;
       let primaryUser = p.users.length > 0 ? p.users[0].user : null;
@@ -383,7 +474,6 @@ class BookstackService {
       if (!latestArrival) {
         // No recorded visit yet
         status = "up_to_date";
-        upToDateCount++;
       } else if (config.isConfigured) {
         const meta = await this.fetchDocMetadata(p.url);
         if (meta.exists && meta.updatedAt) {
@@ -392,21 +482,17 @@ class BookstackService {
           const toleranceMs = 5 * 60 * 1000;
           if (docUpdatedAt.getTime() + toleranceMs >= latestArrival.getTime()) {
             status = "up_to_date";
-            upToDateCount++;
           } else {
             status = "outdated";
-            outdatedCount++;
           }
         } else {
           status = "not_found";
-          outdatedCount++;
         }
       } else {
         status = "unconfigured";
-        unverifiedCount++;
       }
 
-      projectList.push({
+      return {
         id: p.id,
         url: p.url,
         projectType: p.projecttype ? p.projecttype.name : "Projet",
@@ -416,7 +502,20 @@ class BookstackService {
         docUpdatedAt,
         docTitle,
         status,
-      });
+      };
+    });
+
+    let upToDateCount = 0;
+    let outdatedCount = 0;
+    let unverifiedCount = 0;
+    for (const item of evaluatedProjects) {
+      if (item.status === "up_to_date") {
+        upToDateCount++;
+      } else if (item.status === "outdated" || item.status === "not_found") {
+        outdatedCount++;
+      } else if (item.status === "unconfigured") {
+        unverifiedCount++;
+      }
     }
 
     const totalWiki = wikiProjects.length;
@@ -430,10 +529,10 @@ class BookstackService {
       outdatedCount,
       unverifiedCount,
       upToDatePercentage,
-      projects: projectList,
+      projects: evaluatedProjects,
       config: {
-        enabled: config.enabled,
-        url: config.url,
+        enabled: config.isEnabled,
+        url: config.baseUrl,
         autoPrefill: config.autoPrefill,
         isConfigured: config.isConfigured,
       },
@@ -441,4 +540,14 @@ class BookstackService {
   }
 }
 
-module.exports = new BookstackService();
+const bookstackService = new BookstackService();
+bookstackService.BookstackService = BookstackService;
+bookstackService.MAX_CACHE_ENTRIES = MAX_CACHE_ENTRIES;
+bookstackService.CACHE_TTL_MS = CACHE_TTL_MS;
+bookstackService.DEFAULT_FETCH_TIMEOUT_MS = DEFAULT_FETCH_TIMEOUT_MS;
+bookstackService.CONCURRENCY_LIMIT = CONCURRENCY_LIMIT;
+bookstackService.fetchWithTimeout = fetchWithTimeout;
+bookstackService.runWithConcurrency = runWithConcurrency;
+bookstackService._docCache = docCache;
+
+module.exports = bookstackService;

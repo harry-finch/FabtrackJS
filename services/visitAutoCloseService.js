@@ -1,6 +1,11 @@
 const { prisma: defaultPrisma } = require("../utilities/db");
 const defaultSettingsService = require("./settingsService");
 const defaultLogger = require("../utilities/simpleLogger");
+const {
+  getAppTimezone,
+  getStartOfDayInTimezone,
+  getZonedTimeOnSameDay,
+} = require("../utilities/timezoneHelper");
 
 const DEFAULT_CLOSING_TIME = "18:30";
 const DEFAULT_INTERVAL_MS = 15 * 60 * 1000;
@@ -28,29 +33,28 @@ function parseClosingTime(rawTime) {
 }
 
 /**
- * Computes the local start-of-day (00:00:00.000) for a given date.
+ * Computes the start-of-day (00:00:00.000) in `APP_TIMEZONE` for a given date.
  *
  * @param {Date} [referenceDate=new Date()]
+ * @param {string} [timeZone]
  * @returns {Date}
  */
-function getStartOfDay(referenceDate = new Date()) {
-  const start = new Date(referenceDate.getTime());
-  start.setHours(0, 0, 0, 0);
-  return start;
+function getStartOfDay(referenceDate = new Date(), timeZone = getAppTimezone()) {
+  return getStartOfDayInTimezone(referenceDate, timeZone);
 }
 
 /**
  * Computes a guaranteed non-negative departure timestamp for an open visit:
- * `max(arrival, closingTimeOnArrivalDay)`.
+ * `max(arrival, closingTimeOnArrivalDay)` evaluated in `APP_TIMEZONE`.
  *
  * @param {Date|string} arrival
- * @param {{ hour: number, minute: number }} closing
+ * @param {{ hour: number, minute: number }} [closing]
+ * @param {string} [timeZone]
  * @returns {Date}
  */
-function computeSafeDeparture(arrival, closing = { hour: 18, minute: 30 }) {
+function computeSafeDeparture(arrival, closing = { hour: 18, minute: 30 }, timeZone = getAppTimezone()) {
   const arrivalDate = arrival instanceof Date ? new Date(arrival.getTime()) : new Date(arrival);
-  const closingDate = new Date(arrivalDate.getTime());
-  closingDate.setHours(closing.hour, closing.minute, 0, 0);
+  const closingDate = getZonedTimeOnSameDay(arrivalDate, closing, timeZone);
 
   return arrivalDate.getTime() > closingDate.getTime() ? arrivalDate : closingDate;
 }
@@ -66,12 +70,14 @@ class VisitAutoCloseService {
    * @param {Object} [deps.settingsService]
    * @param {Object} [deps.logger]
    * @param {number} [deps.intervalMs=900000]
+   * @param {string} [deps.timeZone]
    */
-  constructor({ prisma, settingsService, logger, intervalMs = DEFAULT_INTERVAL_MS } = {}) {
+  constructor({ prisma, settingsService, logger, intervalMs = DEFAULT_INTERVAL_MS, timeZone } = {}) {
     this.prisma = prisma || defaultPrisma;
     this.settingsService = settingsService || defaultSettingsService;
     this.logger = logger || defaultLogger;
     this.intervalMs = Number(intervalMs) > 0 ? Number(intervalMs) : DEFAULT_INTERVAL_MS;
+    this.timeZone = timeZone || null;
     this.intervalTimer = null;
     this.startupTimer = null;
     this.isRunning = false;
@@ -110,7 +116,8 @@ class VisitAutoCloseService {
     this.isRunning = true;
 
     try {
-      const startOfToday = getStartOfDay(now);
+      const tz = this.timeZone || getAppTimezone();
+      const startOfToday = getStartOfDay(now, tz);
       const closing = await this.resolveClosingTime();
 
       const forgottenVisits = await this.prisma.history.findMany({
@@ -131,7 +138,7 @@ class VisitAutoCloseService {
       // Group visit IDs by exact departure timestamp for minimal batched updateMany queries
       const idsByDepartureIso = new Map();
       for (const visit of forgottenVisits) {
-        const departureDate = computeSafeDeparture(visit.arrival, closing);
+        const departureDate = computeSafeDeparture(visit.arrival, closing, tz);
         const iso = departureDate.toISOString();
         if (!idsByDepartureIso.has(iso)) {
           idsByDepartureIso.set(iso, []);
