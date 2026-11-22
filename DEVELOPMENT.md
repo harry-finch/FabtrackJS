@@ -53,26 +53,30 @@ FabtrackJS/
 │   └── i18n.js                   # Dynamic i18n configuration & runtime locale reloader
 ├── core/
 │   ├── HookManager.js            # Central hook registry and async event dispatcher
-│   ├── hookLoader.js             # Discovers and registers hooks
-│   └── pluginLoader.js           # Auto-loads plugins from plugins/ directory
+│   └── pluginLoader.js           # Auto-loads plugins from plugins/ + async bootstrap()
 ├── locales/                      # Active JSON translation catalogs (fr.json, en.json, ...)
 │   ├── fr.json                   # French source translations (default fallback)
 │   └── en.json                   # English translations
 ├── middleware/
 │   ├── asyncHandler.js           # Wraps async routes to forward errors to next()
 │   ├── checkAdmin.js             # Protects admin routes (requires role === 'admin')
-│   ├── checkSession.js           # Protects staff routes (requires loggedin === true)
+│   ├── checkSession.js           # Protects staff routes + dynamic session revocation
+│   ├── csrf.js                   # Native session-synchronized CSRF middleware
+│   ├── requireRoles.js           # Role-based access control (admin, user, staff)
 │   ├── clearNotification.js      # Resets session flash notification after rendering
-│   ├── cacheHelper.js            # Helper to invalidate reference data cache
-│   └── validate.js               # Zod request validation middleware (body, params, query)
+│   ├── cacheHelper.js            # Helper to invalidate global referenceCacheService
+│   └── validate.js               # Zod v4 validation middleware with strict stripping
 ├── plugins/                      # Self-contained feature plugins
 │   ├── bookstackPlugin.js        # BookStack wiki documentation sync
 │   ├── repairCafePlugin.js       # Repair café event tracking & resolution
 │   ├── workshopPlugin.js         # Workshops, badges, and machine access control
-│   ├── uePlugin.js               # Sorbonne University academic units & billing
-│   └── rfidPlugin.js             # RFID scanner & kiosk integration
+│   ├── teachingUnitsPlugin.js    # Sorbonne University academic units (UE) & billing
+│   ├── sorbonneProjectsPlugin.js # Sorbonne entities/UFR billing & settlement
+│   └── rfidPlugin.js             # RFID scanner & kiosk integration (masked UID logs)
 ├── prisma/
-│   ├── schema.prisma             # Primary Prisma schema & relation definitions
+│   ├── schema.prisma             # Primary Prisma schema (strict enums, decimals, Activity FKs)
+│   ├── schema.sql                # Synchronized full DDL schema for new installs
+│   ├── migrations_sql/           # Incremental NetBSD-compatible SQL migrations (NNN_*.sql)
 │   └── seed.js                   # Database seed script for test/dev environment
 ├── public/                       # Publicly accessible static assets
 │   ├── javascripts/              # Client-side scripts (color mode, autocomplete, sorting)
@@ -104,6 +108,8 @@ FabtrackJS/
 │   └── index.js                  # Central schema export hub
 ├── scripts/
 │   ├── i18n-csv.js               # CLI script for npm run i18n:export & i18n:import
+│   ├── migrate.js                # Pure-JS NetBSD-compatible incremental SQL migration runner
+│   ├── rgpd-anonymize.js         # GDPR retention anonymization CLI (npm run rgpd:anonymize)
 │   └── setup.js                  # Interactive terminal setup tool (npm run setup)
 ├── services/                     # Business logic services (singletons)
 │   ├── settingsService.js        # Persistent platform settings (cached)
@@ -162,42 +168,39 @@ FabtrackJS uses **Prisma v7** with the official `@prisma/adapter-mariadb` driver
   });
   ```
 - **Connection Pooling & Singleton (`utilities/db.js`)**:
-  To prevent connection pool exhaustion across multiple modules, all database queries go through `utilities/db.js`. It maintains a singleton MariaDB pool (`connectionLimit: 20`, `acquireTimeout: 30000`) and intercepts `@prisma/client` instantiation via `AutoPrismaClient`:
+  All routes, services, and plugins import the single shared Prisma instance directly from `utilities/db.js` (backed by a singleton MariaDB pool with `connectionLimit: 20` and `acquireTimeout: 30000` — zero `new PrismaClient()` calls elsewhere and zero `require.cache` monkey-patching):
   ```javascript
   const { prisma } = require("../utilities/db");
   ```
 
-### Modifying the Database Schema
+### Modifying the Database Schema & Running Migrations (NetBSD-compatible)
 1. Edit [prisma/schema.prisma](file:///Users/mugen/Documents/01_Projets/FabtrackJS/prisma/schema.prisma).
-2. Apply changes and regenerate the Prisma Client:
+2. Add an incremental idempotent SQL migration in `prisma/migrations_sql/NNN_description.sql`.
+3. Validate, regenerate the client, and resynchronize [prisma/schema.sql](file:///Users/mugen/Documents/01_Projets/FabtrackJS/prisma/schema.sql):
    ```bash
-   npx prisma db push
+   npx prisma validate && npx prisma generate
+   npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > prisma/schema.sql
    ```
-3. **Deploying on Systems without Precompiled Rust Engines (NetBSD / OpenBSD / FreeBSD)**:
-   While the Prisma Client runtime is pure JS/WASM, the developer CLI commands (`prisma db push`, `prisma migrate`) require `schema-engine` for which Prisma does not distribute precompiled binaries on NetBSD.
-   - **Bypassing `prisma generate`**: `prisma.config.js` automatically sets `PRISMA_SCHEMA_ENGINE_BINARY="/dev/null"` on Unix systems if not set, allowing `prisma generate` to compile the JS client in ~100 ms without network downloads.
-   - **Schema DDL Generation**: Always keep [prisma/schema.sql](file:///Users/mugen/Documents/01_Projets/FabtrackJS/prisma/schema.sql) synchronized using:
-     ```bash
-     npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > prisma/schema.sql
-     ```
-   - On NetBSD, apply schema changes directly via standard SQL:
-     ```bash
-     mysql -u username -p database_name < prisma/schema.sql
-     ```
+4. Apply incremental migrations on **any OS (including NetBSD)** using the pure-JS runner (`scripts/migrate.js`, `_schema_version` table):
+   ```bash
+   npm run db:migrate -- --status
+   npm run db:migrate
+   ```
 
 ### Key Prisma Models Reference
-- **`Staff`**: Authenticated managers/mediators (`name`, `email`, `password` (bcryptjs), `role: "admin"|"staff"|"user"`, `approved: Boolean`).
-- **`User`**: Fablab visitors and participants.
-- **`Machine`**: Fablab machinery. Linked to `MachineType`, `Location`, `Access`, `Category`, and `issues: MachineIssue[]`.
-- **`MachineIssue`**: Breakdown reports (`machineId`, `description`, `photoPath`, `reporterName`, `reporterEmail`, `status: "OPEN"|"RESOLVED"`, `resolvedAt`, `resolutionNotes`).
-- **`Consumable`**: Expendable materials (`name`, `quantity`, `unit`, `alertThreshold`).
+- **`Staff`**: Authenticated accounts (`name`, `email`, `password` (bcryptjs), `role: StaffRole (admin|user|staff)`, `approved: Boolean`, `pwdToken: VarChar(64)` SHA-256 hash).
+- **`User`**: Fablab contributors (`balance: Decimal(10,2)`, `termsAccepted`, `rfid`, `deletedAt`, `isExpert`).
+- **`Machine`**, **`MachineIssue`** (`status: MachineIssueStatus`), **`MachineMaintenance`**: Machinery catalog, public breakdown reports, and maintenance history.
+- **`Equipment`** (`status: EquipmentStatus`) & **`InventoryMovement`**: Borrowable equipment and write-off audit ledger.
+- **`Consumable`**: Expendable materials (`name`, `cost: Decimal(10,2)`, `stock`, `reorderThreshold`, `status: ConsumableStatus`, `unit`, `stockUnit`, `unitsPerPack`).
 - **`Projecttype`**: Typologies of attendance and visit purposes (`name: "Personnel" | "Academic" | "Sorbonne" | "Repair Café" | "Atelier"...`).
   > [!IMPORTANT]
   > **Domain Model vs UI Terminology (`projecttype` vs « Motif de la visite »)**:
   > In the database and backend codebase, this entity is named `Projecttype` (linked to `Project.projecttypeId`, route `/admin/projecttypes`).
-  > In all user-facing interfaces (Kiosk check-in, contributor profiles, admin UI, export/import CSV), it is systematically presented as **« Motif de la visite »** (French) / **« Purpose of visit »** (English). The database table and column names remain `projecttype` to preserve stability and avoid breaking migrations.
-- **`History` & `Activity`**: Visitor sessions, machine usage, project affiliations, and departure timestamps.
-- **`SystemSetting`**: Key-value pairs for all runtime platform configurations.
+  > In all user-facing interfaces (Kiosk check-in, contributor profiles, admin UI, export/import CSV), it is systematically presented as **« Motif de la visite »** (French) / **« Purpose of visit »** (English).
+- **`History`** (`repairStatus: RepairStatus?`) & **`Activity`** (`unitCost: Decimal(10,2)`, polymorphic `resourceType`/`resourceId` + typed nullable FKs `machineId`, `consumableId`, `equipmentId`): Visitor sessions, machine usage, loans, and consumptions.
+- **`Session`**: Persistent Express HTTP sessions stored in MariaDB via `PrismaSessionStore`.
+- **`SystemSetting`** & **`Log`** (`description: Text`): Runtime settings (optional AES-256-GCM encryption for secrets) and audit log.
 
 ---
 
@@ -237,16 +240,10 @@ Routes in the `routes/` directory are loaded recursively at server startup:
 
 ## 5. Cache & Session Lifecycle
 
-To maintain responsiveness, `app.js` runs a `loadCache` middleware that preloads reference tables into `req.session`:
-- `req.session.machines`
-- `req.session.machinetypes`
-- `req.session.categories`
-- `req.session.locations`
-- `req.session.equipment`
-- `req.session.usertypes`
+Reference tables (`workspaces`, `usertypes`, `projecttypes`, `machinetypes`, `warningtypes`, `categories`, `locations`, `access`, `equipment`) are cached globally in `services/referenceCacheService.js` (NOT duplicated inside every user session) and injected into `res.locals` by `app.js`. HTTP sessions are persisted in MariaDB via `services/prismaSessionStore.js` (`Session` table).
 
 ### Critical Cache Invalidation Rule
-Whenever you create, update, or delete records in these reference tables (e.g. adding a machine, updating an equipment category), **you must invalidate the cache**:
+Whenever you create, update, or delete records in these reference tables (e.g. adding a machine, updating an equipment category), **you must invalidate the cache** (`invalidateCache(req)` → `referenceCacheService.invalidate()`):
 ```javascript
 // In your route handler:
 const { invalidateCache } = require("../../middleware/cacheHelper.js");
@@ -646,11 +643,11 @@ FabtrackJS is engineered to operate seamlessly behind reverse proxies (Nginx, Ca
 
 ### Production Nginx Deployment Topologies
 - **Topology A: Subdomain (Recommended)**:
-  `proxy_pass http://127.0.0.1:3000;` at `location /` with WebSocket upgrade headers. Zero URL rewriting needed.
+  `proxy_pass http://127.0.0.1:8080;` at `location /`. Zero URL rewriting needed.
 - **Topology B: Dedicated Port (e.g. `:8443`)**:
   Ideal when a single hostname hosts multiple services and no wildcard DNS is available. Serves FabtrackJS at root `/` of that port with full isolation.
 - **Topology C: Subpath (`/fabtrack/`)**:
-  Requires `APP_BASE_PATH="/fabtrack"` in `.env`, `proxy_pass http://127.0.0.1:3000/;` (with trailing slash), `proxy_redirect ~^/(.*) /fabtrack/$1;`, `proxy_cookie_path / /fabtrack/;`, and Nginx `sub_filter` to rewrite absolute root references (`href="/`, `src="/`, `action="/`).
+  Requires `APP_BASE_PATH="/fabtrack"` in `.env`, `proxy_pass http://127.0.0.1:8080/;` (with trailing slash), `proxy_redirect ~^/(.*) /fabtrack/$1;`, `proxy_cookie_path / /fabtrack/;`, and Nginx `sub_filter` to rewrite absolute root references (`href="/`, `src="/`, `action="/`).
 
 ---
 
@@ -685,11 +682,13 @@ FabtrackJS is engineered to operate seamlessly behind reverse proxies (Nginx, Ca
 
 Before concluding any coding task, an AI agent must perform the following validation steps:
 
-1. **Run Automated Test Suite**:
+1. **Run Automated Test Suite & Linter**:
    ```bash
-   npm test
+   npm run lint
+   DATABASE_URL="" npm run test:unit
+   # With a dedicated _test MariaDB database (DATABASE_URL_TEST):
+   npm run test:integration
    ```
-   Ensure all test suites pass with 0 failures before deploying or committing changes.
 2. **Verify JavaScript Syntax**:
    ```bash
    node -c path/to/modifiedFile.js
@@ -711,11 +710,12 @@ Before concluding any coding task, an AI agent must perform the following valida
    ```bash
    node -e 'require("./app.js"); console.log("App boots successfully");'
    ```
-6. **Security Audit Verification**:
+6. **Security Audit & Roadmap Lint Verification**:
    ```bash
-   npm audit
+   npm audit --omit=dev
+   fabboard roadmap lint
    ```
-   Ensure 0 high/critical vulnerabilities exist.
+   Ensure 0 production vulnerabilities and compliant roadmap formatting.
 7. **Git Hygiene**:
    Run `git status` to verify that no temporary or unintended test artifacts remain unstaged or untracked.
 

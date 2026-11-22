@@ -29,6 +29,8 @@ const { PrismaSessionStore } = require("./services/prismaSessionStore");
 const { applyUploadStaticHeaders } = require("./services/uploadSecurityService");
 const { csrfTokenMiddleware, csrfProtection } = require("./middleware/csrf");
 const { escapeHtml, safeJson, safeHttpUrl, sanitizeWarningIcon } = require("./utilities/xssHelpers");
+const structuredLogger = require("./utilities/structuredLogger");
+const pkgVersion = require("./package.json").version;
 const i18n = require("./config/i18n");
 const compression = require("compression");
 const isProduction = process.env.NODE_ENV === "production";
@@ -171,7 +173,47 @@ app.use(
   }),
 );
 
-app.use(logger("dev"));
+if (isProduction || process.env.LOG_FORMAT === "json") {
+  app.use(structuredLogger.httpLoggerMiddleware());
+} else {
+  app.use(logger("dev"));
+}
+
+// Public health probe mounted before session, CSRF, auth and /setup redirect
+async function healthzHandler(req, res) {
+  const timestamp = new Date().toISOString();
+  try {
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error("DB health check timed out")), 3000);
+      if (typeof timer.unref === "function") timer.unref();
+    });
+    try {
+      await Promise.race([prisma.$queryRaw`SELECT 1`, timeoutPromise]);
+    } finally {
+      clearTimeout(timer);
+    }
+
+    return res.status(200).json({
+      status: "ok",
+      db: "ok",
+      version: pkgVersion,
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp,
+    });
+  } catch (err) {
+    structuredLogger.error("healthz_db_check_failed", { reason: err.message });
+    return res.status(503).json({
+      status: "degraded",
+      db: "error",
+      version: pkgVersion,
+      timestamp,
+    });
+  }
+}
+
+app.get("/healthz", healthzHandler);
+
 const defaultJsonParser = express.json({ limit: "1mb" });
 app.use((req, res, next) => {
   // Let /admin/history/execute apply its dedicated 15mb JSON parser without hitting a smaller global limit (413)
@@ -631,5 +673,6 @@ app.createSessionStore = createSessionStore;
 app.sessionStore = sessionStore;
 app.globalErrorHandler = globalErrorHandler;
 app.GENERIC_SERVER_ERROR_MESSAGE = GENERIC_SERVER_ERROR_MESSAGE;
+app.healthzHandler = healthzHandler;
 
 module.exports = app;

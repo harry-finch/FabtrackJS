@@ -57,6 +57,7 @@ pm2 logs fabtrack --lines 50
 | [R-022](../roadmap/items/R-022-unifier-l-acces-prisma-fin-du-hack-require-cache.md) | `v1.4` | Aucune | Aucune | **`npm install --omit=dev`** (retrait `socket.io`, `socket.io-client`, `randomized-string`, `node-fetch`, `uuid`) | Vérifier un démarrage propre (`npm start`) sans `socket.io` et l'accès kiosque + admin |
 | [R-023](../roadmap/items/R-023-migrations-sql-versionnees-netbsd-et-typage.md) | `v1.4` | Aucune | **Obligatoire :** `npm run db:migrate` (pure JS compatible NetBSD ; applique `001` à `004` idempotentes : enums stricts, `DECIMAL(10,2)`, `Log.description TEXT`, FK typées `Activity`) | **`npx prisma generate`** | Vérifier `npm run db:migrate -- --status` et le backfill sans perte des FK `Activity` |
 | [R-024](../roadmap/items/R-024-alleger-les-routes-vues-obeses-et-activer-une.md) | `v1.4` | Aucune | Aucune | Aucune | CSP stricte (`script-src` à nonce sans `'unsafe-inline'`, `script-src-attr 'none'`) : vérifier en console navigateur 0 erreur CSP sur kiosque et admin |
+| [R-025](../roadmap/items/R-025-exploitation-production-healthz-logs-structures.md) | `v1.4` | Optionnel : `LOG_LEVEL=info` (voir `.env.example`) | Aucune | Aucune | Vérifier `curl -i http://localhost:8080/healthz`, l'export RGPD `/users/:id/export-rgpd` et `npm run rgpd:anonymize -- --dry-run` |
 
 ---
 

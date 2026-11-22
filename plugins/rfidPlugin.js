@@ -1,5 +1,6 @@
 const { prisma } = require("../utilities/db");
 const logger = require("../utilities/simpleLogger.js");
+const { maskRfidUid } = require("../utilities/structuredLogger.js");
 const { getStartOfDay } = require("../services/visitAutoCloseService.js");
 
 // Anti-bounce memory map: { [rfid]: timestamp }
@@ -97,7 +98,7 @@ module.exports = {
           },
         });
 
-        logger.logThat(`RFID Check-out: ${user.name} ${user.surname} (RFID: ${cleanRfid}) checked out after ${durationMinutes} min by ${staffUsername || "kiosk"}`);
+        logger.logThat(`RFID Check-out: ${user.name} ${user.surname} (RFID: ${maskRfidUid(cleanRfid)}) checked out after ${durationMinutes} min by ${staffUsername || "kiosk"}`);
 
         return {
           success: true,
@@ -115,7 +116,7 @@ module.exports = {
       } else {
         // --- CHECK-IN ---
         if (!user.termsAccepted) {
-          logger.logThat(`RFID Check-in refused: ${user.name} ${user.surname} (RFID: ${cleanRfid}) - terms not accepted`);
+          logger.logThat(`RFID Check-in refused: ${user.name} ${user.surname} (RFID: ${maskRfidUid(cleanRfid)}) - terms not accepted`);
           return {
             success: false,
             code: "TERMS_NOT_ACCEPTED",
@@ -139,7 +140,7 @@ module.exports = {
           },
         });
 
-        logger.logThat(`RFID Check-in: ${user.name} ${user.surname} (RFID: ${cleanRfid}) checked in by ${staffUsername || "kiosk"}`);
+        logger.logThat(`RFID Check-in: ${user.name} ${user.surname} (RFID: ${maskRfidUid(cleanRfid)}) checked in by ${staffUsername || "kiosk"}`);
 
         return {
           success: true,

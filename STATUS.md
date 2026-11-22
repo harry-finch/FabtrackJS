@@ -6,15 +6,15 @@
 | Élément | État |
 | --- | --- |
 | Application | Plateforme Express / Prisma v7 complète : kiosque, suivi utilisateurs/machines NFC, prêts, pannes, i18n CSV, statistiques NL2SQL et plugins (`R-001` à `R-003`). |
-| Tests | `DATABASE_URL="" npm run test:unit` (`2026-11-22`) : 25/25 suites unitaires pures passées, 339/339 tests passés sans connexion MariaDB (dont 9 tests `R-024` : CSP stricte à nonce sans `unsafe-inline`, 0 `on*=` dans `views/`, services factorisés consommables/prêts/CSV/CRUD). |
+| Tests | `DATABASE_URL="" npm run test:unit` (`2026-11-22`) : 26/26 suites unitaires pures passées, 348/348 tests passés sans connexion MariaDB (dont 9 tests `R-025` : sonde `/healthz`, logs NDJSON structurés, masquage UID RFID, export RGPD, anonymisation CLI, `.env.example`, `scripts/setup.js` et alignement doc). |
 | Vérifié | Suite unitaire pure Jest (`npm run test:unit`), `npm run lint` (ESLint 0 erreur), `npm audit --omit=dev` (0 vulnérabilité), `npx prisma validate` & `npx prisma generate`, synchronisation `prisma/schema.sql`, chargement `app.js`, contrôle feuille de route (`fabboard roadmap lint`). |
 | Non vérifié | Suite d'intégration complète (`npm run test:integration` sur base `_test` MariaDB dédiée) et exécution `npm run db:migrate` sur base MariaDB/NetBSD réelle. |
 
 ## Points ouverts
 
-- Aucun point bloquant ouvert. En production, vérifier la check-list cumulative dans [docs/MISE_A_JOUR_PROD.md](docs/MISE_A_JOUR_PROD.md) (`R-012` `SECRET`, `R-016` `DATABASE_URL_AI_RO` si IA activée, `R-021` `APP_TIMEZONE`, `R-022` `npm install --omit=dev`, `R-023` `npm run db:migrate` + `npx prisma generate`).
+- Aucun point bloquant ouvert. En production, vérifier la check-list cumulative dans [docs/MISE_A_JOUR_PROD.md](docs/MISE_A_JOUR_PROD.md) (`R-012` `SECRET`, `R-016` `DATABASE_URL_AI_RO` si IA activée, `R-021` `APP_TIMEZONE`, `R-022` `npm install --omit=dev`, `R-023` `npm run db:migrate` + `npx prisma generate`, `R-025` `.env.example` & `/healthz`).
 
 ## À suivre
 
-- `R-004` à `R-010` (`v1.1`), `R-011` à `R-014` (`v1.2`), `R-015` à `R-020` (`v1.3`) et `R-021` à `R-024` (`v1.4`) implémentés et passés à `a-tester` (actions `A-002` à `A-040`) ; procédure cumulative de déploiement maintenue dans [docs/MISE_A_JOUR_PROD.md](docs/MISE_A_JOUR_PROD.md).
-- Éléments suivants (`R-025` à `R-033`, statut `idee`, jalons `v1.4` à `v1.5`) issus de l'audit technique `AUDIT-01` et des propositions UX/UI validées pour `v1.5` (`R-031`, `R-032`, `R-033`), prêts à être spécifiés. Voir [ROADMAP.md](ROADMAP.md).
+- Jalons `v1.1` (`R-004` à `R-010`), `v1.2` (`R-011` à `R-014`), `v1.3` (`R-015` à `R-020`) et **`v1.4` complet (`R-021` à `R-025`)** implémentés et passés à `a-tester` (actions `A-002` à `A-041`) ; procédure cumulative de déploiement maintenue dans [docs/MISE_A_JOUR_PROD.md](docs/MISE_A_JOUR_PROD.md).
+- Prochain jalon : **`v1.5`** (`R-026` à `R-033`, statut `idee` : assets front hors-ligne, modales, accessibilité WCAG AA, terminologie/i18n, navigation admin, bandeau supérieur, rafraîchissement kiosque/tableaux et refonte panneau admin). Voir [ROADMAP.md](ROADMAP.md).

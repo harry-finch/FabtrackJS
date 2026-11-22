@@ -92,7 +92,7 @@ I built the first two thirds of this version in 2023 with little to no AI-help. 
 
 ### 🎨 Customizable Branding & Regional Settings (`/admin/settings`)
 - Custom platform name and subtitle.
-- Logo and favicon upload with automatic SVG/PNG/ICO handling.
+- Logo and favicon upload with strict raster validation (`PNG`, `JPG`, `WebP` for logos; `ICO`, `PNG` for favicons; default logo uses built-in SVG).
 - **Configurable Date Display Format**:
   - `JJ/MM/AAAA` (French standard — default)
   - `AAAA-MM-JJ` (ISO 8601 standard)
@@ -147,14 +147,15 @@ Centralized management of the SMTP delivery server with live testing and customi
 
 FabtrackJS implements rigorous security practices:
 
-- **Strict Schema-Based Input Validation**: All form submissions and API endpoints are strictly validated and sanitized using [Zod](https://zod.dev/) schemas (`schemas/`). Features automatic type coercion, whitespace trimming, email normalization, and strict NaN protection on balance transactions. Form submissions redirect back with user-friendly flash error toasts, while API calls receive standard `400 Bad Request` JSON payloads (`middleware/validate.js`).
-- **HTTP Security Headers**: Enforced with [Helmet](https://helmetjs.github.io/) including Content Security Policy (CSP), frame protection, and HSTS.
-- **Password Security**: Strong bcrypt password hashing (10 salt rounds) for staff accounts.
-- **Role-Based Access Control (RBAC)**: Distinct permissions for `admin`, `staff`, and `user` (mediator) with dedicated route protection middleware (`isAdmin`, `isAuthenticated`).
-- **Anti-Bot Honeypot**: Protection against automated form submissions on registration endpoints.
-- **Secure Password Reset**: Cryptographically secure UUID reset tokens with short expiration times and one-time use invalidation.
-- **Secure File Uploads**: File size limits, strict MIME-type and extension validation with [Multer](https://github.com/expressjs/multer), and random unique filenames to eliminate directory traversal risks.
-- **Input Sanitization & Error Handling**: Centralized asynchronous error handling (`asyncHandler`) and error isolation to prevent database credential leaks.
+- **Strict Schema-Based Input Validation**: All form submissions, URL params, query filters, and API endpoints are strictly validated using [Zod v4](https://zod.dev/) schemas (`schemas/`) with mass-assignment stripping (`req.body = result.data`). Form submissions redirect back with user-friendly French flash error toasts, while API calls receive standard `400 Bad Request` JSON payloads (`middleware/validate.js`).
+- **HTTP Security Headers & Strict CSP**: Enforced with [Helmet](https://helmetjs.github.io/) using per-request cryptographic CSP nonces (`script-src` without `'unsafe-inline'`, `script-src-attr 'none'`), frame protection, and HSTS (when `ENABLE_HTTPS=true`).
+- **CSRF Protection & Session Hardening**: Native session-synchronized CSRF protection (`middleware/csrf.js`), persistent MariaDB session store (`PrismaSessionStore`), dynamic staff session revocation, and fail-fast `SECRET` enforcement in production.
+- **Password Security**: Strong bcrypt password hashing (`bcryptjs`, 10 salt rounds) with 8+ character minimum for new staff accounts.
+- **Role-Based Access Control (RBAC)**: Distinct permissions for `admin`, `user` (mediator), and `staff` (kiosk terminal) via `middleware/requireRoles.js`.
+- **Anti-Bot Honeypot & Rate Limiting**: Built-in rate limiting on auth/reset/public endpoints and honeypot field on staff registration.
+- **Secure Password Reset**: Cryptographically random 256-bit tokens stored as SHA-256 hashes (64 hex chars) with short expiration and single-use atomic invalidation.
+- **Secure File Uploads**: Magic-byte validation, file size limits, strict raster MIME/extension allowlists with [Multer](https://github.com/expressjs/multer), and random filenames outside executable contexts.
+- **Operational Readiness & GDPR**: Public `GET /healthz` probe, structured NDJSON logs in production, masked RFID UIDs in `Log`, per-contributor GDPR JSON export (`GET /users/:id/export-rgpd`), and retention anonymization CLI (`npm run rgpd:anonymize`).
 
 ---
 
@@ -176,18 +177,20 @@ FabtrackJS features an extensible plugin architecture built on an asynchronous h
 - **Workshop (Ateliers) Plugin** (`plugins/workshopPlugin.js`):
   - Tracks user registrations, interests, and completions of training workshops.
   - Automatically awards badges and unlocks machine access permissions upon workshop completion.
-- **Academic / Teaching Units (UE) Plugin** (`plugins/uePlugin.js`):
+- **Academic / Teaching Units (UE) Plugin** (`plugins/teachingUnitsPlugin.js`):
   - Student project tracking and billing integration for university courses.
+- **Sorbonne Projects Plugin** (`plugins/sorbonneProjectsPlugin.js`):
+  - Institutional UFR / entity tracking and settlement exports for Sorbonne projects.
 - **Borne RFID Plugin** (`plugins/rfidPlugin.js`):
-  - Contactless badge-in/out integration for quick kiosk identification.
+  - Contactless badge-in/out integration for quick kiosk identification (UIDs masked in audit logs).
 
 ---
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18.x, v20.x, or v22.x)
+- [Node.js](https://nodejs.org/) (v20.x or v22.x)
 - [npm](https://www.npmjs.com/) (v9 or higher)
-- [MySQL](https://www.mysql.com/) server (v5.7, v8.0 or MariaDB 10.3+)
+- [MariaDB](https://mariadb.org/) 10.3+ / [MySQL](https://www.mysql.com/) 8.0+
 - Git
 
 ---
@@ -207,72 +210,42 @@ FabtrackJS features an extensible plugin architecture built on an asynchronous h
    *(A `postinstall` script automatically generates the Prisma Client without requiring manual intervention).*
 
 3. **Configure environment variables**:
-   Create a `.env` file in the root directory (or copy `.env.example` if available):
-   ```env
-   # Database connection string (MySQL or MariaDB)
-   DATABASE_URL="mysql://username:password@localhost:3306/fabtrack"
-
-   # Session Secret & Expiration (milliseconds)
-   SECRET="your-strong-random-session-secret"
-   SESSION_DURATION=86400000
-
-   # Server Port & Base URL
-   PORT=3000
-   HOSTURL="http://localhost:3000"
-
-   # Reverse Proxy Subpath (Optional, e.g. if deployed under /fabtrack/)
-   # APP_BASE_PATH="/fabtrack"
-
-   # Default Admin Email (fallback)
-   ADMIN="admin@example.com"
-   MAILFROM="Fabtrack <noreply@fabtrack.local>"
-
-   # SMTP Credentials (optional, can also be configured in Admin UI)
-   HOST="smtp.example.com"
-   PORT="587"
-   USR="smtp-user"
-   PASSWD="smtp-password"
+   Copy `.env.example` to `.env` and fill in your credentials:
+   ```bash
+   cp .env.example .env
    ```
+   Key variables include `DATABASE_URL`, `DATABASE_URL_TEST`, `SECRET` (mandatory in production), `PORT=8080`, `HOSTURL="http://localhost:8080"`, `APP_TIMEZONE="Europe/Paris"`, `TRUST_PROXY=1`, and `SMTP_PORT=587` (never reuse `PORT` for SMTP).
 
-4. **Deploy Database Schema**:
-   Depending on your operating system:
-
-   - **Standard Environments (Linux, macOS, Windows)**:
+4. **Deploy Database Schema & Migrations**:
+   - **New installation** (Linux, macOS, NetBSD, FreeBSD):
      ```bash
-     npx prisma db push
-     ```
-
-   - **Systems without precompiled Prisma Rust engines (NetBSD, OpenBSD, FreeBSD)**:  
-     Prisma Client runs in 100% pure JavaScript/WASM, but the schema CLI engine is unavailable for NetBSD. You can import the pre-generated DDL SQL schema directly:
-     ```bash
-     # Using MySQL client
-     mysql -u username -p database_name < prisma/schema.sql
-
-     # Or using MariaDB client
      mariadb -u username -p database_name < prisma/schema.sql
+     npm run db:migrate -- --baseline
      ```
-     *(You can also push schema remotely from your development machine: `DATABASE_URL="mysql://user:pass@remote-ip:3306/fabtrack" npx prisma db push`)*.
+   - **Upgrading an existing database** (100% pure JS, compatible with **NetBSD**):
+     ```bash
+     npm run db:migrate -- --status
+     npm run db:migrate
+     npx prisma generate
+     ```
 
 5. **Initialize & Configure FabtrackJS**:
 
    You can initialize your platform using either of two simplified methods:
 
    - **Method A: Interactive CLI Setup (Recommended)**:
-     Run the interactive command in your terminal:
      ```bash
      npm run setup
      ```
-     This will guide you step-by-step to configure your administrator account, platform name, language, currency, and custom workspaces.
+     Guides you step-by-step (with masked password input) to configure your administrator account, platform name, language, currency, and workspaces.
 
    - **Method B: Web Installation Wizard (`/setup`)**:
-     Start the platform server:
      ```bash
      npm start   # or npm run dev
      ```
-     When opening `http://localhost:3000` in your browser, FabtrackJS will automatically redirect you to the guided **Web Setup Wizard** (`/setup`) with a modern multi-step interface.
+     Open `http://localhost:8080` to be redirected to the guided **Web Setup Wizard** (`/setup`).
 
    - **Method C: Quick Demo / Development Seed**:
-     If you just want a pre-filled demonstration database with mock users and activity history:
      ```bash
      npx prisma db seed
      ```
@@ -291,25 +264,31 @@ npm run dev
 npm start
 ```
 
-Access the application in your browser at `http://localhost:3000`.
+Access the application in your browser at `http://localhost:8080`.
 
-- **Admin Account**: `admin` / `admin` (or credentials created during seed)
-- **Mediator Account**: `mediateur` / `mediateur`
-- **Public Reporting**: `http://localhost:3000/report-issue`
+- **Health Probe**: `GET http://localhost:8080/healthz` (`200 { status: "ok", db: "ok" }` or `503`)
+- **Public Machine Reporting**: `http://localhost:8080/report-issue`
+- **GDPR Retention Anonymization**: `npm run rgpd:anonymize -- --months=36 --dry-run`
+- **Production Upgrade Checklist**: see [docs/MISE_A_JOUR_PROD.md](docs/MISE_A_JOUR_PROD.md)
 
 ---
 
 ## Automated Testing
 
-FabtrackJS includes a comprehensive automated test suite powered by [Jest](https://jestjs.io/) and [Supertest](https://github.com/ladjs/supertest), covering both unit logic and end-to-end integration flows.
+FabtrackJS includes a comprehensive automated test suite powered by [Jest](https://jestjs.io/) and [Supertest](https://github.com/ladjs/supertest), split into fast offline unit tests and database-isolated integration tests (`DATABASE_URL_TEST` ending in `_test`).
 
 ```bash
-# Run the entire test suite
-npm test
+# Fast offline pure unit tests (no MariaDB required)
+DATABASE_URL="" npm run test:unit
 
-# Run a specific integration or unit test file
-npx jest tests/integration/equipmentBorrow.test.js
-npx jest tests/unit/validation.test.js
+# Code style & static checks
+npm run lint
+
+# Full integration suite (requires DATABASE_URL_TEST ending in _test)
+npm run test:integration
+
+# Full suite (unit + integration)
+npm test
 ```
 
 ### Test Coverage Highlights
@@ -342,7 +321,7 @@ server {
     ssl_certificate_key /etc/ssl/private/example.key;
 
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -365,7 +344,7 @@ server {
     ssl_certificate_key /etc/ssl/private/example.key;
 
     location / {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -389,7 +368,7 @@ server {
    }
 
    location /fabtrack/ {
-       proxy_pass http://127.0.0.1:3000/;
+       proxy_pass http://127.0.0.1:8080/;
 
        proxy_http_version 1.1;
        proxy_set_header Upgrade $http_upgrade;
@@ -418,20 +397,20 @@ server {
 
 | Layer | Technology |
 |---|---|
-| **Runtime** | Node.js (v18, v20, v22) |
+| **Runtime** | Node.js (v20, v22) |
 | **Framework** | Express.js (v4.22+) |
-| **Database** | MySQL 5.7+ / 8.0+ / MariaDB 10.3+ |
-| **ORM** | Prisma ORM (v7.10+) via `@prisma/adapter-mariadb` (pure JS/WASM engine) |
-| **Input Validation** | Zod (v4) + Custom Validation Middleware |
-| **Testing Suite** | Jest + Supertest (46 tests, 9 suites) |
+| **Database** | MariaDB 10.3+ / MySQL 8.0+ |
+| **ORM & Migrations** | Prisma ORM (v7.10+) via `@prisma/adapter-mariadb` + NetBSD-safe SQL runner (`scripts/migrate.js`) |
+| **Input Validation** | Zod (v4) + Strict Stripping Validation Middleware |
+| **Testing & Lint** | Jest + Supertest (unit + isolated integration) + ESLint |
 | **Template Engine** | EJS |
-| **CSS & Components** | Bootstrap 5, FontAwesome 6 |
-| **Authentication** | Express Session + bcryptjs (pure JS Blowfish, zero native compile) |
+| **CSS & Components** | Bootstrap 5, FontAwesome 7 (served locally via `/vendor/fontawesome`) |
+| **Authentication & Sessions** | Express Session + MariaDB `PrismaSessionStore` + bcryptjs |
 | **Localization (i18n)** | node-i18n + Dynamic CSV Engine |
-| **Date & Time** | Moment.js + Centralized DateService |
-| **File Uploads** | Multer (v2.4+) |
+| **Date & Time** | Moment.js (per-request locale) + `APP_TIMEZONE` (`utilities/timezoneHelper.js`) |
+| **File Uploads** | Multer (v2.4+) + Magic-byte raster verifier |
 | **Email Delivery** | Nodemailer |
-| **Security** | Helmet, CSRF/Honeypot, CSP, Zod Sanitization, 0 npm audit CVEs |
+| **Security & Ops** | Helmet strict nonce CSP, native CSRF, SSRF guard, `/healthz`, NDJSON logs, GDPR tools, 0 prod CVEs |
 
 ---
 

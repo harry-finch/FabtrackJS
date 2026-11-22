@@ -28,14 +28,58 @@ async function prompt(rl, questionText, defaultValue) {
   return answer || defaultValue;
 }
 
+async function readMaskedLine(rl, promptText) {
+  if (!input.isTTY || typeof input.setRawMode !== "function") {
+    return (await rl.question(promptText)).trim();
+  }
+
+  return await new Promise((resolve) => {
+    output.write(promptText);
+    const wasPaused = input.isPaused();
+    if (wasPaused) input.resume();
+    input.setRawMode(true);
+
+    let value = "";
+    const onData = (chunk) => {
+      const str = chunk.toString("utf8");
+      for (const ch of str) {
+        if (ch === "\r" || ch === "\n") {
+          input.setRawMode(false);
+          input.removeListener("data", onData);
+          output.write("\n");
+          resolve(value.trim());
+          return;
+        }
+        if (ch === "\u0003") {
+          input.setRawMode(false);
+          input.removeListener("data", onData);
+          output.write("\n");
+          process.exit(130);
+        }
+        if (ch === "\u007f" || ch === "\b") {
+          if (value.length > 0) {
+            value = value.slice(0, -1);
+            output.write("\b \b");
+          }
+          continue;
+        }
+        value += ch;
+        output.write("*");
+      }
+    };
+
+    input.on("data", onData);
+  });
+}
+
 async function promptPassword(rl, questionText) {
   while (true) {
-    const p1 = (await rl.question(`${questionText}: `)).trim();
-    if (!p1 || p1.length < 6) {
-      console.log("❌ Le mot de passe doit comporter au moins 6 caractères.");
+    const p1 = await readMaskedLine(rl, `${questionText}: `);
+    if (!p1 || p1.length < 8) {
+      console.log("❌ Le mot de passe doit comporter au moins 8 caractères.");
       continue;
     }
-    const p2 = (await rl.question("Confirmez le mot de passe: ")).trim();
+    const p2 = await readMaskedLine(rl, "Confirmez le mot de passe: ");
     if (p1 !== p2) {
       console.log("❌ Les mots de passe ne correspondent pas. Réessayez.");
       continue;
@@ -141,6 +185,7 @@ async function main() {
       { allowReconfigure: isInstalled }
     );
 
+    const serverPort = process.env.PORT || "8080";
     console.log(`
 ============================================================
    🎉 Félicitations ! Installation terminée avec succès !
@@ -155,7 +200,7 @@ Pour démarrer votre serveur FabtrackJS :
    npm start   (ou npm run dev)
 
 Accédez ensuite à votre espace d'administration sur :
-   http://localhost:3000/login
+   http://localhost:${serverPort}/login
 ============================================================
 `);
   } catch (err) {

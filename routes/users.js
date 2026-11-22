@@ -718,4 +718,32 @@ router.post(
   }),
 );
 
+// ******************************************************************************
+// GDPR Article 15 / 20 individual data export (Admin Only)
+// ******************************************************************************
+
+router.get(
+  "/:id/export-rgpd",
+  isAdmin,
+  validateParams(idParamSchema, { redirectUrl: "/users/manage" }),
+  asyncHandler(async (req, res) => {
+    const rgpdService = require("../services/rgpdService.js");
+    const { sanitizeContentDispositionFilename } = require("../utilities/securityHelpers.js");
+    const { id } = req.params;
+
+    const payload = await rgpdService.exportUserData(id);
+    if (!payload) {
+      req.session.notification = "Error: Contributeur introuvable.";
+      return res.redirect("/users/manage");
+    }
+
+    const dateTag = new Date().toISOString().slice(0, 10);
+    const filename = sanitizeContentDispositionFilename(`rgpd_export_user_${id}_${dateTag}.json`, "rgpd_export.json");
+    logger.logThat(`GDPR data export generated for user #${id} by ${req.session.username || "Admin"}`);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return res.status(200).send(JSON.stringify(payload, null, 2));
+  }),
+);
+
 module.exports = router;
