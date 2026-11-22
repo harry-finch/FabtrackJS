@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 37** (8 %)
+**Avancement : 3 livrés sur 38** (8 %)
 
 ## Restant à faire
 
@@ -74,6 +74,8 @@
    Faire en sorte que l’utilisateur borne ne puisse que faire des entrées / sorties. Pas d’activité, pas voir les autres utilisateurs dans le lab, pas voir les profils.
 34. **[R-037 Compte staff + contributeur](roadmap/items/R-037-compte-staff-contributeur.md)** · Idée · jalon v1.6
    Créer automatiquement un compte contributeur pour les staff avec les infos minimums.
+35. **[R-038 Titre des projets](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
+   Récupérer les titres des projets sur le wiki
 
 ## Actions à faire
 
