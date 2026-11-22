@@ -764,11 +764,22 @@ main.main-container:has(.fab-admin-shell) {
     gap: 0.5rem;
 }
 
+.min-w-0 {
+    min-width: 0 !important;
+}
+
 .fab-kpi-card {
     background-color: var(--fab-bg-panel);
     border: 1px solid var(--fab-border);
     border-radius: 6px;
+    overflow: hidden;
+    min-width: 0;
     transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.fab-kpi-card .card-body > :first-child {
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 a.fab-kpi-card:hover {
