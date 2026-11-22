@@ -219,7 +219,7 @@
     "field_platform_name_desc": "Affiché en grand sur le kiosque, l'en-tête et les onglets.",
     "field_platform_subtitle": "Slogan / Sous-titre",
     "field_platform_subtitle_desc": "Accroche située sous le nom (ex: \"Track your fablab's activity\").",
-    "field_self_registration": "Inscription en autonomie au kiosque",
+    "field_self_registration": "Auto-inscription des comptes staff",
     "field_session_timeout": "Expiration des sessions (Timeout)",
     "i18n_desc": "La plateforme supporte le multilingue. Vous pouvez exporter toutes les phrases au format CSV pour les traduire dans Excel ou Google Sheets, puis les réimporter.",
     "import_csv_btn": "Importer un tableur CSV",

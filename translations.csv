@@ -196,7 +196,7 @@ settings.field_platform_name,Nom de la plateforme,Platform Name
 settings.field_platform_name_desc,"Affiché en grand sur le kiosque, l'en-tête et les onglets.","Displayed prominently on the kiosk, header, and browser tabs."
 settings.field_platform_subtitle,Slogan / Sous-titre,Tagline / Subtitle
 settings.field_platform_subtitle_desc,"Accroche située sous le nom (ex: ""Track your fablab's activity"").","Catchphrase displayed below the name (e.g. ""Track your fablab's activity"")."
-settings.field_self_registration,Inscription en autonomie au kiosque,Kiosk Self-Registration
+settings.field_self_registration,Auto-inscription des comptes staff,Staff Account Self-Registration
 settings.field_session_timeout,Expiration des sessions (Timeout),Session Timeout
 settings.i18n_desc,"La plateforme supporte le multilingue. Vous pouvez exporter toutes les phrases au format CSV pour les traduire dans Excel ou Google Sheets, puis les réimporter.","The platform supports multiple languages. You can export all texts as a CSV spreadsheet to edit them in Excel or Google Sheets, then re-import."
 settings.import_csv_btn,Importer un tableur CSV,Import CSV Spreadsheet

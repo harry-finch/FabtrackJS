@@ -380,13 +380,13 @@
 
             <div class="col-12 col-md-4">
               <label for="allow_self_registration" class="form-label fw-semibold small">
-                <i class="fa-solid fa-user-plus me-1 text-muted" aria-hidden="true"></i> Inscription en autonomie au kiosque
+                <i class="fa-solid fa-user-plus me-1 text-muted" aria-hidden="true"></i> Auto-inscription des comptes staff
               </label>
               <select class="form-select" id="allow_self_registration" name="allow_self_registration">
-                <option value="true" <%= settings.allow_self_registration !== 'false' ? 'selected' : '' %>>Autorisée (Formulaire visible au kiosque)</option>
-                <option value="false" <%= settings.allow_self_registration === 'false' ? 'selected' : '' %>>Désactivée (Création uniquement par le staff)</option>
+                <option value="true" <%= settings.allow_self_registration !== 'false' ? 'selected' : '' %>>Autorisée (Lien visible sur la page de connexion)</option>
+                <option value="false" <%= settings.allow_self_registration === 'false' ? 'selected' : '' %>>Désactivée (Création uniquement par un admin)</option>
               </select>
-              <div class="form-text small">Permet aux contributeurs de créer leur profil en arrivant.</div>
+              <div class="form-text small">Permet aux membres du staff de demander la création d'un compte depuis la page de connexion (soumis à validation admin).</div>
             </div>
 
             <div class="col-12 col-md-4">
