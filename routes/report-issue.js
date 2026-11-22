@@ -6,6 +6,7 @@ const { prisma } = require("../utilities/db.js");
 
 const mailService = require("../services/mailService.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
+const clearNotification = require("../middleware/clearNotification.js");
 const logger = require("../utilities/simpleLogger.js");
 const { validateBody, validateQuery } = require("../middleware/validate.js");
 const { reportIssueSchema, reportIssueQuerySchema } = require("../schemas/issue.schema.js");
@@ -73,6 +74,7 @@ const reportIssueLimiter = createRateLimiter({
 // ******************************************************************************
 router.get(
   ["/", "/:machineId"],
+  clearNotification,
   validateQuery(reportIssueQuerySchema, { redirectUrl: "/report-issue" }),
   asyncHandler(async (req, res) => {
     const requestedMachineId = req.params.machineId || req.query.machineId || null;
@@ -105,7 +107,7 @@ router.get(
       selectedMachineId,
       success: req.query.success === "1",
       reportedMachineName: req.query.machineName || "",
-      notification: req.session ? req.session.notification : null,
+      notification: res.locals.notification || null,
     });
   }),
 );

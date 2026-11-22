@@ -265,7 +265,16 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       if (selectedUser && selectedUser.termsAccepted === false) {
         e.preventDefault();
         setCharterStatus(selectedUser);
-        alert(`Impossible d'inscrire ${selectedUser.fullname} : la charte d'utilisation doit être validée avant d'accéder au lab.`);
+        const charterMsg = `Impossible d'inscrire ${selectedUser.fullname} : la charte d'utilisation doit être validée avant d'accéder au lab.`;
+        if (typeof window.fabtrackAlert === "function") {
+          window.fabtrackAlert({
+            title: "Charte d'utilisation non validée",
+            message: charterMsg,
+            variant: "warning",
+          });
+        } else if (typeof window.showAppToast === "function") {
+          window.showAppToast(charterMsg, "warning");
+        }
       }
     });
   }

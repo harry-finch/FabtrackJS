@@ -43,8 +43,15 @@
                 </div>
             </div>
             <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
-                function promptManualRfid() {
-                    const code = prompt("Simuler le scan d'une carte RFID (numéro de badge / UID) :");
+                async function promptManualRfid() {
+                    if (typeof window.fabtrackPrompt !== "function") return;
+                    const code = await window.fabtrackPrompt({
+                        title: "Simuler un scan RFID",
+                        message: "Saisissez le numéro de badge (UID) à simuler :",
+                        placeholder: "Ex : 04A1B2C3D4",
+                        confirmLabel: "Simuler le scan",
+                        variant: "primary",
+                    });
                     if (code && code.trim() && window.triggerKioskRfidScan) {
                         window.triggerKioskRfidScan(code.trim());
                     }

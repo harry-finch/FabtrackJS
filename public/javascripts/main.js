@@ -236,12 +236,44 @@
 
     const form = e.target;
 
-    // Centralized confirmation dialog via data-confirm attribute (eliminates inline JS confirm() XSS)
+    // Centralized Bootstrap confirmation modal via data-confirm attribute (R-027)
     if (form && typeof form.getAttribute === "function") {
       const confirmMessage = form.getAttribute("data-confirm");
-      if (confirmMessage && typeof window.confirm === "function" && !window.confirm(confirmMessage)) {
-        e.preventDefault();
-        return;
+      if (confirmMessage) {
+        if (form.dataset && form.dataset.confirmed === "true") {
+          delete form.dataset.confirmed;
+        } else {
+          e.preventDefault();
+          if (typeof window.fabtrackConfirm === "function") {
+            const confirmVariant = form.getAttribute("data-confirm-variant") || "danger";
+            const confirmTitle = form.getAttribute("data-confirm-title") || "";
+            const confirmLabel = form.getAttribute("data-confirm-label") || "";
+            window
+              .fabtrackConfirm({
+                title: confirmTitle,
+                message: confirmMessage,
+                confirmLabel: confirmLabel,
+                variant: confirmVariant,
+              })
+              .then((accepted) => {
+                if (!accepted) return;
+                if (form.dataset) {
+                  form.dataset.confirmed = "true";
+                }
+                if (typeof form.requestSubmit === "function") {
+                  form.requestSubmit();
+                } else {
+                  ensureCsrfOnForm(form);
+                  if (window.HTMLFormElement && window.HTMLFormElement.prototype && window.HTMLFormElement.prototype.submit) {
+                    window.HTMLFormElement.prototype.submit.call(form);
+                  } else if (typeof form.submit === "function") {
+                    form.submit();
+                  }
+                }
+              });
+          }
+          return;
+        }
       }
     }
 

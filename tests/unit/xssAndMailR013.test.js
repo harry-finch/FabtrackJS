@@ -205,7 +205,7 @@ describe("Unit (R-013): XSS Defense, URL Validation, /report-bug & MailService",
     test("main.js cancels form submission when data-confirm dialog is rejected", () => {
       const mainJs = fs.readFileSync(path.join(__dirname, "../../public/javascripts/main.js"), "utf8");
       const listeners = {};
-      const confirmMock = jest.fn(() => false);
+      const confirmMock = jest.fn().mockResolvedValue(false);
       const docMock = {
         readyState: "complete",
         documentElement: { appendChild: jest.fn() },
@@ -222,7 +222,7 @@ describe("Unit (R-013): XSS Defense, URL Validation, /report-bug & MailService",
       };
       const winMock = {
         addEventListener: jest.fn(),
-        confirm: confirmMock,
+        fabtrackConfirm: confirmMock,
         location: { origin: "http://localhost:8080", pathname: "/admin", search: "", href: "http://localhost:8080/admin" },
         matchMedia: jest.fn(() => ({ matches: false })),
         getCsrfToken: jest.fn(() => "tok"),
@@ -246,7 +246,11 @@ describe("Unit (R-013): XSS Defense, URL Validation, /report-bug & MailService",
 
       listeners.submit({ defaultPrevented: false, target: form, preventDefault });
 
-      expect(confirmMock).toHaveBeenCalledWith("Supprimer ');alert(1);// ?");
+      expect(confirmMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Supprimer ');alert(1);// ?",
+        }),
+      );
       expect(preventDefault).toHaveBeenCalledTimes(1);
       expect(form.dataset.submitting).toBeUndefined();
     });

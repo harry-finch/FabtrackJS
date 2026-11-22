@@ -52,7 +52,7 @@
    Ajouter /healthz et un logger structuré, outiller la conformité RGPD et réaligner 100 % de la documentation avec le code actuel.
 23. **[R-026 Unifier les assets front en local pour un fonctionnement hors-ligne fiable](roadmap/items/R-026-unifier-les-assets-front-en-local-pour-un.md)** · À tester · jalon v1.5
    Servir une version unique de Bootstrap et Chart.js depuis node_modules, retirer @docsearch/css et alléger le GIF 404 de 4,6 Mo.
-24. **[R-027 Refondre les modales de confirmation et les retours utilisateur](roadmap/items/R-027-refondre-les-modales-de-confirmation-et-les.md)** · Idée · jalon v1.5
+24. **[R-027 Refondre les modales de confirmation et les retours utilisateur](roadmap/items/R-027-refondre-les-modales-de-confirmation-et-les.md)** · À tester · jalon v1.5
    Remplacer les 33 confirm(), 9 alert() et 1 prompt() natifs par une modale Bootstrap réutilisable et corriger les retours d'erreur.
 25. **[R-028 Améliorer l'accessibilité WCAG AA, le clavier, le mode sombre et le tactile](roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md)** · Idée · jalon v1.5
    Corriger <html lang>, ajouter les 65 labels manquants, réparer les contrastes mode sombre et la navigation clavier des tableaux.
@@ -111,6 +111,7 @@
 - [ ] [A-040](roadmap/actions/A-040-verifier-l-absence-d-erreur-csp-en-console.md) Vérifier l'absence d'erreur CSP en console navigateur sur kiosque et écrans admin (tester, R-024)
 - [ ] [A-041](roadmap/actions/A-041-tester-healthz-l-export-rgpd-individuel-et-la.md) Tester /healthz, l'export RGPD individuel et la simulation d'anonymisation CLI (tester, R-025)
 - [ ] [A-042](roadmap/actions/A-042-verifier-le-fonctionnement-hors-ligne-0-requete.md) Vérifier le fonctionnement hors-ligne (0 requête CDN) sur kiosque, statistiques et 404 (tester, R-026)
+- [ ] [A-043](roadmap/actions/A-043-valider-les-modales-bootstrap-les-toasts-propres.md) Valider les modales Bootstrap, les toasts propres et /report-issue (R-027) (tester, R-027)
 
 ## Livré
 

@@ -382,9 +382,14 @@
 
             function copyToClipboard(text) {
                 navigator.clipboard.writeText(text).then(() => {
-                    alert("Adresses emails copiées dans le presse-papiers !");
+                    if (typeof window.showAppToast === "function") {
+                        window.showAppToast("Adresses e-mail copiées dans le presse-papiers !", "success");
+                    }
                 }).catch(err => {
                     console.error("Erreur de copie:", err);
+                    if (typeof window.showAppToast === "function") {
+                        window.showAppToast("Impossible de copier dans le presse-papiers.", "error");
+                    }
                 });
             }
         </script>

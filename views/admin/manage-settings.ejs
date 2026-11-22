@@ -783,12 +783,23 @@
       const hiddenInput = document.getElementById('hiddenCsvFile');
 
       if (importBtn && fileInput && hiddenForm && hiddenInput) {
-        importBtn.addEventListener('click', () => {
+        importBtn.addEventListener('click', async () => {
           if (!fileInput.files || fileInput.files.length === 0) {
-            alert("Veuillez sélectionner un fichier .csv d'abord.");
+            if (typeof window.showAppToast === 'function') {
+              window.showAppToast("Veuillez sélectionner un fichier .csv d'abord.", 'warning');
+            }
             return;
           }
-          if (confirm("Confirmer l'importation de ce fichier CSV ? Les traductions correspondantes seront mises à jour.")) {
+          const confirmed =
+            typeof window.fabtrackConfirm === 'function'
+              ? await window.fabtrackConfirm({
+                  title: 'Importer les traductions',
+                  message: "Confirmer l'importation de ce fichier CSV ? Les traductions correspondantes seront mises à jour.",
+                  confirmLabel: 'Importer',
+                  variant: 'primary',
+                })
+              : false;
+          if (confirmed) {
             const dt = new DataTransfer();
             dt.items.add(fileInput.files[0]);
             hiddenInput.files = dt.files;
@@ -878,7 +889,9 @@
         btnTestAi.addEventListener('click', async function () {
           const provider = aiProviderSelect ? aiProviderSelect.value : 'none';
           if (provider === 'none') {
-            alert("Veuillez sélectionner un fournisseur d'IA avant de tester la connexion.");
+            if (typeof window.showAppToast === 'function') {
+              window.showAppToast("Veuillez sélectionner un fournisseur d'IA avant de tester la connexion.", 'warning');
+            }
             return;
           }
 

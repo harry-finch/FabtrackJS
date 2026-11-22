@@ -1,5 +1,9 @@
 module.exports = function clearNotification(req, res, next) {
-  res.locals.notification = req.session.notification || "";
-  req.session.notification = "";
+  if (req && req.session) {
+    res.locals.notification = req.session.notification || "";
+    req.session.notification = "";
+  } else {
+    res.locals.notification = "";
+  }
   next();
 };

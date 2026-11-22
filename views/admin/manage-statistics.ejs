@@ -1057,7 +1057,11 @@
                 // Export CSV
                 btnExportCsv.addEventListener("click", () => {
                     if (!currentData || !currentData.data || currentData.data.length === 0) {
-                        alert("Aucune donnée à exporter.");
+                        if (typeof window.showAppToast === "function") {
+                            window.showAppToast("Aucune donnée à exporter.", "warning");
+                        } else if (typeof window.fabtrackAlert === "function") {
+                            window.fabtrackAlert({ title: "Export CSV", message: "Aucune donnée à exporter.", variant: "warning" });
+                        }
                         return;
                     }
 

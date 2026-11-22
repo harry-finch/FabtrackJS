@@ -59,6 +59,7 @@ pm2 logs fabtrack --lines 50
 | [R-024](../roadmap/items/R-024-alleger-les-routes-vues-obeses-et-activer-une.md) | `v1.4` | Aucune | Aucune | Aucune | CSP stricte (`script-src` à nonce sans `'unsafe-inline'`, `script-src-attr 'none'`) : vérifier en console navigateur 0 erreur CSP sur kiosque et admin |
 | [R-025](../roadmap/items/R-025-exploitation-production-healthz-logs-structures.md) | `v1.4` | Optionnel : `LOG_LEVEL=info` (voir `.env.example`) | Aucune | Aucune | Vérifier `curl -i http://localhost:8080/healthz`, l'export RGPD `/users/:id/export-rgpd` et `npm run rgpd:anonymize -- --dry-run` |
 | [R-026](../roadmap/items/R-026-unifier-les-assets-front-en-local-pour-un.md) | `v1.5` | Aucune | Aucune | **`npm install --omit=dev`** (ajout `chart.js` servi localement) | Vérifier kiosque, `/admin/statistics` et page 404 sans requête CDN externe (fonctionnement hors-ligne) |
+| [R-027](../roadmap/items/R-027-refondre-les-modales-de-confirmation-et-les.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier les modales de confirmation Bootstrap (0 `confirm()`/`alert()`/`prompt()` natif), les toasts sans préfixe brut (`Success:`/`Error:`) et les erreurs sur `/report-issue` |
 
 ---
 

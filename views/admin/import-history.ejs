@@ -335,7 +335,11 @@
       // Analyse du fichier CSV (Étape 1 -> Étape 2)
       btnAnalyzeCsv.addEventListener('click', async () => {
         if (!csvFileInput.files || csvFileInput.files.length === 0) {
-          alert('Veuillez d\'abord sélectionner un fichier CSV.');
+          if (typeof window.showAppToast === 'function') {
+            window.showAppToast('Veuillez d\'abord sélectionner un fichier CSV.', 'warning');
+          } else if (typeof window.fabtrackAlert === 'function') {
+            window.fabtrackAlert({ title: 'Fichier manquant', message: 'Veuillez d\'abord sélectionner un fichier CSV.', variant: 'warning' });
+          }
           return;
         }
 
@@ -376,7 +380,11 @@
         } catch (err) {
           analysisSpinner.classList.add('d-none');
           uploadStepCard.classList.remove('d-none');
-          alert('Erreur lors de l\'analyse : ' + err.message);
+          if (typeof window.fabtrackAlert === 'function') {
+            window.fabtrackAlert({ title: 'Erreur lors de l\'analyse', message: err.message, variant: 'danger' });
+          } else if (typeof window.showAppToast === 'function') {
+            window.showAppToast('Erreur lors de l\'analyse : ' + err.message, 'error');
+          }
         }
       });
 
@@ -476,11 +484,22 @@
       // Confirmation de l'import (Étape 2 -> Étape 3)
       btnConfirmImport.addEventListener('click', async () => {
         if (!currentAnalysisData || !currentAnalysisData.items || currentAnalysisData.readyCount === 0) {
-          alert('Aucune donnée valide à importer.');
+          if (typeof window.showAppToast === 'function') {
+            window.showAppToast('Aucune donnée valide à importer.', 'warning');
+          }
           return;
         }
 
-        if (!confirm(`Confirmez-vous l'enregistrement de ${currentAnalysisData.readyCount} visite(s) dans l'historique ?`)) {
+        const confirmed =
+          typeof window.fabtrackConfirm === 'function'
+            ? await window.fabtrackConfirm({
+                title: 'Confirmer l\'importation',
+                message: `Confirmez-vous l'enregistrement de ${currentAnalysisData.readyCount} visite(s) dans l'historique ?`,
+                confirmLabel: 'Importer',
+                variant: 'primary',
+              })
+            : false;
+        if (!confirmed) {
           return;
         }
 
@@ -523,7 +542,11 @@
           previewStepCard.classList.add('d-none');
           resultCard.classList.remove('d-none');
         } catch (err) {
-          alert('Erreur lors de l\'importation : ' + err.message);
+          if (typeof window.fabtrackAlert === 'function') {
+            window.fabtrackAlert({ title: 'Erreur lors de l\'importation', message: err.message, variant: 'danger' });
+          } else if (typeof window.showAppToast === 'function') {
+            window.showAppToast('Erreur lors de l\'importation : ' + err.message, 'error');
+          }
           btnConfirmImport.disabled = false;
           btnConfirmImport.innerHTML = '<i class="fa-solid fa-check me-2"></i> Confirmer et importer l\'historique';
         }

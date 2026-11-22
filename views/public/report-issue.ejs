@@ -79,6 +79,35 @@
         </p>
       </div>
 
+      <%
+        const rawNotif = typeof notification !== 'undefined' && notification ? String(notification).trim() : '';
+        let notifVariant = 'info';
+        let notifIcon = 'fa-circle-info';
+        let notifClean = rawNotif;
+        const notifMatch = rawNotif.match(/^(Error|Warning|Success|Info)\s*:\s*([\s\S]*)$/i);
+        if (notifMatch) {
+          const level = notifMatch[1].toLowerCase();
+          notifClean = notifMatch[2].trim();
+          if (level === 'error') {
+            notifVariant = 'danger';
+            notifIcon = 'fa-circle-exclamation';
+          } else if (level === 'warning') {
+            notifVariant = 'warning';
+            notifIcon = 'fa-triangle-exclamation';
+          } else if (level === 'success') {
+            notifVariant = 'success';
+            notifIcon = 'fa-circle-check';
+          }
+        }
+      %>
+      <% if (notifClean) { %>
+        <div class="alert alert-<%= notifVariant %> alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-start gap-2" role="alert" id="reportIssueNotification">
+          <i class="fa-solid <%= notifIcon %> mt-1" aria-hidden="true"></i>
+          <div class="flex-grow-1"><%= notifClean %></div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+      <% } %>
+
       <% if (success) { %>
         <!-- Confirmation Success Screen -->
         <div class="card report-card bg-body border-0 overflow-hidden mb-4">
