@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 38** (8 %)
+**Avancement : 3 livrés sur 39** (8 %)
 
 ## Restant à faire
 
@@ -76,6 +76,8 @@
    Créer automatiquement un compte contributeur pour les staff avec les infos minimums.
 35. **[R-038 Titre des projets](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
    Récupérer les titres des projets sur le wiki
+36. **[R-039 Liste des objets réparés](roadmap/items/R-039-liste-des-objets-repares.md)** · Idée · jalon v1.6
+   La liste va vite devenir trop longue.
 
 ## Actions à faire
 
