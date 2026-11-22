@@ -235,13 +235,19 @@
                 <% } %>
               </td>
               <td class="text-center">
-                <% const validProjectUrl = entry.userproject && entry.userproject.project ? safeHttpUrl(entry.userproject.project.url) : null; %>
+                <%
+                  const rawProjectLabel = entry.userproject && entry.userproject.project ? String(entry.userproject.project.url || '').trim() : '';
+                  const validProjectUrl = rawProjectLabel ? safeHttpUrl(rawProjectLabel) : null;
+                  const isRepairProject = /repair|répar/i.test(rawProjectLabel);
+                %>
                 <% if (validProjectUrl) { %>
-                  <a href="<%= validProjectUrl %>" target="_blank" rel="noopener noreferrer" title="View Project">
-                    <i class="fa-solid fa-book"></i>
+                  <a href="<%= validProjectUrl %>" target="_blank" rel="noopener noreferrer" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="<%= validProjectUrl %>" title="Voir la documentation du projet" aria-label="Voir la documentation du projet">
+                    <i class="fa-solid fa-book" aria-hidden="true"></i>
                   </a>
-                <% } else if (entry.userproject && entry.userproject.project && entry.userproject.project.url) { %>
-                  <span class="text-muted small"><%= entry.userproject.project.url %></span>
+                <% } else if (rawProjectLabel) { %>
+                  <span class="d-inline-flex align-items-center justify-content-center text-secondary" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="<%= rawProjectLabel %>" title="<%= rawProjectLabel %>" aria-label="<%= rawProjectLabel %>">
+                    <i class="fa-solid <%= isRepairProject ? 'fa-screwdriver-wrench' : 'fa-folder-open' %>" aria-hidden="true"></i>
+                  </span>
                 <% } else { %>
                   <span class="text-muted small">-</span>
                 <% } %>

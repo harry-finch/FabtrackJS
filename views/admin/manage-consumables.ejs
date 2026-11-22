@@ -88,15 +88,12 @@
               Consommable <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
             <th data-sort="2" scope="col" style="cursor: pointer;">
-              Catégorie <i class="fa-solid fa-sort text-muted small ms-1"></i>
-            </th>
-            <th data-sort="3" scope="col" style="cursor: pointer;">
               Coût <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
-            <th data-sort="4" scope="col" class="text-center" style="cursor: pointer;">
+            <th data-sort="3" scope="col" class="text-center" style="cursor: pointer;">
               Stock &amp; Conditionnement <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
-            <th data-sort="5" scope="col" class="text-center" style="cursor: pointer;">
+            <th data-sort="4" scope="col" class="text-center" style="cursor: pointer;">
               Statut <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
             <th scope="col" class="text-end pe-3">Actions</th>
@@ -105,7 +102,7 @@
         <tbody id="table-content">
           <% if (consumables.length === 0) { %>
           <tr>
-            <td colspan="7" class="text-center text-muted py-4">Aucun consommable enregistré.</td>
+            <td colspan="6" class="text-center text-muted py-4">Aucun consommable enregistré.</td>
           </tr>
           <% } else { %>
             <% consumables.forEach(function(consumable) { 
@@ -120,13 +117,6 @@
                 <span class="fw-semibold"><%= consumable.name %></span>
                 <% if (ratio > 1) { %>
                   <div class="small text-muted"><i class="fa-solid fa-box me-1"></i>1 <%= stockUnitStr %> = <%= ratio %> <%= unitStr %></div>
-                <% } %>
-              </td>
-              <td>
-                <% if (consumable.category) { %>
-                  <span class="badge bg-secondary"><%= consumable.category.name %></span>
-                <% } else { %>
-                  <span class="text-muted small">None</span>
                 <% } %>
               </td>
               <td>

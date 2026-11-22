@@ -220,14 +220,22 @@ describe("Unit R-032: Realtime SSE Bus & Partial Kiosk/Admin Refresh", () => {
     const consumablesEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/manage-consumables.ejs"), "utf8");
     const historyEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/view-history.ejs"), "utf8");
     const usersEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/manage-users.ejs"), "utf8");
+    const machinesEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/manage-machines.ejs"), "utf8");
+    const ueEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/manage-teaching-units.ejs"), "utf8");
     const editUserEjs = fs.readFileSync(path.join(ROOT_DIR, "views/fabtrack/edit-user.ejs"), "utf8");
 
     expect(mainCss).toContain("overflow-x: clip;");
     expect(mainCss).toContain(".fab-row-actions");
     expect(consumablesEjs).toContain("fab-row-actions");
-    expect(consumablesEjs).toContain('colspan="7"');
+    expect(consumablesEjs).toContain('colspan="6"');
+    expect(consumablesEjs).not.toContain("Catégorie <i");
     expect(historyEjs).toContain("fab-row-actions");
     expect(historyEjs).toContain('colspan="8"');
+    expect(historyEjs).toContain("isRepairProject");
+    expect(machinesEjs).toContain("<th scope=\"col\">Modèle</th>");
+    expect(machinesEjs).not.toContain("machines.col_category");
+    expect(ueEjs).not.toContain("<th>Responsable</th>");
+    expect(ueEjs).toContain('colspan="8"');
     expect(usersEjs).toContain("fab-row-actions");
     expect(editUserEjs).toContain("fab-section-header");
   });
