@@ -58,7 +58,7 @@
    Corriger <html lang>, ajouter les 65 labels manquants, réparer les contrastes mode sombre et la navigation clavier des tableaux.
 26. **[R-029 Uniformiser la terminologie, éliminer le franglais et compléter l'i18n](roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md)** · À tester · jalon v1.5
    Généraliser Contributeur / Motif de la visite, traduire les 35 vues et 242 messages flash en dur et nettoyer le catalogue i18n.
-27. **[R-030 Harmoniser la navigation admin et les liens en sous-chemin reverse proxy](roadmap/items/R-030-harmoniser-la-navigation-admin-et-les-liens-en.md)** · Idée · jalon v1.5
+27. **[R-030 Harmoniser la navigation admin et les liens en sous-chemin reverse proxy](roadmap/items/R-030-harmoniser-la-navigation-admin-et-les-liens-en.md)** · À tester · jalon v1.5
    Corriger les liens et formulaires absolus incompatibles avec APP_BASE_PATH, masquer la modale inventaire aux non-admins et vérifier les retours admin.
 28. **[R-031 Adopter le bandeau supérieur et les retouches visuelles Fab Design System (Option B)](roadmap/items/R-031-adopter-le-bandeau-superieur-et-les-retouches.md)** · Idée · jalon v1.5
    Remplacer l'en-tête centré et le sélecteur flottant par le bandeau 44 px Fab Design System en bleu Sorbonne et harmoniser cartes, boutons, tableaux et barre d'état.
@@ -118,6 +118,7 @@
 - [ ] [A-043](roadmap/actions/A-043-valider-les-modales-bootstrap-les-toasts-propres.md) Valider les modales Bootstrap, les toasts propres et /report-issue (R-027) (tester, R-027)
 - [ ] [A-044](roadmap/actions/A-044-valider-l-accessibilite-wcag-aa-le-mode-sombre.md) Valider l'accessibilité WCAG AA, le mode sombre Chart.js et la navigation clavier (R-028) (tester, R-028)
 - [ ] [A-045](roadmap/actions/A-045-valider-la-terminologie-le-retrait-du-franglais.md) Valider la terminologie, le retrait du franglais et la synchro i18n FR/EN (R-029) (tester, R-029)
+- [ ] [A-046](roadmap/actions/A-046-valider-la-navigation-admin-et-la-compatibilite.md) Valider la navigation admin et la compatibilité sous-chemin APP_BASE_PATH (R-030) (tester, R-030)
 
 ## Livré
 

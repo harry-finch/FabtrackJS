@@ -32,7 +32,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
                     </div>
@@ -48,7 +48,7 @@
                     </div>
                     <div>
                         <div class="fw-semibold small">Plugin Repair Café actuellement désactivé</div>
-                        <div class="text-muted small">Les formulaires et bilans Repair Café sont désactivés lors du check-in et check-out. Vous pouvez réactiver le plugin ci-dessous ou dans la <a href="/admin/settings" class="alert-link">configuration générale</a>.</div>
+                        <div class="text-muted small">Les formulaires et bilans Repair Café sont désactivés lors du check-in et check-out. Vous pouvez réactiver le plugin ci-dessous ou dans la <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="alert-link">configuration générale</a>.</div>
                     </div>
                 </div>
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1">Inactif</span>
@@ -239,7 +239,7 @@
                     <h5 class="fw-bold mb-0 ms-1">Paramètres du Plugin Repair Café</h5>
                 </div>
                 <div class="card-body px-4 pt-2 pb-4">
-                    <form action="/admin/repair-cafe/settings" method="POST">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/repair-cafe/settings" method="POST">
                         <div class="row g-3">
                             <!-- Toggle switch -->
                             <div class="col-12">
@@ -301,7 +301,7 @@
             <div class="modal fade" id="editRepairModal" tabindex="-1" aria-labelledby="editRepairModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow">
-                        <form action="/admin/repair-cafe/update-entry" method="POST">
+                        <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/repair-cafe/update-entry" method="POST">
                             <input type="hidden" name="historyid" id="editHistoryId" value="" />
                             <div class="modal-header bg-warning-subtle text-warning-emphasis border-0">
                                 <h5 class="modal-title fw-bold" id="editRepairModalLabel">

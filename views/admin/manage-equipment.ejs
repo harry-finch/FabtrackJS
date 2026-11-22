@@ -34,7 +34,7 @@
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <a href="/admin/inventory/movements?itemType=EQUIPMENT" class="btn btn-outline-warning btn-sm rounded-pill px-3">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/inventory/movements?itemType=EQUIPMENT" class="btn btn-outline-warning btn-sm rounded-pill px-3">
               <i class="fa-solid fa-clock-rotate-left me-1"></i> Historique sorties & casses
             </a>
             <button
@@ -46,7 +46,7 @@
             >
               <i class="fa-solid fa-arrow-up-from-bracket me-1"></i> Sortie de matériel
             </button>
-            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
             </a>
           </div>
@@ -160,7 +160,7 @@
                     </td>
                     <td>
                       <% if (loan.user) { %>
-                        <a href="/users/edit/<%= loan.user.id %>" class="fw-semibold text-decoration-none d-block">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= loan.user.id %>" class="fw-semibold text-decoration-none d-block">
                           <i class="fa-solid fa-user me-1 text-primary"></i><%= loan.user.name %> <%= loan.user.surname %>
                         </a>
                         <span class="text-muted small"><%= loan.user.email %></span>
@@ -198,7 +198,7 @@
                       <% } %>
                     </td>
                     <td class="text-end pe-4">
-                      <form action="/admin/equipment/return/<%= loan.id %>" method="post" class="d-inline" data-confirm="Confirmer la restitution de cet équipement ?">
+                      <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/equipment/return/<%= loan.id %>" method="post" class="d-inline" data-confirm="Confirmer la restitution de cet équipement ?">
                         <button type="submit" class="btn btn-sm btn-success rounded-circle shadow-sm" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;" data-bs-toggle="tooltip" data-bs-placement="top" title="Restituer l'équipement" aria-label="Restituer">
                           <i class="fa-solid fa-rotate-left"></i>
                         </button>
@@ -219,7 +219,7 @@
           <h6 class="fw-bold mb-2">
             <i class="fa-solid fa-plus text-success me-1"></i> Ajouter un équipement / outil
           </h6>
-          <form action="/admin/equipment/create" method="post" class="row g-2 align-items-center">
+          <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/equipment/create" method="post" class="row g-2 align-items-center">
             <div class="col-md-5 col-sm-6">
               <div class="input-group">
                 <span class="input-group-text bg-body-secondary">
@@ -359,7 +359,7 @@
                         <i class="fa-solid fa-arrow-up-from-bracket"></i>
                       </button>
                       <% if (item.status === 'OUT_OF_SERVICE' || item.status === 'DECOMMISSIONED') { %>
-                      <form action="/admin/inventory/equipment/restore/<%= item.id %>" method="POST" class="d-inline" data-confirm="Remettre cet équipement en service (disponible au prêt) ?">
+                      <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/inventory/equipment/restore/<%= item.id %>" method="POST" class="d-inline" data-confirm="Remettre cet équipement en service (disponible au prêt) ?">
                         <button type="submit" class="btn btn-outline-success" title="Remettre en service (disponible)">
                           <i class="fa-solid fa-rotate-left"></i>
                         </button>
@@ -404,7 +404,7 @@
               </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="/admin/equipment/update" method="post">
+            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/equipment/update" method="post">
               <div class="modal-body">
                 <input type="hidden" id="edit-id" name="id" />
                 <div class="mb-3">

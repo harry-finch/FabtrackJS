@@ -31,10 +31,10 @@
           </div>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+          <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
           </a>
-          <a href="/admin/machines/manage-types" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+          <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/manage-types" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
             <i class="fa-solid fa-gears me-1"></i> Types de machines
           </a>
           <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#createMachineModal">
@@ -180,13 +180,13 @@
                 </td>
                 <td class="text-end pe-3">
                   <div class="btn-group btn-group-sm">
-                    <a href="/admin/machines/view/<%= machine.id %>" class="btn btn-outline-secondary" title="<%= typeof __ !== 'undefined' ? __('machines.action_view') : 'Voir la fiche' %>">
+                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/view/<%= machine.id %>" class="btn btn-outline-secondary" title="<%= typeof __ !== 'undefined' ? __('machines.action_view') : 'Voir la fiche' %>">
                       <i class="fa-solid fa-eye"></i>
                     </a>
-                    <a href="/admin/machines/view/<%= machine.id %>#history" class="btn btn-outline-secondary" title="<%= typeof __ !== 'undefined' ? __('machines.action_history') : 'Historique d\'utilisation' %>">
+                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/view/<%= machine.id %>#history" class="btn btn-outline-secondary" title="<%= typeof __ !== 'undefined' ? __('machines.action_history') : 'Historique d\'utilisation' %>">
                       <i class="fa-solid fa-clock-rotate-left"></i>
                     </a>
-                    <a href="/admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary" title="<%= typeof __ !== 'undefined' ? __('machines.action_edit') : 'Modifier' %>">
+                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary" title="<%= typeof __ !== 'undefined' ? __('machines.action_edit') : 'Modifier' %>">
                       <i class="fa-solid fa-pen-to-square"></i>
                     </a>
                     <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/delete/<%= machine.id %>" class="d-inline" data-confirm="<%= typeof __ !== 'undefined' ? __('machines.confirm_delete') : 'Êtes-vous sûr de vouloir supprimer cette machine ?' %>">

@@ -34,10 +34,10 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
-                        <a href="/admin/communication" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/communication" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-envelope-open-text me-1"></i> Module Communication
                         </a>
                     </div>
@@ -53,7 +53,7 @@
                     </div>
                     <div>
                         <div class="fw-semibold small">Plugin Ateliers actuellement désactivé</div>
-                        <div class="text-muted small">L'attribution automatique des badges et initiations lors du check-in est inactive. Vous pouvez réactiver le plugin dans la <a href="/admin/settings" class="alert-link">configuration générale</a>.</div>
+                        <div class="text-muted small">L'attribution automatique des badges et initiations lors du check-in est inactive. Vous pouvez réactiver le plugin dans la <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="alert-link">configuration générale</a>.</div>
                     </div>
                 </div>
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1"><i class="fa-solid fa-power-off me-1"></i>Plugin Désactivé</span>
@@ -179,7 +179,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="/admin/workshops/create" method="post" id="workshopForm">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/create" method="post" id="workshopForm">
                         <input type="hidden" id="workshopid" name="workshopid" value="" />
                         <div class="row g-3 mb-3">
                             <div class="col-md-7">
@@ -241,7 +241,7 @@
                                     <div class="mb-3 d-flex justify-content-between align-items-center p-2 bg-body-tertiary rounded">
                                         <span class="small text-muted"><%= ws.interests.length %> contact(s)</span>
                                         <div class="d-flex gap-2">
-                                            <a href="/admin/communication?workshopId=<%= ws.id %>" class="btn btn-sm btn-outline-primary" title="Ouvrir dans le module Communication">
+                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/communication?workshopId=<%= ws.id %>" class="btn btn-sm btn-outline-primary" title="Ouvrir dans le module Communication">
                                                 <i class="fa-solid fa-envelope-open-text me-1"></i> Module Communication
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-secondary" data-copy-text="<%= emails %>">
@@ -263,7 +263,7 @@
                                                 <% ws.interests.forEach(function(item) { %>
                                                     <tr>
                                                         <td>
-                                                            <a href="/users/edit/<%= item.user.id %>" class="fw-semibold text-decoration-none">
+                                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= item.user.id %>" class="fw-semibold text-decoration-none">
                                                                 <%= item.user.name %> <%= item.user.surname %>
                                                             </a>
                                                         </td>
@@ -271,7 +271,7 @@
                                                         <td class="text-muted small"><%= item.formattedDate %></td>
                                                         <td class="text-end">
                                                             <div class="btn-group btn-group-sm">
-                                                                <form action="/admin/workshops/award-badge" method="post" class="d-inline">
+                                                                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/award-badge" method="post" class="d-inline">
                                                                     <input type="hidden" name="userId" value="<%= item.user.id %>">
                                                                     <input type="hidden" name="workshopId" value="<%= ws.id %>">
                                                                     <input type="hidden" name="removeInterest" value="true">
@@ -330,7 +330,7 @@
                                                 <% ws.completions.forEach(function(comp) { %>
                                                     <tr>
                                                         <td>
-                                                            <a href="/users/edit/<%= comp.user.id %>" class="fw-semibold text-decoration-none">
+                                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= comp.user.id %>" class="fw-semibold text-decoration-none">
                                                                 <%= comp.user.name %> <%= comp.user.surname %>
                                                             </a>
                                                         </td>
@@ -358,7 +358,7 @@
             document.querySelectorAll("[id^='edit-']").forEach(button => {
                 button.addEventListener("click", function() {
                     document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Modifier l'atelier";
-                    document.getElementById("workshopForm").action = "/admin/workshops/update";
+                    document.getElementById("workshopForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/workshops/update") : "/admin/workshops/update");
                     document.getElementById("workshopid").value = this.dataset.id;
                     document.getElementById("name").value = this.dataset.name;
                     document.getElementById("description").value = this.dataset.description;
@@ -371,7 +371,7 @@
 
             function cancelEdit() {
                 document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-graduation-cap text-primary me-2'></i>Créer un nouvel atelier";
-                document.getElementById("workshopForm").action = "/admin/workshops/create";
+                document.getElementById("workshopForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/workshops/create") : "/admin/workshops/create");
                 document.getElementById("workshopid").value = "";
                 document.getElementById("name").value = "";
                 document.getElementById("description").value = "";

@@ -32,7 +32,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
                     </div>
@@ -48,7 +48,7 @@
                     </div>
                     <div>
                         <div class="fw-semibold small">Plugin BookStack actuellement désactivé</div>
-                        <div class="text-muted small">L'intégration wiki et la vérification documentaire sont inactives sur l'accueil. Vous pouvez réactiver le plugin ci-dessous ou dans la <a href="/admin/settings" class="alert-link">configuration générale</a>.</div>
+                        <div class="text-muted small">L'intégration wiki et la vérification documentaire sont inactives sur l'accueil. Vous pouvez réactiver le plugin ci-dessous ou dans la <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="alert-link">configuration générale</a>.</div>
                     </div>
                 </div>
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1">Inactif</span>
@@ -145,7 +145,7 @@
                             </span>
                             <h5 class="fw-bold mb-0">Paramètres du Wiki BookStack</h5>
                         </div>
-                        <form action="/admin/bookstack/test" method="POST" class="d-inline">
+                        <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/bookstack/test" method="POST" class="d-inline">
                             <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
                                 <i class="fa-solid fa-plug-circle-check me-1"></i> Tester la connexion API
                             </button>
@@ -154,7 +154,7 @@
                     <p class="text-muted small mt-1 mb-0">Identifiants d'accès à l'API REST de BookStack et préférences de saisie</p>
                 </div>
                 <div class="card-body p-4">
-                    <form action="/admin/bookstack/settings" method="POST">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/bookstack/settings" method="POST">
                         <div class="row g-3">
                             <!-- Toggle Plugin Enabled -->
                             <div class="col-12 col-md-6">

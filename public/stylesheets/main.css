@@ -493,7 +493,7 @@ main.main-container.page-navigating-out {
     padding: 0.28rem 0.65rem;
 }
 
-a[href="/admin"].btn:not(.header-action-btn),
+a[href$="/admin"].btn:not(.header-action-btn),
 .btn-back {
     border-radius: 50rem !important;
     font-size: 0.8rem !important;

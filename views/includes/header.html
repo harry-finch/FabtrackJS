@@ -253,4 +253,6 @@
 <h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : (typeof __ !== 'undefined' ? __('kiosk.subtitle') : "Suivez l'activité de votre fablab") %></h5>
 
 <%- include('bug-report-modal.html') %>
+<% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
 <%- include('inventory-checkout-modal.html') %>
+<% } %>

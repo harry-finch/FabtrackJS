@@ -42,10 +42,10 @@
                         <a href="#newWarningCard" id="btnScrollToNewWarning" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm fw-semibold">
                             <i class="fa-solid fa-plus me-1"></i> Émettre un avertissement
                         </a>
-                        <a href="/admin/warningtypes/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warningtypes/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-tags me-1"></i> Types d'avertissements
                         </a>
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-gauge me-1"></i> Panneau admin
                         </a>
                     </div>
@@ -112,7 +112,7 @@
                                         <td>
                                             <% if (warning.user) { %>
                                                 <div class="fw-semibold">
-                                                    <a href="/users/edit/<%= warning.user.id %>" class="text-decoration-none text-body" title="Voir la fiche contributeur">
+                                                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= warning.user.id %>" class="text-decoration-none text-body" title="Voir la fiche contributeur">
                                                         <%= warning.user.name %> <%= warning.user.surname %>
                                                     </a>
                                                 </div>
@@ -208,7 +208,7 @@
                     <p class="text-muted small mt-1 mb-0">Enregistrez un rappel au règlement, un manquement ou une infraction sur le profil d'un contributeur</p>
                 </div>
                 <div class="card-body p-4">
-                    <form action="/admin/warnings/create" method="POST">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings/create" method="POST">
                         <div class="row g-3">
                             <!-- Select User -->
                             <div class="col-12 col-md-6">

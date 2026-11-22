@@ -54,14 +54,14 @@
             <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAddMaintenance">
               <i class="fa-solid fa-wrench me-1"></i> Déclarer une maintenance
             </button>
-            <a href="/report-issue/<%= machine.id %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ouvrir la page publique de signalement pour cette machine">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue/<%= machine.id %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Ouvrir la page publique de signalement pour cette machine">
               <i class="fa-solid fa-triangle-exclamation me-1"></i> Signaler un problème
             </a>
-            <a href="/admin/machines/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-arrow-left me-1"></i> Retour aux machines
             </a>
             <% if (typeof role !== 'undefined' && role === 'admin') { %>
-            <a href="/admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/edit/<%= machine.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-pen-to-square me-1"></i> Modifier
             </a>
             <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/delete/<%= machine.id %>" class="d-inline" data-confirm="Confirmez-vous la suppression définitive de cette machine ?">
@@ -190,7 +190,7 @@
             <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddMaintenance">
               <i class="fa-solid fa-plus me-1"></i> Déclarer une maintenance
             </button>
-            <a href="/report-issue/<%= machine.id %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue/<%= machine.id %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm rounded-pill px-3">
               <i class="fa-solid fa-camera me-1"></i> Signaler panne
             </a>
           </div>
@@ -340,7 +340,7 @@
                         <div class="d-flex justify-content-end align-items-center gap-1">
                           <% if (ev.kind === 'MAINTENANCE') { %>
                             <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                              <form action="/admin/machines/maintenance/<%= ev.original.id %>/delete" method="POST" class="d-inline" data-confirm="Confirmez-vous la suppression de cette fiche de maintenance ?">
+                              <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/maintenance/<%= ev.original.id %>/delete" method="POST" class="d-inline" data-confirm="Confirmez-vous la suppression de cette fiche de maintenance ?">
                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer la maintenance">
                                   <i class="fa-solid fa-trash-can fa-xs"></i>
                                 </button>
@@ -352,7 +352,7 @@
                                 <i class="fa-solid fa-check me-1"></i> Résoudre
                               </button>
                             <% } else { %>
-                              <form action="/admin/machines/issues/<%= ev.original.id %>/status" method="POST" class="d-inline">
+                              <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/issues/<%= ev.original.id %>/status" method="POST" class="d-inline">
                                 <input type="hidden" name="status" value="OPEN" />
                                 <input type="hidden" name="machineId" value="<%= machine.id %>" />
                                 <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-2" title="Rouvrir l'incident">
@@ -362,7 +362,7 @@
                             <% } %>
 
                             <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                            <form action="/admin/machines/issues/<%= ev.original.id %>/delete" method="POST" class="d-inline" data-confirm="Confirmez-vous la suppression de ce signalement ?">
+                            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/issues/<%= ev.original.id %>/delete" method="POST" class="d-inline" data-confirm="Confirmez-vous la suppression de ce signalement ?">
                               <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width: 28px; height: 28px;" title="Supprimer">
                                 <i class="fa-solid fa-trash-can fa-xs"></i>
                               </button>
@@ -376,7 +376,7 @@
                           <div class="modal fade" id="modalResolveIssue<%= ev.original.id %>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                               <div class="modal-content text-start border-0 shadow">
-                                <form action="/admin/machines/issues/<%= ev.original.id %>/status" method="POST">
+                                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/issues/<%= ev.original.id %>/status" method="POST">
                                   <input type="hidden" name="status" value="RESOLVED" />
                                   <input type="hidden" name="machineId" value="<%= machine.id %>" />
                                   <div class="modal-header">
@@ -495,7 +495,7 @@
                       </td>
                       <td>
                         <% if (entry.user) { %>
-                          <a href="/users/edit/<%= entry.user.id %>" class="fw-semibold text-decoration-none">
+                          <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= entry.user.id %>" class="fw-semibold text-decoration-none">
                             <i class="fa-solid fa-user me-1 text-primary"></i><%= entry.user.name %> <%= entry.user.surname %>
                           </a>
                           <div class="small text-muted"><%= entry.user.email %></div>
@@ -563,7 +563,7 @@
       </div>
 
       <div class="text-center mb-4">
-        <a href="/admin/machines/manage" class="btn btn-outline-secondary">
+        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/manage" class="btn btn-outline-secondary">
           <i class="fa-solid fa-arrow-left me-1"></i> Retour à la liste des machines
         </a>
       </div>
@@ -572,7 +572,7 @@
       <div class="modal fade" id="modalAddMaintenance" tabindex="-1" aria-labelledby="modalAddMaintenanceLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content border-0 shadow-lg rounded-4">
-            <form action="/admin/machines/maintenance/create" method="POST">
+            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/maintenance/create" method="POST">
               <input type="hidden" name="machineId" value="<%= machine.id %>" />
 
               <div class="modal-header border-0 bg-body-secondary py-3 px-4 rounded-top-4">

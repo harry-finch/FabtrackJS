@@ -18,7 +18,7 @@
                 <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
                     <img class="mb-2 app-auth-logo" src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" />
                 <% } else { %>
-                    <img class="mb-2 app-auth-logo" src="/images/logo-fabtrack.svg" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" width="75" height="58" />
+                    <img class="mb-2 app-auth-logo" src="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>images/logo-fabtrack.svg" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" width="75" height="58" />
                 <% } %>
                 <h1 class="h3 fw-normal mb-3"><%= __('auth.create_account_title') %></h1>
 

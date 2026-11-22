@@ -62,6 +62,7 @@ pm2 logs fabtrack --lines 50
 | [R-027](../roadmap/items/R-027-refondre-les-modales-de-confirmation-et-les.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier les modales de confirmation Bootstrap (0 `confirm()`/`alert()`/`prompt()` natif), les toasts sans préfixe brut (`Success:`/`Error:`) et les erreurs sur `/report-issue` |
 | [R-028](../roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier `<html lang>` dynamique, mode sombre (tableaux + graphiques `/admin/statistics` en direct), tri clavier (`Tab`/`Entrée`/`Espace`) et cibles tactiles kiosque |
 | [R-029](../roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier la bascule FR/EN (inclut `common.menu`, toasts traduits sur `/admin/settings`), l'absence d'« Usager »/franglais et l'export `translations.csv` |
+| [R-030](../roadmap/items/R-030-harmoniser-la-navigation-admin-et-les-liens-en.md) | `v1.5` | Aucune | Aucune | Aucune | Tester la navigation admin complète et `/report-issue/:id` derrière `APP_BASE_PATH="/fabtrack"` (0 404) et vérifier que la modale d'inventaire est absente en rôle `staff` |
 
 ---
 

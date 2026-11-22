@@ -35,10 +35,10 @@
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
               <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
             </a>
-            <a href="/admin/ue/export-csv" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" id="topExportCsvBtn">
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/ue/export-csv" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" id="topExportCsvBtn">
               <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV
             </a>
             <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#createUeModal">
@@ -57,7 +57,7 @@
           </div>
           <div>
             <div class="fw-semibold small">Plugin Unités d'Enseignement (UE) actuellement désactivé</div>
-            <div class="text-muted small">La sélection des codes UE et la facturation académique sont inactives sur la plateforme. Vous pouvez réactiver le plugin dans la <a href="/admin/settings" class="alert-link">configuration générale</a>.</div>
+            <div class="text-muted small">La sélection des codes UE et la facturation académique sont inactives sur la plateforme. Vous pouvez réactiver le plugin dans la <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="alert-link">configuration générale</a>.</div>
           </div>
         </div>
         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1"><i class="fa-solid fa-power-off me-1"></i>Plugin Désactivé</span>
@@ -215,7 +215,7 @@
                           >
                             <i class="fa-solid fa-pen"></i>
                           </button>
-                          <form action="/admin/ue/toggle/<%= ue.id %>" method="POST" class="d-inline">
+                          <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/ue/toggle/<%= ue.id %>" method="POST" class="d-inline">
                             <button
                               type="submit"
                               class="btn <%= ue.active ? 'btn-outline-warning' : 'btn-outline-success' %>"
@@ -284,7 +284,7 @@
                 <span class="badge bg-body-tertiary text-body border py-2 px-2 text-nowrap" id="filteredLogCounter">
                   <%= activities.length %> enregistrement(s)
                 </span>
-                <a id="exportFilteredCsvBtn" href="/admin/ue/export-csv" class="btn btn-sm btn-success text-nowrap shadow-sm">
+                <a id="exportFilteredCsvBtn" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/ue/export-csv" class="btn btn-sm btn-success text-nowrap shadow-sm">
                   <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV filtré
                 </a>
               </div>
@@ -479,7 +479,7 @@
       <div class="modal fade" id="createUeModal" tabindex="-1" aria-labelledby="createUeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
-            <form action="/admin/ue/create" method="POST">
+            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/ue/create" method="POST">
               <div class="modal-header">
                 <h5 class="modal-title" id="createUeModalLabel">
                   <i class="fa-solid fa-graduation-cap text-primary me-2"></i> Nouvelle Unité d'Enseignement
@@ -517,7 +517,7 @@
       <div class="modal fade" id="editUeModal" tabindex="-1" aria-labelledby="editUeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
-            <form id="editUeForm" action="/admin/ue/update/" method="POST">
+            <form id="editUeForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/ue/update/" method="POST">
               <div class="modal-header">
                 <h5 class="modal-title" id="editUeModalLabel">
                   <i class="fa-solid fa-pen-to-square text-primary me-2"></i> Modifier l'Unité d'Enseignement
@@ -559,7 +559,7 @@
       <div class="modal fade" id="regularizeModal" tabindex="-1" aria-labelledby="regularizeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content">
-            <form id="regularizeForm" action="/admin/ue/regularize" method="POST">
+            <form id="regularizeForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/ue/regularize" method="POST">
               <input type="hidden" id="regHistoryId" name="historyId" />
               <input type="hidden" id="regUnregisteredName" name="unregisteredName" />
 

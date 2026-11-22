@@ -34,7 +34,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
                     </div>
@@ -92,7 +92,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="/admin/projecttypes/create" method="post" id="projectTypeForm">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/projecttypes/create" method="post" id="projectTypeForm">
                         <div class="row g-2 align-items-center">
                             <input type='hidden' id="projecttypeid" name='projecttypeid' value='' />
                             <div class="col-md-8 col-12">
@@ -126,7 +126,7 @@
             if (event) event.preventDefault();
 
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Modifier le motif de visite";
-            document.getElementById("projectTypeForm").action = "/admin/projecttypes/update";
+            document.getElementById("projectTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/projecttypes/update") : "/admin/projecttypes/update");
             document.getElementById("projecttypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
             document.getElementById("submitBtn").innerText = "Modifier le motif de visite";
@@ -138,7 +138,7 @@
 
           function cancelEdit() {
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-diagram-project text-info-emphasis me-2'></i>Nouveau motif de visite";
-            document.getElementById("projectTypeForm").action = "/admin/projecttypes/create";
+            document.getElementById("projectTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/projecttypes/create") : "/admin/projecttypes/create");
             document.getElementById("projecttypeid").value = "";
             document.getElementById("name").value = "";
             document.getElementById("submitBtn").innerText = "Créer le motif de visite";

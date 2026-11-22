@@ -34,7 +34,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
                     </div>
@@ -95,7 +95,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="/admin/accesslevels/create" method="post" id="accessForm">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/accesslevels/create" method="post" id="accessForm">
                         <div class="row">
                             <input type='hidden' id="accessid" name='accessid' value='' />
                             <div class="col-12">
@@ -137,7 +137,7 @@
             if (event) event.preventDefault();
 
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update access level";
-            document.getElementById("accessForm").action = "/admin/accesslevels/update";
+            document.getElementById("accessForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/accesslevels/update") : "/admin/accesslevels/update");
             document.getElementById("accessid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
             document.getElementById("description").value = this.dataset.description || '';
@@ -150,7 +150,7 @@
 
           function cancelEdit() {
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-lock text-warning-emphasis me-2'></i>Create new access level";
-            document.getElementById("accessForm").action = "/admin/accesslevels/create";
+            document.getElementById("accessForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/accesslevels/create") : "/admin/accesslevels/create");
             document.getElementById("accessid").value = "";
             document.getElementById("name").value = "";
             document.getElementById("description").value = "";

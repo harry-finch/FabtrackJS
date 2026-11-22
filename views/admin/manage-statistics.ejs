@@ -34,10 +34,10 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
-                        <a href="/admin/statistics/export?workspaceId=<%= selectedWorkspaceId || '' %>&startDate=<%= filterStartDate %>&endDate=<%= filterEndDate %>" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/statistics/export?workspaceId=<%= selectedWorkspaceId || '' %>&startDate=<%= filterStartDate %>&endDate=<%= filterEndDate %>" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
                             <i class="fa-solid fa-file-csv me-1"></i> Exporter CSV
                         </a>
                     </div>
@@ -47,7 +47,7 @@
             <!-- BANDEAU DES FILTRES (ESPACE ET PÉRIODE) -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-3">
-                    <form action="/admin/statistics" method="get" id="statsFilterForm" class="row g-2 align-items-end">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/statistics" method="get" id="statsFilterForm" class="row g-2 align-items-end">
                         <!-- Filtre Espace -->
                         <div class="col-md-3">
                             <label for="workspaceSelect" class="form-label small fw-semibold text-muted mb-1">
@@ -95,7 +95,7 @@
                             <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill">
                                 <i class="fa-solid fa-arrows-rotate me-1"></i> Filtrer
                             </button>
-                            <a href="/admin/statistics" class="btn btn-outline-secondary btn-sm rounded-pill px-2" title="Réinitialiser les filtres">
+                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/statistics" class="btn btn-outline-secondary btn-sm rounded-pill px-2" title="Réinitialiser les filtres">
                                 <i class="fa-solid fa-rotate-left"></i>
                             </a>
                         </div>
@@ -130,7 +130,7 @@
                                 <span>Moteur IA non configuré</span>
                             </span>
                         <% } %>
-                        <a href="/admin/settings" class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Configurer les clés d'API dans les paramètres">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Configurer les clés d'API dans les paramètres">
                             <i class="fa-solid fa-gear me-1"></i> Configurer l'IA
                         </a>
                     </div>
@@ -144,7 +144,7 @@
                             <p class="text-muted small mb-3 mx-auto" style="max-width: 550px;">
                                 Connectez votre compte OpenAI (ChatGPT), Google Gemini, Anthropic Claude ou un LLM local (Ollama) pour poser des questions comme <em>« Combien de contributeurs ne sont venus qu'une seule fois ? »</em> ou <em>« Top 5 des machines les plus utilisées »</em>.
                             </p>
-                            <a href="/admin/settings" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
+                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
                                 <i class="fa-solid fa-gear me-1"></i> Configurer l'IA dans les paramètres
                             </a>
                         </div>

@@ -34,7 +34,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
                     </div>
@@ -92,7 +92,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="/admin/usertypes/create" method="post" id="userTypeForm">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/usertypes/create" method="post" id="userTypeForm">
                         <div class="row g-2 align-items-center">
                             <input type='hidden' id="usertypeid" name='usertypeid' value='' />
                             <div class="col-md-8 col-12">
@@ -126,7 +126,7 @@
             if (event) event.preventDefault();
 
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Modifier le type de contributeur";
-            document.getElementById("userTypeForm").action = "/admin/usertypes/update";
+            document.getElementById("userTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/usertypes/update") : "/admin/usertypes/update");
             document.getElementById("usertypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
             document.getElementById("submitBtn").innerText = "Enregistrer les modifications";
@@ -138,7 +138,7 @@
 
           function cancelEdit() {
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-user-tag text-secondary me-2'></i>Créer un type de contributeur";
-            document.getElementById("userTypeForm").action = "/admin/usertypes/create";
+            document.getElementById("userTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/usertypes/create") : "/admin/usertypes/create");
             document.getElementById("usertypeid").value = "";
             document.getElementById("name").value = "";
             document.getElementById("submitBtn").innerText = "Créer le type de contributeur";

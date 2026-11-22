@@ -65,7 +65,7 @@
               </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+              <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                 <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
               </a>
             </div>
@@ -183,7 +183,7 @@
                     <label class="form-label fw-semibold d-block">Favicon :</label>
                     <img src="<%= settings.platform_favicon_path || '/favicon.ico' %>"
                       class="favicon-preview-img shadow-sm" alt="Favicon" id="faviconPreviewImg"
-                      data-fallback-src="/favicon.ico">
+                      data-fallback-src="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>favicon.ico">
                   </div>
                   <small class="text-muted">Apparaît sur l'onglet de votre navigateur et dans les favoris.</small>
                 </div>
@@ -527,7 +527,7 @@
 
                 <div class="col-12 col-md-6">
                   <label class="form-label fw-semibold d-block"><i class="fa-solid fa-file-export me-1 text-primary"></i> Export CSV :</label>
-                  <a href="/admin/settings/i18n/export" class="btn btn-outline-primary rounded-pill px-3 py-2 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                  <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/i18n/export" class="btn btn-outline-primary rounded-pill px-3 py-2 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2">
                     <i class="fa-solid fa-file-csv fs-5"></i>
                     <span><%= typeof __ !== 'undefined' ? __('settings.export_csv_btn') : 'Télécharger le tableur CSV (traductions actuelles)' %></span>
                   </a>
@@ -691,7 +691,7 @@
 
           <!-- Submit Button Bar -->
           <div class="d-flex justify-content-end align-items-center gap-3 mb-5">
-            <a href="/admin" class="btn btn-outline-secondary rounded-pill px-4"><%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %></a>
+            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary rounded-pill px-4"><%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %></a>
             <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold">
               <i class="fa-solid fa-floppy-disk me-2"></i> <%= typeof __ !== 'undefined' ? __('settings.save_changes') : 'Enregistrer les modifications' %>
             </button>
@@ -699,8 +699,8 @@
         </form>
 
         <!-- Hidden reset and import forms -->
-        <form id="resetLogoForm" action="/admin/settings/reset-logo" method="post" style="display: none;"></form>
-        <form id="resetFaviconForm" action="/admin/settings/reset-favicon" method="post" style="display: none;"></form>
+        <form id="resetLogoForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/reset-logo" method="post" style="display: none;"></form>
+        <form id="resetFaviconForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/reset-favicon" method="post" style="display: none;"></form>
         <form id="importCsvForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/i18n/import?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" style="display: none;">
           <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
           <input type="file" id="hiddenCsvFile" name="translations_file" accept=".csv" aria-label="Fichier CSV des traductions à importer">

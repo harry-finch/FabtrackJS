@@ -34,10 +34,10 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin/warnings" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warnings" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Avertissements contributeurs
                         </a>
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-gauge me-1"></i> Panneau admin
                         </a>
                     </div>
@@ -113,7 +113,7 @@
                     <p class="text-muted small mb-0 mt-1">Définissez un motif, son icône Font Awesome et sa couleur distinctive</p>
                 </div>
                 <div class="card-body p-4">
-                    <form action="/admin/warningtypes/create" method="post" id="warningTypeForm">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/warningtypes/create" method="post" id="warningTypeForm">
                         <input type="hidden" id="warningtypeid" name="warningtypeid" value="" />
                         <input type="hidden" id="icon" name="icon" value="fa-solid fa-triangle-exclamation text-danger" />
 
@@ -488,7 +488,7 @@
             if (event) event.preventDefault();
 
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update warning type";
-            document.getElementById("warningTypeForm").action = "/admin/warningtypes/update";
+            document.getElementById("warningTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/warningtypes/update") : "/admin/warningtypes/update");
             document.getElementById("warningtypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
 
@@ -504,7 +504,7 @@
 
           function cancelEdit() {
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-triangle-exclamation text-warning-emphasis me-2'></i>Create new warning type";
-            document.getElementById("warningTypeForm").action = "/admin/warningtypes/create";
+            document.getElementById("warningTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/warningtypes/create") : "/admin/warningtypes/create");
             document.getElementById("warningtypeid").value = "";
             document.getElementById("name").value = "";
             

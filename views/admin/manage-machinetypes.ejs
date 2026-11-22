@@ -34,10 +34,10 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin/machines/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour machines
                         </a>
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-gauge me-1"></i> Panneau admin
                         </a>
                     </div>
@@ -95,7 +95,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="/admin/machines/create-type" method="post" id="machineTypeForm">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/machines/create-type" method="post" id="machineTypeForm">
                         <div class="row g-2 align-items-center">
                             <input type='hidden' id="machinetypeid" name='machinetypeid' value='' />
                             <div class="col-md-8 col-12">
@@ -129,7 +129,7 @@
             if (event) event.preventDefault();
 
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update machine type";
-            document.getElementById("machineTypeForm").action = "/admin/machines/update-type";
+            document.getElementById("machineTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/machines/update-type") : "/admin/machines/update-type");
             document.getElementById("machinetypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
             document.getElementById("submitBtn").innerText = "Update machine type";
@@ -141,7 +141,7 @@
 
           function cancelEdit() {
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-gears text-secondary me-2'></i>Create new machine type";
-            document.getElementById("machineTypeForm").action = "/admin/machines/create-type";
+            document.getElementById("machineTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/machines/create-type") : "/admin/machines/create-type");
             document.getElementById("machinetypeid").value = "";
             document.getElementById("name").value = "";
             document.getElementById("submitBtn").innerText = "Create machine type";

@@ -34,7 +34,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="/admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                             <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
                         </a>
                     </div>
@@ -95,7 +95,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="/admin/workspaces/create" method="post" id="workspaceForm">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workspaces/create" method="post" id="workspaceForm">
                         <div class="row">
                             <input type='hidden' id="workspaceid" name='workspaceid' value='' />
                             <div class="col-12">
@@ -137,7 +137,7 @@
             if (event) event.preventDefault();
 
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update workspace";
-            document.getElementById("workspaceForm").action = "/admin/workspaces/update";
+            document.getElementById("workspaceForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/workspaces/update") : "/admin/workspaces/update");
             document.getElementById("workspaceid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
             document.getElementById("location").value = this.dataset.location || '';
@@ -150,7 +150,7 @@
 
           function cancelEdit() {
             document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-building text-secondary me-2'></i>Create new workspace";
-            document.getElementById("workspaceForm").action = "/admin/workspaces/create";
+            document.getElementById("workspaceForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/workspaces/create") : "/admin/workspaces/create");
             document.getElementById("workspaceid").value = "";
             document.getElementById("name").value = "";
             document.getElementById("location").value = "";
