@@ -133,37 +133,21 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        // Strict script policy: self + per-request cryptographic nonce + trusted CDNs (NO 'unsafe-inline')
+        // Strict offline-first script policy: self + per-request cryptographic nonce (NO CDNs, NO 'unsafe-inline')
         scriptSrc: [
           "'self'",
           (_req, res) => `'nonce-${res.locals.cspNonce}'`,
-          "https://cdnjs.cloudflare.com",
-          "https://cdn.jsdelivr.net",
         ],
         // Disallow all inline event handler attributes (onclick, onchange, etc.)
         scriptSrcAttr: ["'none'"],
-        // Allow styles from specific trusted sources and inline styles (visual style= cleanup deferred to v1.5)
-        styleSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          "https://fonts.googleapis.com",
-          "https://cdnjs.cloudflare.com",
-          "https://cdn.jsdelivr.net",
-        ],
-        // Allow fonts from trusted sources
-        fontSrc: [
-          "'self'",
-          "https://fonts.gstatic.com",
-          "https://cdnjs.cloudflare.com",
-        ],
-        // Allow images from all sources
+        // Self-hosted CSS (+ inline styles pending v1.5 visual cleanup)
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        // Self-hosted fonts (FontAwesome Free local vendor)
+        fontSrc: ["'self'"],
+        // Allow local/data/uploaded images
         imgSrc: ["'self'", "data:", "https:"],
-        // Allow connections
-        connectSrc: [
-          "'self'",
-          "https://cdn.jsdelivr.net",
-          "https://cdnjs.cloudflare.com",
-        ],
+        // Connections restricted to same origin
+        connectSrc: ["'self'"],
         // Do not force browser to upgrade HTTP to HTTPS on local/LAN IPs
         upgradeInsecureRequests: isHttpsProduction ? [] : null,
       },
@@ -233,6 +217,14 @@ app.use(express.static(path.join(__dirname, "public"), staticOptions));
 app.use(
   "/vendor/fontawesome",
   express.static(path.join(__dirname, "node_modules/@fortawesome/fontawesome-free"), staticOptions),
+);
+app.use(
+  "/vendor/bootstrap",
+  express.static(path.join(__dirname, "node_modules/bootstrap/dist"), staticOptions),
+);
+app.use(
+  "/vendor/chartjs",
+  express.static(path.join(__dirname, "node_modules/chart.js/dist"), staticOptions),
 );
 
 // Ensure uploads directory exists and is statically accessible with hardened headers

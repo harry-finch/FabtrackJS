@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" role="img" aria-labelledby="t404 d404" fill="none">
+  <title id="t404">Erreur 404 — Page introuvable</title>
+  <desc id="d404">Illustration vectorielle d'un plan d'atelier Fablab avec le code 404</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" stroke="#6c757d" stroke-opacity="0.16" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="420" height="220" rx="16" fill="#0d6efd" fill-opacity="0.06"/>
+  <rect width="420" height="220" rx="16" fill="url(#grid)"/>
+  <g stroke="#0d6efd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85">
+    <!-- Caliper / ruler framing -->
+    <line x1="48" y1="184" x2="372" y2="184"/>
+    <line x1="48" y1="178" x2="48" y2="190"/>
+    <line x1="372" y1="178" x2="372" y2="190"/>
+    <!-- Broken gear / blueprint outline -->
+    <circle cx="210" cy="96" r="46" stroke-dasharray="8 6"/>
+    <circle cx="210" cy="96" r="18"/>
+  </g>
+  <text x="210" y="114" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="56" font-weight="800" fill="#0d6efd" letter-spacing="4">404</text>
+  <text x="210" y="168" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#6c757d">TRACE INTROUVABLE • FABLAB</text>
+</svg>
