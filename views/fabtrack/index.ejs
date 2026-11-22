@@ -66,167 +66,169 @@
 
             <!-- Registering form -->
             <div id="register">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <div class="d-flex align-items-center gap-2">
-                        <a class="jsButton fs-4 text-primary d-inline-flex align-items-center justify-content-center" id="registerbutton" role="button" tabindex="0" style="text-decoration: none; min-width: 44px; min-height: 44px;" title="<%= __('kiosk.switch_to_create') %>" aria-label="<%= __('kiosk.switch_to_create') %>"><i class="fa fa-toggle-on" aria-hidden="true"></i></a>
-                        <div>
-                            <h4 class="fw-bold mb-0"><%= __('kiosk.register_user_title') %></h4>
-                            <small class="text-muted"><%= __('kiosk.register_user_subtitle') %></small>
-                        </div>
-                    </div>
-                    <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
-                    <!-- Workspace Indicator Badge -->
-                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
-                        <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
-                    </span>
-                    <% } %>
-                </div>
-                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/create" method="post" data-ajax-kiosk="true" data-reset-on-success="true">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-floating mb-3 d-grid d-flex">
-                                <input type='hidden' id="userid" name='userid' value='null' />
-                                <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="<%= __('kiosk.field_name') %>" autocomplete="off" required />
-                                <label for="name"><%= __('kiosk.field_name') %></label>
-                                <a id="urlprofile" href="#" aria-label="Voir la fiche contributeur">
-                                    <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
-                                </a>
+                <section class="card border shadow-sm mb-4" aria-labelledby="kioskRegisterHeading">
+                    <div class="card-header bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 px-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <a class="jsButton fs-5 text-primary d-inline-flex align-items-center justify-content-center" id="registerbutton" role="button" tabindex="0" style="text-decoration: none; min-width: 44px; min-height: 44px;" title="<%= __('kiosk.switch_to_create') %>" aria-label="<%= __('kiosk.switch_to_create') %>"><i class="fa fa-toggle-on" aria-hidden="true"></i></a>
+                            <div>
+                                <h4 class="h6 fw-bold mb-0" id="kioskRegisterHeading"><%= __('kiosk.register_user_title') %></h4>
+                                <small class="text-muted"><%= __('kiosk.register_user_subtitle') %></small>
                             </div>
                         </div>
+                        <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
+                        <!-- Workspace Indicator Badge -->
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-semibold">
+                            <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
+                        </span>
+                        <% } %>
                     </div>
-                    <div class="row" id="charterWarningRow" style="display: none;">
-                        <div class="col-12">
-                            <div class="alert alert-warning border border-warning-subtle d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 py-2 px-3 rounded-3 shadow-sm" role="alert" id="charterWarningAlert">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="fs-4 text-warning"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                                    <div>
-                                        <div class="fw-bold text-body">Charte d'utilisation non signée</div>
-                                        <small class="text-body-secondary" id="charterWarningMsg">Ce contributeur n'a pas encore validé la charte du fablab. L'inscription au lab est bloquée tant que la charte n'est pas acceptée.</small>
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/create" method="post" data-ajax-kiosk="true" data-reset-on-success="true">
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-floating d-grid d-flex">
+                                        <input type='hidden' id="userid" name='userid' value='null' />
+                                        <input type="text" class="form-control input-group-icon" id="name" name="name" placeholder="<%= __('kiosk.field_name') %>" autocomplete="off" required />
+                                        <label for="name"><%= __('kiosk.field_name') %></label>
+                                        <a id="urlprofile" href="#" aria-label="Voir la fiche contributeur">
+                                            <span class="formbutton input-group-text"><i class="fa fa-user fa-lg" aria-hidden="true"></i></span>
+                                        </a>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <a id="charterProfileBtn" href="#" class="btn btn-sm btn-outline-warning rounded-pill">
-                                        <i class="fa-solid fa-user-pen me-1"></i> Valider sur la fiche contributeur
-                                    </a>
+                            </div>
+                            <div class="row mt-3" id="charterWarningRow" style="display: none;">
+                                <div class="col-12">
+                                    <div class="alert alert-warning border border-warning-subtle d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0 py-2 px-3 rounded-3 shadow-sm" role="alert" id="charterWarningAlert">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fs-4 text-warning"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                                            <div>
+                                                <div class="fw-bold text-body">Charte d'utilisation non signée</div>
+                                                <small class="text-body-secondary" id="charterWarningMsg">Ce contributeur n'a pas encore validé la charte du fablab. L'inscription au lab est bloquée tant que la charte n'est pas acceptée.</small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a id="charterProfileBtn" href="#" class="btn btn-sm btn-outline-warning rounded-pill">
+                                                <i class="fa-solid fa-user-pen me-1"></i> Valider sur la fiche contributeur
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-8" id="documentationCol">
+                                    <div class="form-floating d-grid d-flex">
+                                        <input type='hidden' id="projectid" name='projectid' value='null' />
+                                        <input type='hidden' id="userprojectid" name='userprojectid' value='null' />
+                                        <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" autocomplete="off" placeholder="<%= __('kiosk.field_documentation') %>" required />
+                                        <label for="documentation"><%= __('kiosk.field_documentation') %></label>
+                                        <a id="urldocumentation" href="" target="_blank" rel="noopener noreferrer" aria-label="Consulter la documentation du projet">
+                                            <span class="formbutton input-group-text" id="docStatusBtn" title="Consulter la documentation du projet"><i class="fa-solid fa-book-open fa-lg" aria-hidden="true"></i></span>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-8" id="repairObjectCol" style="display: none;">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="repairObject" name="repairObject" autocomplete="off" placeholder="Objet à réparer" />
+                                        <label for="repairObject"><i class="fa-solid fa-screwdriver-wrench text-warning me-1"></i> Objet à réparer (ex: Cafetière Seb, Fer à repasser, Lampe...)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-8" id="workshopCol" style="display: none;">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="workshopId" name="workshopId">
+                                            <option value="" selected disabled>Choisir un atelier...</option>
+                                            <% if (typeof availableWorkshops !== 'undefined' && availableWorkshops) { %>
+                                                <% availableWorkshops.forEach(function(ws) { %>
+                                                <option value="<%= ws.id %>">
+                                                    <%= ws.name %><% if (ws.badge) { %> (Badge : <%= ws.badge.name %>)<% } %>
+                                                </option>
+                                                <% }); %>
+                                            <% } %>
+                                        </select>
+                                        <label for="workshopId"><i class="fa-solid fa-graduation-cap text-primary me-1"></i> Atelier suivi (badge attribué automatiquement)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="projecttype" name="projecttype">
+                                            <option selected></option>
+                                            <% projecttypes.forEach(function(projecttype) { %>
+                                            <option value="<%= projecttype.id %>"><%= projecttype.name %></option>
+                                            <% }); %>
+                                        </select>
+                                        <label for="projecttype"><%= __('kiosk.field_project_type') %></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                            <div class="row g-3 mt-0" id="ueRow" style="display: none;">
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="teachingUnitId" name="teachingUnitId">
+                                            <option value="" selected disabled>Choisir une UE habilitée (Sorbonne Université)...</option>
+                                            <% teachingUnits.forEach(function(ue) { %>
+                                            <option value="<%= ue.id %>">
+                                                <%= ue.code %> — <%= ue.name %> (<%= ue.department || 'Sorbonne Université' %>)
+                                            </option>
+                                            <% }); %>
+                                            <option value="unregistered" class="text-danger fw-semibold">⚠️ UE non-enregistrée</option>
+                                        </select>
+                                        <label for="teachingUnitId">
+                                            <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Unité d'Enseignement (UE rattachée)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic fields for unregistered UE -->
+                            <div class="row g-3 mt-0" id="unregisteredUeRow" style="display: none;">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="unregisteredUeName" name="unregisteredUeName" placeholder="ex: LU2PY001 ou Atelier Robotique">
+                                        <label for="unregisteredUeName">
+                                            <i class="fa-solid fa-tag text-warning me-1"></i> Intitulé ou Code de l'UE *
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="unregisteredUeContact" name="unregisteredUeContact" placeholder="ex: prof.responsable@sorbonne-universite.fr">
+                                        <label for="unregisteredUeContact">
+                                            <i class="fa-solid fa-user-tie text-info me-1"></i> Contact / Enseignant responsable
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+
+                            <% if (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) { %>
+                            <div class="row g-3 mt-0" id="sorbonneRow" style="display: none;">
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="sorbonneEntity" name="sorbonneEntity" placeholder="ex: UFR de Physique, LIP6, UFR 929..." autocomplete="off">
+                                        <label for="sorbonneEntity">
+                                            <i class="fa-solid fa-landmark text-primary me-1"></i> Entité ou UFR de rattachement
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+                            <div class="row g-3 mt-0">
+                                <div class="col">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="comments" name="comments" style="height: 88px"></textarea>
+                                        <label for="comments"><%= __('kiosk.field_comments') %></label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-8" id="documentationCol">
-                            <div class="form-floating mb-3 d-grid d-flex">
-                                <input type='hidden' id="projectid" name='projectid' value='null' />
-                                <input type='hidden' id="userprojectid" name='userprojectid' value='null' />
-                                <input type="text" class="form-control input-group-icon" id="documentation" name="documentation" autocomplete="off" placeholder="<%= __('kiosk.field_documentation') %>" required />
-                                <label for="documentation"><%= __('kiosk.field_documentation') %></label>
-                                <a id="urldocumentation" href="" target="_blank" rel="noopener noreferrer" aria-label="Consulter la documentation du projet">
-                                    <span class="formbutton input-group-text" id="docStatusBtn" title="Consulter la documentation du projet"><i class="fa-solid fa-book-open fa-lg" aria-hidden="true"></i></span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-8" id="repairObjectCol" style="display: none;">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="repairObject" name="repairObject" autocomplete="off" placeholder="Objet à réparer" />
-                                <label for="repairObject"><i class="fa-solid fa-screwdriver-wrench text-warning me-1"></i> Objet à réparer (ex: Cafetière Seb, Fer à repasser, Lampe...)</label>
-                            </div>
-                        </div>
-                        <div class="col-8" id="workshopCol" style="display: none;">
-                            <div class="form-floating mb-3">
-                                <select class="form-select" id="workshopId" name="workshopId">
-                                    <option value="" selected disabled>Choisir un atelier...</option>
-                                    <% if (typeof availableWorkshops !== 'undefined' && availableWorkshops) { %>
-                                        <% availableWorkshops.forEach(function(ws) { %>
-                                        <option value="<%= ws.id %>">
-                                            <%= ws.name %><% if (ws.badge) { %> (Badge : <%= ws.badge.name %>)<% } %>
-                                        </option>
-                                        <% }); %>
-                                    <% } %>
-                                </select>
-                                <label for="workshopId"><i class="fa-solid fa-graduation-cap text-primary me-1"></i> Atelier suivi (badge attribué automatiquement)</label>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="form-floating mb-3">
-                                <select class="form-select" id="projecttype" name="projecttype">
-                                    <option selected></option>
-                                    <% projecttypes.forEach(function(projecttype) { %>
-                                    <option value="<%= projecttype.id %>"><%= projecttype.name %></option>
-                                    <% }); %>
-                                </select>
-                                <label for="projecttype"><%= __('kiosk.field_project_type') %></label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
-                    <div class="row" id="ueRow" style="display: none;">
-                        <div class="col-12">
-                            <div class="form-floating mb-3">
-                                <select class="form-select" id="teachingUnitId" name="teachingUnitId">
-                                    <option value="" selected disabled>Choisir une UE habilitée (Sorbonne Université)...</option>
-                                    <% teachingUnits.forEach(function(ue) { %>
-                                    <option value="<%= ue.id %>">
-                                        <%= ue.code %> — <%= ue.name %> (<%= ue.department || 'Sorbonne Université' %>)
-                                    </option>
-                                    <% }); %>
-                                    <option value="unregistered" class="text-danger fw-semibold">⚠️ UE non-enregistrée</option>
-                                </select>
-                                <label for="teachingUnitId">
-                                    <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Unité d'Enseignement (UE rattachée)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Dynamic fields for unregistered UE -->
-                    <div class="row" id="unregisteredUeRow" style="display: none;">
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="unregisteredUeName" name="unregisteredUeName" placeholder="ex: LU2PY001 ou Atelier Robotique">
-                                <label for="unregisteredUeName">
-                                    <i class="fa-solid fa-tag text-warning me-1"></i> Intitulé ou Code de l'UE *
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="unregisteredUeContact" name="unregisteredUeContact" placeholder="ex: prof.responsable@sorbonne-universite.fr">
-                                <label for="unregisteredUeContact">
-                                    <i class="fa-solid fa-user-tie text-info me-1"></i> Contact / Enseignant responsable
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <% } %>
-
-                    <% if (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) { %>
-                    <div class="row" id="sorbonneRow" style="display: none;">
-                        <div class="col-12">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="sorbonneEntity" name="sorbonneEntity" placeholder="ex: UFR de Physique, LIP6, UFR 929..." autocomplete="off">
-                                <label for="sorbonneEntity">
-                                    <i class="fa-solid fa-landmark text-primary me-1"></i> Entité ou UFR de rattachement
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <% } %>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-floating mb-3">
-                                <textarea class="form-control" id="comments" name="comments" style="height: 100px"></textarea>
-                                <label for="comments"><%= __('kiosk.field_comments') %></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit" id="registerSubmitBtn">
+                        <div class="card-footer bg-body-tertiary py-3 px-4 d-flex flex-wrap align-items-center justify-content-end gap-2">
+                            <button class="btn btn-primary btn-sm px-4 py-2" type="submit" id="registerSubmitBtn">
                                 <i class="fa-solid fa-check me-1"></i> <%= __('kiosk.btn_register') %>
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </section>
 
                 <!-- Lab activity table (partial extracted for AJAX & SSE live refresh — R-032) -->
                 <div id="kioskPresentContainer" data-live-channel="kiosk">
@@ -475,100 +477,95 @@
             <% } else { %>
             <!-- New user creation form -->
             <div id="newuser">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <div class="d-flex align-items-center gap-2">
-                        <a class="jsButton fs-4 text-secondary d-inline-flex align-items-center justify-content-center" id="newuserbutton" role="button" tabindex="0" style="text-decoration: none; min-width: 44px; min-height: 44px;" title="<%= __('kiosk.switch_to_search') %>" aria-label="<%= __('kiosk.switch_to_search') %>"><i class="fa fa-toggle-off" aria-hidden="true"></i></a>
-                        <div>
-                            <h4 class="fw-bold mb-0"><%= __('kiosk.create_user_title') %></h4>
-                            <small class="text-muted"><%= __('kiosk.create_user_subtitle') %></small>
+                <section class="card border shadow-sm mb-4" aria-labelledby="kioskNewUserHeading">
+                    <div class="card-header bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 px-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <a class="jsButton fs-5 text-secondary d-inline-flex align-items-center justify-content-center" id="newuserbutton" role="button" tabindex="0" style="text-decoration: none; min-width: 44px; min-height: 44px;" title="<%= __('kiosk.switch_to_search') %>" aria-label="<%= __('kiosk.switch_to_search') %>"><i class="fa fa-toggle-off" aria-hidden="true"></i></a>
+                            <div>
+                                <h4 class="h6 fw-bold mb-0" id="kioskNewUserHeading"><%= __('kiosk.create_user_title') %></h4>
+                                <small class="text-muted"><%= __('kiosk.create_user_subtitle') %></small>
+                            </div>
                         </div>
+                        <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
+                        <!-- Workspace Indicator Badge -->
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-semibold">
+                            <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
+                        </span>
+                        <% } %>
                     </div>
-                    <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
-                    <!-- Workspace Indicator Badge -->
-                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
-                        <i class="fa-solid fa-circle fa-2xs text-success me-1"></i><%= selectedWorkspace.name %>
-                    </span>
-                    <% } %>
-                </div>
-                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/create" method="post">
-                    <div class="row">
-                        <div class="col-4">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="newname" name="newname" placeholder="<%= __('kiosk.new_name') %>" required />
-                                <label for="newname"><%= __('kiosk.new_name') %></label>
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/create" method="post">
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="newname" name="newname" placeholder="<%= __('kiosk.new_name') %>" required />
+                                        <label for="newname"><%= __('kiosk.new_name') %></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="newsurname" name="newsurname" placeholder="<%= __('kiosk.new_surname') %>" required />
+                                        <label for="newsurname"><%= __('kiosk.new_surname') %></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="newbirthyear" name="newbirthyear" placeholder="<%= __('kiosk.new_birthyear') %>" />
+                                        <label for="newbirthyear"><%= __('kiosk.new_birthyear') %></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="email" name="newemail" class="form-control" id="newemail" placeholder="<%= __('kiosk.new_email') %>" required />
+                                        <label for="newemail"><%= __('kiosk.new_email') %></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="newusertype" name="newusertype">
+                                            <option selected></option>
+                                            <% usertypes.forEach(function(usertype) { %>
+                                            <option value="<%= usertype.id %>"><%= usertype.name %></option>
+                                            <% }); %>
+                                        </select>
+                                        <label for="newusertype"><%= __('kiosk.new_usertype') %></label>
+                                    </div>
+                                </div>
+                                <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control font-monospace" id="newrfid" name="newrfid" placeholder="Badge RFID" autocomplete="off" />
+                                        <label for="newrfid"><i class="fa-solid fa-id-card me-1 text-muted"></i> <%= __('kiosk.new_rfid') %></label>
+                                    </div>
+                                </div>
+                                <% } %>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="newcomments" name="newcomments" style="height: 88px"></textarea>
+                                        <label for="newcomments"><%= __('kiosk.field_comments') %></label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="newsurname" name="newsurname" placeholder="<%= __('kiosk.new_surname') %>" required />
-                                <label for="newsurname"><%= __('kiosk.new_surname') %></label>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="newbirthyear" name="newbirthyear" placeholder="<%= __('kiosk.new_birthyear') %>" />
-                                <label for="newbirthyear"><%= __('kiosk.new_birthyear') %></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-floating mb-3">
-                                <input type="email" name="newemail" class="form-control" id="newemail" placeholder="<%= __('kiosk.new_email') %>" required />
-                                <label for="newemail"><%= __('kiosk.new_email') %></label>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-floating mb-3">
-                                <select class="form-select" id="newusertype" name="newusertype">
-                                    <option selected></option>
-                                    <% usertypes.forEach(function(usertype) { %>
-                                    <option value="<%= usertype.id %>"><%= usertype.name %></option>
-                                    <% }); %>
-                                </select>
-                                <label for="newusertype"><%= __('kiosk.new_usertype') %></label>
-                            </div>
-                        </div>
-                    </div>
-                    <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control font-monospace" id="newrfid" name="newrfid" placeholder="Badge RFID" autocomplete="off" />
-                                <label for="newrfid"><i class="fa-solid fa-id-card me-1 text-primary"></i> <%= __('kiosk.new_rfid') %></label>
-                            </div>
-                        </div>
-                    </div>
-                    <% } %>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-floating mb-3">
-                                <textarea class="form-control" id="newcomments" name="newcomments" style="height: 100px"></textarea>
-                                <label for="newcomments"><%= __('kiosk.field_comments') %></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col">
-                            <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
+
+                            <hr class="my-4 opacity-25" />
+
+                            <div class="form-check form-switch p-3 bg-body-tertiary rounded-2 border">
                                 <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="newnewsletter" name="newnewsletter" value="true">
                                 <label class="form-check-label fw-semibold" for="newnewsletter">
-                                    <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> <%= __('kiosk.new_newsletter') %>
+                                    <i class="fa-solid fa-envelope-open-text text-muted me-1"></i> <%= __('kiosk.new_newsletter') %>
                                 </label>
                                 <div class="form-text small text-muted ms-1">
                                     <%= __('kiosk.new_newsletter_desc') %>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <button class="btn btn-primary w-100 mb-2 py-2 rounded-pill shadow-sm" type="submit">
+                        <div class="card-footer bg-body-tertiary py-3 px-4 d-flex flex-wrap align-items-center justify-content-end gap-2">
+                            <button class="btn btn-primary btn-sm px-4 py-2" type="submit">
                                 <i class="fa-solid fa-user-plus me-1"></i> <%= __('kiosk.btn_create_user') %>
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </section>
             </div>
             <% } %>
 
