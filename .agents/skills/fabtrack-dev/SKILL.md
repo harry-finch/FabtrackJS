@@ -62,11 +62,12 @@ Whenever a fix, improvement, or refactoring is applied to an admin view or contr
 **Systematically check if the same correction applies to the other admin pages!**
 
 Key areas to cross-verify across `views/admin/*.ejs` and `routes/admin/*.js`:
-1. **Back Buttons & Breadcrumbs**: Verify that `<a href="/admin/<feature>/manage">` points to the actual route and not a non-existent parent route (avoiding 404s).
-2. **Form Accessibility & Labels**: Ensure every form `<input id="XYZ">` has a matching `<label for="XYZ">`.
-3. **Session Flash Notifications**: Ensure `req.session.notification` and `clearNotification` middleware are present on GET views.
-4. **Delete Confirmations**: Ensure destructive actions have `onclick="return confirm('...');"` or modal confirmations.
-5. **Base URL Handling**: Use relative or `getAppBaseUrl()`-aware paths for links and AJAX requests.
+1. **Design System Compliance (`docs/DESIGN_SYSTEM.md`)**: Use `.fab-page-header` (single `<h1>`, no redundant "Retour panneau admin" on sidebar pages), `card border`, `.fab-kpi-card`, `.fab-filter-bar`, `.fab-row-actions`, Option B `4 px` buttons/badges (zero `rounded-pill`, zero solid saturated badges), and never duplicate `</main>` when `footer.html` is included.
+2. **Back Buttons & Breadcrumbs**: Only include contextual back links on detail/edit/import pages (`edit-machine`, `view-machine`, `edit-staff`, `import-history`), pointing to the real parent route with `baseUrl`.
+3. **Form Accessibility & Labels**: Ensure every visible form `<input id="XYZ">` has a matching `<label for="XYZ">` or `aria-label`, and never mix `form-floating` and `form-label` within the same card or modal.
+4. **Session Flash Notifications**: Ensure `req.session.notification` and `clearNotification` middleware are present on GET views.
+5. **Delete Confirmations (Strict CSP)**: Use `data-confirm="..."` (handled by `dialogs.js` + `confirm-modal.html`), never inline `onclick="return confirm('...');"`.
+6. **Base URL Handling**: Use `baseUrl` in templates and `window.getAppBaseUrl(...)` for client-side AJAX requests.
 
 ---
 

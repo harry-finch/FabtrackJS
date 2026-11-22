@@ -25,6 +25,7 @@ La feuille de route est dans `roadmap/` (un fichier par élément dans `items/`,
 - Conserver la distinction `projecttype` (modèle Prisma, base de données, routes backend) vs « Motif de la visite » (UI et traductions).
 - Respecter le fonctionnement derrière reverse proxy en sous-chemin : `mailService.resolveBaseUrl()` pour les liens d'email et `window.getAppBaseUrl(...)` côté client.
 - Vérifier de façon croisée les autres pages `/admin` lors d'une correction sur une vue ou un contrôleur admin.
+- Respecter le contrat UX/UI et le Design System Option B décrits dans [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) pour toute création ou modification de vue EJS/HTML ou de CSS (validé par `tests/unit/uiDesignSystemGuards.test.js`).
 - Mettre à jour la documentation dans le même changement que le comportement.
 - Tenir à jour [docs/MISE_A_JOUR_PROD.md](docs/MISE_A_JOUR_PROD.md) dès qu'une modification implique une action de déploiement (variable `.env`, SQL, `npm`, `prisma generate` ou vérification post-déploiement).
 
