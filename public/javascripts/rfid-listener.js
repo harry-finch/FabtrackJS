@@ -355,7 +355,11 @@
       setTimeout(() => {
         overlay.style.display = "none";
         if (options.reloadOnClose) {
-          window.location.reload();
+          if (typeof window.refreshKioskPresentTable === "function") {
+            window.refreshKioskPresentTable();
+          } else {
+            window.location.reload();
+          }
         }
       }, 250);
     };

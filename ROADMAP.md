@@ -62,7 +62,7 @@
    Corriger les liens et formulaires absolus incompatibles avec APP_BASE_PATH, masquer la modale inventaire aux non-admins et vérifier les retours admin.
 28. **[R-031 Adopter le bandeau supérieur et les retouches visuelles Fab Design System (Option B)](roadmap/items/R-031-adopter-le-bandeau-superieur-et-les-retouches.md)** · À tester · jalon v1.5
    Remplacer l'en-tête centré et le sélecteur flottant par le bandeau 44 px Fab Design System en bleu Sorbonne et harmoniser cartes, boutons, tableaux et barre d'état.
-29. **[R-032 Rafraîchir le kiosque et les tableaux sans rechargement avec synchro temps réel multi-postes](roadmap/items/R-032-rafraichir-le-kiosque-et-les-tableaux-sans.md)** · Idée · jalon v1.5
+29. **[R-032 Rafraîchir le kiosque et les tableaux sans rechargement avec synchro temps réel multi-postes](roadmap/items/R-032-rafraichir-le-kiosque-et-les-tableaux-sans.md)** · À tester · jalon v1.5
    Remplacer les rechargements complets de page sur le kiosque et les tableaux admin par des mises à jour dynamiques (fragments serveur + fetch) synchronisées en temps réel entre postes via SSE.
 30. **[R-033 Refondre le panneau d'administration en cockpit avec menu latéral persistant (Prop. 3)](roadmap/items/R-033-refondre-le-panneau-d-administration-en-cockpit.md)** · Idée · jalon v1.5
    Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
@@ -122,6 +122,7 @@
 - [ ] [A-045](roadmap/actions/A-045-valider-la-terminologie-le-retrait-du-franglais.md) Valider la terminologie, le retrait du franglais et la synchro i18n FR/EN (R-029) (tester, R-029)
 - [ ] [A-046](roadmap/actions/A-046-valider-la-navigation-admin-et-la-compatibilite.md) Valider la navigation admin et la compatibilité sous-chemin APP_BASE_PATH (R-030) (tester, R-030)
 - [ ] [A-047](roadmap/actions/A-047-valider-le-bandeau-superieur-44-px-option-b-les.md) Valider le bandeau supérieur 44 px Option B, les sélecteurs segmentés et la barre d'état 24 px (R-031) (tester, R-031)
+- [ ] [A-048](roadmap/actions/A-048-valider-le-rafraichissement-partiel-kiosque.md) Valider le rafraîchissement partiel kiosque/tableaux et la synchro SSE multi-postes (R-032) (tester, R-032)
 
 ## Livré
 

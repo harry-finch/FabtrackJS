@@ -114,8 +114,17 @@ const sessionStore = createSessionStore(process.env);
 
 const app = express();
 
-// Enable Gzip/Deflate compression for all responses
-app.use(compression());
+// Enable Gzip/Deflate compression for all responses EXCEPT Server-Sent Events (/events)
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.path && req.path.startsWith("/events")) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+  }),
+);
 
 // ******************************************************************************
 // Middleware Setup

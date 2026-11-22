@@ -26,7 +26,23 @@ const mailService = require("../services/mailService.js");
 const balanceService = require("../services/balanceService.js");
 const { computeConsumableStatus } = require("../services/consumableStatusHelper.js");
 const equipmentLoanService = require("../services/equipmentLoanService.js");
+const realtimeService = require("../services/realtimeService.js");
 const logger = require("../utilities/simpleLogger.js");
+
+function respondKioskMutation(req, res, { ok, type, message, redirectUrl = "/fabtrack", workspaceId = null, action = "update", entity = "history" }) {
+  if (ok) {
+    realtimeService.publish("kiosk", { workspaceId, action });
+    realtimeService.publish("admin", { entity, action });
+  }
+  const prefix = type === "error" ? "Error" : type === "warning" ? "Warning" : type === "info" ? "Info" : "Success";
+  if (isApiOrAjaxRequest(req)) {
+    return res.status(ok ? 200 : 400).json({ ok: Boolean(ok), type: type || (ok ? "success" : "error"), message });
+  }
+  if (req.session && message) {
+    req.session.notification = /^(Success|Error|Warning|Info)\s*:/i.test(message) ? message : `${prefix}: ${message}`;
+  }
+  return res.redirect(redirectUrl);
+}
 
 // Helper to update consumable stock and status inside an active Prisma transaction (or default client)
 async function consumeItemTx(tx, consumableId, quantity) {
@@ -281,6 +297,7 @@ router.post(
 
     if (!checkInOutcome.alreadyHere) {
       const { attendedWorkshop } = checkInOutcome;
+      let msg = "Contributeur enregistré comme présent dans le lab !";
       // Automatically award workshop badge and machine habilitation to user
       if (parsedWorkshopId && attendedWorkshop) {
         try {
@@ -290,18 +307,29 @@ router.post(
             parsedWorkshopId,
             req.session.username || "Atelier Fabtrack",
           );
-          req.session.notification = `Success: Contributeur enregistré à l'atelier "${attendedWorkshop.name}" ! Le badge a été automatiquement ajouté à son profil.`;
+          msg = `Contributeur enregistré à l'atelier "${attendedWorkshop.name}" ! Le badge a été automatiquement ajouté à son profil.`;
         } catch (err) {
           console.error("Error awarding workshop badge during check-in:", err);
-          req.session.notification = "Success: User is now in the lab (erreur lors de l'attribution du badge).";
+          msg = "Contributeur enregistré dans le lab (erreur lors de l'attribution du badge).";
         }
-      } else {
-        req.session.notification = "Success: User is now in the lab!";
       }
-    } else {
-      req.session.notification = "Error: User is already in the lab!";
+      return respondKioskMutation(req, res, {
+        ok: true,
+        type: "success",
+        message: msg,
+        redirectUrl: "/fabtrack",
+        workspaceId: activeWorkspaceId,
+        action: "checkin",
+      });
     }
-    res.redirect("/fabtrack");
+    return respondKioskMutation(req, res, {
+      ok: false,
+      type: "error",
+      message: "Ce contributeur est déjà enregistré comme présent dans le lab !",
+      redirectUrl: "/fabtrack",
+      workspaceId: activeWorkspaceId,
+      action: "checkin",
+    });
   }),
 );
 
@@ -316,7 +344,7 @@ router.post(
     const { id } = req.params;
     const now = new Date();
 
-    await prisma.history.update({
+    const updated = await prisma.history.update({
       where: {
         id: Number(id),
       },
@@ -325,8 +353,14 @@ router.post(
       },
     });
 
-    req.session.notification = "Success: User has left the lab!";
-    res.redirect("/fabtrack");
+    return respondKioskMutation(req, res, {
+      ok: true,
+      type: "success",
+      message: "Sortie du contributeur enregistrée !",
+      redirectUrl: "/fabtrack",
+      workspaceId: (updated && updated.workspaceId) || (req.session.selectedWorkspace && req.session.selectedWorkspace.id) || null,
+      action: "checkout",
+    });
   }),
 );
 
@@ -343,13 +377,24 @@ router.post(
 
     try {
       await repairCafeService.recordRepairExit(historyid, { repairStatus, repairNotes });
-      req.session.notification = "Success: Bilan de réparation enregistré et sortie validée !";
+      return respondKioskMutation(req, res, {
+        ok: true,
+        type: "success",
+        message: "Bilan de réparation enregistré et sortie validée !",
+        redirectUrl: "/fabtrack",
+        workspaceId: (req.session.selectedWorkspace && req.session.selectedWorkspace.id) || null,
+        action: "repair-checkout",
+        entity: "repaircafe",
+      });
     } catch (err) {
       console.error("Error recording repair exit:", err);
-      req.session.notification = "Error: Impossible d'enregistrer la sortie Repair Café.";
+      return respondKioskMutation(req, res, {
+        ok: false,
+        type: "error",
+        message: "Impossible d'enregistrer la sortie Repair Café.",
+        redirectUrl: "/fabtrack",
+      });
     }
-
-    res.redirect("/fabtrack");
   }),
 );
 
@@ -422,8 +467,12 @@ router.post(
     const { historyid, comments } = req.body;
 
     if (!historyid) {
-      req.session.notification = "Error: Identifiant de session manquant.";
-      return res.redirect(req.session.lastPage || "/fabtrack");
+      return respondKioskMutation(req, res, {
+        ok: false,
+        type: "error",
+        message: "Identifiant de session manquant.",
+        redirectUrl: req.session.lastPage || "/fabtrack",
+      });
     }
 
     try {
@@ -435,13 +484,23 @@ router.post(
         },
       });
 
-      req.session.notification = "Success: Commentaire mis à jour avec succès.";
+      return respondKioskMutation(req, res, {
+        ok: true,
+        type: "success",
+        message: "Commentaire mis à jour avec succès.",
+        redirectUrl: req.session.lastPage || "/fabtrack",
+        workspaceId: (req.session.selectedWorkspace && req.session.selectedWorkspace.id) || null,
+        action: "comment",
+      });
     } catch (error) {
       console.error("Error updating history comment:", error);
-      req.session.notification = "Error: Impossible de mettre à jour le commentaire.";
+      return respondKioskMutation(req, res, {
+        ok: false,
+        type: "error",
+        message: "Impossible de mettre à jour le commentaire.",
+        redirectUrl: req.session.lastPage || "/fabtrack",
+      });
     }
-
-    res.redirect(req.session.lastPage || "/fabtrack");
   }),
 );
 
@@ -714,11 +773,24 @@ router.post(
     }
 
     if (recordedCount > 0) {
+      realtimeService.publish("kiosk", {
+        workspaceId: (req.session.selectedWorkspace && req.session.selectedWorkspace.id) || null,
+        action: "activity",
+      });
+      realtimeService.publish("admin", { entity: "activity", action: "activity" });
       if (!req.session.notification) {
-        req.session.notification = "Success: Lab activity recorded successfully!";
+        req.session.notification = "Success: Activité enregistrée avec succès !";
+      }
+      if (isApiOrAjaxRequest(req)) {
+        const msg = req.session.notification;
+        req.session.notification = "";
+        return res.status(200).json({ ok: true, type: "success", message: msg });
       }
     } else {
-      req.session.notification = "Warning: No resource was selected for this activity.";
+      if (isApiOrAjaxRequest(req)) {
+        return res.status(400).json({ ok: false, type: "warning", message: "Aucune ressource sélectionnée pour cette activité." });
+      }
+      req.session.notification = "Warning: Aucune ressource sélectionnée pour cette activité.";
     }
 
     res.redirect(req.session.lastPage || "/fabtrack");
@@ -863,6 +935,8 @@ router.post(
     const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `contributeur #${activity.userId}`;
 
     logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par ${req.session.username}).`);
+    realtimeService.publish("kiosk", { action: "equipment-return" });
+    realtimeService.publish("admin", { entity: "equipment", action: "equipment-return" });
     req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;
 
     const redirectUrl = getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage");

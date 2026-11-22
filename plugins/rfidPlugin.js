@@ -2,6 +2,7 @@ const { prisma } = require("../utilities/db");
 const logger = require("../utilities/simpleLogger.js");
 const { maskRfidUid } = require("../utilities/structuredLogger.js");
 const { getStartOfDay } = require("../services/visitAutoCloseService.js");
+const realtimeService = require("../services/realtimeService.js");
 
 // Anti-bounce memory map: { [rfid]: timestamp }
 const lastScans = new Map();
@@ -100,6 +101,9 @@ module.exports = {
 
         logger.logThat(`RFID Check-out: ${user.name} ${user.surname} (RFID: ${maskRfidUid(cleanRfid)}) checked out after ${durationMinutes} min by ${staffUsername || "kiosk"}`);
 
+        realtimeService.publish("kiosk", { workspaceId: currentVisit.workspaceId || workspaceId || null, action: "rfid-checkout" });
+        realtimeService.publish("admin", { entity: "history", action: "rfid-checkout" });
+
         return {
           success: true,
           action: "checkout",
@@ -141,6 +145,9 @@ module.exports = {
         });
 
         logger.logThat(`RFID Check-in: ${user.name} ${user.surname} (RFID: ${maskRfidUid(cleanRfid)}) checked in by ${staffUsername || "kiosk"}`);
+
+        realtimeService.publish("kiosk", { workspaceId: workspaceId ? Number(workspaceId) : null, action: "rfid-checkin" });
+        realtimeService.publish("admin", { entity: "history", action: "rfid-checkin" });
 
         return {
           success: true,

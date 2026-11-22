@@ -1,0 +1,192 @@
+<% if (history && history.length > 0) { %>
+<div class="card border-0 shadow-sm mt-5 mb-4" id="kioskPresentCard">
+    <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="icon-box bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
+                <i class="fa-solid fa-users" aria-hidden="true"></i>
+            </span>
+            <h5 class="fw-bold mb-0 tabular-nums"><%= history.length %> <%= __('kiosk.users_present') %></h5>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="present-users-table">
+                <thead class="table-light">
+                    <tr>
+                        <th data-sort="0" scope="col" class="ps-3"><%= __('kiosk.th_arrival') %></th>
+                        <th data-sort="1" scope="col"><%= __('kiosk.th_user') %></th>
+                        <th scope="col" class="text-center"><%= __('kiosk.th_warnings_balance') %></th>
+                        <th scope="col" class="text-center"><%= __('kiosk.th_comments') %></th>
+                        <th scope="col" class="text-center"><%= __('kiosk.th_activity') %></th>
+                        <th scope="col" class="text-end pe-3"><%= __('kiosk.th_exit') %></th>
+                    </tr>
+                </thead>
+                <tbody id="table-content">
+                    <% history.forEach(function(entry) {
+                        const isStaffRole = typeof role !== 'undefined' && role === 'staff';
+                    %>
+                    <tr>
+                        <td scope="row" class="ps-3 text-muted tabular-nums">
+                            <i class="fa-regular fa-clock fa-xs me-1" aria-hidden="true"></i><%= entry.arrival %>
+                        </td>
+                        <td>
+                            <% if (isStaffRole) { %>
+                                <span class="fw-semibold"><%= entry.user.name %> <%= entry.user.surname ? entry.user.surname.charAt(0) + '.' : '' %></span>
+                            <% } else { %>
+                                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= entry.userId %>" class="fw-semibold text-decoration-none">
+                                    <%= entry.user.name %> <%= entry.user.surname %>
+                                </a>
+                            <% } %>
+                            <% if (entry.user.isExpert) { %>
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="<%= __('kiosk.expert_badge') %>">
+                                    <i class="fa-solid fa-star fa-2xs" aria-hidden="true"></i> <%= __('kiosk.expert_badge') %>
+                                </span>
+                            <% } %>
+                            <% if (entry.repairObject) { %>
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Objet en réparation : <%= entry.repairObject %>">
+                                    <i class="fa-solid fa-wrench fa-2xs" aria-hidden="true"></i> <%= entry.repairObject %>
+                                </span>
+                            <% } %>
+                            <% if (entry.workshop) { %>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Atelier : <%= entry.workshop.name %>">
+                                    <i class="fa-solid fa-graduation-cap fa-2xs" aria-hidden="true"></i> <%= entry.workshop.name %>
+                                </span>
+                            <% } %>
+                            <% if (entry.activeLoans && entry.activeLoans.length > 0) { %>
+                                <%
+                                    const loanDetails = entry.activeLoans.map(function(l) {
+                                        const dueStr = l.expectedReturnAt ? ' (retour prévu: ' + new Date(l.expectedReturnAt).toLocaleDateString('fr-FR') + ')' : '';
+                                        return l.equipmentName + dueStr;
+                                    }).join(', ');
+                                %>
+                                <% if (entry.hasOverdueLoans) { %>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Emprunt EN RETARD : <%= loanDetails %>">
+                                        <i class="fa-solid fa-toolbox fa-2xs" aria-hidden="true"></i> <i class="fa-solid fa-clock-rotate-left fa-2xs" aria-hidden="true"></i> <%= entry.activeLoans.length %> emprunt(s)
+                                    </span>
+                                <% } else { %>
+                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Matériel emprunté : <%= loanDetails %>">
+                                        <i class="fa-solid fa-toolbox fa-2xs" aria-hidden="true"></i> <%= entry.activeLoans.length %> emprunt(s)
+                                    </span>
+                                <% } %>
+                            <% } %>
+                        </td>
+                        <td class="text-center">
+                            <% if (isStaffRole) { %>
+                                <span class="text-muted small">-</span>
+                            <% } else { %>
+                                <% if (entry.warnings && entry.warnings.length > 0) { %>
+                                    <% entry.warnings.forEach(function(warning) { %>
+                                        <% if (typeof role !== 'undefined' && role === 'admin') { %>
+                                        <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
+                                                    data-bs-target="#warningDeactivator"
+                                                    data-bs-warningid="<%= warning.id %>"
+                                                    data-bs-warningtype="<%= warning.warningtype.id %>"
+                                                    data-bs-warningcomments="<%= warning.comments %>"
+                                                    data-bs-userid="<%= entry.user.id %>"
+                                                    data-bs-warninguser="<%= entry.user.name %> <%= entry.user.surname %>">
+                                            <span data-bs-toggle="tooltip"
+                                                  data-bs-placement="right"
+                                                  data-bs-custom-class="custom-tooltip"
+                                                  data-bs-title="<%= warning.comments %>"><i class="<%= typeof sanitizeWarningIcon === 'function' ? sanitizeWarningIcon(warning.warningtype.icon) : 'fa-solid fa-triangle-exclamation text-warning' %>"></i></span>
+                                        </a>
+                                        <% } else { %>
+                                            <span data-bs-toggle="tooltip"
+                                                  data-bs-placement="right"
+                                                  data-bs-custom-class="custom-tooltip"
+                                                  data-bs-title="<%= warning.comments %> (résolution réservée admin)"><i class="<%= typeof sanitizeWarningIcon === 'function' ? sanitizeWarningIcon(warning.warningtype.icon) : 'fa-solid fa-triangle-exclamation text-warning' %>"></i></span>
+                                        <% } %>
+                                    <% }); %>
+                                <% } %>
+                                <% if (entry.user.balance != 0) { %>
+                                  <% if (entry.user.balance < 0) { %>
+                                    <a href="#" data-bs-toggle="modal" style="text-decoration: none;"
+                                                data-bs-target="#clearBalance"
+                                                data-bs-balance="<%= entry.user.balance %>"
+                                                data-bs-userid="<%= entry.user.id %>"
+                                                data-bs-username="<%= entry.user.name %> <%= entry.user.surname %>">
+                                  <% } %>
+                                        <span data-bs-toggle="tooltip"
+                                              data-bs-placement="right"
+                                              data-bs-custom-class="custom-tooltip"
+                                              data-bs-title="<%= entry.user.balance %> €"><i class="fa-solid fa-money-bill-wave" style="color: #009600"></i></span>
+                                  <% if (entry.user.balance < 0) { %>
+                                    </a>
+                                  <% } %>
+                                <% } %>
+                                <% if ((!entry.warnings || entry.warnings.length === 0) && !(entry.user.balance != 0)) { %>
+                                <span data-bs-toggle="tooltip" data-bs-placement="right"
+                                      data-bs-custom-class="custom-tooltip"
+                                      data-bs-title="Aucun signalement">-</span>
+                                <% } %>
+                            <% } %>
+                        </td>
+                        <td class="text-center">
+                            <% if (isStaffRole) { %>
+                                <span class="text-muted small">-</span>
+                            <% } else { %>
+                                <a href="#"
+                                   class="comment-action-btn text-decoration-none"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#modalComment"
+                                   data-bs-historyid="<%= entry.id %>"
+                                   data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                   data-bs-comment="<%= encodeURIComponent(entry.comments || '') %>">
+                                    <% if (entry.comments) { %>
+                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="<%= __('kiosk.tooltip_edit_comment') %> : <%= entry.comments %>">
+                                            <i class="fa-solid fa-comment-dots text-primary fs-5"></i>
+                                        </span>
+                                    <% } else { %>
+                                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="<%= __('kiosk.tooltip_add_comment') %>">
+                                            <i class="fa-regular fa-comment text-secondary opacity-50 comment-empty-icon fs-5"></i>
+                                        </span>
+                                    <% } %>
+                                </a>
+                            <% } %>
+                        </td>
+                        <td class="text-center">
+                            <% if (isStaffRole) { %>
+                                <span class="text-muted small" title="Ajout d'activité réservé aux médiateurs">
+                                    <i class="fa-solid fa-lock text-body-tertiary"></i>
+                                </span>
+                            <% } else { %>
+                                <a href="#" data-bs-toggle="modal"
+                                            data-bs-target="#activityManager"
+                                            data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                            data-bs-userid="<%= entry.user.id %>"
+                                            data-bs-historyid="<%= entry.id %>"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1"
+                                            title="<%= __('kiosk.btn_activity') %>">
+                                    <i class="fa-solid fa-plus me-1" aria-hidden="true"></i><%= __('kiosk.btn_activity') %>
+                                </a>
+                            <% } %>
+                        </td>
+                        <td class="text-end pe-3">
+                            <% if (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled && entry.repairObject) { %>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-warning rounded-pill px-2 py-1 btn-repair-exit"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalRepairCheckout"
+                                        data-bs-historyid="<%= entry.id %>"
+                                        data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
+                                        data-bs-repairobject="<%= entry.repairObject %>"
+                                        title="<%= __('kiosk.btn_exit') %>">
+                                    <i class="fa-solid fa-screwdriver-wrench me-1" aria-hidden="true"></i><%= __('kiosk.btn_exit') %>
+                                </button>
+                            <% } else { %>
+                                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/exit/<%= entry.id %>" class="d-inline" data-ajax-kiosk="true">
+                                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="<%= __('kiosk.btn_exit') %>">
+                                        <i class="fa-solid fa-person-walking-arrow-right me-1" aria-hidden="true"></i><%= __('kiosk.btn_exit') %>
+                                    </button>
+                                </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<% } %>

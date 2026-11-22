@@ -297,6 +297,8 @@
     // Always inject/refresh CSRF token even on forms with data-no-progress or target=_blank
     ensureCsrfOnForm(form);
 
+    if (form.getAttribute("data-ajax-kiosk") === "true") return;
+
     if (form.target === "_blank" || form.getAttribute("data-no-progress")) return;
 
     // Prevent duplicate accidental form submissions
