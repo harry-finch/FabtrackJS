@@ -28,7 +28,7 @@ router.get(
     req.session.lastPage = "/fabtrack";
 
     const workspaceId = req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null;
-    const [consumables, history, availableWorkshops] = await Promise.all([
+    const [consumables, history, availableWorkshops, machines] = await Promise.all([
       prisma.consumable.findMany({
         include: { category: true },
         orderBy: { name: "asc" },
@@ -39,6 +39,9 @@ router.get(
         include: { access: true },
         orderBy: { name: "asc" },
       }),
+      prisma.machine && typeof prisma.machine.findMany === "function"
+        ? prisma.machine.findMany({ orderBy: { name: "asc" } })
+        : Promise.resolve([]),
     ]);
 
     // Hook for plugins to provide teaching units
@@ -52,6 +55,7 @@ router.get(
     res.render("fabtrack/index", {
       history,
       consumables,
+      machines,
       teachingUnits,
       isPluginUeEnabled,
       availableWorkshops,

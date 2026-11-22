@@ -122,6 +122,10 @@ describe("Unit R-033: Persistent Admin Sidebar & Live Cockpit (Prop. 3)", () => 
 
     expect(html).toContain('id="adminSidebarFilter"');
     expect(html).toContain('href="/fabtrack/admin/machines/manage"');
+    expect(html).toContain('href="/fabtrack/admin/project-consumption"');
+    expect(html).toContain('href="/fabtrack/admin/machines/manage-types"');
+    expect(html).toContain('href="/fabtrack/admin/ue"');
+    expect(html).toContain('href="/fabtrack/admin/bookstack"');
     expect(html).toContain('aria-current="page"');
     expect(html).toContain("UE &amp; Facturation");
     expect(html).toContain("Wiki BookStack");

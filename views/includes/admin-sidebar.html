@@ -13,7 +13,7 @@
         _isActive('/admin/emails') ||
         _isActive('/admin/usertypes') ||
         _isActive('/admin/projecttypes') ||
-        _isActive('/admin/machinetypes') ||
+        _isActive('/admin/machines/manage-types') ||
         _isActive('/admin/accesslevels') ||
         _isActive('/admin/categories') ||
         _isActive('/admin/locations') ||
@@ -21,16 +21,16 @@
 
     const _activeExtensions = [];
     if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) {
-        _activeExtensions.push({ href: 'admin/teaching-units/manage', match: '/admin/teaching-units', icon: 'fa-solid fa-graduation-cap', label: 'UE & Facturation' });
+        _activeExtensions.push({ href: 'admin/ue', match: '/admin/ue', icon: 'fa-solid fa-graduation-cap', label: 'UE & Facturation' });
     }
     if (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) {
-        _activeExtensions.push({ href: 'admin/sorbonne-projects/manage', match: '/admin/sorbonne-projects', icon: 'fa-solid fa-flask', label: 'Projets Sorbonne' });
+        _activeExtensions.push({ href: 'admin/sorbonne', match: '/admin/sorbonne', icon: 'fa-solid fa-flask', label: 'Projets Sorbonne' });
     }
     if (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) {
-        _activeExtensions.push({ href: 'admin/repaircafe/manage', match: '/admin/repaircafe', icon: 'fa-solid fa-screwdriver-wrench', label: 'Repair Café' });
+        _activeExtensions.push({ href: 'admin/repair-cafe', match: '/admin/repair-cafe', icon: 'fa-solid fa-screwdriver-wrench', label: 'Repair Café' });
     }
     if (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) {
-        _activeExtensions.push({ href: 'admin/bookstack/manage', match: '/admin/bookstack', icon: 'fa-solid fa-book', label: 'Wiki BookStack' });
+        _activeExtensions.push({ href: 'admin/bookstack', match: '/admin/bookstack', icon: 'fa-solid fa-book', label: 'Wiki BookStack' });
     }
 %>
 
@@ -100,7 +100,7 @@
                     <i class="fa-solid fa-file-import fab-sb-ico" aria-hidden="true"></i>
                     <span class="fab-sb-text">Import CSV</span>
                 </a>
-                <a href="<%= _sbBase %>admin/consumables/project-consumption" class="fab-sb-link <%= _isActive('/project-consumption') ? 'is-active' : '' %>" <%- _isActive('/project-consumption') ? 'aria-current="page"' : '' %> data-sb-label="consommations projets facturation">
+                <a href="<%= _sbBase %>admin/project-consumption" class="fab-sb-link <%= _isActive('/project-consumption') ? 'is-active' : '' %>" <%- _isActive('/project-consumption') ? 'aria-current="page"' : '' %> data-sb-label="consommations projets facturation">
                     <i class="fa-solid fa-receipt fab-sb-ico" aria-hidden="true"></i>
                     <span class="fab-sb-text">Consommations</span>
                 </a>
@@ -222,7 +222,7 @@
                         <i class="fa-solid fa-compass fab-sb-ico" aria-hidden="true"></i>
                         <span class="fab-sb-text">Motifs de visite</span>
                     </a>
-                    <a href="<%= _sbBase %>admin/machinetypes/manage" class="fab-sb-link <%= _isActive('/admin/machinetypes') ? 'is-active' : '' %>" <%- _isActive('/admin/machinetypes') ? 'aria-current="page"' : '' %> data-sb-label="types machines referentiel">
+                    <a href="<%= _sbBase %>admin/machines/manage-types" class="fab-sb-link <%= _isActive('/admin/machines/manage-types') ? 'is-active' : '' %>" <%- _isActive('/admin/machines/manage-types') ? 'aria-current="page"' : '' %> data-sb-label="types machines referentiel">
                         <i class="fa-solid fa-microchip fab-sb-ico" aria-hidden="true"></i>
                         <span class="fab-sb-text">Types machines</span>
                     </a>

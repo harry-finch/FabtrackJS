@@ -295,7 +295,7 @@
       "/admin/machines",
       "/admin/users",
       "/admin/warnings",
-      "/admin/repaircafe",
+      "/admin/repair-cafe",
       "/admin/workshops",
     ];
     if (liveAdminPatterns.some((p) => path.includes(p)) && document.querySelector(".table-responsive")) {
