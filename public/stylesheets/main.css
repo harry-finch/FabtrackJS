@@ -1094,6 +1094,48 @@ a.fab-kpi-card:hover {
     color: var(--bs-primary) !important;
 }
 
+/* Dark Mode support for semantic table row variants (Bootstrap 5 keeps pastel light hexes by default) */
+[data-bs-theme="dark"] .table-danger,
+[data-bs-theme="dark"] .table-danger-subtle {
+    --bs-table-bg: rgba(220, 53, 69, 0.14);
+    --bs-table-striped-bg: rgba(220, 53, 69, 0.18);
+    --bs-table-active-bg: rgba(220, 53, 69, 0.22);
+    --bs-table-hover-bg: rgba(220, 53, 69, 0.2);
+    --bs-table-color: var(--fab-text-primary);
+    --bs-table-hover-color: var(--fab-text-primary);
+    --bs-table-border-color: rgba(220, 53, 69, 0.28);
+}
+
+[data-bs-theme="dark"] .table-warning {
+    --bs-table-bg: rgba(255, 193, 7, 0.12);
+    --bs-table-striped-bg: rgba(255, 193, 7, 0.16);
+    --bs-table-active-bg: rgba(255, 193, 7, 0.2);
+    --bs-table-hover-bg: rgba(255, 193, 7, 0.18);
+    --bs-table-color: var(--fab-text-primary);
+    --bs-table-hover-color: var(--fab-text-primary);
+    --bs-table-border-color: rgba(255, 193, 7, 0.26);
+}
+
+[data-bs-theme="dark"] .table-success {
+    --bs-table-bg: rgba(25, 135, 84, 0.14);
+    --bs-table-striped-bg: rgba(25, 135, 84, 0.18);
+    --bs-table-active-bg: rgba(25, 135, 84, 0.22);
+    --bs-table-hover-bg: rgba(25, 135, 84, 0.2);
+    --bs-table-color: var(--fab-text-primary);
+    --bs-table-hover-color: var(--fab-text-primary);
+    --bs-table-border-color: rgba(25, 135, 84, 0.28);
+}
+
+[data-bs-theme="dark"] .table-info {
+    --bs-table-bg: rgba(13, 202, 240, 0.12);
+    --bs-table-striped-bg: rgba(13, 202, 240, 0.16);
+    --bs-table-active-bg: rgba(13, 202, 240, 0.2);
+    --bs-table-hover-bg: rgba(13, 202, 240, 0.18);
+    --bs-table-color: var(--fab-text-primary);
+    --bs-table-hover-color: var(--fab-text-primary);
+    --bs-table-border-color: rgba(13, 202, 240, 0.26);
+}
+
 /* Comment Action Button in Kiosk Table */
 .comment-action-btn {
     display: inline-flex;

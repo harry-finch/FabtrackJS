@@ -115,20 +115,19 @@
               <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th scope="col" class="ps-4">Équipement / Outil</th>
+                    <th scope="col" class="ps-3">Équipement / Outil</th>
                     <th scope="col">Emprunté par</th>
                     <th scope="col">Espace</th>
-                    <th scope="col">Date d'emprunt</th>
-                    <th scope="col">Durée convenue</th>
-                    <th scope="col">Date limite de retour</th>
+                    <th scope="col">Emprunté le</th>
+                    <th scope="col">Retour prévu</th>
                     <th scope="col" class="text-center">Statut</th>
-                    <th scope="col" class="text-end pe-4">Action</th>
+                    <th scope="col" class="text-end pe-3">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   <% activeLoans.forEach(function(loan) { %>
                   <tr class="<%= loan.isOverdue ? 'table-danger' : '' %>">
-                    <td class="ps-4">
+                    <td class="ps-3">
                       <span class="fw-semibold text-body">
                         <i class="fa-solid fa-toolbox fa-sm text-muted me-2" aria-hidden="true"></i><%= loan.equipment ? loan.equipment.name : ('Équipement #' + loan.id) %>
                       </span>
@@ -148,18 +147,18 @@
                         <%= loan.workspace %>
                       </span>
                     </td>
-                    <td>
-                      <span class="small text-body"><%= loan.formattedDate %></span>
+                    <td class="text-nowrap">
+                      <div class="small text-body tabular-nums"><%= loan.formattedDate %></div>
+                      <% if (loan.borrowDurationDays) { %>
+                        <div class="small text-muted tabular-nums">
+                          <i class="fa-regular fa-clock fa-xs me-1" aria-hidden="true"></i><%= loan.borrowDurationDays %> jour(s)
+                        </div>
+                      <% } %>
                     </td>
-                    <td>
-                      <span class="badge bg-body-secondary text-secondary-emphasis border">
-                        <i class="fa-regular fa-clock me-1 text-muted" aria-hidden="true"></i><%= loan.borrowDurationDays ? loan.borrowDurationDays + ' jour(s)' : '-' %>
-                      </span>
+                    <td class="text-nowrap">
+                      <strong class="small text-body tabular-nums"><%= loan.formattedExpectedReturn %></strong>
                     </td>
-                    <td>
-                      <strong class="small"><%= loan.formattedExpectedReturn %></strong>
-                    </td>
-                    <td class="text-center">
+                    <td class="text-center text-nowrap">
                       <% if (loan.isOverdue) { %>
                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
                           <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i>En retard (<%= Math.abs(loan.daysDiff) %> j)
@@ -172,9 +171,10 @@
                         <span class="badge bg-body-secondary text-secondary-emphasis border">En cours</span>
                       <% } %>
                     </td>
-                    <td class="text-end pe-4">
+                    <td class="text-end pe-3">
                       <div class="fab-row-actions">
                         <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/equipment/return/<%= loan.id %>" method="post" class="d-inline" data-confirm="Confirmer la restitution de cet équipement ?">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                           <button type="submit" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Restituer l'équipement" aria-label="Restituer l'équipement <%= loan.equipment ? loan.equipment.name : '#' + loan.id %>">
                             <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
                           </button>
