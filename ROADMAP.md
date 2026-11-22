@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 35** (9 %)
+**Avancement : 3 livrés sur 36** (8 %)
 
 ## Restant à faire
 
@@ -70,6 +70,8 @@
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
 32. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
    Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
+33. **[R-036 Limiter utilisateur borne](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Idée · jalon v1.6
+   Faire en sorte que l’utilisateur borne ne puisse que faire des entrées / sorties. Pas d’activité, pas voir les autres utilisateurs dans le lab, pas voir les profils.
 
 ## Actions à faire
 
