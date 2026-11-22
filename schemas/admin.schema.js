@@ -370,7 +370,7 @@ const adminSettingsSchema = z.object({
   ue_projecttype_name: optionalTrimmedString(255, "Le motif UE"),
   sorbonne_projecttype_name: optionalTrimmedString(255, "Le motif Sorbonne"),
   ai_provider: z
-    .enum(["disabled", "openai", "gemini", "anthropic", "local"], { error: "Fournisseur IA invalide." })
+    .enum(["none", "disabled", "openai", "gemini", "anthropic", "local"], { error: "Fournisseur IA invalide." })
     .optional(),
   ai_openai_api_key: z.string().trim().max(500).optional(),
   ai_openai_model: optionalTrimmedString(100, "Le modèle OpenAI"),
@@ -384,7 +384,7 @@ const adminSettingsSchema = z.object({
 });
 
 const aiTestConnectionSchema = z.object({
-  ai_provider: z.enum(["disabled", "openai", "gemini", "anthropic", "local"], {
+  ai_provider: z.enum(["none", "disabled", "openai", "gemini", "anthropic", "local"], {
     error: "Fournisseur IA invalide.",
   }),
   ai_openai_api_key: z.string().trim().max(500).optional(),

@@ -186,6 +186,37 @@ describe("R-019: Zod v4 migration, strict stripping & HTTP validation", () => {
       expect(req.body).not.toHaveProperty("balance");
       expect(req.body).not.toHaveProperty("role");
     });
+
+    test("adminSettingsSchema accepts default form submission including ai_provider='none'", () => {
+      const mw = validateBody(schemas.adminSettingsSchema, { redirectUrl: "/admin/settings" });
+      const { req, res, next } = createMockReqRes({
+        body: {
+          platform_name: "Mon Fablab",
+          platform_subtitle: "Nouveau sous-titre",
+          platform_logo_type: "default",
+          plugin_settings_submitted: "true",
+          session_timeout_hours: "24",
+          admin_email: "admin@example.com",
+          currency_symbol: "$",
+          allow_self_registration: "true",
+          date_format: "DD/MM/YYYY",
+          default_language: "fr",
+          ai_provider: "none",
+          ai_openai_model: "gpt-4o-mini",
+          ai_gemini_model: "gemini-1.5-flash",
+          ai_anthropic_model: "claude-3-5-haiku-20241022",
+          ai_local_url: "http://localhost:11434/v1",
+          ai_local_model: "llama3.2",
+        },
+      });
+
+      mw(req, res, next);
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(req.body.platform_name).toBe("Mon Fablab");
+      expect(req.body.platform_subtitle).toBe("Nouveau sous-titre");
+      expect(req.body.currency_symbol).toBe("$");
+      expect(req.body.ai_provider).toBe("none");
+    });
   });
 
   describe("validateParams and validateQuery", () => {
