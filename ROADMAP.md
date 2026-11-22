@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 36** (8 %)
+**Avancement : 3 livrés sur 37** (8 %)
 
 ## Restant à faire
 
@@ -72,6 +72,8 @@
    Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
 33. **[R-036 Limiter utilisateur borne](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Idée · jalon v1.6
    Faire en sorte que l’utilisateur borne ne puisse que faire des entrées / sorties. Pas d’activité, pas voir les autres utilisateurs dans le lab, pas voir les profils.
+34. **[R-037 Compte staff + contributeur](roadmap/items/R-037-compte-staff-contributeur.md)** · Idée · jalon v1.6
+   Créer automatiquement un compte contributeur pour les staff avec les infos minimums.
 
 ## Actions à faire
 
