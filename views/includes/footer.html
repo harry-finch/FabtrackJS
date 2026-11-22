@@ -1,13 +1,38 @@
-    <p class="small text-center text-muted pt-4 pb-4 mb-0 d-flex align-items-center justify-content-center gap-2 flex-wrap">
-        <span>FabtrackJS is licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT License</a>. Icons by <a href="https://fontawesome.com/" target="_blank" rel="noopener noreferrer">Font Awesome Free</a>.</span>
-        <span class="text-secondary opacity-50">•</span>
-        <a href="https://github.com/harry-finch/FabtrackJS" target="_blank" rel="noopener noreferrer" class="text-secondary text-decoration-none d-inline-flex align-items-center gap-1" title="Dépôt GitHub FabtrackJS">
-            <i class="fa-brands fa-github fa-lg"></i>
-            <span class="fw-medium">GitHub</span>
-        </a>
-    </p>
-
 </main>
+
+<!-- Compact 24 px Status Bar (Fab Design System Option B — R-031) -->
+<footer class="fab-statusbar" role="contentinfo">
+    <div class="fab-statusbar-inner">
+        <div class="fab-statusbar-left">
+            <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace && selectedWorkspace.name) { %>
+            <span class="fab-status-item" title="Espace actif">
+                <span class="fab-status-dot" aria-hidden="true"></span>
+                <span><%= selectedWorkspace.name %></span>
+            </span>
+            <% } %>
+            <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
+            <span class="fab-status-item d-none d-sm-inline-flex" title="Lecteur RFID actif">
+                <i class="fa-solid fa-id-card fa-xs text-info" aria-hidden="true"></i>
+                <span>RFID prêt</span>
+            </span>
+            <% } %>
+            <span id="fabRealtimeStatus" class="fab-status-item d-none" aria-live="polite"></span>
+        </div>
+
+        <div class="fab-statusbar-right">
+            <span class="fab-status-item tabular-nums">FabtrackJS v<%= typeof appVersion !== 'undefined' && appVersion ? appVersion : '1.5.0' %></span>
+            <span class="fab-status-sep d-none d-md-inline" aria-hidden="true">·</span>
+            <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="fab-status-link d-none d-md-inline">MIT</a>
+            <span class="fab-status-sep d-none d-md-inline" aria-hidden="true">·</span>
+            <a href="https://fontawesome.com/" target="_blank" rel="noopener noreferrer" class="fab-status-link d-none d-md-inline">Font Awesome</a>
+            <span class="fab-status-sep" aria-hidden="true">·</span>
+            <a href="https://github.com/harry-finch/FabtrackJS" target="_blank" rel="noopener noreferrer" class="fab-status-link d-inline-flex align-items-center gap-1" title="Dépôt GitHub FabtrackJS">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+                <span>GitHub</span>
+            </a>
+        </div>
+    </div>
+</footer>
 
 <script src="javascripts/main.js"></script>
 <script src="javascripts/table-sorting.js"></script>
@@ -18,7 +43,7 @@
 <script src="javascripts/dialogs.js"></script>
 <script src="javascripts/load-tooltips.js"></script>
 
-<div class="toast-container position-fixed bottom-0 end-1 p-3">
+<div class="toast-container position-fixed end-0 p-3 fab-toast-container">
     <div
         id="liveToastMessage"
         class="toast align-items-center text-bg-secondary border-0"
@@ -32,7 +57,7 @@
                 type="button"
                 class="btn-close btn-close-white me-2 m-auto"
                 data-bs-dismiss="toast"
-                aria-label="Close"
+                aria-label="Fermer"
             ></button>
         </div>
     </div>

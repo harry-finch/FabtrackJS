@@ -1,239 +1,261 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <!-- Spacer for balance -->
-    <div class="d-none d-md-flex" style="flex: 1 1 0; min-width: 0;"></div>
-
-    <!-- Center Logo -->
-    <div class="d-flex justify-content-center">
-        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" title="Accueil <%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>">
-            <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
-                <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %> Logo" style="max-height: 54px; max-width: 200px; object-fit: contain;" class="ml-3" />
-            <% } else { %>
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                version="1.1"
-                id="Calque_1"
-                x="0px"
-                y="0px"
-                viewBox="0 0 388.9 156.7"
-                enable-background="new 0 0 388.9 156.7"
-                xml:space="preserve"
-                class="injected-svg inline-svg ml-3"
-                style="width: 130px; height: 52.38px"
-            >
-                <path fill="#112970" d="M44.9,49h5.2V37.5c0-1.4-1.2-2.6-2.6-2.6s-2.6,1.2-2.6,2.6V49z"></path>
-                <path fill="#112970" d="M33.8,49h5.2V37.5c0-1.4-1.2-2.6-2.6-2.6c-1.4,0-2.6,1.2-2.6,2.6V49z"></path>
-                <path fill="#112970" d="M55.9,49h5.2V37.5c0-1.4-1.2-2.6-2.6-2.6c-1.4,0-2.6,1.2-2.6,2.6V49z"></path>
-                <path
-                    fill="#112970"
-                    d="M48.8,6.7c3.5,0.6,4.8,3.7,4.8,5.8V17h3.2v2.5C65.1,23.4,71,32.2,71,41.1c0,0.1,0,0.1,0,0.2V49h19.3v-7.9  C89.9,15.8,71.9,0.3,48.1,0L48.8,6.7z"
-                ></path>
-                <path fill="#112970" d="M45.1,12.4V17h4.7v-4.6c0-1.3-1.1-2.4-2.4-2.4C46.2,10,45.1,11.1,45.1,12.4"></path>
-                <path
-                    fill="#112970"
-                    d="M51,61.3c-19.9-5.1-27.4-9.4-27.4-22.1c0-9.1,6-16.9,14.5-20.2V17h3.2v-4.5c0-2.2,1.3-5.3,4.9-5.8L47,0  C23,0.2,2.5,16.9,3.5,39.3c1.1,25.1,28.6,32.1,43.4,35.3c11.7,2.5,39.7,9,46.7,28.8C93.6,103.3,96.2,70.6,51,61.3"
-                ></path>
-                <path
-                    fill="#112970"
-                    d="M44.4,96.2c20.1,6.1,25.2,13.6,25.2,24.2c0,16.1-12.5,22.8-28.2,22.8c-15,0-27.9-7-36.5-16.1  c0,0-3.2,6.6-3.2,6.6c6.3,11.9,24.1,22.8,43.9,22.8h0c0,0,0,0,0,0v0c25.4,0.2,47-11.7,47-35.6c0-25.7-28-35.8-43.6-39.2  C36.9,78.9,6,70.8,0.5,53.5C0.5,53.5-5.6,83.4,44.4,96.2"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M121.7,63.5c0,0,3.4,3.2,7.9,3.2c2.4,0,4.6-1.2,4.6-3.7c0-5.4-14.9-4.5-14.9-13.8c0-5.1,4.6-8.8,10.6-8.8  c6.2,0,9.5,3.3,9.5,3.3l-2.5,4.5c0,0-3-2.7-7-2.7c-2.7,0-4.8,1.5-4.8,3.6c0,5.4,14.9,4.1,14.9,13.8c0,4.8-3.8,8.9-10.4,8.9  c-7,0-10.9-4.2-10.9-4.2L121.7,63.5z"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M164.3,66.8c5.8,0,10.4-4.6,10.4-10.9c0-6-4.6-10.5-10.4-10.5c-5.8,0-10.4,4.5-10.4,10.5  C153.8,62.2,158.5,66.8,164.3,66.8 M164.3,40.4c9.3,0,16.4,6.8,16.4,15.5c0,9-7,15.9-16.4,15.9c-9.3,0-16.4-7-16.4-15.9  C147.9,47.2,154.9,40.4,164.3,40.4"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M200.8,55.2c3.1,0,5-1.8,5-4.8c0-2.9-1.3-4.7-5.8-4.7h-4.4v9.5H200.8z M189.9,40.9h10.2c3.4,0,5,0.3,6.4,0.9  c3.2,1.4,5.2,4.3,5.2,8.3c0,3.6-2,7-5.4,8.3v0.1c0,0,0.4,0.4,1.1,1.5l6.5,11.4h-6.4L201.2,60h-5.5v11.4h-5.8V40.9z"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M234,66.6c2.9,0,4.6-1.8,4.6-4.4c0-2.5-1.7-4.4-4.6-4.4h-6.2v8.8H234z M233.4,53.3c2.5,0,3.9-1.7,3.9-3.9  c0-2.2-1.3-3.8-4-3.8h-5.5v7.7H233.4z M222.1,40.9h11.3c5.7,0,9.8,2.8,9.8,7.8c0,2.8-1.4,5.3-3.8,6.5v0.1c3.5,1,5.1,4.1,5.1,7.2  c0,6.1-5.1,8.8-10.9,8.8h-11.5V40.9z"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M268.3,66.8c5.8,0,10.4-4.6,10.4-10.9c0-6-4.6-10.5-10.4-10.5c-5.8,0-10.4,4.5-10.4,10.5  C257.9,62.2,262.5,66.8,268.3,66.8 M268.3,40.4c9.3,0,16.4,6.8,16.4,15.5c0,9-7,15.9-16.4,15.9c-9.3,0-16.4-7-16.4-15.9  C251.9,47.2,259,40.4,268.3,40.4"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M294.5,40.9h5.8l12,17.6c1.2,1.8,2.6,4.7,2.6,4.7h0.1c0,0-0.3-2.9-0.3-4.7V40.9h5.7v30.4h-5.7l-12-17.5  c-1.2-1.8-2.6-4.7-2.6-4.7H300c0,0,0.3,2.9,0.3,4.7v17.5h-5.8V40.9z"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M331.8,40.9h5.8l12,17.6c1.2,1.8,2.6,4.7,2.6,4.7h0.1c0,0-0.3-2.9-0.3-4.7V40.9h5.7v30.4H352l-12-17.5  c-1.2-1.8-2.6-4.7-2.6-4.7h-0.1c0,0,0.3,2.9,0.3,4.7v17.5h-5.8V40.9z"
-                ></path>
-                <polygon
-                    fill="#EF4136"
-                    points="369.2,40.9 369.2,71.3 388.9,71.3 388.9,66.6 375,66.6 375,58.4 385.6,58.4 385.6,53.6 375,53.6   375,45.7 388.2,45.7 388.2,40.9 "
-                ></polygon>
-                <path
-                    fill="#EF4136"
-                    d="M119.1,84.7h5.8v19.7c0,4.1,2.8,6.4,7.1,6.4c4.3,0,7.1-2.3,7.1-6.5V84.7h5.8v19.7c0,6.9-5.2,11.5-12.9,11.5  c-7.7,0-12.9-4.7-12.9-11.5V84.7z"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M154.5,85h5.8l12,17.6c1.2,1.8,2.6,4.7,2.6,4.7h0.1c0,0-0.3-2.9-0.3-4.7V85h5.7v30.4h-5.7l-12-17.5  c-1.2-1.8-2.6-4.7-2.6-4.7h-0.1c0,0,0.3,2.9,0.3,4.7v17.5h-5.8V85z"
-                ></path>
-                <rect x="190.6" y="85" fill="#EF4136" width="5.8" height="30.4"></rect>
-                <path
-                    fill="#EF4136"
-                    d="M202.6,85h6.2l7,19.8c0.6,1.8,1.2,4.5,1.2,4.5h0.1c0,0,0.6-2.7,1.2-4.5l7-19.8h6.2l-11.6,30.4h-5.7L202.6,85  z"
-                ></path>
-                <polygon
-                    fill="#EF4136"
-                    points="237.6,85 256.6,85 256.6,89.7 243.4,89.7 243.4,97.7 254,97.7 254,102.5 243.4,102.5 243.4,110.7   257.3,110.7 257.3,115.4 237.6,115.4 "
-                ></polygon>
-                <path
-                    fill="#EF4136"
-                    d="M276.5,99.3c3.1,0,5-1.8,5-4.8c0-2.9-1.3-4.7-5.8-4.7h-4.4v9.5H276.5z M265.5,85h10.2c3.4,0,5,0.3,6.4,0.9  c3.2,1.4,5.2,4.3,5.2,8.3c0,3.6-2,7-5.4,8.3v0.1c0,0,0.4,0.4,1.1,1.5l6.5,11.4h-6.4l-6.3-11.4h-5.5v11.4h-5.8V85z"
-                ></path>
-                <path
-                    fill="#EF4136"
-                    d="M297.8,107.6c0,0,3.4,3.2,7.9,3.2c2.4,0,4.6-1.2,4.6-3.7c0-5.4-14.9-4.5-14.9-13.8c0-5.1,4.5-8.8,10.6-8.8  c6.2,0,9.5,3.3,9.5,3.3l-2.5,4.5c0,0-3-2.7-7-2.7c-2.7,0-4.8,1.5-4.8,3.6c0,5.4,14.9,4.1,14.9,13.8c0,4.8-3.8,8.9-10.4,8.9  c-7,0-10.9-4.2-10.9-4.2L297.8,107.6z"
-                ></path>
-                <rect x="324.1" y="85" fill="#EF4136" width="5.8" height="30.4"></rect>
-                <polygon
-                    fill="#EF4136"
-                    points="346.7,89.7 336.3,89.7 336.3,85 362.8,85 362.8,89.7 352.4,89.7 352.4,115.4 346.7,115.4 "
-                ></polygon>
-                <path
-                    fill="#EF4136"
-                    d="M369.2,85v30.4h19.7v-4.8H375v-8.2h10.7v-4.8H375v-8h13.2V85H369.2z M380.1,77.2l-3.4,5.8h4.6l4.7-5.8H380.1  z"
-                ></path></svg>
-            <% } %>
-        </a>
-    </div>
-
-    <!-- User Profile & Navigation Menu -->
-    <div class="d-flex align-items-center justify-content-end gap-2" style="flex: 1 1 0; min-width: 0;">
-        <!-- Incident Reporting Button for Mediators & Admins -->
-        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.report_issue') %>" title="<%= __('nav.report_issue') %>" aria-label="<%= __('nav.report_issue') %>">
-            <i class="fa-solid fa-triangle-exclamation fa-sm" aria-hidden="true"></i>
-        </a>
-
-        <!-- Bug / Issue Reporting Button for Platform -->
-        <% const reportBugTooltip = (typeof __ !== 'undefined' && __('nav.report_bug') && __('nav.report_bug') !== 'nav.report_bug') ? __('nav.report_bug') : 'Signaler un bug'; %>
-        <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= reportBugTooltip %>" title="<%= reportBugTooltip %>">
-            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalReportBug" aria-label="<%= reportBugTooltip %>" data-hide-parent-tooltip="true">
-                <i class="fa-solid fa-bug fa-sm"></i>
-            </button>
-        </span>
-
-        <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
-        <!-- Inventory Checkout Button for Mediators and Admins -->
-        <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Sortie d'inventaire (casse, rebut...)" title="Sortie d'inventaire">
-            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout" aria-label="Sortie d'inventaire" data-hide-parent-tooltip="true">
-                <i class="fa-solid fa-dolly fa-sm"></i>
-            </button>
-        </span>
-        <% } %>
-        <% if (typeof role !== 'undefined' && role === 'admin') { %>
-        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-primary btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= __('nav.admin_panel') %>" title="<%= __('nav.admin_panel') %>" aria-label="<%= __('nav.admin_panel') %>">
-            <i class="fa-solid fa-screwdriver-wrench fa-sm" aria-hidden="true"></i>
-        </a>
-        <% } %>
-
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm header-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="userMenuBtn">
-                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center header-icon-circle" style="width: 26px; height: 26px;">
-                    <i class="fa-solid fa-user fa-xs"></i>
-                </div>
-                <span class="fw-semibold small"><%= username || (typeof __ !== 'undefined' ? __('common.menu') : 'Menu') %></span>
-                <i class="fa-solid fa-chevron-down fa-2xs text-muted ms-1"></i>
-            </button>
-
-            <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2 mt-2" style="min-width: 280px;">
-                <!-- Profile Identity -->
-                <div class="px-3 py-2 bg-body-secondary rounded-2 mb-2 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="fw-bold small text-truncate" style="max-width: 160px;"><%= username %></div>
-                        <small class="text-muted" style="font-size: 0.72rem;"><%= typeof __ !== 'undefined' ? __('nav.active_session') : 'Session active' %></small>
-                    </div>
-                    <% if (role === "admin") { %>
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;">Admin</span>
-                    <% } else if (role === "staff") { %>
-                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1" style="font-size: 0.68rem;"><%= typeof __ !== 'undefined' ? __('nav.kiosk_station') : 'Borne Kiosque' %></span>
+<%
+    const _baseUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/';
+    const _curPath = typeof currentPath !== 'undefined' ? String(currentPath) : '';
+    const _isAdminArea = _curPath.includes('/admin');
+    const _isKioskArea = !_isAdminArea && (_curPath.includes('/fabtrack') || _curPath === '/' || _curPath === (typeof basePath !== 'undefined' ? basePath : ''));
+    const _platformName = typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS';
+    const _platformSubtitle = typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : (typeof __ !== 'undefined' ? __('kiosk.subtitle') : "Suivez l'activité de votre fablab");
+    const _locale = typeof currentLocale !== 'undefined' && currentLocale ? currentLocale : 'fr';
+    const _localesList = (typeof localesMeta !== 'undefined' && localesMeta && localesMeta.length > 0)
+        ? localesMeta
+        : [{ code: 'fr', name: 'Français' }, { code: 'en', name: 'English' }];
+    const _reportBugTooltip = (typeof __ !== 'undefined' && __('nav.report_bug') && __('nav.report_bug') !== 'nav.report_bug') ? __('nav.report_bug') : 'Signaler un bug';
+    const _reportIssueTooltip = typeof __ !== 'undefined' ? __('nav.report_issue') : 'Signaler une panne';
+    const _inventoryTooltip = typeof __ !== 'undefined' ? __('nav.inventory_checkout') : "Sortie d'inventaire / Rebut";
+%>
+<header class="fab-topbar" role="banner">
+    <div class="fab-topbar-inner">
+        <!-- Left: Brand Identity + Workspace Selector + Primary Navigation -->
+        <div class="fab-topbar-left">
+            <a href="<%= _baseUrl %>" class="fab-brand" title="Accueil <%= _platformName %>">
+                <span class="fab-brand-tile" aria-hidden="true">
+                    <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
+                        <img src="<%= platformLogoPath %>" alt="" class="fab-brand-custom-img" />
                     <% } else { %>
-                        <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill px-2 py-1" style="font-size: 0.68rem;"><%= typeof __ !== 'undefined' ? __('nav.mediator') : 'Médiateur' %></span>
+                        <img src="<%= _baseUrl %>images/logo-fabtrack.svg" alt="" width="16" height="16" class="fab-brand-svg" />
                     <% } %>
-                </div>
+                </span>
+                <span class="fab-brand-text">
+                    <span class="fab-brand-name"><%= _platformName %></span>
+                    <span class="fab-brand-subtitle"><%= _platformSubtitle %></span>
+                </span>
+            </a>
 
-                <!-- WORKSPACE SELECTION (FLAT LIST, NO SUBMENU) -->
-                <% if (availableWorkspaces && availableWorkspaces.length > 0) { %>
-                <div class="px-2 py-1">
-                    <div class="d-flex align-items-center justify-content-between mb-1 px-1">
+            <% if (typeof availableWorkspaces !== 'undefined' && availableWorkspaces && availableWorkspaces.length > 0) { %>
+            <div class="dropdown fab-workspace-dropdown">
+                <button
+                    type="button"
+                    class="fab-pbox dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    aria-label="<%= typeof __ !== 'undefined' ? __('nav.switch_workspace') : 'Changer d\'espace' %>"
+                    title="<%= typeof __ !== 'undefined' ? __('nav.fablab_space') : 'Espace Fablab' %>"
+                >
+                    <span class="fab-status-dot" aria-hidden="true"></span>
+                    <span class="fab-pbox-label text-truncate"><%= (typeof selectedWorkspace !== 'undefined' && selectedWorkspace && selectedWorkspace.name) ? selectedWorkspace.name : availableWorkspaces[0].name %></span>
+                </button>
+                <div class="dropdown-menu shadow-sm border rounded-2 p-2 mt-1" style="min-width: 220px;">
+                    <div class="d-flex align-items-center justify-content-between mb-1 px-2">
                         <span class="text-uppercase fw-bold text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;">
-                            <i class="fa-solid fa-building me-1"></i> <%= typeof __ !== 'undefined' ? __('nav.fablab_space') : 'Espace Fablab' %>
+                            <i class="fa-solid fa-building me-1" aria-hidden="true"></i> <%= typeof __ !== 'undefined' ? __('nav.fablab_space') : 'Espace Fablab' %>
                         </span>
-                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill" style="font-size: 0.65rem;"><%= availableWorkspaces.length %></span>
+                        <span class="badge bg-body-secondary text-body-secondary border" style="font-size: 0.65rem;"><%= availableWorkspaces.length %></span>
                     </div>
                     <div class="d-flex flex-column gap-1">
-                        <% availableWorkspaces.forEach(function(workspace) { 
-                            const isSelected = selectedWorkspace && (workspace.id === selectedWorkspace.id);
+                        <% availableWorkspaces.forEach(function(workspace) {
+                            const isSelected = typeof selectedWorkspace !== 'undefined' && selectedWorkspace && (workspace.id === selectedWorkspace.id);
                         %>
-                        <a href="#" class="workspace-link dropdown-item rounded-2 py-2 px-2 d-flex align-items-center justify-content-between <%= isSelected ? 'active bg-success-subtle text-success fw-bold' : '' %>" data-workspaceid="<%= workspace.id %>">
+                        <a href="#" class="workspace-link dropdown-item rounded-1 py-1 px-2 d-flex align-items-center justify-content-between <%= isSelected ? 'active bg-primary-subtle text-primary fw-semibold' : '' %>" data-workspaceid="<%= workspace.id %>">
                             <span class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-location-dot fa-xs <%= isSelected ? 'text-success' : 'text-muted' %>"></i>
+                                <i class="fa-solid fa-location-dot fa-xs <%= isSelected ? 'text-primary' : 'text-muted' %>" aria-hidden="true"></i>
                                 <span class="small"><%= workspace.name %></span>
                             </span>
                             <% if (isSelected) { %>
-                                <i class="fa-solid fa-circle-check text-success fa-sm"></i>
+                                <i class="fa-solid fa-circle-check text-primary fa-xs" aria-hidden="true"></i>
                             <% } %>
                         </a>
                         <% }); %>
                     </div>
                 </div>
-                <hr class="dropdown-divider my-2">
+            </div>
+            <% } %>
+
+            <nav class="fab-nav" aria-label="<%= typeof __ !== 'undefined' ? __('nav.navigation') : 'Navigation' %>">
+                <a href="<%= _baseUrl %>fabtrack" class="fab-nav-link <%= _isKioskArea ? 'is-active' : '' %>" <%- _isKioskArea ? 'aria-current="page"' : '' %>>
+                    <i class="fa-solid fa-desktop fa-xs" aria-hidden="true"></i>
+                    <span><%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque' %></span>
+                </a>
+                <% if (typeof role !== 'undefined' && role === 'admin') { %>
+                <a href="<%= _baseUrl %>admin" class="fab-nav-link <%= _isAdminArea ? 'is-active' : '' %>" <%- _isAdminArea ? 'aria-current="page"' : '' %>>
+                    <i class="fa-solid fa-screwdriver-wrench fa-xs" aria-hidden="true"></i>
+                    <span><%= typeof __ !== 'undefined' ? __('nav.admin_panel') : 'Administration' %></span>
+                </a>
                 <% } %>
+            </nav>
+        </div>
 
-                <!-- NAVIGATION SECTION -->
-                <div class="px-2 py-1">
-                    <span class="text-uppercase fw-bold text-muted d-block mb-1 px-1" style="font-size: 0.68rem; letter-spacing: 0.05em;">
-                        <%= typeof __ !== 'undefined' ? __('nav.navigation') : 'Navigation' %>
-                    </span>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack">
-                        <i class="fa-solid fa-desktop text-primary fa-sm" style="width: 16px;"></i>
-                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque Fabtrack' %></span>
-                    </a>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-danger" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" target="_blank" rel="noopener noreferrer">
-                        <i class="fa-solid fa-triangle-exclamation text-danger fa-sm" style="width: 16px;"></i>
-                        <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.report_issue') : 'Signaler une panne machine' %></span>
-                    </a>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-warning" href="#" data-bs-toggle="modal" data-bs-target="#modalReportBug">
-                        <i class="fa-solid fa-bug text-warning fa-sm" style="width: 16px;"></i>
-                        <span class="small fw-semibold"><%= (typeof __ !== 'undefined' && __('nav.report_bug') && __('nav.report_bug') !== 'nav.report_bug') ? __('nav.report_bug') : 'Signaler un bug' %></span>
-                    </a>
-                    <% if (typeof role !== 'undefined' && (role === "admin" || role === "user")) { %>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-warning-emphasis" href="#" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout">
-                        <i class="fa-solid fa-dolly text-warning fa-sm" style="width: 16px;"></i>
-                        <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.inventory_checkout') : "Sortie d'inventaire / Rebut" %></span>
-                    </a>
-                    <% } %>
-                    <% if (typeof role !== 'undefined' && role === "admin") { %>
-                    <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin">
-                        <i class="fa-solid fa-screwdriver-wrench text-warning fa-sm" style="width: 16px;"></i>
-                        <span class="small"><%= typeof __ !== 'undefined' ? __('nav.admin_panel') : 'Panneau d\'administration' %></span>
-                    </a>
-                    <% } %>
-                </div>
+        <!-- Right: Quick Actions + Segmented Language & Theme Switchers + Compact User Menu -->
+        <div class="fab-topbar-right">
+            <div class="fab-quick-actions">
+                <a
+                    href="<%= _baseUrl %>report-issue"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="fab-icon-btn fab-icon-danger"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="<%= _reportIssueTooltip %>"
+                    title="<%= _reportIssueTooltip %>"
+                    aria-label="<%= _reportIssueTooltip %>"
+                >
+                    <i class="fa-solid fa-triangle-exclamation fa-xs" aria-hidden="true"></i>
+                </a>
 
-                <hr class="dropdown-divider my-2">
-
-                <!-- LOGOUT SECTION -->
-                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>logout" class="m-0">
-                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                    <button type="submit" class="dropdown-item rounded-2 py-2 text-danger d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-right-from-bracket fa-sm" style="width: 16px;"></i>
-                        <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.logout') : 'Déconnexion' %></span>
+                <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= _reportBugTooltip %>" title="<%= _reportBugTooltip %>">
+                    <button
+                        type="button"
+                        class="fab-icon-btn fab-icon-warning"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalReportBug"
+                        aria-label="<%= _reportBugTooltip %>"
+                        data-hide-parent-tooltip="true"
+                    >
+                        <i class="fa-solid fa-bug fa-xs" aria-hidden="true"></i>
                     </button>
-                </form>
+                </span>
+
+                <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
+                <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= _inventoryTooltip %>" title="<%= _inventoryTooltip %>">
+                    <button
+                        type="button"
+                        class="fab-icon-btn fab-icon-warning"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalInventoryCheckout"
+                        aria-label="<%= _inventoryTooltip %>"
+                        data-hide-parent-tooltip="true"
+                    >
+                        <i class="fa-solid fa-dolly fa-xs" aria-hidden="true"></i>
+                    </button>
+                </span>
+                <% } %>
+            </div>
+
+            <span class="fab-topbar-sep d-none d-sm-inline-block" aria-hidden="true"></span>
+
+            <!-- Segmented Language Switcher (24 px) -->
+            <div class="fab-seg d-none d-md-inline-flex" role="group" aria-label="<%= typeof __ !== 'undefined' ? __('nav.language') : 'Langue' %>">
+                <% _localesList.slice(0, 4).forEach(function(lang) {
+                    const isActiveLang = _locale === lang.code;
+                %>
+                <a
+                    href="<%= _baseUrl %>change-language/<%= lang.code %>"
+                    class="fab-seg-item <%= isActiveLang ? 'active' : '' %>"
+                    title="<%= lang.name %>"
+                    <%- isActiveLang ? 'aria-current="true"' : '' %>
+                ><%= lang.code.toUpperCase() %></a>
+                <% }); %>
+            </div>
+
+            <!-- Segmented Theme Switcher (24 px): Auto | Clair | Sombre -->
+            <div class="fab-seg d-none d-sm-inline-flex" role="group" aria-label="Thème d'affichage">
+                <button type="button" class="fab-seg-item" data-bs-theme-value="auto" aria-pressed="false" title="Thème automatique (système)">
+                    <i class="fa-solid fa-circle-half-stroke fa-xs" aria-hidden="true"></i>
+                    <span class="d-none d-xl-inline ms-1">Auto</span>
+                </button>
+                <button type="button" class="fab-seg-item" data-bs-theme-value="light" aria-pressed="false" title="Thème clair">
+                    <i class="fa-solid fa-sun fa-xs" aria-hidden="true"></i>
+                    <span class="d-none d-xl-inline ms-1">Clair</span>
+                </button>
+                <button type="button" class="fab-seg-item" data-bs-theme-value="dark" aria-pressed="false" title="Thème sombre">
+                    <i class="fa-solid fa-moon fa-xs" aria-hidden="true"></i>
+                    <span class="d-none d-xl-inline ms-1">Sombre</span>
+                </button>
+            </div>
+
+            <!-- Compact User Dropdown -->
+            <div class="dropdown">
+                <button
+                    class="fab-user-btn dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    id="userMenuBtn"
+                >
+                    <span class="fab-user-avatar" aria-hidden="true">
+                        <i class="fa-solid fa-user fa-2xs"></i>
+                    </span>
+                    <span class="fab-user-name text-truncate"><%= (typeof username !== 'undefined' && username) ? username : (typeof __ !== 'undefined' ? __('common.menu') : 'Menu') %></span>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end shadow border rounded-2 p-2 mt-1" style="min-width: 260px;">
+                    <div class="px-2 py-2 bg-body-secondary rounded-1 mb-2 d-flex align-items-center justify-content-between">
+                        <div class="min-w-0">
+                            <div class="fw-bold small text-truncate" style="max-width: 150px;"><%= typeof username !== 'undefined' ? username : '' %></div>
+                            <small class="text-muted" style="font-size: 0.72rem;"><%= typeof __ !== 'undefined' ? __('nav.active_session') : 'Session active' %></small>
+                        </div>
+                        <% if (typeof role !== 'undefined' && role === "admin") { %>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.68rem;">Admin</span>
+                        <% } else if (typeof role !== 'undefined' && role === "staff") { %>
+                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle" style="font-size: 0.68rem;"><%= typeof __ !== 'undefined' ? __('nav.kiosk_station') : 'Borne Kiosque' %></span>
+                        <% } else { %>
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis border" style="font-size: 0.68rem;"><%= typeof __ !== 'undefined' ? __('nav.mediator') : 'Médiateur' %></span>
+                        <% } %>
+                    </div>
+
+                    <div class="px-1 py-1">
+                        <span class="text-uppercase fw-bold text-muted d-block mb-1 px-2" style="font-size: 0.66rem; letter-spacing: 0.05em;">
+                            <%= typeof __ !== 'undefined' ? __('nav.navigation') : 'Navigation' %>
+                        </span>
+                        <a class="dropdown-item rounded-1 py-1 px-2 d-flex align-items-center gap-2" href="<%= _baseUrl %>fabtrack">
+                            <i class="fa-solid fa-desktop text-primary fa-xs" style="width: 16px;" aria-hidden="true"></i>
+                            <span class="small"><%= typeof __ !== 'undefined' ? __('nav.kiosk') : 'Kiosque Fabtrack' %></span>
+                        </a>
+                        <a class="dropdown-item rounded-1 py-1 px-2 d-flex align-items-center gap-2 text-danger" href="<%= _baseUrl %>report-issue" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-solid fa-triangle-exclamation text-danger fa-xs" style="width: 16px;" aria-hidden="true"></i>
+                            <span class="small fw-semibold"><%= _reportIssueTooltip %></span>
+                        </a>
+                        <a class="dropdown-item rounded-1 py-1 px-2 d-flex align-items-center gap-2 text-warning-emphasis" href="#" data-bs-toggle="modal" data-bs-target="#modalReportBug">
+                            <i class="fa-solid fa-bug text-warning fa-xs" style="width: 16px;" aria-hidden="true"></i>
+                            <span class="small fw-semibold"><%= _reportBugTooltip %></span>
+                        </a>
+                        <% if (typeof role !== 'undefined' && (role === "admin" || role === "user")) { %>
+                        <a class="dropdown-item rounded-1 py-1 px-2 d-flex align-items-center gap-2 text-warning-emphasis" href="#" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout">
+                            <i class="fa-solid fa-dolly text-warning fa-xs" style="width: 16px;" aria-hidden="true"></i>
+                            <span class="small fw-semibold"><%= _inventoryTooltip %></span>
+                        </a>
+                        <% } %>
+                        <% if (typeof role !== 'undefined' && role === "admin") { %>
+                        <a class="dropdown-item rounded-1 py-1 px-2 d-flex align-items-center gap-2" href="<%= _baseUrl %>admin">
+                            <i class="fa-solid fa-screwdriver-wrench text-primary fa-xs" style="width: 16px;" aria-hidden="true"></i>
+                            <span class="small"><%= typeof __ !== 'undefined' ? __('nav.admin_panel') : 'Administration' %></span>
+                        </a>
+                        <% } %>
+                    </div>
+
+                    <!-- Mobile-only Language & Theme controls -->
+                    <div class="d-md-none border-top mt-1 pt-2 px-2">
+                        <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                            <span class="small text-muted"><%= typeof __ !== 'undefined' ? __('nav.language') : 'Langue' %></span>
+                            <div class="fab-seg" role="group" aria-label="<%= typeof __ !== 'undefined' ? __('nav.language') : 'Langue' %>">
+                                <% _localesList.slice(0, 4).forEach(function(lang) { %>
+                                <a href="<%= _baseUrl %>change-language/<%= lang.code %>" class="fab-seg-item <%= _locale === lang.code ? 'active' : '' %>"><%= lang.code.toUpperCase() %></a>
+                                <% }); %>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between gap-2 d-sm-none">
+                            <span class="small text-muted">Thème</span>
+                            <div class="fab-seg" role="group" aria-label="Thème">
+                                <button type="button" class="fab-seg-item" data-bs-theme-value="auto" aria-pressed="false">Auto</button>
+                                <button type="button" class="fab-seg-item" data-bs-theme-value="light" aria-pressed="false">Clair</button>
+                                <button type="button" class="fab-seg-item" data-bs-theme-value="dark" aria-pressed="false">Sombre</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="dropdown-divider my-2">
+
+                    <form method="POST" action="<%= _baseUrl %>logout" class="m-0">
+                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                        <button type="submit" class="dropdown-item rounded-1 py-1 px-2 text-danger d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-right-from-bracket fa-xs" style="width: 16px;" aria-hidden="true"></i>
+                            <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.logout') : 'Déconnexion' %></span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</header>
 
 <script src="javascripts/workspace.js"></script>
 <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
@@ -248,9 +270,6 @@
         });
     })();
 </script>
-
-<h2 class="mb-1 text-center fw-bold"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
-<h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : (typeof __ !== 'undefined' ? __('kiosk.subtitle') : "Suivez l'activité de votre fablab") %></h5>
 
 <%- include('bug-report-modal.html') %>
 <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>

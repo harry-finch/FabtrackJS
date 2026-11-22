@@ -2,27 +2,60 @@
 id: R-031
 titre: "Adopter le bandeau supérieur et les retouches visuelles Fab Design System (Option B)"
 resume: "Remplacer l'en-tête centré et le sélecteur flottant par le bandeau 44 px Fab Design System en bleu Sorbonne et harmoniser cartes, boutons, tableaux et barre d'état."
-statut: idee
+statut: a-tester
 jalon: v1.5
 cree: 2026-11-21
-maj: 2026-11-21
+maj: 2026-11-22
 livree:
 ---
 
-- **Priorité / Source :** Proposition UX/UI validée par l'utilisateur sur maquette interactive (Option B, inspirée de `fab-design-system`)
-- **Fichiers principaux :** `views/includes/header.html`, `views/includes/light-dark.html`, `views/includes/footer.html`, `views/includes/pagehead.html`, `public/stylesheets/main.css`, `public/images/logo-fabtrack.svg`, `public/javascripts/color-modes.js`, `public/javascripts/workspace.js`
-- **Décisions validées sur la maquette :**
-  - **Variante retenue :** Option B — bandeau supérieur Fab (`44 px`) + retouches visuelles douces du corps de page et barre d'état discrète en pied de page, tout en conservant la mise en page centrée (`max-width: 1140px`), la lisibilité du corps (`14–15 px`) et les parcours existants (kiosque, admin, fiches machines) pour ne pas faire perdre leurs repères aux utilisateurs.
-  - **Couleur d'identité :** conserver le bleu existant de FabtrackJS (« bleu Sorbonne ») — `#4c8df5` en thème sombre et sur la tuile graphite du logo (déjà défini dans `roadmap/projet.toml` et `logo-fabtrack.svg`), et déclinaison bleu Sorbonne cohérente en thème clair (`#00006e` / `#112970` / `#2e6bd1` à calibrer lors de la spécification pour le contraste du liseré `2 px`). Ne pas basculer sur corail, turquoise ou violet.
-  - **Marque établissement :** mise de côté pour le moment — pas de badge « Sorbonne Université » dans le bandeau supérieur.
-- **Périmètre envisagé :**
-  - **Bandeau supérieur Fab (`44 px`, `sticky`) :** liseré d'identité `2 px` en haut (`--identity`), tuile graphite `24×24` portant le monogramme hexagonal Fabtrack (`logo-fabtrack.svg`), nom et sous-titre configurables (`platformName` / `platformSubtitle`, sous-titre masqué sous 1180 px), sélecteur d'espace Fablab direct (`.pbox` + popover avec pastille d'état active), navigation principale discrète (`Kiosque`, `Administration` pour `admin`), actions rapides icônes avec infobulles sombres (`Signaler une panne`, `Signaler un bug`, `Sortie d'inventaire / Rebut` filtré par rôle), sélecteurs segmentés `24 px` de langue (`FR | EN` ou dynamique selon `localesMeta`) et de thème (`Auto | Clair | Sombre`), menu utilisateur compact (nom, badge de rôle, navigation, déconnexion).
-  - **Suppression du sélecteur flottant violet :** retirer les boutons flottants bas-droite `.btn-bd-primary` (`views/includes/light-dark.html`), remplacés par les sélecteurs segmentés du bandeau.
-  - **Retouches douces Fab Design System sur le corps :** jetons neutres clair/sombre (`--bg-chrome`, `--bg-workspace`, `--bg-panel`, `--bg-elevated`, `--bg-control`, `--border`, `--divider`, `--text-*`, `--accent`, teintes sémantiques) mappés sur les variables Bootstrap 5 ; cartes/tuiles admin à fond `--bg-panel`, bordure `1 px`, rayon `6 px` sans ombres lourdes ; titres de sections admin sobres soulignés d'un filet `--divider` ; boutons, champs et badges au rayon `4 px` (abandon des `rounded-pill` systématiques) ; bannière RFID sobre avec liseré latéral `3 px` `--info` ; tableaux à en-tête `--bg-chrome`, survol `--bg-hover` et chiffres tabulaires (`tabular-nums`) sur soldes, durées et KPI.
-  - **Barre d'état discrète (`24 px`, pied d'application) :** remplace le grand footer centré par une barre d'état compacte (état lecteur RFID, espace actif, version, lien discret À propos/Licence).
-- **Hors périmètre :**
-  - Badge ou logo d'établissement (« Sorbonne Université ») dans le bandeau supérieur (mis de côté pour le moment).
-  - Refonte en mise en page CAO 3 colonnes ou densification excessive (`12 px`) sur les écrans kiosque et admin.
-  - Changement de couleur d'identité (hors bleu Sorbonne).
-- **Arbitrages & dépendances :** À coordonner avec `R-007` (visibilité des actions par rôle : `admin`, `user`/médiateur, `staff`/kiosque), `R-028` (accessibilité WCAG AA, clavier et contraste mode sombre) et `R-030` (liens compatibles `APP_BASE_PATH` et masquage de la modale d'inventaire).
-- **Critères d'acceptation visés :** Bandeau `44 px` uniforme sur toutes les vues (kiosque, admin, fiches, sous-pages) en clair et en sombre ; disparition du bouton flottant violet ; changement d'espace, de langue et de thème fonctionnel sous `APP_BASE_PATH` ; contrastes WCAG AA vérifiés sur Kiosque, Panneau Admin et Fiche Machine.
+## Objectif
+
+Déployer la variante validée sur maquette (**Option B — Fab Design System**) : un bandeau supérieur `44 px` fixe en bleu Sorbonne (sans badge d'établissement), des sélecteurs segmentés `24 px` de langue et de thème remplaçant définitivement le sélecteur flottant violet bas-droite, des retouches douces sur les cartes/tableaux/boutons/chiffres tabulaires, et une barre d'état discrète `24 px` en pied d'application.
+
+## Contexte et motivation
+
+- **Source :** Maquette interactive Option B validée par l'utilisateur (inspirée de `fab-design-system`).
+- L'ancien en-tête centré consomme beaucoup de hauteur verticale sur toutes les pages et ne propose pas de navigation principale immédiate ni de sélecteur d'espace visible d'un coup d'œil.
+- Le bouton flottant violet `.btn-bd-primary` en bas à droite (`views/includes/light-dark.html`) chevauche régulièrement les boutons d'action et les toasts sur mobile et tablette.
+- Les surfaces, bordures et tableaux manquent de jetons neutres unifiés clair/sombre et de chiffres tabulaires (`tabular-nums`).
+
+## Comportement attendu
+
+1. **Bandeau supérieur Fab (`44 px`, `sticky`) dans `views/includes/header.html` :**
+   - Liseré d'identité `2 px` bleu Sorbonne en haut (`#112970` / `#2e6bd1` en clair, `#4c8df5` en sombre).
+   - Tuile graphite `24×24` portant le monogramme hexagonal `logo-fabtrack.svg` (ou logo personnalisé), nom `platformName` et sous-titre `platformSubtitle` masqué sous `1180 px` (sans badge d'établissement).
+   - Sélecteur d'espace Fablab direct (`.fab-pbox` avec pastille verte active et menu déroulant `.workspace-link`).
+   - Navigation principale discrète (`Kiosque`, `Administration` pour `role === "admin"`, état actif via `currentPath`).
+   - Actions rapides icônes avec infobulles (`Signaler une panne`, `Signaler un bug`, `Sortie d'inventaire` réservée à `admin`/`user`).
+   - Sélecteurs segmentés `24 px` : langue (`FR | EN` ou `localesMeta`, compatibles `APP_BASE_PATH`) et thème (`Auto | Clair | Sombre`, pilotés par `color-mode-toggler.js`).
+   - Menu utilisateur compact (nom, badge de rôle, navigation, déconnexion `POST /logout` protégée CSRF).
+2. **Suppression du sélecteur flottant violet :**
+   - Retrait des boutons `.btn-bd-primary` de `views/includes/light-dark.html` et `public/stylesheets/main.css`.
+   - Sur les pages autonomes sans `header.html` (`/login`, `/register`, `/report-issue`, `/setup`, `/404`), une barre segmentée discrète `.fab-standalone-controls` reste disponible en haut à droite (automatiquement masquée sur les pages dotées de `.fab-topbar`).
+3. **Retouches douces Fab Design System (`public/stylesheets/main.css`) :**
+   - Jetons neutres clair/sombre (`--fab-identity`, `--fab-bg-chrome`, `--fab-bg-workspace`, `--fab-bg-panel`, `--fab-bg-elevated`, `--fab-bg-control`, `--fab-border`, `--fab-divider`, `--fab-text-*`, `--fab-accent`).
+   - Cartes à rayon `6 px` et bordure `1 px`, contrôles à rayon `4 px`, tableaux à en-tête `--fab-bg-chrome` + survol `--fab-bg-hover` + `tabular-nums`, bannière RFID sobre à liseré latéral `3 px` `--bs-info`.
+4. **Barre d'état discrète (`24 px`) dans `views/includes/footer.html` :**
+   - Affiche l'espace actif, l'état RFID (si plugin activé), un indicateur temps réel prêt pour `R-032` (`#fabRealtimeStatus`), la version `appVersion` et les liens discrets MIT / FontAwesome / GitHub.
+
+## Plan technique
+
+- Exposer `res.locals.appVersion` depuis `package.json` dans `app.js`.
+- Refondre `views/includes/header.html`, `views/includes/light-dark.html`, `views/includes/footer.html`.
+- Adapter `public/javascripts/color-mode-toggler.js` aux boutons segmentés `[data-bs-theme-value]` sans dépendre de `#bd-theme`.
+- Enrichir `public/stylesheets/main.css` avec les jetons Option B, le bandeau `44 px`, les sélecteurs `24 px` et la barre d'état `24 px`, et retirer `.btn-bd-primary`.
+- Ajouter la suite de tests unitaires `tests/unit/fabDesignSystemR031.test.js`.
+
+## Critères d'acceptation
+
+- Bandeau `.fab-topbar` (`44 px`, bleu Sorbonne, sans badge établissement) rendu sur toutes les vues incluant `header.html` avec liens compatibles `APP_BASE_PATH`.
+- Disparition totale de `.btn-bd-primary` dans `views/` et `public/stylesheets/main.css`.
+- Sélecteurs segmentés langue + thème (`Auto | Clair | Sombre`) fonctionnels et accessibles (`aria-pressed`, `aria-current`).
+- Barre d'état `.fab-statusbar` (`24 px`) rendue dans `footer.html` avec toasts positionnés au-dessus.
+- `npm run lint`, `npm audit --omit=dev`, `DATABASE_URL="" npm run test:unit` et `fabboard roadmap lint` passent sans erreur.
+
+## Risques et points de vigilance
+
+- Préserver la compatibilité avec `views/admin/*.ejs` et `views/fabtrack/*.ejs` qui conservent `<main class="main-container">` sans nécessiter de réécriture lourde des balises `<body>`.
+- Respecter 100 % des invariants existants : CSP strict (`nonce`, 0 `on*=`), 0 `href="/..."`, 0 `bg-light`/`bg-white`/`text-dark`, 0 icône FA invalide.

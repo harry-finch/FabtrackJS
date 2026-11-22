@@ -11,6 +11,7 @@ const { prisma } = require("./utilities/db");
 const createError = require("http-errors");
 const helmet = require("helmet");
 const fs = require("fs");
+const packageJson = require("./package.json");
 
 const loadPlugins = require("./core/pluginLoader");
 loadPlugins();
@@ -405,6 +406,7 @@ app.use(async (req, res, next) => {
     res.locals.role = req.session ? req.session.role : undefined;
     res.locals.username = req.session ? req.session.username : undefined;
     res.locals.currentPath = req.originalUrl ? req.originalUrl.split("?")[0] : req.path;
+    res.locals.appVersion = packageJson.version || "1.5.0";
 
     // Expose centralized XSS / URL / JSON / icon sanitization helpers to all EJS views
     res.locals.escapeHtml = escapeHtml;

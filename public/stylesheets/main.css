@@ -202,29 +202,412 @@ main.main-container.page-navigating-out {
     fill: currentColor;
 }
 
-.btn-bd-primary {
-    --bd-violet-bg: #712cf9;
-    --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
-
-    --bs-btn-font-weight: 600;
-    --bs-btn-color: var(--bs-white);
-    --bs-btn-bg: var(--bd-violet-bg);
-    --bs-btn-border-color: var(--bd-violet-bg);
-    --bs-btn-hover-color: var(--bs-white);
-    --bs-btn-hover-bg: #6528e0;
-    --bs-btn-hover-border-color: #6528e0;
-    --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
-    --bs-btn-active-color: var(--bs-btn-hover-color);
-    --bs-btn-active-bg: #5a23c8;
-    --bs-btn-active-border-color: #5a23c8;
+/* ========================================================================== */
+/* Fab Design System — Option B Tokens, 44px Top Bar & 24px Status Bar (R-031)*/
+/* ========================================================================== */
+:root,
+[data-bs-theme="light"] {
+    --fab-identity: #1e52b6;
+    --fab-identity-strong: #112970;
+    --fab-accent: #2e6bd1;
+    --fab-bg-chrome: #f4f6f9;
+    --fab-bg-workspace: #f8f9fb;
+    --fab-bg-panel: #ffffff;
+    --fab-bg-elevated: #ffffff;
+    --fab-bg-control: #eef1f6;
+    --fab-bg-hover: rgba(30, 82, 182, 0.06);
+    --fab-border: #dce2ec;
+    --fab-divider: #e6ebf2;
+    --fab-text-primary: #18202c;
+    --fab-text-secondary: #4e5b6e;
+    --fab-text-muted: #6c788a;
+    --bs-border-radius: 0.3rem;
 }
 
-.bd-mode-toggle {
-    z-index: 1500;
+[data-bs-theme="dark"] {
+    --fab-identity: #4c8df5;
+    --fab-identity-strong: #4c8df5;
+    --fab-accent: #4c8df5;
+    --fab-bg-chrome: #161b22;
+    --fab-bg-workspace: #11151b;
+    --fab-bg-panel: #1c2128;
+    --fab-bg-elevated: #22272e;
+    --fab-bg-control: #272e38;
+    --fab-bg-hover: rgba(76, 141, 245, 0.1);
+    --fab-border: #2f3743;
+    --fab-divider: #262d37;
+    --fab-text-primary: #e6edf3;
+    --fab-text-secondary: #a5b1c2;
+    --fab-text-muted: #8492a6;
 }
 
-.bd-mode-toggle .dropdown-menu .active .bi {
+body:has(.fab-topbar) {
     display: block !important;
+    padding-top: 0 !important;
+    padding-bottom: 2.5rem !important;
+    background-color: var(--fab-bg-workspace) !important;
+}
+
+body:has(.fab-topbar) .fab-standalone-controls {
+    display: none !important;
+}
+
+.fab-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    margin-bottom: 1.25rem;
+    background-color: var(--fab-bg-chrome);
+    border-top: 2px solid var(--fab-identity);
+    border-bottom: 1px solid var(--fab-border);
+}
+
+.fab-topbar-inner {
+    max-width: 1240px;
+    height: 44px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.fab-topbar-left,
+.fab-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.fab-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--fab-text-primary);
+    flex-shrink: 0;
+}
+
+.fab-brand-tile {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background-color: #1c2128;
+    border: 1px solid rgba(76, 141, 245, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.fab-brand-svg {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(53%) sepia(72%) saturate(2351%) hue-rotate(198deg) brightness(98%) contrast(95%);
+}
+
+.fab-brand-custom-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.fab-brand-text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45rem;
+}
+
+.fab-brand-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--fab-text-primary);
+}
+
+.fab-brand-subtitle {
+    font-size: 0.74rem;
+    color: var(--fab-text-muted);
+    white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+    .fab-brand-subtitle {
+        display: none;
+    }
+}
+
+.fab-pbox {
+    height: 26px;
+    padding: 0 0.55rem;
+    border-radius: 4px;
+    border: 1px solid var(--fab-border);
+    background-color: var(--fab-bg-panel);
+    color: var(--fab-text-primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 190px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.fab-pbox:hover {
+    border-color: var(--fab-identity);
+    background-color: var(--fab-bg-hover);
+}
+
+.fab-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #198754;
+    flex-shrink: 0;
+}
+
+.fab-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.25rem;
+}
+
+.fab-nav-link {
+    height: 28px;
+    padding: 0 0.55rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--fab-text-secondary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.fab-nav-link:hover {
+    color: var(--fab-text-primary);
+    background-color: var(--fab-bg-hover);
+}
+
+.fab-nav-link.is-active {
+    color: var(--fab-identity);
+    background-color: var(--fab-bg-hover);
+    font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+    .fab-nav {
+        display: none;
+    }
+}
+
+.fab-quick-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.fab-icon-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--fab-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.fab-icon-btn:hover {
+    background-color: var(--fab-bg-control);
+    border-color: var(--fab-border);
+    color: var(--fab-text-primary);
+}
+
+.fab-icon-danger:hover {
+    color: var(--bs-danger);
+}
+
+.fab-icon-warning:hover {
+    color: var(--bs-warning-text-emphasis);
+}
+
+.fab-topbar-sep {
+    width: 1px;
+    height: 18px;
+    background-color: var(--fab-border);
+}
+
+/* Segmented 24px Controls (Language & Theme) */
+.fab-seg {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 2px;
+    border-radius: 4px;
+    background-color: var(--fab-bg-control);
+    border: 1px solid var(--fab-border);
+    gap: 1px;
+}
+
+.fab-seg-item {
+    height: 18px;
+    padding: 0 0.4rem;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--fab-text-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 18px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.fab-seg-item:hover {
+    color: var(--fab-text-primary);
+}
+
+.fab-seg-item.active {
+    background-color: var(--fab-bg-panel);
+    color: var(--fab-identity);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.fab-user-btn {
+    height: 28px;
+    padding: 0 0.5rem 0 0.25rem;
+    border-radius: 4px;
+    border: 1px solid var(--fab-border);
+    background-color: var(--fab-bg-panel);
+    color: var(--fab-text-primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 165px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.fab-user-btn:hover {
+    border-color: var(--fab-identity);
+}
+
+.fab-user-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background-color: rgba(76, 141, 245, 0.15);
+    color: var(--fab-identity);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fab-user-name {
+    max-width: 105px;
+}
+
+/* Standalone top-right controls (for /login, /register, /404, /report-issue, /setup) */
+.fab-standalone-controls {
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 1040;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Compact 24px Status Bar */
+.fab-statusbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 24px;
+    z-index: 1020;
+    background-color: var(--fab-bg-chrome);
+    border-top: 1px solid var(--fab-border);
+    font-size: 0.72rem;
+    color: var(--fab-text-muted);
+}
+
+.fab-statusbar-inner {
+    max-width: 1240px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.fab-statusbar-left,
+.fab-statusbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.fab-status-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+
+.fab-status-link {
+    color: var(--fab-text-muted);
+    text-decoration: none;
+}
+
+.fab-status-link:hover {
+    color: var(--fab-identity);
+}
+
+.fab-toast-container {
+    bottom: 28px !important;
+    z-index: 1085;
+}
+
+/* Tabular numerals for KPIs, balances, durations & tables */
+.tabular-nums,
+.kpi-value,
+.table td,
+.badge {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Sober RFID Banner with 3px info accent bar */
+[data-workspace-id].bg-info-subtle {
+    background-color: var(--fab-bg-panel) !important;
+    border: 1px solid var(--fab-border) !important;
+    border-left: 3px solid var(--bs-info) !important;
+    border-radius: 6px !important;
 }
 
 #newuser {
@@ -548,9 +931,24 @@ a[href$="/admin"].btn:not(.header-action-btn),
     opacity: 0.75;
 }
 
-/* Platform-wide Cards & Modals */
+/* Platform-wide Cards & Modals (Option B soft 6px radius & 1px border) */
 .card {
-    border-radius: 0.75rem;
+    border-radius: 6px;
+    background-color: var(--fab-bg-panel);
+    border-color: var(--fab-border);
+}
+
+.card-dashboard {
+    border-radius: 6px;
+    border: 1px solid var(--fab-border) !important;
+}
+
+.table thead th {
+    background-color: var(--fab-bg-chrome);
+}
+
+.table-hover > tbody > tr:hover > * {
+    --bs-table-bg-state: var(--fab-bg-hover);
 }
 
 .card-header {
