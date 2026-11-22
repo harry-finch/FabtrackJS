@@ -189,4 +189,46 @@ describe("Unit R-032: Realtime SSE Bus & Partial Kiosk/Admin Refresh", () => {
     expect(liveRefreshJs).toContain("DOMParser");
     expect(liveRefreshJs).toContain("isUserEditingOrModalOpen");
   });
+
+  test("GET /fabtrack/present-table renders an explicit empty state when nobody is in the lab", async () => {
+    mockPrisma.history.findMany.mockResolvedValueOnce([]);
+
+    const fabtrackRouter = require("../../routes/fabtrack.js");
+    const app = express();
+    app.set("views", path.join(ROOT_DIR, "views"));
+    app.set("view engine", "ejs");
+    app.engine("html", ejs.renderFile);
+    app.use((req, res, next) => {
+      req.session = { loggedin: true, role: "staff", staffId: 1, username: "kiosk", selectedWorkspace: { id: 1, name: "Lab" } };
+      res.locals.role = "staff";
+      res.locals.baseUrl = "/";
+      res.locals.csrfToken = "csrf-empty";
+      res.locals.__ = (k) => k;
+      next();
+    });
+    app.use("/fabtrack", fabtrackRouter);
+
+    const res = await request(app).get("/fabtrack/present-table");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('id="kioskPresentCard"');
+    expect(res.text).toContain('id="kioskEmptyState"');
+    expect(res.text).toContain("Le lab est actuellement vide");
+  });
+
+  test("UI polish guards: no horizontal overflow, unified compact admin action columns, separated profile sections", () => {
+    const mainCss = fs.readFileSync(path.join(ROOT_DIR, "public/stylesheets/main.css"), "utf8");
+    const consumablesEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/manage-consumables.ejs"), "utf8");
+    const historyEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/view-history.ejs"), "utf8");
+    const usersEjs = fs.readFileSync(path.join(ROOT_DIR, "views/admin/manage-users.ejs"), "utf8");
+    const editUserEjs = fs.readFileSync(path.join(ROOT_DIR, "views/fabtrack/edit-user.ejs"), "utf8");
+
+    expect(mainCss).toContain("overflow-x: clip;");
+    expect(mainCss).toContain(".fab-row-actions");
+    expect(consumablesEjs).toContain("fab-row-actions");
+    expect(consumablesEjs).toContain('colspan="7"');
+    expect(historyEjs).toContain("fab-row-actions");
+    expect(historyEjs).toContain('colspan="8"');
+    expect(usersEjs).toContain("fab-row-actions");
+    expect(editUserEjs).toContain("fab-section-header");
+  });
 });

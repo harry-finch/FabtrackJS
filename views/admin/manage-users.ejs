@@ -226,14 +226,14 @@
                                             <% } %>
                                         </td>
                                         <td class="text-end pe-3">
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="<%= safeBaseUrl %>users/edit/<%= user.id %>" class="btn btn-outline-primary" title="Modifier le compte">
-                                                    <i class="fa-solid fa-user-pen"></i>
+                                            <div class="fab-row-actions">
+                                                <a href="<%= safeBaseUrl %>users/edit/<%= user.id %>" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" title="Modifier le profil" aria-label="Modifier le profil de <%= user.name %> <%= user.surname %>">
+                                                    <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
                                                 </a>
                                                 <form method="POST" action="<%= safeBaseUrl %>users/delete/<%= user.id %>" class="d-inline" data-confirm="Supprimer le compte de <%= user.name %> <%= user.surname %> ?">
                                                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Supprimer le compte" aria-label="Supprimer le compte de <%= user.name %> <%= user.surname %>">
+                                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                                     </button>
                                                 </form>
                                             </div>

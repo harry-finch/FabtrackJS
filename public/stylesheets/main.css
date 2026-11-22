@@ -16,6 +16,7 @@ body {
     min-height: 100%;
     font-size: 0.9375rem;
     letter-spacing: -0.006em;
+    overflow-x: clip;
 }
 
 body {
@@ -747,6 +748,131 @@ main.main-container:has(.fab-admin-shell) {
 .fab-kpi-card:hover {
     border-color: var(--fab-identity) !important;
     transform: translateY(-1px);
+}
+
+/* ========================================================================== */
+/* Sober Admin Visual Restraint & Compact Spaced Table Row Actions            */
+/* ========================================================================== */
+.fab-row-actions,
+.table .btn-group {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+}
+
+.fab-row-actions > .btn,
+.fab-row-actions > form > .btn,
+.table .btn-group > .btn,
+.table .btn-group > form > .btn {
+    border-radius: 4px !important;
+    margin-left: 0 !important;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 0.45rem !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+/* Sober ghost action buttons in tables: neutral at rest, semantic tint only on hover */
+.table .fab-row-actions .btn-outline-primary,
+.table .fab-row-actions .btn-outline-secondary,
+.table .fab-row-actions .btn-outline-info,
+.table .fab-row-actions .btn-outline-success,
+.table .fab-row-actions .btn-outline-warning,
+.table .fab-row-actions .btn-outline-danger,
+.table .btn-group .btn-outline-primary,
+.table .btn-group .btn-outline-secondary,
+.table .btn-group .btn-outline-info,
+.table .btn-group .btn-outline-success,
+.table .btn-group .btn-outline-warning,
+.table .btn-group .btn-outline-danger {
+    background-color: transparent;
+    border-color: var(--fab-border);
+    color: var(--fab-text-secondary);
+}
+
+.table .fab-row-actions .btn-outline-primary:hover,
+.table .fab-row-actions .btn-outline-secondary:hover,
+.table .fab-row-actions .btn-outline-info:hover,
+.table .btn-group .btn-outline-primary:hover,
+.table .btn-group .btn-outline-secondary:hover,
+.table .btn-group .btn-outline-info:hover {
+    background-color: var(--fab-bg-hover);
+    border-color: var(--fab-identity);
+    color: var(--fab-identity);
+}
+
+.table .fab-row-actions .btn-outline-success:hover,
+.table .btn-group .btn-outline-success:hover {
+    background-color: var(--bs-success-bg-subtle);
+    border-color: var(--bs-success-border-subtle);
+    color: var(--bs-success-text-emphasis);
+}
+
+.table .fab-row-actions .btn-outline-warning:hover,
+.table .btn-group .btn-outline-warning:hover {
+    background-color: var(--bs-warning-bg-subtle);
+    border-color: var(--bs-warning-border-subtle);
+    color: var(--bs-warning-text-emphasis);
+}
+
+.table .fab-row-actions .btn-outline-danger:hover,
+.table .btn-group .btn-outline-danger:hover {
+    background-color: var(--bs-danger-bg-subtle);
+    border-color: var(--bs-danger-border-subtle);
+    color: var(--bs-danger-text-emphasis);
+}
+
+/* Tone down decorative colors in admin page headers so alert colors stand out */
+.fab-admin-content .icon-box.bg-primary-subtle,
+.fab-admin-content .icon-box.bg-info-subtle,
+.fab-admin-content .icon-box.bg-secondary-subtle {
+    background-color: var(--fab-bg-control) !important;
+    color: var(--fab-text-secondary) !important;
+    border: 1px solid var(--fab-border);
+    box-shadow: none !important;
+}
+
+.fab-admin-content > .card:first-of-type .icon-box {
+    background-color: var(--fab-bg-control) !important;
+    color: var(--fab-identity) !important;
+    border: 1px solid var(--fab-border);
+    border-radius: 6px !important;
+    box-shadow: none !important;
+}
+
+.fab-admin-content > .card:first-of-type .badge.bg-primary-subtle,
+.fab-admin-content > .card:first-of-type .badge.bg-info-subtle,
+.fab-admin-content > .card:first-of-type .badge.bg-success-subtle,
+.fab-admin-content .table .badge.bg-primary-subtle,
+.fab-admin-content .table .badge.bg-info-subtle {
+    background-color: var(--fab-bg-control) !important;
+    color: var(--fab-text-secondary) !important;
+    border: 1px solid var(--fab-border) !important;
+}
+
+/* Profile page clear section divider */
+.fab-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--fab-divider);
+}
+
+.fab-section-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fab-text-secondary);
+    margin: 0;
 }
 
 #newuser {

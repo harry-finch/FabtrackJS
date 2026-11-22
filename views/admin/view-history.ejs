@@ -202,14 +202,13 @@
             <th scope="col"><%= typeof __ !== 'undefined' ? __('history.col_workspace') : 'Espace' %></th>
             <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_project') : 'Projet' %></th>
             <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_comments') : 'Commentaires' %></th>
-            <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_edit') : 'Modifier' %></th>
-            <th scope="col" class="text-center"><%= typeof __ !== 'undefined' ? __('history.col_delete') : 'Supprimer' %></th>
+            <th scope="col" class="text-end pe-3"><%= typeof __ !== 'undefined' ? __('common.actions') : 'Actions' %></th>
           </tr>
         </thead>
         <tbody id="table-content">
           <% if (safeHistory.length === 0) { %>
           <tr id="emptyHistoryRow">
-            <td colspan="9" class="text-center text-muted py-4"><%= typeof __ !== 'undefined' ? __('history.no_records') : 'Aucun enregistrement trouvé dans l\'historique.' %></td>
+            <td colspan="8" class="text-center text-muted py-4"><%= typeof __ !== 'undefined' ? __('history.no_records') : 'Aucun enregistrement trouvé dans l\'historique.' %></td>
           </tr>
           <% } else { %>
             <% safeHistory.forEach(function(entry) { %>
@@ -256,26 +255,28 @@
                   <i class="fa-regular fa-comment text-muted"></i>
                 <% } %>
               </td>
-              <td class="text-center">
-                <a
-                  href="#"
-                  data-bs-toggle="modal"
-                  data-bs-target="#editHistoryModal"
-                  data-bs-id="<%= entry.id %>"
-                  data-bs-comments="<%= entry.comments ? entry.comments.replace(/"/g, '&quot;') : '' %>"
-                  data-bs-workspace="<%= entry.workspaceId || '' %>"
-                  title="Edit Record"
-                >
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </a>
-              </td>
-              <td class="text-center">
-                <form method="POST" action="<%= safeBaseUrl %>history/delete/<%= entry.id %>" class="d-inline" data-confirm="Are you sure you want to delete this history record?">
-                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                  <button type="submit" class="btn btn-link p-0 border-0 text-decoration-none" title="Delete Record">
-                    <i class="fa-solid fa-trash-can text-danger"></i>
+              <td class="text-end pe-3">
+                <div class="fab-row-actions">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editHistoryModal"
+                    data-bs-id="<%= entry.id %>"
+                    data-bs-comments="<%= entry.comments ? entry.comments.replace(/"/g, '&quot;') : '' %>"
+                    data-bs-workspace="<%= entry.workspaceId || '' %>"
+                    title="Modifier l'entrée"
+                    aria-label="Modifier l'entrée #<%= entry.id %>"
+                  >
+                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                   </button>
-                </form>
+                  <form method="POST" action="<%= safeBaseUrl %>history/delete/<%= entry.id %>" class="d-inline" data-confirm="Confirmez-vous la suppression de cette entrée d'historique ?">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer l'entrée" aria-label="Supprimer l'entrée #<%= entry.id %>">
+                      <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
             <% }); %>

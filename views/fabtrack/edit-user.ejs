@@ -71,161 +71,158 @@
                     </div>
                 </div>
             </div>
-            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/update/<%= user.id %>" method="post">
-                <div class="row">
-                    <div class="col-4">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required />
-                            <label for="name"><%= typeof __ !== 'undefined' ? __('profile.first_name') : 'Prénom' %></label>
-                        </div>
+            <!-- Section 1: Formulaire profil bien encadré -->
+            <section class="card border shadow-sm mb-5" aria-labelledby="profileFormHeading">
+                <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between py-2 px-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-id-card text-muted" aria-hidden="true"></i>
+                        <h5 class="h6 fw-bold mb-0" id="profileFormHeading">Informations du profil</h5>
                     </div>
-                    <div class="col-4">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="surname" name="surname" value="<%= user.surname %>" required />
-                            <label for="surname"><%= typeof __ !== 'undefined' ? __('profile.last_name') : 'Nom' %></label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="birthyear" name="birthyear" value="<%= user.birthYear %>" />
-                            <label for="birthyear"><%= typeof __ !== 'undefined' ? __('profile.birth_year') : 'Année de naissance' %></label>
-                        </div>
-                    </div>
+                    <span class="small text-muted">ID #<%= user.id %></span>
                 </div>
-                <div class="row">
-                    <div class="col-6">
-                        <div class="form-floating mb-3">
-                            <input type="email" name="email" class="form-control" id="email" value="<%= user.email %>" required />
-                            <label for="email"><%= typeof __ !== 'undefined' ? __('profile.email') : 'Adresse e-mail' %></label>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-floating mb-3">
-                            <select class="form-select" id="usertype" name="usertype">
-                                <% usertypes.forEach(function(usertype) { %>
-                                <option value="<%= usertype.id %>" <% if (usertype.id == user.usertypeId) { %> selected <% } %>><%= usertype.name %></option>
-                                <% }); %>
-                            </select>
-                            <label for="usertype"><%= typeof __ !== 'undefined' ? __('profile.user_type') : "Type de contributeur" %></label>
-                        </div>
-                    </div>
-                </div>
-                <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control font-monospace" id="rfid" name="rfid" value="<%= user.rfid || '' %>" placeholder="Badge RFID" autocomplete="off" />
-                            <label for="rfid"><i class="fa-solid fa-id-card me-1 text-primary"></i> <%= typeof __ !== 'undefined' ? __('profile.rfid_badge') : 'Numéro de badge RFID (UID)' %></label>
-                        </div>
-                    </div>
-                </div>
-                <% } %>
-                <div class="row">
-                    <div class="col">
-                        <div class="form-floating mb-3">
-                            <textarea class="form-control" id="comments" name="comments" style="height: 100px"><%= user.comment %></textarea>
-                            <label for="comments"><%= typeof __ !== 'undefined' ? __('profile.comments') : 'Commentaires' %></label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
-                            <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="newsletter" name="newsletter" value="true" <%= user.newsletter ? 'checked' : '' %>>
-                            <label class="form-check-label fw-bold" for="newsletter">
-                                <i class="fa-solid fa-envelope-open-text text-primary me-1"></i> <%= typeof __ !== 'undefined' ? __('profile.newsletter') : 'Inscription à la newsletter' %>
-                            </label>
-                            <div class="form-text small text-muted ms-1">
-                                <%= typeof __ !== 'undefined' ? __('profile.newsletter_desc') : 'Recevoir la newsletter et les actualités du Fablab par e-mail.' %>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border">
-                            <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="isExpert" name="isExpert" value="true" <%= user.isExpert ? 'checked' : '' %>>
-                            <label class="form-check-label fw-bold" for="isExpert">
-                                <i class="fa-solid fa-star text-warning me-1"></i> <%= typeof __ !== 'undefined' ? __('profile.expert_user') : 'Utilisateur expert (distinction à l\'appréciation du staff)' %>
-                            </label>
-                            <div class="form-text small text-muted ms-1">
-                                <%= typeof __ !== 'undefined' ? __('profile.expert_user_desc') : 'Attribue le statut d\'utilisateur expert. Ce badge sera le seul affiché dans la liste des personnes présentes sur le kiosque.' %>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <div class="form-check form-switch p-3 bg-body-tertiary rounded-3 border d-flex align-items-center justify-content-between flex-wrap gap-2">
-                            <div class="d-flex align-items-start">
-                                <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="termsAccepted" name="termsAccepted" value="true" <%= user.termsAccepted ? 'checked' : '' %>>
-                                <div>
-                                    <label class="form-check-label fw-bold" for="termsAccepted">
-                                        <i class="fa-solid fa-file-contract text-primary me-1"></i> Charte d'utilisation du lab
-                                        <% if (user.termsAccepted) { %>
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2">
-                                                <i class="fa-solid fa-check me-1"></i>Signée
-                                            </span>
-                                        <% } else { %>
-                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill ms-2">
-                                                <i class="fa-solid fa-clock me-1"></i>En attente de signature
-                                            </span>
-                                        <% } %>
-                                    </label>
-                                    <div class="form-text small text-muted">
-                                        Le contributeur doit avoir validé la charte pour pouvoir s'inscrire et accéder au lab. Cochez cette case si le contributeur l'a validée sur place.
-                                    </div>
+                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/update/<%= user.id %>" method="post">
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required />
+                                    <label for="name"><%= typeof __ !== 'undefined' ? __('profile.first_name') : 'Prénom' %></label>
                                 </div>
                             </div>
-                            <% if (!user.termsAccepted) { %>
-                            <div>
-                                <button type="submit" form="resendAgreementForm" class="btn btn-sm btn-outline-warning rounded-pill" title="Renvoyer l'e-mail avec le lien de signature">
-                                    <i class="fa-solid fa-paper-plane me-1"></i> Renvoyer l'e-mail de charte
-                                </button>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="surname" name="surname" value="<%= user.surname %>" required />
+                                    <label for="surname"><%= typeof __ !== 'undefined' ? __('profile.last_name') : 'Nom' %></label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="birthyear" name="birthyear" value="<%= user.birthYear %>" />
+                                    <label for="birthyear"><%= typeof __ !== 'undefined' ? __('profile.birth_year') : 'Année de naissance' %></label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" name="email" class="form-control" id="email" value="<%= user.email %>" required />
+                                    <label for="email"><%= typeof __ !== 'undefined' ? __('profile.email') : 'Adresse e-mail' %></label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="usertype" name="usertype">
+                                        <% usertypes.forEach(function(usertype) { %>
+                                        <option value="<%= usertype.id %>" <% if (usertype.id == user.usertypeId) { %> selected <% } %>><%= usertype.name %></option>
+                                        <% }); %>
+                                    </select>
+                                    <label for="usertype"><%= typeof __ !== 'undefined' ? __('profile.user_type') : "Type de contributeur" %></label>
+                                </div>
+                            </div>
+                            <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control font-monospace" id="rfid" name="rfid" value="<%= user.rfid || '' %>" placeholder="Badge RFID" autocomplete="off" />
+                                    <label for="rfid"><i class="fa-solid fa-id-card me-1 text-muted"></i> <%= typeof __ !== 'undefined' ? __('profile.rfid_badge') : 'Numéro de badge RFID (UID)' %></label>
+                                </div>
                             </div>
                             <% } %>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="comments" name="comments" style="height: 92px"><%= user.comment %></textarea>
+                                    <label for="comments"><%= typeof __ !== 'undefined' ? __('profile.comments') : 'Commentaires' %></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 opacity-25" />
+
+                        <div class="d-flex flex-column gap-2">
+                            <div class="form-check form-switch p-3 bg-body-tertiary rounded-2 border">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="newsletter" name="newsletter" value="true" <%= user.newsletter ? 'checked' : '' %>>
+                                <label class="form-check-label fw-semibold" for="newsletter">
+                                    <%= typeof __ !== 'undefined' ? __('profile.newsletter') : 'Inscription à la newsletter' %>
+                                </label>
+                                <div class="form-text small text-muted ms-1">
+                                    <%= typeof __ !== 'undefined' ? __('profile.newsletter_desc') : 'Recevoir la newsletter et les actualités du Fablab par e-mail.' %>
+                                </div>
+                            </div>
+
+                            <div class="form-check form-switch p-3 bg-body-tertiary rounded-2 border">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="isExpert" name="isExpert" value="true" <%= user.isExpert ? 'checked' : '' %>>
+                                <label class="form-check-label fw-semibold" for="isExpert">
+                                    <%= typeof __ !== 'undefined' ? __('profile.expert_user') : 'Utilisateur expert (distinction à l\'appréciation du staff)' %>
+                                </label>
+                                <div class="form-text small text-muted ms-1">
+                                    <%= typeof __ !== 'undefined' ? __('profile.expert_user_desc') : 'Attribue le statut d\'utilisateur expert. Ce badge sera le seul affiché dans la liste des personnes présentes sur le kiosque.' %>
+                                </div>
+                            </div>
+
+                            <div class="form-check form-switch p-3 bg-body-tertiary rounded-2 border d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-start">
+                                    <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="termsAccepted" name="termsAccepted" value="true" <%= user.termsAccepted ? 'checked' : '' %>>
+                                    <div>
+                                        <label class="form-check-label fw-semibold" for="termsAccepted">
+                                            Charte d'utilisation du lab
+                                            <% if (user.termsAccepted) { %>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle ms-2">
+                                                    <i class="fa-solid fa-check me-1"></i>Signée
+                                                </span>
+                                            <% } else { %>
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-2">
+                                                    <i class="fa-solid fa-clock me-1"></i>En attente de signature
+                                                </span>
+                                            <% } %>
+                                        </label>
+                                        <div class="form-text small text-muted">
+                                            Le contributeur doit avoir validé la charte pour pouvoir s'inscrire et accéder au lab. Cochez cette case si le contributeur l'a validée sur place.
+                                        </div>
+                                    </div>
+                                </div>
+                                <% if (!user.termsAccepted) { %>
+                                <div>
+                                    <button type="submit" form="resendAgreementForm" class="btn btn-sm btn-outline-warning" title="Renvoyer l'e-mail avec le lien de signature">
+                                        <i class="fa-solid fa-paper-plane me-1"></i> Renvoyer l'e-mail de charte
+                                    </button>
+                                </div>
+                                <% } %>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="row g-2 mb-4">
-                    <div class="col-sm-6">
-                        <button class="btn btn-primary w-100 py-2 rounded-pill shadow-sm" type="submit">
+
+                    <div class="card-footer bg-body-tertiary py-3 px-4 d-flex flex-wrap align-items-center justify-content-end gap-2">
+                        <a id="cancel" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-secondary btn-sm px-3">
+                            <%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %>
+                        </a>
+                        <button class="btn btn-primary btn-sm px-4" type="submit">
                             <i class="fa-solid fa-check me-1"></i> <%= typeof __ !== 'undefined' ? __('profile.update_profile') : 'Mettre à jour le profil' %>
                         </button>
                     </div>
-                    <div class="col-sm-6">
-                        <a id="cancel" href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-secondary w-100 py-2 rounded-pill">
-                            <%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %>
-                        </a>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </section>
             <% if (!user.termsAccepted) { %>
             <form id="resendAgreementForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/resend/<%= user.id %>" method="POST" class="d-none">
                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
             </form>
             <% } %>
 
-            <div class="d-flex align-items-center gap-2 mb-3 mt-4">
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle section-badge-header px-2 py-1">
-                    <%= typeof __ !== 'undefined' ? __('profile.user_stats') : 'Statistiques du contributeur' %>
-                </span>
-                <hr class="flex-grow-1 my-0 opacity-25">
+            <!-- Section 2: Statistiques & indicateurs (nettement séparée du formulaire) -->
+            <div class="fab-section-header">
+                <i class="fa-solid fa-chart-simple text-muted" aria-hidden="true"></i>
+                <h2 class="fab-section-title"><%= typeof __ !== 'undefined' ? __('profile.user_stats') : 'Statistiques du contributeur' %></h2>
             </div>
 
-            <div class="row g-3 mb-4">
+            <div class="row g-3 mb-5">
                 <!-- Balance Card -->
                 <div class="col-md-4 col-sm-6">
-                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                    <div class="card h-100 border">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted small fw-semibold text-uppercase">Solde du compte</span>
-                                <i class="fa-solid fa-wallet fs-5 <%= userStats.balancePositive ? 'text-success' : 'text-danger' %>"></i>
+                                <i class="fa-solid fa-wallet <%= userStats.balancePositive ? 'text-success' : 'text-danger' %>"></i>
                             </div>
-                            <div class="fs-4 fw-bold mb-1 <%= userStats.balancePositive ? 'text-success' : 'text-danger' %>">
+                            <div class="kpi-value tabular-nums mb-1 <%= userStats.balancePositive ? 'text-success' : 'text-danger' %>">
                                 <%= userStats.balance %> €
                             </div>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
                                 <% if (userStats.balancePositive) { %>
                                     <span class="badge bg-success-subtle text-success border border-success-subtle small">Solde positif</span>
                                 <% } else { %>
@@ -233,11 +230,11 @@
                                 <% } %>
                                 <% if (typeof role !== 'undefined' && (role === "admin" || role === "user")) { %>
                                     <div class="d-flex gap-1">
-                                        <button type="button" class="btn btn-sm btn-outline-success py-0 px-2" data-bs-toggle="modal" data-bs-target="#addMoney">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#addMoney">
                                             <i class="fa-solid fa-plus-circle me-1"></i> Créditer
                                         </button>
                                         <% if (role === "admin") { %>
-                                            <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" data-bs-toggle="modal" data-bs-target="#adjustBalanceModal">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#adjustBalanceModal">
                                                 <i class="fa-solid fa-sliders me-1"></i> Ajuster
                                             </button>
                                         <% } %>
@@ -250,13 +247,13 @@
 
                 <!-- Visits Card -->
                 <div class="col-md-4 col-sm-6">
-                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                    <div class="card h-100 border">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted small fw-semibold text-uppercase">Visites au Fablab</span>
-                                <i class="fa-solid fa-door-open fs-5 text-primary"></i>
+                                <i class="fa-solid fa-door-open text-muted"></i>
                             </div>
-                            <div class="fs-4 fw-bold mb-1 text-primary">
+                            <div class="kpi-value tabular-nums mb-1 text-body">
                                 <%= userStats.totalVisits %>
                             </div>
                             <div class="small text-muted">
@@ -271,13 +268,13 @@
 
                 <!-- Projects Card -->
                 <div class="col-md-4 col-sm-6">
-                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+                    <div class="card h-100 border">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted small fw-semibold text-uppercase">Projets</span>
-                                <i class="fa-solid fa-folder-open fs-5 text-warning"></i>
+                                <i class="fa-solid fa-folder-open text-muted"></i>
                             </div>
-                            <div class="fs-4 fw-bold mb-1 text-warning">
+                            <div class="kpi-value tabular-nums mb-1 text-body">
                                 <%= userStats.totalProjects %>
                             </div>
                             <div class="small text-muted">
@@ -287,37 +284,35 @@
                     </div>
                 </div>
 
-
-
                 <!-- Badges & Habilitations Card -->
                 <div class="col-12">
-                    <div class="card h-100 shadow-sm border-0 bg-body-tertiary border-start border-warning border-3">
+                    <div class="card h-100 border">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted small fw-semibold text-uppercase">Badges & Habilitations</span>
+                                <span class="text-muted small fw-semibold text-uppercase">Badges &amp; Habilitations</span>
                                 <div class="d-flex align-items-center gap-2">
                                     <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
-                                        <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddHabilitation" title="Ajouter manuellement une habilitation (rétroactive ou nouvelle)">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#modalAddHabilitation" title="Ajouter manuellement une habilitation (rétroactive ou nouvelle)">
                                             <i class="fa-solid fa-plus-circle me-1"></i> Ajouter habilitation
                                         </button>
                                     <% } %>
-                                    <i class="fa-solid fa-award fs-5 text-warning"></i>
+                                    <i class="fa-solid fa-award text-muted"></i>
                                 </div>
                             </div>
-                            <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
-                                <div class="fs-4 fw-bold text-primary">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <div class="kpi-value tabular-nums text-body me-2">
                                     <%= userStats.badgesCount %> badge(s)
                                 </div>
                                 <% if (user.isExpert) { %>
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill">
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
                                         <i class="fa-solid fa-star me-1"></i> Expert du Fablab
                                     </span>
                                 <% } %>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
-                                    <i class="fa-solid fa-graduation-cap me-1"></i> <%= userStats.workshopBadgesCount %> atelier(s) suivi(s)
+                                <span class="badge bg-body-secondary text-body border px-2 py-1">
+                                    <i class="fa-solid fa-graduation-cap me-1 text-muted"></i> <%= userStats.workshopBadgesCount %> atelier(s) suivi(s)
                                 </span>
-                                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2 rounded-pill">
-                                    <i class="fa-solid fa-lock-open me-1"></i> <%= userStats.habilitationsCount %> habilitation(s) machine
+                                <span class="badge bg-body-secondary text-body border px-2 py-1">
+                                    <i class="fa-solid fa-lock-open me-1 text-muted"></i> <%= userStats.habilitationsCount %> habilitation(s) machine
                                 </span>
                             </div>
                             <% if (userStats.habilitations && userStats.habilitations.length > 0) { %>
@@ -325,7 +320,7 @@
                                     <i class="fa-solid fa-shield-halved me-1 text-success"></i> Habilitations machines reconnues :
                                     <div class="d-flex flex-wrap gap-1 mt-1">
                                         <% userStats.habilitations.forEach(function(hab) { %>
-                                            <span class="badge bg-body-secondary text-secondary-emphasis border rounded-pill px-2 py-1">
+                                            <span class="badge bg-body-secondary text-secondary-emphasis border px-2 py-1">
                                                 <i class="fa-solid fa-check me-1 text-success"></i><%= hab.name %>
                                             </span>
                                         <% }); %>
@@ -477,11 +472,9 @@
             </div>
             <% } %>
 
-            <div class="d-flex align-items-center gap-2 mb-3 mt-4">
-                <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle section-badge-header px-2 py-1">
-                    <i class="fa-solid fa-folder-tree me-1"></i> Activité & Historique détaillé
-                </span>
-                <hr class="flex-grow-1 my-0 opacity-25">
+            <div class="fab-section-header">
+                <i class="fa-solid fa-folder-tree text-muted" aria-hidden="true"></i>
+                <h2 class="fab-section-title">Activité &amp; Historique détaillé</h2>
             </div>
 
             <div class="accordion d-flex flex-column gap-3 mb-4" id="userProfileAccordion">

@@ -85,30 +85,27 @@
               # <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
             <th data-sort="1" scope="col" style="cursor: pointer;">
-              Consumable <i class="fa-solid fa-sort text-muted small ms-1"></i>
+              Consommable <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
             <th data-sort="2" scope="col" style="cursor: pointer;">
-              Category <i class="fa-solid fa-sort text-muted small ms-1"></i>
+              Catégorie <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
             <th data-sort="3" scope="col" style="cursor: pointer;">
-              Cost <i class="fa-solid fa-sort text-muted small ms-1"></i>
+              Coût <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
             <th data-sort="4" scope="col" class="text-center" style="cursor: pointer;">
-              Stock & Conditionnement <i class="fa-solid fa-sort text-muted small ms-1"></i>
+              Stock &amp; Conditionnement <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
             <th data-sort="5" scope="col" class="text-center" style="cursor: pointer;">
-              Status <i class="fa-solid fa-sort text-muted small ms-1"></i>
+              Statut <i class="fa-solid fa-sort text-muted small ms-1"></i>
             </th>
-            <th scope="col" class="text-center">Livraison</th>
-            <th scope="col" class="text-center">Sortie</th>
-            <th scope="col" class="text-center">Edit</th>
-            <th scope="col" class="text-center">Delete</th>
+            <th scope="col" class="text-end pe-3">Actions</th>
           </tr>
         </thead>
         <tbody id="table-content">
           <% if (consumables.length === 0) { %>
           <tr>
-            <td colspan="10" class="text-center text-muted py-4">No consumables found.</td>
+            <td colspan="7" class="text-center text-muted py-4">Aucun consommable enregistré.</td>
           </tr>
           <% } else { %>
             <% consumables.forEach(function(consumable) { 
@@ -155,66 +152,65 @@
                   <span class="badge bg-danger">Out of Stock</span>
                 <% } %>
               </td>
-              <td class="text-center">
-                <button
-                  type="button"
-                  class="btn btn-outline-success btn-sm btn-restock"
-                  data-bs-toggle="modal"
-                  data-bs-target="#restockModal"
-                  data-id="<%= consumable.id %>"
-                  data-name="<%= consumable.name %>"
-                  data-stock="<%= consumable.stock %>"
-                  data-unit="<%= unitStr %>"
-                  data-stock-unit="<%= stockUnitStr %>"
-                  data-units-per-pack="<%= ratio %>"
-                  title="Enregistrer une livraison"
-                >
-                  <i class="fa-solid fa-truck"></i>
-                </button>
-              </td>
-              <td class="text-center">
-                <button
-                  type="button"
-                  class="btn btn-outline-warning btn-sm btn-checkout-consumable"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalInventoryCheckout"
-                  data-item-type="CONSUMABLE"
-                  data-item-id="<%= consumable.id %>"
-                  data-item-name="<%= consumable.name %>"
-                  data-item-stock="<%= consumable.stock %>"
-                  data-item-unit="<%= unitStr %>"
-                  title="Sortie de stock (casse, rebut, perte...)"
-                >
-                  <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                </button>
-              </td>
-              <td class="text-center">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm btn-edit"
-                  data-bs-toggle="modal"
-                  data-bs-target="#editConsumableModal"
-                  data-id="<%= consumable.id %>"
-                  data-name="<%= consumable.name %>"
-                  data-cost="<%= consumable.cost %>"
-                  data-stock="<%= consumable.stock %>"
-                  data-threshold="<%= consumable.reorderThreshold %>"
-                  data-category-id="<%= consumable.categoryId || '' %>"
-                  data-unit="<%= unitStr %>"
-                  data-stock-unit="<%= stockUnitStr %>"
-                  data-units-per-pack="<%= ratio %>"
-                  title="Éditer"
-                >
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-              </td>
-              <td class="text-center">
-                <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/consumables/delete/<%= consumable.id %>" class="d-inline" data-confirm="Delete this consumable?">
-                  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                  <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer">
-                    <i class="fa-solid fa-trash-can"></i>
+              <td class="text-end pe-3">
+                <div class="fab-row-actions">
+                  <button
+                    type="button"
+                    class="btn btn-outline-success btn-sm btn-restock"
+                    data-bs-toggle="modal"
+                    data-bs-target="#restockModal"
+                    data-id="<%= consumable.id %>"
+                    data-name="<%= consumable.name %>"
+                    data-stock="<%= consumable.stock %>"
+                    data-unit="<%= unitStr %>"
+                    data-stock-unit="<%= stockUnitStr %>"
+                    data-units-per-pack="<%= ratio %>"
+                    title="Enregistrer une livraison"
+                    aria-label="Enregistrer une livraison pour <%= consumable.name %>"
+                  >
+                    <i class="fa-solid fa-truck" aria-hidden="true"></i>
                   </button>
-                </form>
+                  <button
+                    type="button"
+                    class="btn btn-outline-warning btn-sm btn-checkout-consumable"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalInventoryCheckout"
+                    data-item-type="CONSUMABLE"
+                    data-item-id="<%= consumable.id %>"
+                    data-item-name="<%= consumable.name %>"
+                    data-item-stock="<%= consumable.stock %>"
+                    data-item-unit="<%= unitStr %>"
+                    title="Sortie de stock (casse, rebut, perte…)"
+                    aria-label="Sortie de stock pour <%= consumable.name %>"
+                  >
+                    <i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm btn-edit"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editConsumableModal"
+                    data-id="<%= consumable.id %>"
+                    data-name="<%= consumable.name %>"
+                    data-cost="<%= consumable.cost %>"
+                    data-stock="<%= consumable.stock %>"
+                    data-threshold="<%= consumable.reorderThreshold %>"
+                    data-category-id="<%= consumable.categoryId || '' %>"
+                    data-unit="<%= unitStr %>"
+                    data-stock-unit="<%= stockUnitStr %>"
+                    data-units-per-pack="<%= ratio %>"
+                    title="Modifier"
+                    aria-label="Modifier <%= consumable.name %>"
+                  >
+                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                  </button>
+                  <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/consumables/delete/<%= consumable.id %>" class="d-inline" data-confirm="Supprimer définitivement le consommable « <%= consumable.name %> » ?">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer" aria-label="Supprimer <%= consumable.name %>">
+                      <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
             <% }); %>
