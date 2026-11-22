@@ -55,6 +55,7 @@ pm2 logs fabtrack --lines 50
 | [R-020](../roadmap/items/R-020-supprimer-l-etat-global-mute-par-requete-et.md) | `v1.3` | Vérifier que `NODE_ENV=production` est défini en prod (les erreurs 5xx sont désormais masquées dès que `NODE_ENV !== "development"`) | Aucune | Aucune | Vérifier deux sessions concurrentes FR/EN sur les dates longues et l'absence de stack trace sur une erreur serveur |
 | [R-021](../roadmap/items/R-021-agreger-les-statistiques-en-sql-unifier-app.md) | `v1.4` | Optionnel : `APP_TIMEZONE=Europe/Paris` (défaut `Europe/Paris`) | Aucune | Aucune | Vérifier `/admin/statistics` (périodes + export CSV), pagination `/admin/view-history` et `/users/manage`, et autocomplétion usager au kiosque (`/fabtrack`) |
 | [R-022](../roadmap/items/R-022-unifier-l-acces-prisma-fin-du-hack-require-cache.md) | `v1.4` | Aucune | Aucune | **`npm install --omit=dev`** (retrait `socket.io`, `socket.io-client`, `randomized-string`, `node-fetch`, `uuid`) | Vérifier un démarrage propre (`npm start`) sans `socket.io` et l'accès kiosque + admin |
+| [R-023](../roadmap/items/R-023-migrations-sql-versionnees-netbsd-et-typage.md) | `v1.4` | Aucune | **Obligatoire :** `npm run db:migrate` (pure JS compatible NetBSD ; applique `001` à `004` idempotentes : enums stricts, `DECIMAL(10,2)`, `Log.description TEXT`, FK typées `Activity`) | **`npx prisma generate`** | Vérifier `npm run db:migrate -- --status` et le backfill sans perte des FK `Activity` |
 
 ---
 
@@ -421,6 +422,36 @@ ALTER TABLE `Activity` ADD COLUMN `unitCost` DECIMAL(10, 2) NULL;
 
 ```bash
 npx prisma generate
+```
+
+---
+
+### Jalon `v1.4` — Performance avancée, architecture, migrations & exploitation
+
+#### `R-023` — Migrations SQL versionnées (compatible NetBSD) & typage strict Prisma
+
+Les évolutions de schéma s'appliquent désormais via un runner pure JS (`scripts/migrate.js`, pilote `mariadb` natif, sans binaire moteur Prisma — 100 % compatible **NetBSD**) avec suivi dans la table `_schema_version`.
+
+**1. Vérifier et appliquer les migrations SQL**
+
+```bash
+# Consulter l'état des migrations
+npm run db:migrate -- --status
+
+# Prévisualiser sans exécuter
+npm run db:migrate -- --dry-run
+
+# Appliquer les migrations en attente (001 à 004 idempotentes, sans perte de données)
+npm run db:migrate
+```
+
+*(Pour une toute nouvelle installation initialisée directement avec `prisma/schema.sql`, marquer l'historique en baseline sans ré-exécuter les `ALTER` : `npm run db:migrate -- --baseline`.)*
+
+**2. Régénérer le client Prisma et redémarrer**
+
+```bash
+npx prisma generate
+pm2 restart fabtrack
 ```
 
 

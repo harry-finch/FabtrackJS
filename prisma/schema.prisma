@@ -11,12 +11,19 @@ datasource db {
 model Log {
   id          Int      @id @default(autoincrement())
   timestamp   DateTime @default(now())
-  description String   @db.VarChar(255)
+  description String   @db.Text
   userId      Int? // Optional link to the responsible user
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([timestamp])
+}
+
+// Role enum for Staff accounts
+enum StaffRole {
+  admin
+  user
+  staff
 }
 
 // Staff who can log into the platform
@@ -25,7 +32,7 @@ model Staff {
   name        String    @unique @db.VarChar(255)
   email       String    @unique @db.VarChar(255)
   password    String    @db.VarChar(255)
-  role        String    @default("user") @db.VarChar(20)
+  role        StaffRole @default(user)
   pwdToken    String?   @db.VarChar(64)
   tokenExpiry DateTime?
   createdAt       DateTime  @default(now())
@@ -44,7 +51,7 @@ model User {
   updatedAt     DateTime?
   birthYear     Int?
   comment       String?   @db.VarChar(255)
-  balance       Decimal   @default(0.0)
+  balance       Decimal   @default(0.0) @db.Decimal(10, 2)
   termsAccepted Boolean   @default(false)
   newsletter    Boolean   @default(false)
   token         String    @unique @db.VarChar(40)
@@ -144,6 +151,15 @@ model Warningtype {
   warnings Warning[]
 }
 
+// Enum for Repair Café outcome status
+enum RepairStatus {
+  PENDING
+  REPAIRED
+  PARTIALLY_REPAIRED
+  NOT_REPAIRED
+  NEEDS_RETURN
+}
+
 // History of user visits to the fablab
 model History {
   id             Int           @id @default(autoincrement())
@@ -160,7 +176,7 @@ model History {
 
   // Repair Café Plugin fields
   repairObject          String?       @db.VarChar(255)
-  repairStatus          String?       @db.VarChar(50) // PENDING, REPAIRED, PARTIALLY_REPAIRED, NOT_REPAIRED, NEEDS_RETURN
+  repairStatus          RepairStatus?
   repairNotes           String?       @db.Text
 
   // Workshop Plugin field
@@ -202,13 +218,19 @@ model Activity {
   createdAt    DateTime     @default(now())
   historyId    Int?
   userId       Int?
-  resourceId   Int // ID of the resource (Machine, Equipment, or Consumable)
+  resourceId   Int // Legacy polymorphic ID (retained during FK transition)
   resourceType ResourceType // Type of the resource (MACHINE, EQUIPMENT, CONSUMABLE)
+  machineId    Int? // Typed FK for MACHINE activities
+  consumableId Int? // Typed FK for CONSUMABLE activities
+  equipmentId  Int? // Typed FK for EQUIPMENT activities
   quantity     Int? // Only used for Consumables
   unitCost     Decimal?     @db.Decimal(10, 2) // Snapshot of Consumable.cost at consumption time
 
-  history History? @relation(fields: [historyId], references: [id], onDelete: SetNull)
-  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  history    History?    @relation(fields: [historyId], references: [id], onDelete: SetNull)
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  machine    Machine?    @relation(fields: [machineId], references: [id], onDelete: SetNull)
+  consumable Consumable? @relation(fields: [consumableId], references: [id], onDelete: SetNull)
+  equipment  Equipment?  @relation(fields: [equipmentId], references: [id], onDelete: SetNull)
 
   // Equipment loan / borrow fields
   borrowDurationDays Int?
@@ -233,6 +255,9 @@ model Activity {
   @@index([resourceType, returnedAt, userId])
   @@index([resourceType, resourceId, endedAt])
   @@index([createdAt])
+  @@index([machineId])
+  @@index([consumableId])
+  @@index([equipmentId])
 }
 
 // Categories within a workspace (e.g., electronics, woodworking)
@@ -264,12 +289,13 @@ model Machine {
   documentation     String?   @db.VarChar(255)
   accessId          Int
 
-  location    Location?   @relation(fields: [locationId], references: [id])
-  machinetype MachineType @relation(fields: [machinetypeId], references: [id])
-  access      Access      @relation(fields: [accessId], references: [id])
-  category     Category?      @relation(fields: [categoryId], references: [id])
+  location     Location?            @relation(fields: [locationId], references: [id])
+  machinetype  MachineType          @relation(fields: [machinetypeId], references: [id])
+  access       Access               @relation(fields: [accessId], references: [id])
+  category     Category?            @relation(fields: [categoryId], references: [id])
   issues       MachineIssue[]
   maintenances MachineMaintenance[]
+  activities   Activity[]
 }
 
 model MachineType {
@@ -279,16 +305,24 @@ model MachineType {
   Machine Machine[]
 }
 
+// Equipment status enum
+enum EquipmentStatus {
+  AVAILABLE
+  OUT_OF_SERVICE
+  DECOMMISSIONED
+}
+
 // Equipment (e.g., hand tools, safety gear)
 model Equipment {
-  id                 Int        @id @default(autoincrement())
-  name               String     @unique @db.VarChar(255)
+  id                 Int             @id @default(autoincrement())
+  name               String          @unique @db.VarChar(255)
   workspaceId        Int?
-  status             String     @default("AVAILABLE") @db.VarChar(50) // AVAILABLE, OUT_OF_SERVICE, DECOMMISSIONED
+  status             EquipmentStatus @default(AVAILABLE)
   decommissionedAt   DateTime?
-  decommissionReason String?    @db.VarChar(255)
+  decommissionReason String?         @db.VarChar(255)
 
-  workspace          Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  workspace          Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  activities         Activity[]
 }
 
 // Consumable status enum to track stock status
@@ -302,7 +336,7 @@ enum ConsumableStatus {
 model Consumable {
   id               Int              @id @default(autoincrement())
   name             String           @unique @db.VarChar(255)
-  cost             Decimal
+  cost             Decimal          @db.Decimal(10, 2)
   stock            Int              @default(0)
   reorderThreshold Int              @default(10)
   status           ConsumableStatus @default(AVAILABLE)
@@ -312,6 +346,7 @@ model Consumable {
   unitsPerPack     Decimal          @default(1.0)
 
   category         Category?        @relation(fields: [categoryId], references: [id])
+  activities       Activity[]
 }
 
 // Different locations for assets within the lab (e.g., rooms, drawers)
@@ -382,21 +417,27 @@ model UserWorkshopCompletion {
   @@unique([userId, workshopId])
 }
 
+// Enum for MachineIssue status
+enum MachineIssueStatus {
+  OPEN
+  RESOLVED
+}
+
 // Machine issues reported by users or staff
 model MachineIssue {
-  id              Int       @id @default(autoincrement())
+  id              Int                @id @default(autoincrement())
   machineId       Int
-  description     String    @db.Text
-  photoPath       String?   @db.VarChar(255)
-  reporterName    String?   @db.VarChar(255)
-  reporterEmail   String?   @db.VarChar(255)
-  status          String    @default("OPEN") @db.VarChar(50) // "OPEN", "RESOLVED"
+  description     String             @db.Text
+  photoPath       String?            @db.VarChar(255)
+  reporterName    String?            @db.VarChar(255)
+  reporterEmail   String?            @db.VarChar(255)
+  status          MachineIssueStatus @default(OPEN)
   resolvedAt      DateTime?
-  resolutionNotes String?   @db.Text
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  resolutionNotes String?            @db.Text
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
-  machine         Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  machine         Machine            @relation(fields: [machineId], references: [id], onDelete: Cascade)
 
   @@index([machineId, status, createdAt])
 }

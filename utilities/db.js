@@ -1,5 +1,14 @@
 require("dotenv").config();
-const { PrismaClient, ResourceType, ConsumableStatus, Prisma } = require("@prisma/client");
+const {
+  PrismaClient,
+  ResourceType,
+  ConsumableStatus,
+  StaffRole,
+  EquipmentStatus,
+  MachineIssueStatus,
+  RepairStatus,
+  Prisma,
+} = require("@prisma/client");
 const { PrismaMariaDb } = require("@prisma/adapter-mariadb");
 const mariadb = require("mariadb");
 
@@ -66,6 +75,10 @@ module.exports = {
   Prisma,
   ResourceType,
   ConsumableStatus,
+  StaffRole,
+  EquipmentStatus,
+  MachineIssueStatus,
+  RepairStatus,
   createMariaDbAdapter,
   closePool,
 };

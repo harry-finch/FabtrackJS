@@ -44,6 +44,27 @@ const mockEnumStubs = {
     LOW_STOCK: "LOW_STOCK",
     OUT_OF_STOCK: "OUT_OF_STOCK",
   },
+  StaffRole: {
+    admin: "admin",
+    user: "user",
+    staff: "staff",
+  },
+  EquipmentStatus: {
+    AVAILABLE: "AVAILABLE",
+    OUT_OF_SERVICE: "OUT_OF_SERVICE",
+    DECOMMISSIONED: "DECOMMISSIONED",
+  },
+  MachineIssueStatus: {
+    OPEN: "OPEN",
+    RESOLVED: "RESOLVED",
+  },
+  RepairStatus: {
+    PENDING: "PENDING",
+    REPAIRED: "REPAIRED",
+    PARTIALLY_REPAIRED: "PARTIALLY_REPAIRED",
+    NOT_REPAIRED: "NOT_REPAIRED",
+    NEEDS_RETURN: "NEEDS_RETURN",
+  },
 };
 
 class mockUnitStubPrismaClient {

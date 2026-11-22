@@ -44,7 +44,7 @@
    Migrer les calculs statistiques de JS vers SQL, corriger le fuseau horaire, paginer historique/usagers et remplacer le dump autocomplete kiosque.
 19. **[R-022 Unifier l'accès Prisma (fin du hack require.cache) et nettoyer code mort & socket.io](roadmap/items/R-022-unifier-l-acces-prisma-fin-du-hack-require-cache.md)** · À tester · jalon v1.4
    Remplacer les 37 new PrismaClient() par utilities/db, retirer socket.io inutilisé et supprimer les fichiers morts suivis dans Git.
-20. **[R-023 Migrations SQL versionnées (NetBSD) et typage strict du schéma Prisma](roadmap/items/R-023-migrations-sql-versionnees-netbsd-et-typage.md)** · Idée · jalon v1.4
+20. **[R-023 Migrations SQL versionnées (NetBSD) et typage strict du schéma Prisma](roadmap/items/R-023-migrations-sql-versionnees-netbsd-et-typage.md)** · À tester · jalon v1.4
    Instaurer un historique de migrations SQL incrémentales compatible NetBSD et typer strictement enums, décimaux et relations d'Activity.
 21. **[R-024 Alléger les routes/vues obèses et activer une CSP stricte sans unsafe-inline](roadmap/items/R-024-alleger-les-routes-vues-obeses-et-activer-une.md)** · Idée · jalon v1.4
    Extraire la logique métier vers services/, factoriser les duplications, sortir le JS inline et durcir la Content Security Policy.
@@ -107,6 +107,7 @@
 - [ ] [A-036](roadmap/actions/A-036-verifier-admin-statistics-periodes-graphiques-et.md) Vérifier /admin/statistics (périodes, graphiques et export CSV) sous agrégation SQL (tester, R-021)
 - [ ] [A-037](roadmap/actions/A-037-tester-la-pagination-serveur-admin-view-history.md) Tester la pagination serveur (/admin/view-history, /users/manage) et l'autocomplétion kiosque (tester, R-021)
 - [ ] [A-038](roadmap/actions/A-038-verifier-le-demarrage-propre-sans-socket-io.md) Vérifier le démarrage propre sans socket.io après npm install --omit=dev (tester, R-022)
+- [ ] [A-039](roadmap/actions/A-039-executer-npm-run-db-migrate-sur-une-copie.md) Exécuter npm run db:migrate sur une copie anonymisée (y compris NetBSD) (tester, R-023)
 
 ## Livré
 

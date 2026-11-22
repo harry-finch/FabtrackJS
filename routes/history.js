@@ -530,6 +530,7 @@ router.post(
           userId: usrId,
           resourceId: Number(machineId),
           resourceType: ResourceType.MACHINE,
+          machineId: Number(machineId),
         },
       });
       recordedCount++;
@@ -573,6 +574,7 @@ router.post(
             userId: usrId,
             resourceId: equipId,
             resourceType: ResourceType.EQUIPMENT,
+            equipmentId: equipId,
             borrowDurationDays: durationDays,
             expectedReturnAt,
             returnedAt: null,
@@ -664,6 +666,7 @@ router.post(
             userId: usrId,
             resourceId: Number(consumable),
             resourceType: ResourceType.CONSUMABLE,
+            consumableId: Number(consumable),
             quantity: qty,
             unitCost,
           },

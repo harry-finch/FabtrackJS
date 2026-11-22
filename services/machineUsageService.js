@@ -394,6 +394,7 @@ class MachineUsageService {
         userId: user.id,
         resourceId: machine.id,
         resourceType: "MACHINE",
+        machineId: machine.id,
         historyId: historyCheck.historyId,
         startedAt: startDateTime,
         endedAt: null, // Session currently in progress
@@ -657,6 +658,7 @@ class MachineUsageService {
         userId: user.id,
         resourceId: machine.id,
         resourceType: "MACHINE",
+        machineId: machine.id,
         historyId: historyCheck.historyId,
         startedAt: startDate,
         endedAt: endDate,

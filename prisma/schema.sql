@@ -2,7 +2,7 @@
 CREATE TABLE `Log` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `timestamp` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `description` VARCHAR(255) NOT NULL,
+    `description` TEXT NOT NULL,
     `userId` INTEGER NULL,
 
     INDEX `Log_timestamp_idx`(`timestamp`),
@@ -15,7 +15,7 @@ CREATE TABLE `Staff` (
     `name` VARCHAR(255) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
-    `role` VARCHAR(20) NOT NULL DEFAULT 'user',
+    `role` ENUM('admin', 'user', 'staff') NOT NULL DEFAULT 'user',
     `pwdToken` VARCHAR(64) NULL,
     `tokenExpiry` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -38,7 +38,7 @@ CREATE TABLE `User` (
     `updatedAt` DATETIME(3) NULL,
     `birthYear` INTEGER NULL,
     `comment` VARCHAR(255) NULL,
-    `balance` DECIMAL(65, 30) NOT NULL DEFAULT 0.0,
+    `balance` DECIMAL(10, 2) NOT NULL DEFAULT 0.0,
     `termsAccepted` BOOLEAN NOT NULL DEFAULT false,
     `newsletter` BOOLEAN NOT NULL DEFAULT false,
     `token` VARCHAR(40) NOT NULL,
@@ -147,7 +147,7 @@ CREATE TABLE `History` (
     `comments` VARCHAR(255) NULL,
     `workspaceId` INTEGER NULL,
     `repairObject` VARCHAR(255) NULL,
-    `repairStatus` VARCHAR(50) NULL,
+    `repairStatus` ENUM('PENDING', 'REPAIRED', 'PARTIALLY_REPAIRED', 'NOT_REPAIRED', 'NEEDS_RETURN') NULL,
     `repairNotes` TEXT NULL,
     `workshopId` INTEGER NULL,
 
@@ -175,6 +175,9 @@ CREATE TABLE `Activity` (
     `userId` INTEGER NULL,
     `resourceId` INTEGER NOT NULL,
     `resourceType` ENUM('MACHINE', 'EQUIPMENT', 'CONSUMABLE') NOT NULL,
+    `machineId` INTEGER NULL,
+    `consumableId` INTEGER NULL,
+    `equipmentId` INTEGER NULL,
     `quantity` INTEGER NULL,
     `unitCost` DECIMAL(10, 2) NULL,
     `borrowDurationDays` INTEGER NULL,
@@ -195,6 +198,9 @@ CREATE TABLE `Activity` (
     INDEX `Activity_resourceType_returnedAt_userId_idx`(`resourceType`, `returnedAt`, `userId`),
     INDEX `Activity_resourceType_resourceId_endedAt_idx`(`resourceType`, `resourceId`, `endedAt`),
     INDEX `Activity_createdAt_idx`(`createdAt`),
+    INDEX `Activity_machineId_idx`(`machineId`),
+    INDEX `Activity_consumableId_idx`(`consumableId`),
+    INDEX `Activity_equipmentId_idx`(`equipmentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -243,7 +249,7 @@ CREATE TABLE `Equipment` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
     `workspaceId` INTEGER NULL,
-    `status` VARCHAR(50) NOT NULL DEFAULT 'AVAILABLE',
+    `status` ENUM('AVAILABLE', 'OUT_OF_SERVICE', 'DECOMMISSIONED') NOT NULL DEFAULT 'AVAILABLE',
     `decommissionedAt` DATETIME(3) NULL,
     `decommissionReason` VARCHAR(255) NULL,
 
@@ -255,7 +261,7 @@ CREATE TABLE `Equipment` (
 CREATE TABLE `Consumable` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
-    `cost` DECIMAL(65, 30) NOT NULL,
+    `cost` DECIMAL(10, 2) NOT NULL,
     `stock` INTEGER NOT NULL DEFAULT 0,
     `reorderThreshold` INTEGER NOT NULL DEFAULT 10,
     `status` ENUM('AVAILABLE', 'LOW_STOCK', 'OUT_OF_STOCK') NOT NULL DEFAULT 'AVAILABLE',
@@ -342,7 +348,7 @@ CREATE TABLE `MachineIssue` (
     `photoPath` VARCHAR(255) NULL,
     `reporterName` VARCHAR(255) NULL,
     `reporterEmail` VARCHAR(255) NULL,
-    `status` VARCHAR(50) NOT NULL DEFAULT 'OPEN',
+    `status` ENUM('OPEN', 'RESOLVED') NOT NULL DEFAULT 'OPEN',
     `resolvedAt` DATETIME(3) NULL,
     `resolutionNotes` TEXT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -445,6 +451,15 @@ ALTER TABLE `Activity` ADD CONSTRAINT `Activity_historyId_fkey` FOREIGN KEY (`hi
 
 -- AddForeignKey
 ALTER TABLE `Activity` ADD CONSTRAINT `Activity_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Activity` ADD CONSTRAINT `Activity_machineId_fkey` FOREIGN KEY (`machineId`) REFERENCES `Machine`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Activity` ADD CONSTRAINT `Activity_consumableId_fkey` FOREIGN KEY (`consumableId`) REFERENCES `Consumable`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Activity` ADD CONSTRAINT `Activity_equipmentId_fkey` FOREIGN KEY (`equipmentId`) REFERENCES `Equipment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Category` ADD CONSTRAINT `Category_workspaceId_fkey` FOREIGN KEY (`workspaceId`) REFERENCES `Workspace`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
