@@ -105,7 +105,7 @@
                                 </a>
                             </div>
 
-                            <script>
+                            <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
                                 (function() {
                                     let delay = parseInt(String(<%- typeof safeJson === 'function' ? safeJson(redirectDelay) : JSON.stringify(redirectDelay) %>), 10);
                                     const targetUrl = <%- typeof safeJson === 'function' ? safeJson(validatedRedirectUrl) : JSON.stringify(validatedRedirectUrl) %>;

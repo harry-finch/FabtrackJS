@@ -84,7 +84,7 @@
                 <label class="form-label small fw-bold">Action sur le matériel <span class="text-danger">*</span></label>
                 <div class="row g-2">
                   <div class="col-md-6">
-                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" onclick="document.getElementById('actionDecom').checked = true; updateActionCardStyles();">
+                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" data-radio-target="actionDecom">
                       <div class="form-check">
                         <input class="form-check-input" type="radio" name="equipmentAction" id="actionDecom" value="DECOMMISSIONED" checked>
                         <label class="form-check-label fw-bold text-danger d-block" for="actionDecom">
@@ -95,7 +95,7 @@
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" onclick="document.getElementById('actionOutOfService').checked = true; updateActionCardStyles();">
+                    <div class="card h-100 border p-3 rounded-3 cursor-pointer action-card" data-radio-target="actionOutOfService">
                       <div class="form-check">
                         <input class="form-check-input" type="radio" name="equipmentAction" id="actionOutOfService" value="OUT_OF_SERVICE">
                         <label class="form-check-label fw-bold text-warning-emphasis d-block" for="actionOutOfService">
@@ -162,7 +162,7 @@
   </div>
 </div>
 
-<script>
+<script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
 (function() {
   let cachedInventoryItems = null;
 
@@ -233,6 +233,21 @@
 
   const modalEl = document.getElementById("modalInventoryCheckout");
   if (!modalEl) return;
+
+  // Bind click handlers for equipment action cards (CSP-safe, no inline onclick)
+  modalEl.querySelectorAll(".action-card[data-radio-target]").forEach(card => {
+    card.addEventListener("click", function() {
+      const targetId = this.getAttribute("data-radio-target");
+      const radio = targetId ? document.getElementById(targetId) : null;
+      if (radio) {
+        radio.checked = true;
+      }
+      updateActionCardStyles();
+    });
+  });
+  modalEl.querySelectorAll('input[name="equipmentAction"]').forEach(radio => {
+    radio.addEventListener("change", updateActionCardStyles);
+  });
 
   // Toggle sections on itemType radio change
   const typeRadios = document.querySelectorAll('input[name="itemType"]');

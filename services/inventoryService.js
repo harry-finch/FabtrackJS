@@ -1,18 +1,7 @@
 const { prisma } = require("../utilities/db");
 const logger = require("../utilities/simpleLogger");
 const mailService = require("./mailService");
-
-/**
- * Computes the ConsumableStatus based on current stock and threshold.
- * @param {number} stock
- * @param {number} threshold
- * @returns {"AVAILABLE"|"LOW_STOCK"|"OUT_OF_STOCK"}
- */
-function computeStatus(stock, threshold) {
-  if (stock <= 0) return "OUT_OF_STOCK";
-  if (stock <= threshold) return "LOW_STOCK";
-  return "AVAILABLE";
-}
+const { computeConsumableStatus } = require("./consumableStatusHelper");
 
 /**
  * Check out / write off a consumable from inventory.
@@ -38,7 +27,7 @@ async function checkoutConsumable({ id, quantity, reason, notes, author }) {
 
     const stockBefore = consumable.stock;
     const stockAfter = Math.max(0, stockBefore - qty);
-    const newStatus = computeStatus(stockAfter, consumable.reorderThreshold);
+    const newStatus = computeConsumableStatus(stockAfter, consumable.reorderThreshold);
 
     const updatedConsumable = await tx.consumable.update({
       where: { id: consumableId },
@@ -332,7 +321,7 @@ const { escapeCsvCell } = require("../utilities/securityHelpers");
 }
 
 module.exports = {
-  computeStatus,
+  computeStatus: computeConsumableStatus,
   checkoutConsumable,
   checkoutEquipment,
   restoreEquipment,

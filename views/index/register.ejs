@@ -55,7 +55,7 @@
 
             <%- include('../includes/footer.html') %>
 
-        <script>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
         document.querySelector('form')
           .addEventListener('submit', (event) => {
             const pwd = document.getElementById('password').value;

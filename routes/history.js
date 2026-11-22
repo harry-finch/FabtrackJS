@@ -21,17 +21,12 @@ const {
 
 router.use(isLoggedIn);
 
-const { prisma, ResourceType, ConsumableStatus } = require("../utilities/db.js");
+const { prisma, ResourceType } = require("../utilities/db.js");
 const mailService = require("../services/mailService.js");
 const balanceService = require("../services/balanceService.js");
+const { computeConsumableStatus } = require("../services/consumableStatusHelper.js");
+const equipmentLoanService = require("../services/equipmentLoanService.js");
 const logger = require("../utilities/simpleLogger.js");
-
-// Helper to compute consumable status from stock & threshold
-function computeConsumableStatus(stock, threshold) {
-  if (stock <= 0) return ConsumableStatus.OUT_OF_STOCK;
-  if (stock <= threshold) return ConsumableStatus.LOW_STOCK;
-  return ConsumableStatus.AVAILABLE;
-}
 
 // Helper to update consumable stock and status inside an active Prisma transaction (or default client)
 async function consumeItemTx(tx, consumableId, quantity) {
@@ -851,15 +846,14 @@ router.post(
       return res.redirect(getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage"));
     }
 
-    const updated = await prisma.activity.updateMany({
-      where: { id: Number(id), resourceType: ResourceType.EQUIPMENT, returnedAt: null },
-      data: {
-        returnedAt: new Date(),
-        returnNotes: returnNotes && returnNotes.trim() ? returnNotes.trim() : null,
-      },
+    const returnResult = await equipmentLoanService.returnEquipmentLoan({
+      prisma,
+      activityId: Number(id),
+      returnNotes,
+      staffUsername: req.session.username,
     });
 
-    if (updated.count === 0) {
+    if (!returnResult.returned) {
       req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
       return res.redirect(getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage"));
     }

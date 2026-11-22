@@ -47,9 +47,9 @@
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th onclick="sortTable(0)" scope="col" class="ps-3">#</th>
-                  <th onclick="sortTable(1)" scope="col">Category Name</th>
-                  <th onclick="sortTable(2)" scope="col">Workspace</th>
+                  <th data-sort="0" scope="col" class="ps-3">#</th>
+                  <th data-sort="1" scope="col">Category Name</th>
+                  <th data-sort="2" scope="col">Workspace</th>
                   <th scope="col" class="text-end pe-3">Actions</th>
                 </tr>
               </thead>
@@ -133,7 +133,7 @@
               <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
                 Create New Category
               </button>
-              <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" onclick="cancelEdit()">
+              <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" data-action="cancel-edit">
                 Annuler
               </button>
             </div>
@@ -143,7 +143,7 @@
 
       <%- include('../includes/footer.html') %>
 
-      <script>
+      <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
         const elements = document.querySelectorAll('[id^="edit-"]');
         elements.forEach(function (element) {
           element.addEventListener("click", editItem);

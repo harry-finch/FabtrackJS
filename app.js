@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
@@ -117,23 +118,29 @@ app.use(compression());
 // Middleware Setup
 // ******************************************************************************
 
-// Add security headers with helmet
+// Generate a cryptographic per-request CSP nonce before Helmet builds response headers
+app.use((req, res, next) => {
+  res.locals.cspNonce = crypto.randomBytes(16).toString("base64");
+  next();
+});
+
+// Add security headers with strict helmet CSP (no 'unsafe-inline' in scriptSrc or scriptSrcAttr)
 const isHttpsProduction = isProduction && process.env.ENABLE_HTTPS === "true";
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        // Allow scripts from trusted sources and inline scripts for templates
+        // Strict script policy: self + per-request cryptographic nonce + trusted CDNs (NO 'unsafe-inline')
         scriptSrc: [
           "'self'",
-          "'unsafe-inline'",
+          (_req, res) => `'nonce-${res.locals.cspNonce}'`,
           "https://cdnjs.cloudflare.com",
           "https://cdn.jsdelivr.net",
         ],
-        // Allow inline event attributes like onclick
-        scriptSrcAttr: ["'unsafe-inline'"],
-        // Allow styles from specific trusted sources and inline styles
+        // Disallow all inline event handler attributes (onclick, onchange, etc.)
+        scriptSrcAttr: ["'none'"],
+        // Allow styles from specific trusted sources and inline styles (visual style= cleanup deferred to v1.5)
         styleSrc: [
           "'self'",
           "'unsafe-inline'",

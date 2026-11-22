@@ -150,7 +150,7 @@
                         </div>
                     <% } else { %>
                         <!-- Barre de saisie de question -->
-                        <form id="aiQueryForm" class="mb-3" onsubmit="return false;">
+                        <form id="aiQueryForm" class="mb-3">
                             <div class="input-group shadow-sm rounded-pill border bg-body p-1">
                                 <span class="input-group-text bg-transparent border-0 ps-3 text-primary">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -549,7 +549,7 @@
             <%- include('../includes/footer.html') %>
 
         <!-- SCRIPTS CHART.JS & INTERACTIONS -->
-        <script>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
             // Données transmises depuis le serveur
             const chartData = <%- safeJson(chartData) %>;
 
@@ -841,6 +841,11 @@
                 const tableBody = document.getElementById("aiTableBody");
 
                 if (!input || !btnSubmit) return;
+
+                const aiQueryForm = document.getElementById("aiQueryForm");
+                if (aiQueryForm) {
+                    aiQueryForm.addEventListener("submit", (e) => e.preventDefault());
+                }
 
                 let currentData = null;
                 let aiChartInstance = null;

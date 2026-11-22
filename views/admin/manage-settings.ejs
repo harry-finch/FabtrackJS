@@ -139,7 +139,7 @@
 
                   <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
-                      onclick="document.getElementById('resetLogoForm').submit();">
+                      data-submit-form="resetLogoForm">
                       <i class="fa-solid fa-rotate-left me-1"></i> Rétablir le logo Sorbonne par défaut
                     </button>
                   </div>
@@ -173,7 +173,7 @@
                     <input class="form-control" type="file" id="favicon" name="favicon" accept=".ico,.png">
                   </div>
                   <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
-                    onclick="document.getElementById('resetFaviconForm').submit();">
+                    data-submit-form="resetFaviconForm">
                     <i class="fa-solid fa-rotate-left me-1"></i> Rétablir le favicon par défaut
                   </button>
                 </div>
@@ -183,7 +183,7 @@
                     <label class="form-label fw-semibold d-block">Favicon :</label>
                     <img src="<%= settings.platform_favicon_path || '/favicon.ico' %>"
                       class="favicon-preview-img shadow-sm" alt="Favicon" id="faviconPreviewImg"
-                      onerror="this.src='/favicon.ico';">
+                      data-fallback-src="/favicon.ico">
                   </div>
                   <small class="text-muted">Apparaît sur l'onglet de votre navigateur et dans les favoris.</small>
                 </div>
@@ -709,7 +709,16 @@
         <%- include('../includes/footer.html') %>
     </main>
 
-    <script>
+    <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
+      // Delegated form submission buttons (e.g. resetLogoForm, resetFaviconForm)
+      document.querySelectorAll('[data-submit-form]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const formId = btn.getAttribute('data-submit-form');
+          const targetForm = formId ? document.getElementById(formId) : null;
+          if (targetForm) targetForm.submit();
+        });
+      });
+
       // Live preview for Logo
       const logoInput = document.getElementById('logo');
       const logoContainer = document.getElementById('logoPreviewContainer');
@@ -721,13 +730,13 @@
         if (file) {
           radioCustom.checked = true;
           const reader = new FileReader();
-          reader.onload = function (event) {
+          reader.addEventListener('load', function (event) {
             const img = document.createElement('img');
             img.src = event.target.result;
             img.alt = 'Logo Preview';
             img.className = 'logo-preview-img';
             logoContainer.replaceChildren(img);
-          };
+          });
           reader.readAsDataURL(file);
         }
       });
@@ -742,13 +751,27 @@
       const faviconInput = document.getElementById('favicon');
       const faviconPreviewImg = document.getElementById('faviconPreviewImg');
 
+      if (faviconPreviewImg) {
+        const applyFaviconFallback = function () {
+          const fallback = faviconPreviewImg.getAttribute('data-fallback-src') || '/favicon.ico';
+          if (!faviconPreviewImg.dataset.fallbackApplied) {
+            faviconPreviewImg.dataset.fallbackApplied = 'true';
+            faviconPreviewImg.src = fallback;
+          }
+        };
+        faviconPreviewImg.addEventListener('error', applyFaviconFallback);
+        if (faviconPreviewImg.complete && faviconPreviewImg.naturalWidth === 0) {
+          applyFaviconFallback();
+        }
+      }
+
       faviconInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = function (event) {
+          reader.addEventListener('load', function (event) {
             faviconPreviewImg.src = event.target.result;
-          };
+          });
           reader.readAsDataURL(file);
         }
       });

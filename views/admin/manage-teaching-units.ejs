@@ -658,7 +658,7 @@
 
       <%- include('../includes/footer.html') %>
 
-      <script>
+      <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
         document.addEventListener("DOMContentLoaded", () => {
           // Edit UE Modal
           const editBtns = document.querySelectorAll(".edit-ue-btn");

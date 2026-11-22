@@ -350,7 +350,7 @@
             <%- include('../includes/footer.html') %>
         </main>
 
-        <script>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
             // Live filter for the repair history table
             const searchInput = document.getElementById("repairSearchInput");
             if (searchInput) {

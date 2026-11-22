@@ -360,7 +360,7 @@
 
       <%- include('../includes/footer.html') %>
 
-      <script>
+      <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
         // Edit History Modal pre-fill
         const editHistoryModal = document.getElementById('editHistoryModal');
         if (editHistoryModal) {

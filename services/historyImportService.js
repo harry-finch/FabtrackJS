@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const uuidv4 = () => crypto.randomUUID();
 const moment = require("moment");
 const logger = require("../utilities/simpleLogger.js");
+const { parseCsvText } = require("./csvParserService.js");
 
 /**
  * Service de gestion de l'importation par lot d'historiques et séances d'enseignement via CSV.
@@ -12,73 +13,7 @@ class HistoryImportService {
    * Analyse du texte CSV (RFC 4180 avec détection automatique de séparateur , ; ou \t)
    */
   parseCsvText(csvText) {
-    if (!csvText || typeof csvText !== "string") return [];
-
-    // Nettoyage du BOM UTF-8
-    let cleanText = csvText.charCodeAt(0) === 0xfeff ? csvText.slice(1) : csvText;
-    cleanText = cleanText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-    if (!cleanText) return [];
-
-    // Détection du délimiteur le plus fréquent sur la première ligne (, ; ou \t)
-    const firstLine = cleanText.split("\n")[0];
-    const commaCount = (firstLine.match(/,/g) || []).length;
-    const semicolonCount = (firstLine.match(/;/g) || []).length;
-    const tabCount = (firstLine.match(/\t/g) || []).length;
-
-    let delimiter = ",";
-    if (semicolonCount > commaCount && semicolonCount >= tabCount) {
-      delimiter = ";";
-    } else if (tabCount > commaCount && tabCount > semicolonCount) {
-      delimiter = "\t";
-    }
-
-    const rows = [];
-    let currentRow = [];
-    let currentField = "";
-    let insideQuotes = false;
-
-    for (let i = 0; i < cleanText.length; i++) {
-      const char = cleanText[i];
-      const nextChar = cleanText[i + 1];
-
-      if (insideQuotes) {
-        if (char === '"') {
-          if (nextChar === '"') {
-            currentField += '"';
-            i++; // Sauter le guillemet échappé
-          } else {
-            insideQuotes = false;
-          }
-        } else {
-          currentField += char;
-        }
-      } else {
-        if (char === '"') {
-          insideQuotes = true;
-        } else if (char === delimiter) {
-          currentRow.push(currentField.trim());
-          currentField = "";
-        } else if (char === "\n") {
-          currentRow.push(currentField.trim());
-          if (currentRow.some((field) => field.length > 0)) {
-            rows.push(currentRow);
-          }
-          currentRow = [];
-          currentField = "";
-        } else {
-          currentField += char;
-        }
-      }
-    }
-
-    if (currentField.length > 0 || currentRow.length > 0) {
-      currentRow.push(currentField.trim());
-      if (currentRow.some((field) => field.length > 0)) {
-        rows.push(currentRow);
-      }
-    }
-
-    return rows;
+    return parseCsvText(csvText);
   }
 
   /**

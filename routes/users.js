@@ -20,6 +20,7 @@ const {
   manageUsersQuerySchema,
 } = require("../schemas/user.schema.js");
 const dateService = require("../services/dateService.js");
+const workshopService = require("../services/workshopService.js");
 const { isNull } = require("util");
 
 const { prisma } = require("../utilities/db.js");
@@ -564,19 +565,7 @@ router.post(
     const { workshopId } = req.body;
 
     try {
-      await prisma.userWorkshopInterest.upsert({
-        where: {
-          userId_workshopId: {
-            userId: Number(id),
-            workshopId: Number(workshopId),
-          },
-        },
-        create: {
-          userId: Number(id),
-          workshopId: Number(workshopId),
-        },
-        update: {},
-      });
+      await workshopService.addWorkshopInterest({ userId: id, workshopId });
 
       req.session.notification = "Success: Intérêt pour l'atelier enregistré.";
     } catch (error) {
@@ -597,12 +586,7 @@ router.post(
     const { id, workshopId } = req.params;
 
     try {
-      await prisma.userWorkshopInterest.deleteMany({
-        where: {
-          userId: Number(id),
-          workshopId: Number(workshopId),
-        },
-      });
+      await workshopService.removeWorkshopInterest({ userId: id, workshopId });
 
       req.session.notification = "Success: Intérêt retiré.";
     } catch (error) {
@@ -645,35 +629,15 @@ router.post(
     }
 
     const whoAwarded = (awardedBy && awardedBy.trim()) ? awardedBy.trim() : (req.session.username || "Admin");
+    const shouldRemoveInterest = removeInterest === "true" || removeInterest === true || removeInterest === "on";
 
     try {
-      await prisma.userWorkshopCompletion.upsert({
-        where: {
-          userId_workshopId: {
-            userId: uId,
-            workshopId: wId,
-          },
-        },
-        create: {
-          userId: uId,
-          workshopId: wId,
-          awardedAt: completionDate,
-          awardedBy: whoAwarded,
-        },
-        update: {
-          awardedAt: completionDate,
-          awardedBy: whoAwarded,
-        },
+      await workshopService.awardWorkshopBadge(uId, wId, whoAwarded, {
+        awardedAt: completionDate,
+        removeInterest: shouldRemoveInterest,
+        requireWorkshop: false,
+        logAutomatic: false,
       });
-
-      if (removeInterest === "true" || removeInterest === true || removeInterest === "on") {
-        await prisma.userWorkshopInterest.deleteMany({
-          where: {
-            userId: uId,
-            workshopId: wId,
-          },
-        });
-      }
 
       req.session.notification = "Success: Atelier validé et habilitation attribuée avec succès !";
     } catch (error) {
@@ -697,12 +661,7 @@ router.post(
     const { id, workshopId } = req.params;
 
     try {
-      await prisma.userWorkshopCompletion.deleteMany({
-        where: {
-          userId: Number(id),
-          workshopId: Number(workshopId),
-        },
-      });
+      await workshopService.revokeWorkshopBadge({ userId: id, workshopId });
 
       req.session.notification = "Success: Habilitation / Badge d'atelier retiré.";
     } catch (error) {

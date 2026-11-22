@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const i18n = require("../config/i18n");
 const { escapeCsvCell } = require("../utilities/securityHelpers");
+const { parseCsvText } = require("./csvParserService");
 
 const FORBIDDEN_OBJECT_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
@@ -119,61 +120,6 @@ function escapeCsvValue(val) {
   return escapeCsvCell(val, { alwaysQuote: false, delimiter: "," });
 }
 
-// Helper: Parse CSV text into rows of columns (handles quotes, commas, newlines)
-function parseCsv(csvText) {
-  // Strip UTF-8 BOM if present
-  let cleanText = csvText.charCodeAt(0) === 0xfeff ? csvText.slice(1) : csvText;
-  cleanText = cleanText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-
-  const rows = [];
-  let currentRow = [];
-  let currentField = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < cleanText.length; i++) {
-    const char = cleanText[i];
-    const nextChar = cleanText[i + 1];
-
-    if (insideQuotes) {
-      if (char === '"') {
-        if (nextChar === '"') {
-          currentField += '"';
-          i++; // Skip escaped quote
-        } else {
-          insideQuotes = false;
-        }
-      } else {
-        currentField += char;
-      }
-    } else {
-      if (char === '"') {
-        insideQuotes = true;
-      } else if (char === ",") {
-        currentRow.push(currentField);
-        currentField = "";
-      } else if (char === "\n") {
-        currentRow.push(currentField);
-        if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0].trim().length > 0)) {
-          rows.push(currentRow);
-        }
-        currentRow = [];
-        currentField = "";
-      } else {
-        currentField += char;
-      }
-    }
-  }
-
-  if (currentField.length > 0 || currentRow.length > 0) {
-    currentRow.push(currentField);
-    if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0].trim().length > 0)) {
-      rows.push(currentRow);
-    }
-  }
-
-  return rows;
-}
-
 function normalizeLanguageCode(colName) {
   if (!colName) return null;
   const upper = colName.trim().toUpperCase();
@@ -271,7 +217,7 @@ class I18nService {
 
   // Import CSV text, update existing files and dynamically create new locale files
   importFromCsvString(csvText) {
-    const rows = parseCsv(csvText);
+    const rows = parseCsvText(csvText, { trimFields: false });
     if (!rows || rows.length < 2) {
       throw new Error("Le fichier CSV est vide ou ne contient pas d'en-tête valide.");
     }

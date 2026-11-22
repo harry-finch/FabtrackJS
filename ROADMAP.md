@@ -46,7 +46,7 @@
    Remplacer les 37 new PrismaClient() par utilities/db, retirer socket.io inutilisé et supprimer les fichiers morts suivis dans Git.
 20. **[R-023 Migrations SQL versionnées (NetBSD) et typage strict du schéma Prisma](roadmap/items/R-023-migrations-sql-versionnees-netbsd-et-typage.md)** · À tester · jalon v1.4
    Instaurer un historique de migrations SQL incrémentales compatible NetBSD et typer strictement enums, décimaux et relations d'Activity.
-21. **[R-024 Alléger les routes/vues obèses et activer une CSP stricte sans unsafe-inline](roadmap/items/R-024-alleger-les-routes-vues-obeses-et-activer-une.md)** · Idée · jalon v1.4
+21. **[R-024 Alléger les routes/vues obèses et activer une CSP stricte sans unsafe-inline](roadmap/items/R-024-alleger-les-routes-vues-obeses-et-activer-une.md)** · À tester · jalon v1.4
    Extraire la logique métier vers services/, factoriser les duplications, sortir le JS inline et durcir la Content Security Policy.
 22. **[R-025 Exploitation production (/healthz, logs structurés), RGPD et mise à niveau documentaire](roadmap/items/R-025-exploitation-production-healthz-logs-structures.md)** · Idée · jalon v1.4
    Ajouter /healthz et un logger structuré, outiller la conformité RGPD et réaligner 100 % de la documentation avec le code actuel.
@@ -108,6 +108,7 @@
 - [ ] [A-037](roadmap/actions/A-037-tester-la-pagination-serveur-admin-view-history.md) Tester la pagination serveur (/admin/view-history, /users/manage) et l'autocomplétion kiosque (tester, R-021)
 - [ ] [A-038](roadmap/actions/A-038-verifier-le-demarrage-propre-sans-socket-io.md) Vérifier le démarrage propre sans socket.io après npm install --omit=dev (tester, R-022)
 - [ ] [A-039](roadmap/actions/A-039-executer-npm-run-db-migrate-sur-une-copie.md) Exécuter npm run db:migrate sur une copie anonymisée (y compris NetBSD) (tester, R-023)
+- [ ] [A-040](roadmap/actions/A-040-verifier-l-absence-d-erreur-csp-en-console.md) Vérifier l'absence d'erreur CSP en console navigateur sur kiosque et écrans admin (tester, R-024)
 
 ## Livré
 

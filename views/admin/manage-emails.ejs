@@ -199,7 +199,7 @@
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
                                         <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Contributeur</span>
                                         <div class="d-flex align-items-center gap-2">
-                                            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" onclick="scrollToAgreementTemplate()">
+                                            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-action="scroll-agreement-template">
                                                 <i class="fa-solid fa-pen me-1"></i> Modifier
                                             </button>
                                             <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement">
@@ -281,7 +281,7 @@
                                 </span>
                                 <h5 class="fw-bold mb-0">E-mail de création de contributeur & Signature de la Charte</h5>
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement" onclick="updateLivePreview()">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement" data-action="update-live-preview">
                                 <i class="fa-solid fa-eye me-1"></i> Aperçu du rendu
                             </button>
                         </div>
@@ -330,11 +330,11 @@
                                     </label>
                                     <div class="d-flex align-items-center gap-1 flex-wrap">
                                         <small class="text-muted me-1">Insérer une variable :</small>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{name}')" title="Prénom du contributeur">{name}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{surname}')" title="Nom du contributeur">{surname}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{fullname}')" title="Prénom et nom">{fullname}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{email}')" title="Email du contributeur">{email}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" onclick="insertVar('{lab_name}')" title="Nom du Fablab">{lab_name}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{name}" title="Prénom du contributeur">{name}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{surname}" title="Nom du contributeur">{surname}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{fullname}" title="Prénom et nom">{fullname}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{email}" title="Email du contributeur">{email}</button>
+                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{lab_name}" title="Nom du Fablab">{lab_name}</button>
                                     </div>
                                 </div>
                                 <textarea
@@ -439,7 +439,7 @@
                                         placeholder="https://wiki.fablab.sorbonne-universite.fr/BookStack/"
                                     />
                                     <% if (typeof settings.bookstack_url !== 'undefined' && settings.bookstack_url) { %>
-                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('mail_user_agreement_redirect_url').value = '<%= settings.bookstack_url %>'">
+                                    <button class="btn btn-outline-secondary" type="button" data-fill-target="mail_user_agreement_redirect_url" data-fill-value="<%= settings.bookstack_url %>">
                                         <i class="fa-solid fa-book-bookmark me-1"></i> Utiliser le Wiki
                                     </button>
                                     <% } %>
@@ -838,7 +838,7 @@
                 </div>
             </div>
 
-            <script>
+            <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
                 function scrollToAgreementTemplate() {
                     const target = document.getElementById("agreementTemplateCard");
                     if (target) {
@@ -942,6 +942,25 @@
                     if (bodyInput) bodyInput.addEventListener("input", updateLivePreview);
                     if (ctaInput) ctaInput.addEventListener("input", updateLivePreview);
                     if (noticeInput) noticeInput.addEventListener("input", updateLivePreview);
+
+                    document.querySelectorAll('[data-action="scroll-agreement-template"]').forEach((btn) => {
+                        btn.addEventListener("click", scrollToAgreementTemplate);
+                    });
+                    document.querySelectorAll('[data-action="update-live-preview"]').forEach((btn) => {
+                        btn.addEventListener("click", updateLivePreview);
+                    });
+                    document.querySelectorAll("[data-insert-var]").forEach((btn) => {
+                        btn.addEventListener("click", () => insertVar(btn.getAttribute("data-insert-var") || ""));
+                    });
+                    document.querySelectorAll("[data-fill-target]").forEach((btn) => {
+                        btn.addEventListener("click", () => {
+                            const targetId = btn.getAttribute("data-fill-target");
+                            const targetEl = targetId ? document.getElementById(targetId) : null;
+                            if (targetEl) {
+                                targetEl.value = btn.getAttribute("data-fill-value") || "";
+                            }
+                        });
+                    });
 
                     updateLivePreview();
                 });

@@ -106,7 +106,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
     document.addEventListener("DOMContentLoaded", function () {
         const modalEl = document.getElementById("modalReportBug");
         if (modalEl) {

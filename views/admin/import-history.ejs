@@ -75,7 +75,7 @@
               <i class="fa-solid fa-cloud-arrow-up text-primary fs-1 mb-2"></i>
               <h6 class="fw-bold mb-1">Glissez votre fichier CSV ici ou cliquez pour parcourir</h6>
               <p class="text-muted small mb-2">Colonnes requises : <code>nom</code>, <code>prenom</code>, <code>email</code> (séparateur virgule ou point-virgule)</p>
-              <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="document.getElementById('csvFileInput').click();">
+              <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-click-target="csvFileInput">
                 <i class="fa-solid fa-folder-open me-1"></i> Choisir un fichier CSV
               </button>
             </div>
@@ -258,7 +258,7 @@
     <%- include('../includes/footer.html') %>
   </main>
 
-  <script>
+  <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
     document.addEventListener('DOMContentLoaded', () => {
       const dropzoneBox = document.getElementById('dropzoneBox');
       const csvFileInput = document.getElementById('csvFileInput');

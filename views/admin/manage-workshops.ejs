@@ -80,8 +80,8 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th onclick="sortTable(0)" scope="col" class="ps-3" style="width: 50px;">#</th>
-                                    <th onclick="sortTable(1)" scope="col">Atelier</th>
+                                    <th data-sort="0" scope="col" class="ps-3" style="width: 50px;">#</th>
+                                    <th data-sort="1" scope="col">Atelier</th>
                                     <th scope="col" style="width: 220px;">Habilitation machine liée</th>
                                     <th scope="col" class="text-center" style="width: 90px;">Intéressés</th>
                                     <th scope="col" class="text-center" style="width: 90px;">Badges remis</th>
@@ -212,7 +212,7 @@
                             <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
                                 Créer l'atelier
                             </button>
-                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" onclick="cancelEdit()">
+                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" data-action="cancel-edit">
                                 Annuler la modification
                             </button>
                         </div>
@@ -244,7 +244,7 @@
                                             <a href="/admin/communication?workshopId=<%= ws.id %>" class="btn btn-sm btn-outline-primary" title="Ouvrir dans le module Communication">
                                                 <i class="fa-solid fa-envelope-open-text me-1"></i> Module Communication
                                             </a>
-                                            <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('<%= emails %>')">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-copy-text="<%= emails %>">
                                                 <i class="fa-solid fa-copy me-1"></i> Copier
                                             </button>
                                         </div>
@@ -353,7 +353,7 @@
 
             <%- include('../includes/footer.html') %>
 
-        <script>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
             // Edition en place de l'atelier
             document.querySelectorAll("[id^='edit-']").forEach(button => {
                 button.addEventListener("click", function() {

@@ -39,7 +39,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="#newWarningCard" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm text-dark fw-semibold" onclick="document.getElementById('newWarningCard')?.scrollIntoView({ behavior: 'smooth' }); document.getElementById('userid')?.focus();">
+                        <a href="#newWarningCard" id="btnScrollToNewWarning" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm text-dark fw-semibold">
                             <i class="fa-solid fa-plus me-1"></i> Émettre un avertissement
                         </a>
                         <a href="/admin/warningtypes/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
@@ -72,13 +72,13 @@
                     <!-- Filters -->
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         <span class="text-muted small fw-semibold me-1">Filtrer :</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 active filter-btn" onclick="filterWarnings('all', this)">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 active filter-btn" data-warning-filter="all">
                             Tous (<%= warnings.length %>)
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 filter-btn" onclick="filterWarnings('active', this)">
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 filter-btn" data-warning-filter="active">
                             <i class="fa-solid fa-clock me-1"></i> Actifs (<%= activeCount %>)
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 filter-btn" onclick="filterWarnings('resolved', this)">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 filter-btn" data-warning-filter="resolved">
                             <i class="fa-solid fa-check me-1"></i> Résolus (<%= resolvedCount %>)
                         </button>
                     </div>
@@ -86,7 +86,7 @@
                     <!-- Search Input -->
                     <div class="input-group input-group-sm" style="max-width: 280px;">
                         <span class="input-group-text bg-body-secondary border-end-0"><i class="fa-solid fa-search fa-sm text-muted"></i></span>
-                        <input type="text" id="warningSearch" class="form-control border-start-0" placeholder="Rechercher un contributeur, motif..." oninput="searchWarnings(this.value)" />
+                        <input type="text" id="warningSearch" class="form-control border-start-0" placeholder="Rechercher un contributeur, motif..." />
                     </div>
                 </div>
 
@@ -262,7 +262,7 @@
                 </div>
             </div>
 
-            <script>
+            <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
                 let currentStatusFilter = 'all';
 
                 function filterWarnings(status, btn) {
@@ -293,6 +293,25 @@
                             row.style.display = 'none';
                         }
                     });
+                }
+
+                const btnScrollToNewWarning = document.getElementById('btnScrollToNewWarning');
+                if (btnScrollToNewWarning) {
+                    btnScrollToNewWarning.addEventListener('click', () => {
+                        document.getElementById('newWarningCard')?.scrollIntoView({ behavior: 'smooth' });
+                        document.getElementById('userid')?.focus();
+                    });
+                }
+
+                document.querySelectorAll('.filter-btn[data-warning-filter]').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        filterWarnings(btn.getAttribute('data-warning-filter') || 'all', btn);
+                    });
+                });
+
+                const warningSearchInput = document.getElementById('warningSearch');
+                if (warningSearchInput) {
+                    warningSearchInput.addEventListener('input', (e) => searchWarnings(e.target.value));
                 }
             </script>
 

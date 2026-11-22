@@ -1,119 +1,16 @@
-var express = require("express");
-var router = express.Router();
+const { createReferenceCrudRouter } = require("../../utilities/referenceCrudFactory.js");
+const { createUsertypeSchema, updateUsertypeSchema } = require("../../schemas/index.js");
 
-const asyncHandler = require("../../middleware/asyncHandler.js");
-const clearNotification = require("../../middleware/clearNotification.js");
-const isAdmin = require("../../middleware/checkAdmin.js");
-const { invalidateCache } = require("../../middleware/cacheHelper.js");
-const { validateBody, validateParams } = require("../../middleware/validate.js");
-const { idParamSchema, createUsertypeSchema, updateUsertypeSchema } = require("../../schemas/index.js");
-
-router.use(isAdmin);
-
-const { prisma } = require("../../utilities/db.js");
-
-const logger = require("../../utilities/simpleLogger.js");
-
-// ******************************************************************************
-// Route to manage user types (student, teacher...)
-// ******************************************************************************
-
-router.get(
-  "/manage",
-  clearNotification,
-  asyncHandler(async (req, res) => {
-    req.session.lastPage = "/admin/usertypes/manage";
-
-    const allTypes = await prisma.usertype.findMany({
-      orderBy: { id: "asc" },
-    });
-
-    res.render("admin/manage-usertypes", {
-      usertypes: allTypes,
-    });
-  }),
-);
-
-// ******************************************************************************
-// Route to delete a usertype
-// ******************************************************************************
-
-router.post(
-  "/delete/:id",
-  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/usertypes/manage" }),
-  asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    try {
-      const result = await prisma.usertype.delete({
-        where: { id: Number(id) },
-      });
-
-      invalidateCache(req);
-      logger.logThat("Usertype " + result.name + " deleted by " + req.session.username);
-      req.session.notification = "Success: Usertype " + result.name + " deleted";
-    } catch (error) {
-      console.error("Error deleting usertype:", error);
-      req.session.notification = "Error: Failed to delete usertype (check linked users)";
-    }
-
-    res.redirect(req.session.lastPage || "/admin/usertypes/manage");
-  }),
-);
-
-// ******************************************************************************
-// Route to create a usertype
-// ******************************************************************************
-
-router.post(
-  "/create",
-  validateBody(createUsertypeSchema, { redirectUrl: "/admin/usertypes/manage" }),
-  asyncHandler(async (req, res) => {
-    const { name } = req.body;
-
-    try {
-      const usertype = await prisma.usertype.create({
-        data: { name: name.trim() },
-      });
-
-      invalidateCache(req);
-      logger.logThat("Usertype " + name + " created by " + req.session.username);
-      req.session.notification = "Success: Usertype " + name + " created";
-    } catch (error) {
-      console.error("Error creating usertype:", error);
-      req.session.notification = "Error: Failed to create usertype";
-    }
-
-    res.redirect("/admin/usertypes/manage");
-  }),
-);
-
-// ******************************************************************************
-// Route to update a usertype
-// ******************************************************************************
-
-router.post(
-  "/update",
-  validateBody(updateUsertypeSchema, { redirectUrl: "/admin/usertypes/manage" }),
-  asyncHandler(async (req, res) => {
-    const { usertypeid, name } = req.body;
-
-    try {
-      const usertype = await prisma.usertype.update({
-        where: { id: Number(usertypeid) },
-        data: { name: name.trim() },
-      });
-
-      invalidateCache(req);
-      logger.logThat("Usertype " + name + " updated by " + req.session.username);
-      req.session.notification = "Success: Usertype " + name + " updated";
-    } catch (error) {
-      console.error("Error updating usertype:", error);
-      req.session.notification = "Error: Failed to update usertype";
-    }
-
-    res.redirect("/admin/usertypes/manage");
-  }),
-);
-
-module.exports = router;
+module.exports = createReferenceCrudRouter({
+  modelName: "usertype",
+  idField: "usertypeid",
+  basePath: "/admin/usertypes",
+  viewName: "admin/manage-usertypes",
+  listKey: "usertypes",
+  resourceLabel: "Usertype",
+  createSchema: createUsertypeSchema,
+  updateSchema: updateUsertypeSchema,
+  messages: {
+    deleteError: "Error: Failed to delete usertype (check linked users)",
+  },
+});

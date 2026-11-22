@@ -13,6 +13,7 @@ const { returnEquipmentSchema } = require("../../schemas/history.schema.js");
 router.use(isAdmin);
 
 const { prisma, ResourceType } = require("../../utilities/db.js");
+const equipmentLoanService = require("../../services/equipmentLoanService.js");
 
 const logger = require("../../utilities/simpleLogger.js");
 
@@ -47,18 +48,14 @@ router.get(
     });
 
     // Fetch all active loans (not yet returned)
-    const activeLoansRaw = await prisma.activity.findMany({
-      where: {
-        resourceType: ResourceType.EQUIPMENT,
-        returnedAt: null,
-      },
+    const activeLoansRaw = await equipmentLoanService.getActiveEquipmentLoans({
+      prisma,
       include: {
         user: true,
         history: {
           include: { workspace: true },
         },
       },
-      orderBy: { createdAt: "desc" },
     });
 
     const equipMap = new Map(equipmentList.map((eq) => [eq.id, eq]));
@@ -308,15 +305,14 @@ router.post(
       return res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
     }
 
-    const updated = await prisma.activity.updateMany({
-      where: { id: Number(id), resourceType: ResourceType.EQUIPMENT, returnedAt: null },
-      data: {
-        returnedAt: new Date(),
-        returnNotes: returnNotes && returnNotes.trim() ? returnNotes.trim() : null,
-      },
+    const returnResult = await equipmentLoanService.returnEquipmentLoan({
+      prisma,
+      activityId: Number(id),
+      returnNotes,
+      staffUsername: req.session.username,
     });
 
-    if (updated.count === 0) {
+    if (!returnResult.returned) {
       req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
       const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
       return res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));

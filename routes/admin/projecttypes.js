@@ -1,119 +1,22 @@
-var express = require("express");
-var router = express.Router();
+const { createReferenceCrudRouter } = require("../../utilities/referenceCrudFactory.js");
+const { createProjecttypeSchema, updateProjecttypeSchema } = require("../../schemas/index.js");
 
-const asyncHandler = require("../../middleware/asyncHandler.js");
-const clearNotification = require("../../middleware/clearNotification.js");
-const isAdmin = require("../../middleware/checkAdmin.js");
-const { invalidateCache } = require("../../middleware/cacheHelper.js");
-const { validateBody, validateParams } = require("../../middleware/validate.js");
-const { idParamSchema, createProjecttypeSchema, updateProjecttypeSchema } = require("../../schemas/index.js");
-
-router.use(isAdmin);
-
-const { prisma } = require("../../utilities/db.js");
-
-const logger = require("../../utilities/simpleLogger.js");
-
-// ******************************************************************************
-// Route to manage project types (university project, personal project...)
-// ******************************************************************************
-
-router.get(
-  "/manage",
-  clearNotification,
-  asyncHandler(async (req, res) => {
-    req.session.lastPage = "/admin/projecttypes/manage";
-
-    const projecttypes = await prisma.projecttype.findMany({
-      orderBy: { id: "asc" },
-    });
-
-    res.render("admin/manage-projecttypes", {
-      projecttypes,
-    });
-  }),
-);
-
-// ******************************************************************************
-// Route to delete a project type
-// ******************************************************************************
-
-router.post(
-  "/delete/:id",
-  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/admin/projecttypes/manage" }),
-  asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    try {
-      const result = await prisma.projecttype.delete({
-        where: { id: Number(id) },
-      });
-
-      invalidateCache(req);
-      logger.logThat("Projecttype " + result.name + " deleted by " + req.session.username);
-      req.session.notification = "Succès : Motif de visite « " + result.name + " » supprimé";
-    } catch (error) {
-      console.error("Error deleting project type:", error);
-      req.session.notification = "Erreur : Impossible de supprimer ce motif de visite (vérifiez les visites associées)";
-    }
-
-    res.redirect(req.session.lastPage || "/admin/projecttypes/manage");
-  }),
-);
-
-// ******************************************************************************
-// Route to create a project type
-// ******************************************************************************
-
-router.post(
-  "/create",
-  validateBody(createProjecttypeSchema, { redirectUrl: "/admin/projecttypes/manage" }),
-  asyncHandler(async (req, res) => {
-    const { name } = req.body;
-
-    try {
-      const projecttype = await prisma.projecttype.create({
-        data: { name: name.trim() },
-      });
-
-      invalidateCache(req);
-      logger.logThat("Projecttype " + name + " created by " + req.session.username);
-      req.session.notification = "Succès : Motif de visite « " + name + " » créé";
-    } catch (error) {
-      console.error("Error creating project type:", error);
-      req.session.notification = "Erreur : Impossible de créer le motif de visite";
-    }
-
-    res.redirect("/admin/projecttypes/manage");
-  }),
-);
-
-// ******************************************************************************
-// Route to update a project type
-// ******************************************************************************
-
-router.post(
-  "/update",
-  validateBody(updateProjecttypeSchema, { redirectUrl: "/admin/projecttypes/manage" }),
-  asyncHandler(async (req, res) => {
-    const { projecttypeid, name } = req.body;
-
-    try {
-      const projecttype = await prisma.projecttype.update({
-        where: { id: Number(projecttypeid) },
-        data: { name: name.trim() },
-      });
-
-      invalidateCache(req);
-      logger.logThat("Project type " + name + " updated by " + req.session.username);
-      req.session.notification = "Succès : Motif de visite « " + name + " » mis à jour";
-    } catch (error) {
-      console.error("Error updating project type:", error);
-      req.session.notification = "Erreur : Impossible de mettre à jour le motif de visite";
-    }
-
-    res.redirect("/admin/projecttypes/manage");
-  }),
-);
-
-module.exports = router;
+module.exports = createReferenceCrudRouter({
+  modelName: "projecttype",
+  idField: "projecttypeid",
+  basePath: "/admin/projecttypes",
+  viewName: "admin/manage-projecttypes",
+  listKey: "projecttypes",
+  resourceLabel: "Motif de visite",
+  logLabel: "Projecttype",
+  createSchema: createProjecttypeSchema,
+  updateSchema: updateProjecttypeSchema,
+  messages: {
+    deleteSuccess: (name) => "Succès : Motif de visite « " + name + " » supprimé",
+    deleteError: "Erreur : Impossible de supprimer ce motif de visite (vérifiez les visites associées)",
+    createSuccess: (name) => "Succès : Motif de visite « " + name + " » créé",
+    createError: "Erreur : Impossible de créer le motif de visite",
+    updateSuccess: (name) => "Succès : Motif de visite « " + name + " » mis à jour",
+    updateError: "Erreur : Impossible de mettre à jour le motif de visite",
+  },
+});

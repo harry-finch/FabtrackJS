@@ -1323,7 +1323,7 @@
             </div>
 
         <%- include('../includes/footer.html') %>
-        <script>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
           // Call the pagination function after the table is rendered
           addPagination('historyTable', <%- safeJson(tableData) %>);
 

@@ -61,12 +61,66 @@
   });
 
   // ---------------------------------------------------------------------------
-  // 2. Soft Internal Navigation Handler
+  // 2. Soft Internal Navigation & Global CSP-Safe Delegated Click Actions
   // ---------------------------------------------------------------------------
   document.addEventListener("click", (e) => {
     if (e.defaultPrevented) return;
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if (!e.target || typeof e.target.closest !== "function") return;
+
+    // Delegated CSP-safe actions (replaces legacy inline onclick=... attributes)
+    const sortHeader = e.target.closest("th[data-sort]");
+    if (sortHeader && typeof window.sortTable === "function") {
+      const colIdx = Number(sortHeader.getAttribute("data-sort"));
+      if (!Number.isNaN(colIdx)) {
+        window.sortTable(colIdx);
+      }
+      return;
+    }
+
+    const backBtn = e.target.closest('[data-action="history-back"]');
+    if (backBtn) {
+      if (window.history && window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.assign(typeof window.getAppBaseUrl === "function" ? window.getAppBaseUrl("") : "/");
+      }
+      return;
+    }
+
+    const cancelEditBtn = e.target.closest('[data-action="cancel-edit"]');
+    if (cancelEditBtn && typeof window.cancelEdit === "function") {
+      window.cancelEdit();
+      return;
+    }
+
+    const clickTargetEl = e.target.closest("[data-click-target]");
+    if (clickTargetEl) {
+      const targetId = clickTargetEl.getAttribute("data-click-target");
+      const targetEl = targetId ? document.getElementById(targetId) : null;
+      if (targetEl && typeof targetEl.click === "function") {
+        targetEl.click();
+      }
+      return;
+    }
+
+    const selectOnClickEl = e.target.closest('[data-select-on-click="true"]');
+    if (selectOnClickEl && typeof selectOnClickEl.select === "function") {
+      selectOnClickEl.select();
+      return;
+    }
+
+    const copyBtn = e.target.closest("[data-copy-text]");
+    if (copyBtn) {
+      const text = copyBtn.getAttribute("data-copy-text") || "";
+      if (typeof window.copyToClipboard === "function") {
+        window.copyToClipboard(text);
+      } else if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        navigator.clipboard.writeText(text).catch(() => {});
+      }
+      return;
+    }
+
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
     const link = e.target.closest("a");
     if (!link) return;
@@ -225,5 +279,16 @@
     }
 
     startProgressBar();
+  });
+
+  // ---------------------------------------------------------------------------
+  // 4. Global CSP-Safe Delegated Change Actions
+  // ---------------------------------------------------------------------------
+  document.addEventListener("change", (e) => {
+    const target = e.target;
+    if (!target || typeof target.getAttribute !== "function") return;
+    if (target.getAttribute("data-auto-submit") === "true" && target.form) {
+      target.form.submit();
+    }
   });
 })();

@@ -265,16 +265,16 @@
             <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th onclick="sortTable(0)" scope="col" class="ps-3" style="cursor: pointer; width: 70px;">
+                  <th data-sort="0" scope="col" class="ps-3" style="cursor: pointer; width: 70px;">
                     # <i class="fa-solid fa-sort fa-xs text-muted"></i>
                   </th>
-                  <th onclick="sortTable(1)" scope="col" style="cursor: pointer;">
+                  <th data-sort="1" scope="col" style="cursor: pointer;">
                     Nom de l'équipement <i class="fa-solid fa-sort fa-xs text-muted"></i>
                   </th>
-                  <th onclick="sortTable(2)" scope="col" style="cursor: pointer; width: 220px;">
+                  <th data-sort="2" scope="col" style="cursor: pointer; width: 220px;">
                     Espace / Atelier <i class="fa-solid fa-sort fa-xs text-muted"></i>
                   </th>
-                  <th onclick="sortTable(3)" scope="col" class="text-center" style="cursor: pointer; width: 150px;">
+                  <th data-sort="3" scope="col" class="text-center" style="cursor: pointer; width: 150px;">
                     Emprunts enregistrés <i class="fa-solid fa-sort fa-xs text-muted"></i>
                   </th>
                   <th scope="col" class="text-center" style="width: 140px;">Statut</th>
@@ -445,7 +445,7 @@
     </main>
 
     <script src="/javascripts/table-sorting.js"></script>
-    <script>
+    <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
       const editModal = document.getElementById('editModal');
       if (editModal) {
         editModal.addEventListener('show.bs.modal', function(event) {

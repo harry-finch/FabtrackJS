@@ -33,7 +33,7 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="promptManualRfid()">
+                        <button type="button" id="manualRfidBtn" class="btn btn-sm btn-outline-info rounded-pill px-3">
                             <i class="fa-solid fa-keyboard me-1"></i> Tester un badge
                         </button>
                         <span class="badge bg-info text-white px-3 py-2 rounded-pill">
@@ -42,12 +42,17 @@
                     </div>
                 </div>
             </div>
-            <script>
+            <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
                 function promptManualRfid() {
                     const code = prompt("Simuler le scan d'une carte RFID (numéro de badge / UID) :");
                     if (code && code.trim() && window.triggerKioskRfidScan) {
                         window.triggerKioskRfidScan(code.trim());
                     }
+                }
+                window.promptManualRfid = promptManualRfid;
+                const manualRfidBtn = document.getElementById("manualRfidBtn");
+                if (manualRfidBtn) {
+                    manualRfidBtn.addEventListener("click", promptManualRfid);
                 }
             </script>
             <% } %>
@@ -232,8 +237,8 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th onclick="sortTable(1)" scope="col" class="ps-3"><%= __('kiosk.th_arrival') %></th>
-                                        <th onclick="sortTable(2)" scope="col"><%= __('kiosk.th_user') %></th>
+                                        <th data-sort="1" scope="col" class="ps-3"><%= __('kiosk.th_arrival') %></th>
+                                        <th data-sort="2" scope="col"><%= __('kiosk.th_user') %></th>
                                         <th scope="col" class="text-center"><%= __('kiosk.th_warnings_balance') %></th>
                                         <th scope="col" class="text-center"><%= __('kiosk.th_comments') %></th>
                                         <th scope="col" class="text-center"><%= __('kiosk.th_activity') %></th>
@@ -842,7 +847,7 @@
                 };
             })) %>
         </script>
-        <script>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
             window.bookstackConfig = {
                 enabled: <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? 'true' : 'false' %>,
                 baseUrl: <%- safeJson(typeof bookstackBaseUrl !== 'undefined' ? bookstackBaseUrl : 'https://wiki.fablab.sorbonne-universite.fr/BookStack/') %>,

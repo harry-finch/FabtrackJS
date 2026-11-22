@@ -1,59 +1,6 @@
 <base href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" />
 <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-<script>
-    window.getAppBaseUrl = function(endpoint) {
-        var base = "";
-        try {
-            if (document.baseURI) {
-                var p = new URL(document.baseURI).pathname.replace(/\/+$/, "");
-                if (p && p !== "/") base = p;
-            }
-        } catch (e) {}
-        var clean = (endpoint || "").replace(/^\/+/, "");
-        var baseNoSlash = base.replace(/^\/+/, "");
-        if (baseNoSlash && (clean === baseNoSlash || clean.indexOf(baseNoSlash + "/") === 0)) {
-            return "/" + clean;
-        }
-        return base ? (clean ? base + "/" + clean : base + "/") : "/" + clean;
-    };
-
-    window.getCsrfToken = function() {
-        var meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? (meta.getAttribute("content") || "") : "";
-    };
-
-    (function() {
-        if (typeof window.fetch !== "function" || window.__fabtrackCsrfFetchPatched) return;
-        window.__fabtrackCsrfFetchPatched = true;
-        var nativeFetch = window.fetch.bind(window);
-        window.fetch = function(input, init) {
-            var opts = init ? Object.assign({}, init) : {};
-            var method = (opts.method || (input && typeof input === "object" && input.method) || "GET").toUpperCase();
-            if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
-                var rawUrl = typeof input === "string" ? input : (input && input.url ? input.url : "");
-                var isSameOrigin = true;
-                try {
-                    if (rawUrl) {
-                        var parsed = new URL(rawUrl, window.location.href);
-                        isSameOrigin = parsed.origin === window.location.origin;
-                    }
-                } catch (e) {}
-                if (isSameOrigin) {
-                    var token = window.getCsrfToken();
-                    if (token) {
-                        var headers = new Headers(opts.headers || (input && typeof input === "object" && input.headers ? input.headers : undefined));
-                        if (!headers.has("X-CSRF-Token") && !headers.has("CSRF-Token")) {
-                            headers.set("X-CSRF-Token", token);
-                        }
-                        opts.headers = headers;
-                    }
-                }
-            }
-            return nativeFetch(input, opts);
-        };
-    })();
-</script>
-
+<script src="javascripts/app-base.js"></script>
 <script src="javascripts/color-mode-toggler.js"></script>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3" />

@@ -268,7 +268,7 @@
       crossorigin="anonymous"
     ></script>
 
-    <script>
+    <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
       (function () {
         const photoInput = document.getElementById("photoInput");
         const btnTakePhoto = document.getElementById("btnTakePhoto");

@@ -176,13 +176,13 @@
           <div class="d-flex align-items-center gap-2">
             <!-- Filter buttons -->
             <div class="btn-group btn-group-sm" role="group" id="eventFilterGroup">
-              <button type="button" class="btn btn-outline-secondary active" onclick="filterMachineEvents('ALL', this)">
+              <button type="button" class="btn btn-outline-secondary active" data-event-filter="ALL">
                 Tous (<%= safeEvents.length > 0 ? safeEvents.length : safeIssues.length %>)
               </button>
-              <button type="button" class="btn btn-outline-secondary" onclick="filterMachineEvents('MAINTENANCE', this)">
+              <button type="button" class="btn btn-outline-secondary" data-event-filter="MAINTENANCE">
                 <i class="fa-solid fa-wrench me-1"></i> Maintenances (<%= safeMaintenances.length %>)
               </button>
-              <button type="button" class="btn btn-outline-secondary" onclick="filterMachineEvents('ISSUE', this)">
+              <button type="button" class="btn btn-outline-secondary" data-event-filter="ISSUE">
                 <i class="fa-solid fa-triangle-exclamation me-1"></i> Pannes (<%= safeIssues.length %>)
               </button>
             </div>
@@ -593,22 +593,22 @@
                 <div class="mb-3">
                   <label class="form-label small fw-bold text-muted text-uppercase mb-2">Interventions fréquentes (clic pour remplir) :</label>
                   <div class="d-flex flex-wrap gap-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Changement de buse', 'REPLACEMENT', 'Buse d\'extrusion')">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset-title="Changement de buse" data-preset-type="REPLACEMENT" data-preset-parts="Buse d'extrusion">
                       <i class="fa-solid fa-bolt fa-xs me-1"></i> Changement de buse
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Changement de lentille', 'REPLACEMENT', 'Lentille focale ZnSe')">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset-title="Changement de lentille" data-preset-type="REPLACEMENT" data-preset-parts="Lentille focale ZnSe">
                       <i class="fa-solid fa-bolt fa-xs me-1"></i> Changement de lentille
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Changement de filtre', 'REPLACEMENT', 'Filtre HEPA / Charbon')">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset-title="Changement de filtre" data-preset-type="REPLACEMENT" data-preset-parts="Filtre HEPA / Charbon">
                       <i class="fa-solid fa-bolt fa-xs me-1"></i> Changement de filtre
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Nettoyage & alignement des miroirs', 'CLEANING', '')">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset-title="Nettoyage &amp; alignement des miroirs" data-preset-type="CLEANING" data-preset-parts="">
                       <i class="fa-solid fa-bolt fa-xs me-1"></i> Alignement miroirs
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Nivellement plateau & calibration Z', 'CALIBRATION', '')">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset-title="Nivellement plateau &amp; calibration Z" data-preset-type="CALIBRATION" data-preset-parts="">
                       <i class="fa-solid fa-bolt fa-xs me-1"></i> Calibration plateau
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="applyMaintenancePreset('Tension courroies & lubrification axes', 'PREVENTIVE', '')">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-preset-title="Tension courroies &amp; lubrification axes" data-preset-type="PREVENTIVE" data-preset-parts="">
                       <i class="fa-solid fa-bolt fa-xs me-1"></i> Lubrification & courroies
                     </button>
                   </div>
@@ -731,7 +731,7 @@
         </div>
       </div>
 
-      <script>
+      <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
         // Client-side event filtering between ALL, MAINTENANCE, and ISSUE
         function filterMachineEvents(kind, btnEl) {
           const rows = document.querySelectorAll("#tableMachineEvents tbody tr.event-row");
@@ -762,6 +762,22 @@
           if (partsInput && parts) partsInput.value = parts;
           if (titleInput) titleInput.focus();
         }
+
+        document.querySelectorAll("#eventFilterGroup [data-event-filter]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            filterMachineEvents(btn.dataset.eventFilter || "ALL", btn);
+          });
+        });
+
+        document.querySelectorAll("[data-preset-title]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            applyMaintenancePreset(
+              btn.dataset.presetTitle || "",
+              btn.dataset.presetType || "",
+              btn.dataset.presetParts || ""
+            );
+          });
+        });
       </script>
 
       <%- include('../includes/footer.html') %>

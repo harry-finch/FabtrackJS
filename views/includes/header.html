@@ -117,7 +117,7 @@
         <!-- Bug / Issue Reporting Button for Platform -->
         <% const reportBugTooltip = (typeof __ !== 'undefined' && __('nav.report_bug') && __('nav.report_bug') !== 'nav.report_bug') ? __('nav.report_bug') : 'Signaler un bug'; %>
         <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<%= reportBugTooltip %>" title="<%= reportBugTooltip %>">
-            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalReportBug" aria-label="<%= reportBugTooltip %>" onclick="const t = bootstrap.Tooltip.getInstance(this.parentElement); if (t) t.hide();">
+            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalReportBug" aria-label="<%= reportBugTooltip %>" data-hide-parent-tooltip="true">
                 <i class="fa-solid fa-bug fa-sm"></i>
             </button>
         </span>
@@ -125,7 +125,7 @@
         <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
         <!-- Inventory Checkout Button for Mediators and Admins -->
         <span class="d-inline-flex" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Sortie d'inventaire (casse, rebut...)" title="Sortie d'inventaire">
-            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout" aria-label="Sortie d'inventaire" onclick="const t = bootstrap.Tooltip.getInstance(this.parentElement); if (t) t.hide();">
+            <button type="button" class="btn btn-outline-warning btn-sm header-action-btn btn-icon-only shadow-sm" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout" aria-label="Sortie d'inventaire" data-hide-parent-tooltip="true">
                 <i class="fa-solid fa-dolly fa-sm"></i>
             </button>
         </span>
@@ -236,6 +236,18 @@
 </div>
 
 <script src="javascripts/workspace.js"></script>
+<script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
+    (function () {
+        document.querySelectorAll('[data-hide-parent-tooltip="true"]').forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                if (typeof bootstrap !== "undefined" && bootstrap.Tooltip && btn.parentElement) {
+                    const t = bootstrap.Tooltip.getInstance(btn.parentElement);
+                    if (t) t.hide();
+                }
+            });
+        });
+    })();
+</script>
 
 <h2 class="mb-1 text-center fw-bold"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
 <h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>

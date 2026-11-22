@@ -15,15 +15,10 @@ const {
 
 router.use(isAdmin);
 
-const { prisma, ConsumableStatus } = require("../../utilities/db.js");
+const { prisma } = require("../../utilities/db.js");
+const { computeConsumableStatus } = require("../../services/consumableStatusHelper.js");
 
 const logger = require("../../utilities/simpleLogger.js");
-
-function computeStatus(stock, reorderThreshold) {
-  if (stock <= 0) return ConsumableStatus.OUT_OF_STOCK;
-  if (stock <= reorderThreshold) return ConsumableStatus.LOW_STOCK;
-  return ConsumableStatus.AVAILABLE;
-}
 
 // ******************************************************************************
 // Route to manage consumables
@@ -95,7 +90,7 @@ router.post(
     const parsedUnit = (unit || "u").trim();
     const parsedStockUnit = (stockUnit || "u").trim();
     const parsedUnitsPerPack = parseFloat(unitsPerPack) > 0 ? parseFloat(unitsPerPack) : 1.0;
-    const status = computeStatus(parsedStock, parsedThreshold);
+    const status = computeConsumableStatus(parsedStock, parsedThreshold);
 
     try {
       const consumable = await prisma.consumable.create({
@@ -147,7 +142,7 @@ router.post(
     const parsedUnit = unit ? unit.trim() : undefined;
     const parsedStockUnit = stockUnit ? stockUnit.trim() : undefined;
     const parsedUnitsPerPack = unitsPerPack ? (parseFloat(unitsPerPack) > 0 ? parseFloat(unitsPerPack) : 1.0) : undefined;
-    const status = computeStatus(parsedStock, parsedThreshold);
+    const status = computeConsumableStatus(parsedStock, parsedThreshold);
 
     try {
       const consumable = await prisma.consumable.update({
@@ -216,7 +211,7 @@ router.post(
         }
 
         const newStock = existing.stock + addedUnits;
-        const newStatus = computeStatus(newStock, existing.reorderThreshold);
+        const newStatus = computeConsumableStatus(newStock, existing.reorderThreshold);
 
         const updated = await tx.consumable.update({
           where: { id: targetId },

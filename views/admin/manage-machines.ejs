@@ -342,7 +342,7 @@
       </div>
     </div>
 
-    <script>
+    <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
       document.addEventListener('DOMContentLoaded', function () {
         const filterBtns = document.querySelectorAll('.filter-category-btn');
         const searchInput = document.getElementById('searchMachineInput');

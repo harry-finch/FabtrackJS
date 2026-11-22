@@ -332,7 +332,7 @@
       <%- include('../includes/footer.html') %>
     </main>
 
-    <script>
+    <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
       let currentViewMode = 'cards'; // 'cards' or 'table'
 
       const btnCards = document.getElementById('btnViewCards');

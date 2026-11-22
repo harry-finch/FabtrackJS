@@ -158,7 +158,7 @@
                 <div class="input-group">
                   <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-lock text-secondary"></i></span>
                   <input type="password" class="form-control" id="adminPassword" name="adminPassword" placeholder="••••••••" minlength="6" required />
-                  <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('adminPassword', this)">
+                  <button type="button" class="btn btn-outline-secondary" data-toggle-password="adminPassword">
                     <i class="fa-solid fa-eye"></i>
                   </button>
                 </div>
@@ -169,7 +169,7 @@
                 <div class="input-group">
                   <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-lock text-secondary"></i></span>
                   <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="••••••••" minlength="6" required />
-                  <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('confirmPassword', this)">
+                  <button type="button" class="btn btn-outline-secondary" data-toggle-password="confirmPassword">
                     <i class="fa-solid fa-eye"></i>
                   </button>
                 </div>
@@ -228,11 +228,11 @@
             <div class="mb-3">
               <label class="form-label fw-semibold">Suggestions rapides (cliquez pour ajouter) :</label>
               <div class="d-flex flex-wrap gap-1 mb-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="addWorkspacePreset('Atelier principal')">+ Atelier principal</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="addWorkspacePreset('Salle Impression 3D')">+ Salle Impression 3D</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="addWorkspacePreset('Lab Électronique')">+ Lab Électronique</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="addWorkspacePreset('Atelier Bois & CNC')">+ Atelier Bois & CNC</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="addWorkspacePreset('Pôle Textile & Couture')">+ Pôle Textile & Couture</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-workspace-preset="Atelier principal">+ Atelier principal</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-workspace-preset="Salle Impression 3D">+ Salle Impression 3D</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-workspace-preset="Lab Électronique">+ Lab Électronique</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-workspace-preset="Atelier Bois & CNC">+ Atelier Bois & CNC</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-workspace-preset="Pôle Textile & Couture">+ Pôle Textile & Couture</button>
               </div>
             </div>
 
@@ -240,7 +240,7 @@
               <label for="workspaceInput" class="form-label fw-semibold">Ajouter un espace personnalisé :</label>
               <div class="input-group">
                 <input type="text" class="form-control" id="workspaceInput" placeholder="ex: Espace Laser & Fraisage" />
-                <button type="button" class="btn btn-primary" onclick="addCustomWorkspace()">
+                <button type="button" class="btn btn-primary" id="btnAddCustomWorkspace">
                   <i class="fa-solid fa-plus me-1"></i>Ajouter
                 </button>
               </div>
@@ -272,21 +272,21 @@
                   <div class="small text-secondary fw-semibold">Compte Administrateur</div>
                   <div class="fw-bold" id="summaryAdmin">admin &bull; admin@monfablab.fr</div>
                 </div>
-                <button type="button" class="btn btn-sm btn-link text-decoration-none" onclick="goToStep(1)">Modifier</button>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none" data-goto-step="1">Modifier</button>
               </div>
               <div class="list-group-item d-flex justify-content-between align-items-center py-3">
                 <div>
                   <div class="small text-secondary fw-semibold">Plateforme & Région</div>
                   <div class="fw-bold" id="summaryPlatform">FabtrackJS (FR &bull; €)</div>
                 </div>
-                <button type="button" class="btn btn-sm btn-link text-decoration-none" onclick="goToStep(2)">Modifier</button>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none" data-goto-step="2">Modifier</button>
               </div>
               <div class="list-group-item d-flex justify-content-between align-items-center py-3">
                 <div>
                   <div class="small text-secondary fw-semibold">Espaces de travail</div>
                   <div id="summaryWorkspaces" class="fw-bold">Atelier principal</div>
                 </div>
-                <button type="button" class="btn btn-sm btn-link text-decoration-none" onclick="goToStep(3)">Modifier</button>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none" data-goto-step="3">Modifier</button>
               </div>
             </div>
 
@@ -301,10 +301,10 @@
 
           <!-- Navigation Buttons -->
           <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-            <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" id="btnPrev" onclick="navigateStep(-1)" style="visibility: hidden;">
+            <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" id="btnPrev" data-navigate-step="-1" style="visibility: hidden;">
               <i class="fa-solid fa-arrow-left me-2"></i>Précédent
             </button>
-            <button type="button" class="btn btn-primary px-4 rounded-pill shadow-sm" id="btnNext" onclick="navigateStep(1)">
+            <button type="button" class="btn btn-primary px-4 rounded-pill shadow-sm" id="btnNext" data-navigate-step="1">
               Suivant<i class="fa-solid fa-arrow-right ms-2"></i>
             </button>
             <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm d-none" id="btnSubmit">
@@ -324,7 +324,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
+  <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
     let currentStep = 1;
     const totalSteps = 4;
     const workspaces = ["Atelier principal"];
@@ -553,6 +553,39 @@
       const spinner = document.getElementById("submitSpinner");
       btnSubmit.disabled = true;
       spinner.classList.remove("d-none");
+    });
+
+    document.querySelectorAll("[data-toggle-password]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const fieldId = btn.getAttribute("data-toggle-password");
+        if (fieldId) togglePasswordVisibility(fieldId, btn);
+      });
+    });
+
+    document.querySelectorAll("[data-workspace-preset]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const preset = btn.getAttribute("data-workspace-preset");
+        if (preset) addWorkspacePreset(preset);
+      });
+    });
+
+    const btnAddCustomWorkspace = document.getElementById("btnAddCustomWorkspace");
+    if (btnAddCustomWorkspace) {
+      btnAddCustomWorkspace.addEventListener("click", addCustomWorkspace);
+    }
+
+    document.querySelectorAll("[data-goto-step]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const step = Number(btn.getAttribute("data-goto-step"));
+        if (!Number.isNaN(step)) goToStep(step);
+      });
+    });
+
+    document.querySelectorAll("[data-navigate-step]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const dir = Number(btn.getAttribute("data-navigate-step"));
+        if (!Number.isNaN(dir)) navigateStep(dir);
+      });
     });
 
     // Initialize
