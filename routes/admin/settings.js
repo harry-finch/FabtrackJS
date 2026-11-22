@@ -15,6 +15,7 @@ const repairCafeService = require("../../services/repairCafeService.js");
 const workshopService = require("../../services/workshopService.js");
 const i18nService = require("../../services/i18nService.js");
 const dateService = require("../../services/dateService.js");
+const { setFlash } = require("../../utilities/flashHelper.js");
 const {
   UPLOAD_PROFILES,
   matchesExtensionAndMime,
@@ -375,7 +376,7 @@ router.post(
       }
     }
 
-    req.session.notification = "Success: Platform settings updated successfully.";
+    setFlash(req, "success", "alerts.settings_saved");
     res.redirect("/admin/settings");
   }),
 );
@@ -395,7 +396,7 @@ router.post(
       safeUnlinkInDir(uploadsDir, current.platform_logo_path, { expectedPrefix: "/uploads/" });
     }
 
-    req.session.notification = "Success: Logo reset to default Sorbonne Université SVG.";
+    setFlash(req, "success", "alerts.logo_reset");
     res.redirect("/admin/settings");
   }),
 );
@@ -414,7 +415,7 @@ router.post(
       safeUnlinkInDir(uploadsDir, current.platform_favicon_path, { expectedPrefix: "/uploads/" });
     }
 
-    req.session.notification = "Success: Favicon reset to default.";
+    setFlash(req, "success", "alerts.favicon_reset");
     res.redirect("/admin/settings");
   }),
 );

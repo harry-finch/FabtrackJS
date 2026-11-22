@@ -78,7 +78,7 @@ class BalanceService {
       return {
         success: false,
         code: "CONFLICT",
-        message: "Le solde de cet usager a été modifié simultanément. Veuillez réessayer.",
+        message: "Le solde de ce contributeur a été modifié simultanément. Veuillez réessayer.",
       };
     }
 
@@ -91,7 +91,7 @@ class BalanceService {
       success: true,
       previousBalance: currentBalance,
       newBalance: 0,
-      message: "Success: Debt paid!",
+      message: "Success: Dette réglée !",
     };
   }
 

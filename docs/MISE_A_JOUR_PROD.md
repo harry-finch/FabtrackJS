@@ -61,6 +61,7 @@ pm2 logs fabtrack --lines 50
 | [R-026](../roadmap/items/R-026-unifier-les-assets-front-en-local-pour-un.md) | `v1.5` | Aucune | Aucune | **`npm install --omit=dev`** (ajout `chart.js` servi localement) | Vérifier kiosque, `/admin/statistics` et page 404 sans requête CDN externe (fonctionnement hors-ligne) |
 | [R-027](../roadmap/items/R-027-refondre-les-modales-de-confirmation-et-les.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier les modales de confirmation Bootstrap (0 `confirm()`/`alert()`/`prompt()` natif), les toasts sans préfixe brut (`Success:`/`Error:`) et les erreurs sur `/report-issue` |
 | [R-028](../roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier `<html lang>` dynamique, mode sombre (tableaux + graphiques `/admin/statistics` en direct), tri clavier (`Tab`/`Entrée`/`Espace`) et cibles tactiles kiosque |
+| [R-029](../roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier la bascule FR/EN (inclut `common.menu`, toasts traduits sur `/admin/settings`), l'absence d'« Usager »/franglais et l'export `translations.csv` |
 
 ---
 

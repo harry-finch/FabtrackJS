@@ -290,13 +290,13 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
     // Update the 'group' property of projects based on user association
     projects.forEach((project) => {
       const isUserAssociated = userprojects.some((up) => up.userid === userId && up.projectid === project.id);
-      project.group = isUserAssociated ? "current user projects" : "all other projects";
+      project.group = isUserAssociated ? "Projets du contributeur" : "Autres projets";
     });
 
     // Sort projects, placing 'user' projects first
     projects.sort((a, b) => {
-      if (a.group === "current user projects" && b.group !== "current user projects") return -1;
-      if (a.group !== "current user projects" && b.group === "current user projects") return 1;
+      if (a.group === "Projets du contributeur" && b.group !== "Projets du contributeur") return -1;
+      if (a.group !== "Projets du contributeur" && b.group === "Projets du contributeur") return 1;
       return a.id - b.id; // Secondary sort by ID or another stable property
     });
 
@@ -313,7 +313,7 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
   const docAutocomplete = new autocomplete({
     input: docInput,
     showOnFocus: true,
-    emptyMsg: "No documentation found, type new URL to create project",
+    emptyMsg: "Aucune documentation trouvée — saisissez une nouvelle URL pour créer le projet",
     fetch: function (text, callback) {
       text = text.toLowerCase().trim();
       callback(
@@ -767,7 +767,7 @@ if (modalRepairCheckout) {
     if (historyIdInput) historyIdInput.value = historyid || "";
 
     const userNameEl = document.getElementById("repairExitUserName");
-    if (userNameEl) userNameEl.textContent = user || "Usager";
+    if (userNameEl) userNameEl.textContent = user || "Contributeur";
 
     const objectNameEl = document.getElementById("repairExitObjectName");
     if (objectNameEl) objectNameEl.textContent = repairobject || "Objet non précisé";
@@ -839,7 +839,7 @@ if (modalComment) {
     const commentText = document.getElementById("commentModalText");
 
     if (historyInput) historyInput.value = historyid || "";
-    if (userNameEl) userNameEl.textContent = user || "Usager";
+    if (userNameEl) userNameEl.textContent = user || "Contributeur";
     if (commentText) commentText.value = comment;
   });
 

@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="" />
         <meta name="author" content="Stéphane Muller" />
-        <title>Fabtrack signin</title>
+        <title><%= __('auth.create_account_title') %> • <%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %></title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
@@ -62,18 +62,16 @@
             const verif = document.getElementById('password_verif').value;
             if (pwd.length < 8) {
               event.preventDefault();
-              document
-                .getElementsByClassName("toast-body")[0]
-                .textContent = "Le mot de passe doit comporter au moins 8 caractères.";
-              showNotification();
+              if (typeof window.showAppToast === "function") {
+                window.showAppToast("Le mot de passe doit comporter au moins 8 caractères.", "warning");
+              }
               return;
             }
             if (pwd !== verif) {
               event.preventDefault();
-              document
-                .getElementsByClassName("toast-body")[0]
-                .textContent = <%- typeof safeJson === 'function' ? safeJson(__('auth.passwords_mismatch')) : JSON.stringify(__('auth.passwords_mismatch')) %>;
-              showNotification();
+              if (typeof window.showAppToast === "function") {
+                window.showAppToast(<%- typeof safeJson === 'function' ? safeJson(__('auth.passwords_mismatch')) : JSON.stringify(__('auth.passwords_mismatch')) %>, "error");
+              }
             }
           });
         </script>

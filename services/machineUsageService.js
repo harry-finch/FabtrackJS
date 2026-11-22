@@ -213,7 +213,7 @@ class MachineUsageService {
         canUnlock: false,
         isPresent: false,
         user: this._formatPublicUser(user),
-        message: `Usager ${user.name} ${user.surname} reconnu, mais non enregistré comme présent aujourd'hui dans le lab. Veuillez badger à la borne tactile d'accueil avant d'utiliser une machine.`,
+        message: `Contributeur ${user.name} ${user.surname} reconnu, mais non enregistré comme présent aujourd'hui dans le lab. Veuillez badger à la borne tactile d'accueil avant d'utiliser une machine.`,
       };
     }
 

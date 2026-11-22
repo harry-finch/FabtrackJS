@@ -143,12 +143,12 @@ class I18nService {
 
     const custom = found.filter((l) => l !== "fr" && l !== "en").sort();
     const result = [];
-    if (found.includes("fr") || true) result.push("fr");
-    if (found.includes("en") || true) result.push("en");
+    if (found.includes("fr")) result.push("fr");
+    if (found.includes("en")) result.push("en");
     for (const c of custom) {
       if (!result.includes(c)) result.push(c);
     }
-    return result;
+    return result.length > 0 ? result : ["fr", "en"];
   }
 
   getLanguageMeta(code) {

@@ -209,7 +209,7 @@
                     <% if (typeof role !== 'undefined' && (role === "admin" || role === "user")) { %>
                     <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 text-warning-emphasis" href="#" data-bs-toggle="modal" data-bs-target="#modalInventoryCheckout">
                         <i class="fa-solid fa-dolly text-warning fa-sm" style="width: 16px;"></i>
-                        <span class="small fw-semibold">Sortie d'inventaire / Rebut</span>
+                        <span class="small fw-semibold"><%= typeof __ !== 'undefined' ? __('nav.inventory_checkout') : "Sortie d'inventaire / Rebut" %></span>
                     </a>
                     <% } %>
                     <% if (typeof role !== 'undefined' && role === "admin") { %>
@@ -250,7 +250,7 @@
 </script>
 
 <h2 class="mb-1 text-center fw-bold"><%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></h2>
-<h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : "Track your fablab's activity" %></h5>
+<h5 class="lead fs-6 mb-4 text-center text-muted"><%= typeof platformSubtitle !== 'undefined' && platformSubtitle ? platformSubtitle : (typeof __ !== 'undefined' ? __('kiosk.subtitle') : "Suivez l'activité de votre fablab") %></h5>
 
 <%- include('bug-report-modal.html') %>
 <%- include('inventory-checkout-modal.html') %>

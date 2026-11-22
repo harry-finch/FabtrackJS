@@ -1,4 +1,4 @@
-Key,FR,EN
+﻿Key,FR,EN
 alerts.comment_error,Impossible de mettre à jour le commentaire.,Failed to update comment.
 alerts.comment_updated,Commentaire mis à jour avec succès.,Comment updated successfully.
 alerts.csv_error,Erreur lors de l'importation du fichier CSV : %s,Error importing CSV file: %s
@@ -19,7 +19,6 @@ auth.i_have_account,J'ai déjà un compte,I already have an account
 auth.password,Mot de passe,Password
 auth.passwords_mismatch,Les mots de passe ne correspondent pas !,Passwords do not match!
 auth.recover_btn,Envoyer le lien de récupération,Send recovery email
-auth.remember_me,Se souvenir de moi,Remember me
 auth.reset_for_user,Réinitialiser le mot de passe pour %s,Reset password for %s
 auth.reset_password,Réinitialiser le mot de passe,Reset password
 auth.signin_btn,Se connecter,Sign in
@@ -45,6 +44,7 @@ common.export,Exporter,Export
 common.filter,Filtrer,Filter
 common.import,Importer,Import
 common.info,Information,Information
+common.menu,Menu,Menu
 common.name,Nom,Name
 common.no,Non,No
 common.none,Aucun,None
@@ -64,15 +64,15 @@ history.col_delete,Supprimer,Delete
 history.col_departure,Départ,Departure
 history.col_edit,Modifier,Edit
 history.col_project,Projet,Project
-history.col_user,Usager,User
+history.col_user,Contributeur,User
 history.col_workspace,Espace,Workspace
 history.no_records,Aucun enregistrement trouvé dans l'historique.,No history records found.
 kiosk.btn_activity,Activité,Activity
-kiosk.btn_create_user,Créer l'usager,Create user
+kiosk.btn_create_user,Créer le contributeur,Create user
 kiosk.btn_exit,Sortie,Exit
 kiosk.btn_register,Enregistrer,Check in
 kiosk.create_user_subtitle,Formulaire d'inscription rapide pour un nouveau membre du Fablab,Quick registration form for a new Fablab member
-kiosk.create_user_title,Créer un nouvel usager,Create a new user
+kiosk.create_user_title,Créer un nouveau contributeur,Create a new user
 kiosk.expert_badge,Expert,Expert
 kiosk.field_comments,Commentaires,Comments
 kiosk.field_documentation,Lien vers la documentation du projet,Link to project documentation
@@ -86,31 +86,31 @@ kiosk.modal_comment_label,Remarques / Précisions sur la session,Session Remarks
 kiosk.modal_comment_placeholder,"Saisissez un commentaire (ex: découpe laser 3mm, aide au montage, projet étudiant...)","Enter a comment (e.g. 3mm plywood laser cut, assembly assistance, student project...)"
 kiosk.modal_comment_save,Enregistrer,Save
 kiosk.modal_comment_title,Commentaire de session,Session Comment
-kiosk.modal_comment_user,Usager,User
+kiosk.modal_comment_user,Contributeur,User
 kiosk.new_birthyear,Année de naissance,Birth year
 kiosk.new_email,Adresse e-mail,Email address
 kiosk.new_name,Prénom,First name
 kiosk.new_newsletter,Inscription à la newsletter,Newsletter subscription
-kiosk.new_newsletter_desc,L'usager accepte de recevoir la newsletter et les actualités du Fablab par e-mail.,The user agrees to receive Fablab newsletters and updates via email.
+kiosk.new_newsletter_desc,Le contributeur accepte de recevoir la newsletter et les actualités du Fablab par e-mail.,The user agrees to receive Fablab newsletters and updates via email.
 kiosk.new_rfid,Numéro de badge RFID (UID),RFID badge number (UID)
 kiosk.new_surname,Nom,Last name
-kiosk.new_usertype,Type d'usager,User type
-kiosk.register_user_subtitle,Badgez ou recherchez un usager existant pour ouvrir sa session au Fablab,Scan RFID card or search an existing user to open their Fablab session
-kiosk.register_user_title,Enregistrer un usager,Register a user
+kiosk.new_usertype,Type de contributeur,User type
+kiosk.register_user_subtitle,Badgez ou recherchez un contributeur existant pour ouvrir sa session au Fablab,Scan RFID card or search an existing user to open their Fablab session
+kiosk.register_user_title,Enregistrer un contributeur,Register a user
 kiosk.repair_badge,Réparation,Repair
 kiosk.subtitle,Suivez l'activité de votre fablab,Track your fablab's activity
-kiosk.switch_to_create,Créer un nouvel usager,Create a new user
+kiosk.switch_to_create,Créer un nouveau contributeur,Create a new user
 kiosk.switch_to_search,Basculer vers la recherche,Switch to search
 kiosk.th_activity,Activité,Activity
 kiosk.th_arrival,Arrivée,Arrival
 kiosk.th_comments,Commentaires,Comments
 kiosk.th_exit,Sortie,Exit
-kiosk.th_user,Usager,User
+kiosk.th_user,Contributeur,User
 kiosk.th_warnings_balance,Avertissements / Solde,Warnings / Balance
 kiosk.title,FabtrackJS,FabtrackJS
 kiosk.tooltip_add_comment,Ajouter un commentaire,Add comment
 kiosk.tooltip_edit_comment,Modifier le commentaire,Edit comment
-kiosk.users_present,usagers actuellement présents,users currently present
+kiosk.users_present,contributeurs actuellement présents,users currently present
 kiosk.workshop_badge,Atelier,Workshop
 machines.action_delete,Supprimer,Delete
 machines.action_edit,Modifier,Edit
@@ -145,11 +145,12 @@ machines.select_access,Sélectionner un niveau d'accès,Select access level
 machines.select_location,Sélectionner un emplacement (optionnel),Select location (optional)
 machines.select_type,Sélectionner un type,Select type
 nav.active_session,Session active,Active session
-nav.admin,Panneau Admin,Admin Panel
-nav.admin_panel,Panneau Admin,Admin Panel
+nav.admin,Panneau d'administration,Admin Panel
+nav.admin_panel,Panneau d'administration,Admin Panel
 nav.current_workspace,Espace actuel,Current Workspace
 nav.fablab_space,Espace Fablab,Fablab Space
 nav.general_settings,Configuration générale,General Settings
+nav.inventory_checkout,Sortie d'inventaire / Rebut,Inventory Checkout / Write-off
 nav.kiosk,Kiosque Fabtrack,Fabtrack Kiosk
 nav.kiosk_station,Borne Kiosque,Kiosk Station
 nav.language,Langue,Language
@@ -175,10 +176,11 @@ profile.newsletter,Inscription à la newsletter,Newsletter Subscription
 profile.newsletter_desc,Recevoir la newsletter et les actualités du Fablab par e-mail.,Receive newsletter and Fablab news via email.
 profile.rfid_badge,Numéro de badge RFID (UID),RFID Badge Number (UID)
 profile.update_profile,Mettre à jour le profil,Update Profile
-profile.user_stats,Statistiques de l'usager,User Statistics
-profile.user_type,Type d'usager,User Type
+profile.user_stats,Statistiques du contributeur,User Statistics
+profile.user_type,Type de contributeur,User Type
 settings.admin_email_desc,Reçoit les demandes de validation de nouveaux comptes staff et alertes.,Receives staff registration approval requests and system alerts.
-settings.back_admin,Retour panneau admin,Back to admin panel
+settings.ai_desc,Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien de contributeurs ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée.,"Allows administrators to query the database using natural language (e.g., 'How many users visited only once?') from the statistics page. Only the database schema is sent to the model: no personal data is transmitted."
+settings.back_admin,Retour panneau d'administration,Back to admin panel
 settings.currency_desc,"Symbole monétaire utilisé pour la facturation des consommables (ex : €, $, CHF).","Currency symbol used for consumable invoicing (e.g. €, $, CHF)."
 settings.export_csv_btn,Télécharger le tableur CSV (traductions actuelles),Download CSV Spreadsheet (current translations)
 settings.favicon_active,Favicon :,Favicon:
@@ -186,7 +188,7 @@ settings.favicon_desc,Apparaît sur l'onglet de votre navigateur et dans les fav
 settings.field_admin_email,Email administrateur,Administrator Email
 settings.field_currency,Symbole monétaire,Currency Symbol
 settings.field_date_format,Format d'affichage des dates,Date display format
-settings.field_date_format_desc,"Définit le format de date utilisé dans l'historique, les fiches usagers et les exports.","Sets the date format used across history, user profiles, and exports."
+settings.field_date_format_desc,"Définit le format de date utilisé dans l'historique, les fiches contributeurs et les exports.","Sets the date format used across history, user profiles, and exports."
 settings.field_default_lang,Langue par défaut du kiosque,Default Kiosk Language
 settings.field_favicon,Favicon (icône du navigateur),Favicon (browser tab icon)
 settings.field_logo,Logo de la plateforme,Platform Logo
@@ -208,6 +210,8 @@ settings.plugins_desc,Activez ou désactivez les fonctionnalités spécifiques s
 settings.reset_favicon,Rétablir le favicon par défaut,Restore default favicon
 settings.reset_logo,Rétablir le logo Sorbonne par défaut,Restore default Sorbonne logo
 settings.save_changes,Enregistrer les modifications,Save Changes
+settings.section_ai,Intelligence Artificielle,Artificial Intelligence
+settings.section_ai_title,Requêtes Statistiques en Langage Naturel (Text-to-SQL),Natural Language Statistical Queries (Text-to-SQL)
 settings.section_brand,Identité & Marque,Identity & Brand
 settings.section_brand_title,Logo et Intitulés,Logo & Titles
 settings.section_i18n,Langues & Internationalisation,Languages & Internationalization
@@ -218,20 +222,17 @@ settings.section_preferences,Atelier,Workshop
 settings.section_preferences_title,Préférences Générales du Fablab,General Fablab Preferences
 settings.section_security,Sécurité,Security
 settings.section_security_title,Sessions & Authentification,Sessions & Authentication
-settings.self_registration_desc,Permet aux usagers de créer leur propre profil en arrivant au fablab.,Allows users to create their own profile upon arrival at the fablab.
+settings.self_registration_desc,Permet aux contributeurs de créer leur propre profil en arrivant au fablab.,Allows users to create their own profile upon arrival at the fablab.
 settings.self_registration_disabled,Désactivée (Création uniquement par un staff),Disabled (Registration by staff only)
 settings.self_registration_enabled,Autorisée (Formulaire création visible au kiosque),Enabled (Registration form visible at kiosk)
 settings.session_timeout_desc,Durée maximale d'inactivité avant déconnexion automatique du staff.,Maximum inactivity time before automatic staff logout.
 settings.subtitle,"Identité visuelle, modules, sécurité et préférences du fablab","Visual identity, modules, security, and fablab preferences"
 settings.system_badge,Système,System
 settings.title,Configuration générale,General Settings
-settings.upload_favicon,"Téléverser un favicon (.ico, .png, .svg) :","Upload a favicon (.ico, .png, .svg):"
-settings.upload_logo,"Téléverser une nouvelle image (PNG, JPG, SVG, WebP — max 3 Mo) :","Upload a new image (PNG, JPG, SVG, WebP — max 3 MB):"
-settings.section_ai,Intelligence Artificielle,Artificial Intelligence
-settings.section_ai_title,Requêtes Statistiques en Langage Naturel (Text-to-SQL),Natural Language Statistical Queries (Text-to-SQL)
-settings.ai_desc,"Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien d'usagers ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée.","Allows administrators to query the database using natural language (e.g., 'How many users visited only once?') from the statistics page. Only the database schema is sent to the model: no personal data is transmitted."
+settings.upload_favicon,"Téléverser un favicon (.ico, .png) :","Upload a favicon (.ico, .png):"
+settings.upload_logo,"Téléverser une nouvelle image (PNG, JPG, WebP — max 3 Mo) :","Upload a new image (PNG, JPG, WebP — max 3 MB):"
 users_manage.col_actions,Actions,Actions
 users_manage.col_charter,Charte,Charter
 users_manage.col_email,Adresse e-mail,Email
-users_manage.col_type,Type d'usager,Type
+users_manage.col_type,Type de contributeur,Type
 users_manage.col_username,Nom & Prénom,User Name

@@ -11,15 +11,15 @@ function getAvailableLocales() {
     .filter((f) => f.endsWith(".json"))
     .map((f) => path.basename(f, ".json").toLowerCase());
 
-  // Ensure 'fr' and 'en' are prioritized, others sorted alphabetically
+  // Ensure 'fr' and 'en' are prioritized when present, others sorted alphabetically
   const custom = found.filter((l) => l !== "fr" && l !== "en").sort();
   const result = [];
-  if (found.includes("fr") || true) result.push("fr");
-  if (found.includes("en") || true) result.push("en");
+  if (found.includes("fr")) result.push("fr");
+  if (found.includes("en")) result.push("en");
   for (const c of custom) {
     if (!result.includes(c)) result.push(c);
   }
-  return result;
+  return result.length > 0 ? result : ["fr", "en"];
 }
 
 function configureI18n() {

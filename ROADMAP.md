@@ -56,7 +56,7 @@
    Remplacer les 33 confirm(), 9 alert() et 1 prompt() natifs par une modale Bootstrap réutilisable et corriger les retours d'erreur.
 25. **[R-028 Améliorer l'accessibilité WCAG AA, le clavier, le mode sombre et le tactile](roadmap/items/R-028-ameliorer-l-accessibilite-wcag-aa-le-clavier-le.md)** · À tester · jalon v1.5
    Corriger <html lang>, ajouter les 65 labels manquants, réparer les contrastes mode sombre et la navigation clavier des tableaux.
-26. **[R-029 Uniformiser la terminologie, éliminer le franglais et compléter l'i18n](roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md)** · En cours · jalon v1.5
+26. **[R-029 Uniformiser la terminologie, éliminer le franglais et compléter l'i18n](roadmap/items/R-029-uniformiser-la-terminologie-eliminer-le.md)** · À tester · jalon v1.5
    Généraliser Contributeur / Motif de la visite, traduire les 35 vues et 242 messages flash en dur et nettoyer le catalogue i18n.
 27. **[R-030 Harmoniser la navigation admin et les liens en sous-chemin reverse proxy](roadmap/items/R-030-harmoniser-la-navigation-admin-et-les-liens-en.md)** · Idée · jalon v1.5
    Corriger les liens et formulaires absolus incompatibles avec APP_BASE_PATH, masquer la modale inventaire aux non-admins et vérifier les retours admin.
@@ -117,6 +117,7 @@
 - [ ] [A-042](roadmap/actions/A-042-verifier-le-fonctionnement-hors-ligne-0-requete.md) Vérifier le fonctionnement hors-ligne (0 requête CDN) sur kiosque, statistiques et 404 (tester, R-026)
 - [ ] [A-043](roadmap/actions/A-043-valider-les-modales-bootstrap-les-toasts-propres.md) Valider les modales Bootstrap, les toasts propres et /report-issue (R-027) (tester, R-027)
 - [ ] [A-044](roadmap/actions/A-044-valider-l-accessibilite-wcag-aa-le-mode-sombre.md) Valider l'accessibilité WCAG AA, le mode sombre Chart.js et la navigation clavier (R-028) (tester, R-028)
+- [ ] [A-045](roadmap/actions/A-045-valider-la-terminologie-le-retrait-du-franglais.md) Valider la terminologie, le retrait du franglais et la synchro i18n FR/EN (R-029) (tester, R-029)
 
 ## Livré
 
