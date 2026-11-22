@@ -26,6 +26,7 @@ const setupService = require("./services/setupService");
 const dateService = require("./services/dateService");
 const i18nService = require("./services/i18nService");
 const referenceCacheService = require("./services/referenceCacheService");
+const adminCockpitService = require("./services/adminCockpitService");
 const { PrismaSessionStore } = require("./services/prismaSessionStore");
 const { applyUploadStaticHeaders } = require("./services/uploadSecurityService");
 const { csrfTokenMiddleware, csrfProtection } = require("./middleware/csrf");
@@ -416,6 +417,18 @@ app.use(async (req, res, next) => {
     res.locals.username = req.session ? req.session.username : undefined;
     res.locals.currentPath = req.originalUrl ? req.originalUrl.split("?")[0] : req.path;
     res.locals.appVersion = packageJson.version || "1.5.0";
+
+    const isAdminPage =
+      req.session &&
+      req.session.loggedin &&
+      req.session.role === "admin" &&
+      (req.path === "/admin" || req.path.startsWith("/admin/") || req.path === "/users/manage" || req.path.startsWith("/users/manage/"));
+    res.locals.isAdminLayout = Boolean(isAdminPage);
+    if (isAdminPage && req.method === "GET") {
+      res.locals.adminSidebarCounters = await adminCockpitService.getSidebarCounters();
+    } else {
+      res.locals.adminSidebarCounters = null;
+    }
 
     // Expose centralized XSS / URL / JSON / icon sanitization helpers to all EJS views
     res.locals.escapeHtml = escapeHtml;

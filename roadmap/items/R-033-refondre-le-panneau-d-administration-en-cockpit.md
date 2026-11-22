@@ -2,34 +2,56 @@
 id: R-033
 titre: "Refondre le panneau d'administration en cockpit avec menu latéral persistant (Prop. 3)"
 resume: "Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui »."
-statut: idee
+statut: a-tester
 jalon: v1.5
 cree: 2026-11-21
-maj: 2026-11-21
+maj: 2026-11-22
 livree:
 ---
 
-- **Priorité / Source :** Proposition UX/UI validée par l'utilisateur sur maquette interactive (Proposition 3 : Menu latéral persistant + Cockpit)
-- **Fichiers principaux :** `views/admin/main.ejs`, `views/includes/admin-sidebar.html` (nouveau partial/layout partagé), vues `views/admin/*.ejs`, `routes/admin/index.js`, `services/` (service agrégeant les compteurs et alertes du cockpit), `public/stylesheets/main.css`
-- **Décisions validées sur la maquette :**
-  - **Organisation retenue :** Proposition 3 — menu latéral persistant (`~240 px`) partagé entre `/admin` et l'ensemble des sous-pages d'administration (fin des allers-retours systématiques vers `/admin`), couplé à un cockpit d'accueil orienté actions du jour au lieu du mur de 25 cartes actuelles.
-  - **Cadre visuel :** intégré dans l'Option B validée (`R-031` : Fab Design System, bleu Sorbonne, sans marque établissement, clair/sombre), conteneur élargi (`max-width: 1240px`) sur les pages admin et menu repliable en tiroir sur petit écran.
-- **Périmètre envisagé :**
-  - **Menu latéral persistant filtrable (`4` groupes + bloc pliable) :**
-    - Champ de filtre rapide en tête de menu (`Filtrer le menu…`) ouvrant automatiquement la section Configuration/Référentiels lors d'une recherche.
-    - *Pilotage* : Tableau de bord (Cockpit), Statistiques & IA, Historique & Import CSV, Consommations, Communication.
-    - *Communauté* : Contributeurs, Ateliers, Avertissements (pastille compteur actifs).
-    - *Parc & Stocks* : Machines (compteur parc), Équipements & Prêts (pastille retards), Consommables (pastille stocks bas), Sorties & Rebuts.
-    - *Extensions actives* : affichées dynamiquement uniquement si activées (UE, Projets Sorbonne, Repair Café, BookStack…) ; les extensions désactivées ne polluent plus le menu principal et restent gérées dans Configuration.
-    - *Configuration & Référentiels* (section pliable en bas) : Configuration & Plugins, Comptes staff, Espaces, E-mails & Alertes + les 6 référentiels métier (Types contributeurs, Motifs de visite, Types machines, Niveaux d'accès, Catégories, Emplacements).
-    - Mise en évidence de la route active sur toutes les vues `/admin/*` et liens compatibles `APP_BASE_PATH`.
-  - **Cockpit d'accueil `/admin` (« À traiter aujourd'hui ») :**
-    - 4 compteurs synthétiques cliquables (présents au lab, emprunts en retard, stocks sous seuil, état du parc machines / pannes ouvertes).
-    - Liste actionnable « À traiter aujourd'hui » remontant les vrais points d'attention (prêts en retard, consommables sous seuil d'alerte, incidents/pannes machines ouverts) avec lien direct.
-    - 4 raccourcis rapides vers les actions fréquentes (Kiosque, Statistiques, Paramètres, Parc machines / Import CSV).
-  - **Cohérence croisée sur toutes les pages `/admin/*` :** intégrer le layout à menu latéral sur l'ensemble des vues d'administration (y compris `manage-users.ejs`, fiches machines, historiques et référentiels) avec tiroir mobile accessible au clavier.
-- **Arbitrages & dépendances :**
-  - S'appuie sur `R-031` (bandeau supérieur 44 px & jetons Option B), `R-030` (liens `APP_BASE_PATH` et harmonisation admin) et `R-028` (accessibilité WCAG AA, clavier, contrastes clair/sombre).
-  - Synergie avec `R-032` : rafraîchissement sans rechargement des compteurs du menu latéral et des alertes du cockpit via SSE.
-  - Point technique à prévoir à la spécification : mise en cache légère (TTL court + invalidation) des compteurs de la barre latérale afin d'éviter de rejouer plusieurs requêtes SQL à chaque changement de page admin.
-- **Critères d'acceptation visés :** Menu latéral persistant, actif et filtrable sur 100 % des vues `/admin/*` (desktop et tiroir mobile) ; plugins désactivés masqués de la navigation principale ; cockpit `/admin` affichant les vrais compteurs et alertes du jour sans mur de 25 cartes ; compatibilité `APP_BASE_PATH`, thèmes clair/sombre et WCAG AA.
+## Objectif
+
+Remplacer le mur de 25 cartes statiques de `/admin` par l'organisation validée sur maquette (**Proposition 3**) : un menu latéral persistant filtrable (`240 px`, tiroir mobile offcanvas) partagé par **100 % des pages d'administration**, des compteurs légers mis en cache avec invalidation temps réel, le masquage des plugins désactivés dans la navigation principale, et un véritable **cockpit d'accueil « À traiter aujourd'hui »** piloté par les données réelles du fablab.
+
+## Contexte et motivation
+
+- **Source :** Proposition 3 validée sur maquette interactive par l'utilisateur (Menu latéral persistant + Cockpit).
+- Le mur de 25 cartes actuel oblige à revenir systématiquement sur `/admin` pour passer d'une section à l'autre, noie les alertes opérationnelles du jour et affiche même les plugins désactivés dans la navigation principale.
+
+## Comportement attendu
+
+1. **Service agrégateur léger et mis en cache (`services/adminCockpitService.js`) :**
+   - `getSidebarCounters()` calcule les compteurs de la barre latérale (`presentCount`, `activeWarningsCount`, `overdueLoansCount`, `lowStockCount`, `machinesCount`, `openIssuesCount`, `pendingStaffCount`) en parallèle avec un cache TTL court (`30 s`) invalidé dès qu'une mutation `admin` passe sur `realtimeService`.
+   - `getCockpitData()` agrège les 4 compteurs KPI et la liste actionnable « À traiter aujourd'hui » (emprunts en retard, consommables sous seuil/rupture, pannes machines ouvertes, comptes staff en attente de validation).
+2. **Menu latéral persistant filtrable sur toutes les vues `/admin/*` et `/users/manage` (`views/includes/admin-sidebar.html` + `public/javascripts/admin-sidebar.js`) :**
+   - Injecté automatiquement dans le shell `.fab-admin-shell` (`max-width: 1240px`) par `header.html`/`footer.html` dès que `isAdminLayout` est actif pour un administrateur (desktop persistant `240 px` + tiroir offcanvas accessible au clavier sur `< lg`).
+   - Champ de filtre rapide (`Filtrer le menu…`) ouvrant automatiquement le groupe pliable **Configuration & Référentiels** lors d'une recherche.
+   - 4 groupes principaux (**Pilotage**, **Communauté**, **Parc & Stocks**, **Extensions actives**) + section pliable **Configuration & Référentiels**.
+   - Les plugins désactivés ne sont jamais affichés dans la navigation principale (gérés uniquement dans Configuration & Plugins).
+   - Mise en évidence de la route active (`aria-current="page"`) et liens 100 % compatibles `APP_BASE_PATH`.
+3. **Cockpit d'accueil `/admin` (`routes/admin/index.js` + `views/admin/main.ejs`) :**
+   - 4 tuiles KPI synthétiques cliquables avec chiffres tabulaires (`tabular-nums`).
+   - Panneau « À traiter aujourd'hui » listant les alertes réelles avec lien d'action directe (ou état vide positif si tout est à jour).
+   - 4 raccourcis rapides (Kiosque, Statistiques & IA, Import Historique CSV, Configuration & Plugins).
+4. **Passage de version :** `package.json` passe en `1.5.0` à la livraison complète du jalon `v1.5`.
+
+## Plan technique
+
+- Créer `services/adminCockpitService.js` et invalider son cache lors des publications `realtimeService.publish("admin", ...)`.
+- Exposer `res.locals.isAdminLayout` et `res.locals.adminSidebarCounters` dans `app.js` pour les routes admin (`/admin/*`, `/users/manage`).
+- Créer `views/includes/admin-sidebar.html` et `public/javascripts/admin-sidebar.js`, et intégrer `.fab-admin-shell` dans `views/includes/header.html`, `views/includes/footer.html` et `public/stylesheets/main.css`.
+- Mettre à jour `routes/admin/index.js` et refondre `views/admin/main.ejs` en Cockpit « À traiter aujourd'hui ».
+- Mettre à jour `package.json` (`1.5.0`) et ajouter `tests/unit/adminCockpitAndSidebarR033.test.js`.
+
+## Critères d'acceptation
+
+- Menu latéral `.fab-admin-sidebar` rendu sur 100 % des vues admin (desktop + tiroir offcanvas mobile) avec filtre temps réel, mise en évidence de la route active et compatibilité `APP_BASE_PATH`.
+- Plugins désactivés absents du groupe « Extensions actives » et du menu principal.
+- Cache des compteurs de barre latérale actif (TTL court + invalidation) évitant de requêter la base à chaque navigation.
+- Cockpit `/admin` affichant les 4 KPI cliquables, la liste actionnable « À traiter aujourd'hui » et les 4 raccourcis sans mur de 25 cartes.
+- `npm run lint`, `npm audit --omit=dev`, `DATABASE_URL="" npm run test:unit` et `fabboard roadmap lint` passent sans erreur.
+
+## Risques et points de vigilance
+
+- En cas d'indisponibilité temporaire d'une table ou d'un test unitaire sans DB, `getSidebarCounters()` et `getCockpitData()` doivent retourner des compteurs à zéro sans jamais faire échouer le rendu d'une page admin.
+- Conserver 100 % des invariants `R-024` (CSP strict), `R-028` (WCAG AA + dark mode), `R-030` (`baseUrl`) et `R-031` (Option B).

@@ -610,6 +610,145 @@ body:has(.fab-topbar) .fab-standalone-controls {
     border-radius: 6px !important;
 }
 
+/* ========================================================================== */
+/* Persistent Admin Sidebar & Cockpit Shell (R-033 Prop. 3)                   */
+/* ========================================================================== */
+main.main-container:has(.fab-admin-shell) {
+    max-width: 1240px;
+}
+
+.fab-admin-shell {
+    display: block;
+}
+
+.fab-admin-content {
+    min-width: 0;
+}
+
+@media (min-width: 992px) {
+    .fab-admin-shell {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+
+    .fab-admin-sidebar.offcanvas-lg {
+        width: 240px;
+        flex: 0 0 240px;
+        position: sticky;
+        top: 58px;
+        max-height: calc(100vh - 96px);
+        overflow-y: auto;
+        background-color: var(--fab-bg-panel);
+        border: 1px solid var(--fab-border);
+        border-radius: 6px;
+    }
+
+    .fab-admin-content {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+.fab-sb-group + .fab-sb-group {
+    margin-top: 0.65rem;
+}
+
+.fab-sb-heading {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fab-text-muted);
+    padding: 0.2rem 0.5rem;
+    margin-bottom: 0.15rem;
+}
+
+.fab-sb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.36rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--fab-text-secondary);
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.fab-sb-link:hover {
+    background-color: var(--fab-bg-hover);
+    color: var(--fab-text-primary);
+}
+
+.fab-sb-link.is-active {
+    background-color: var(--fab-bg-hover);
+    color: var(--fab-identity);
+    font-weight: 600;
+}
+
+.fab-sb-ico {
+    width: 15px;
+    text-align: center;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+
+.fab-sb-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fab-sb-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.12rem 0.42rem;
+    border-radius: 999px;
+    background-color: var(--fab-bg-control);
+    color: var(--fab-text-secondary);
+    line-height: 1.2;
+}
+
+.fab-sb-badge-danger {
+    background-color: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger-text-emphasis);
+}
+
+.fab-sb-badge-warning {
+    background-color: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+}
+
+.fab-sb-badge-info {
+    background-color: var(--bs-info-bg-subtle);
+    color: var(--bs-info-text-emphasis);
+}
+
+.fab-sb-collapse-btn {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.15rem 0.25rem 0.15rem 0;
+    cursor: pointer;
+}
+
+.fab-kpi-card {
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.fab-kpi-card:hover {
+    border-color: var(--fab-identity) !important;
+    transform: translateY(-1px);
+}
+
 #newuser {
     display: none;
 }

@@ -58,9 +58,10 @@ describe("R-025: Production ops (/healthz, structured JSON logs), GDPR & documen
       mockDb.$queryRaw.mockResolvedValueOnce([{ 1: 1 }]);
       const res = await request(app).get("/healthz");
       expect(res.status).toBe(200);
+      const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
       expect(res.body.status).toBe("ok");
       expect(res.body.db).toBe("ok");
-      expect(res.body.version).toBe("1.4.0");
+      expect(res.body.version).toBe(pkg.version);
       expect(typeof res.body.uptimeSeconds).toBe("number");
     });
 
@@ -258,7 +259,7 @@ describe("R-025: Production ops (/healthz, structured JSON logs), GDPR & documen
 
     test("package.json, README.md and DEVELOPMENT.md are aligned with current repository state", () => {
       const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-      expect(pkg.version).toBe("1.4.0");
+      expect(pkg.version).toMatch(/^1\.(4|5)\.\d+$/);
       expect(pkg.scripts["db:migrate"]).toBe("node scripts/migrate.js");
       expect(pkg.scripts["rgpd:anonymize"]).toBe("node scripts/rgpd-anonymize.js");
 

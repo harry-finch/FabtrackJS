@@ -8,6 +8,7 @@ const { validateQuery } = require("../../middleware/validate.js");
 const { viewHistoryQuerySchema } = require("../../schemas/admin.schema.js");
 const { getZonedDayBounds, formatDateInTimezone } = require("../../utilities/timezoneHelper.js");
 const dateService = require("../../services/dateService.js");
+const adminCockpitService = require("../../services/adminCockpitService.js");
 
 dotenv.config();
 const { prisma } = require("../../utilities/db.js");
@@ -17,12 +18,21 @@ const router = express.Router();
 router.use(isAdmin);
 
 // ******************************************************************************
-// Route to the administration panel (Admin Only)
+// Route to the administration Cockpit (Admin Only — R-033 Prop. 3)
 // ******************************************************************************
 
-router.get("/", clearNotification, (req, res) => {
-  res.render("admin/main", { workspaces: true });
-});
+router.get(
+  "/",
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const cockpit = await adminCockpitService.getCockpitData();
+    res.locals.adminSidebarCounters = cockpit.counters;
+    res.render("admin/main", {
+      workspaces: true,
+      cockpit,
+    });
+  }),
+);
 
 // ******************************************************************************
 // Route to view entire fablab history (Admin Only)

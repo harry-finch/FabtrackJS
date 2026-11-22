@@ -65,6 +65,7 @@ pm2 logs fabtrack --lines 50
 | [R-030](../roadmap/items/R-030-harmoniser-la-navigation-admin-et-les-liens-en.md) | `v1.5` | Aucune | Aucune | Aucune | Tester la navigation admin complète et `/report-issue/:id` derrière `APP_BASE_PATH="/fabtrack"` (0 404) et vérifier que la modale d'inventaire est absente en rôle `staff` |
 | [R-031](../roadmap/items/R-031-adopter-le-bandeau-superieur-et-les-retouches.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier le bandeau supérieur 44 px bleu Sorbonne, les sélecteurs segmentés langue/thème (fin du bouton flottant violet) et la barre d'état 24 px en clair et en sombre |
 | [R-032](../roadmap/items/R-032-rafraichir-le-kiosque-et-les-tableaux-sans.md) | `v1.5` | Aucune | Aucune | Aucune | Derrière Nginx, s'assurer que `proxy_buffering off;` est autorisé (l'app envoie `X-Accel-Buffering: no` sur `/events/stream`) ; tester la synchro kiosque multi-postes < 2 s sans rechargement |
+| [R-033](../roadmap/items/R-033-refondre-le-panneau-d-administration-en-cockpit.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier le menu latéral persistant filtrable sur `/admin` et sous-pages (desktop + tiroir mobile), le masquage des plugins désactivés et le cockpit « À traiter aujourd'hui » (`v1.5.0`) |
 
 ---
 

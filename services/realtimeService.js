@@ -92,6 +92,15 @@ class RealtimeService {
     const cleanChannel = String(channel || "").trim().toLowerCase();
     if (!ALLOWED_CHANNELS.has(cleanChannel)) return 0;
 
+    if (cleanChannel === "admin" || cleanChannel === "kiosk") {
+      try {
+        const adminCockpitService = require("./adminCockpitService.js");
+        adminCockpitService.invalidateSidebarCache();
+      } catch (_err) {
+        // Ignore if cockpit service is not available
+      }
+    }
+
     const targetWorkspaceId =
       meta && meta.workspaceId !== undefined && meta.workspaceId !== null && !Number.isNaN(Number(meta.workspaceId))
         ? Number(meta.workspaceId)

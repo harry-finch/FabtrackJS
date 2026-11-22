@@ -1,0 +1,254 @@
+<%
+    const _sbBase = typeof baseUrl !== 'undefined' ? baseUrl : '/';
+    const _sbPath = typeof currentPath !== 'undefined' ? String(currentPath) : '';
+    const _sbCounters = (typeof adminSidebarCounters !== 'undefined' && adminSidebarCounters) ? adminSidebarCounters : {};
+
+    const _isExactAdmin = /\/admin\/?$/.test(_sbPath);
+    const _isActive = (needle) => _sbPath.includes(needle);
+
+    const _isConfigActive =
+        _isActive('/admin/settings') ||
+        _isActive('/admin/staff') ||
+        _isActive('/admin/workspaces') ||
+        _isActive('/admin/emails') ||
+        _isActive('/admin/usertypes') ||
+        _isActive('/admin/projecttypes') ||
+        _isActive('/admin/machinetypes') ||
+        _isActive('/admin/accesslevels') ||
+        _isActive('/admin/categories') ||
+        _isActive('/admin/locations') ||
+        _isActive('/admin/warningtypes');
+
+    const _activeExtensions = [];
+    if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) {
+        _activeExtensions.push({ href: 'admin/teaching-units/manage', match: '/admin/teaching-units', icon: 'fa-solid fa-graduation-cap', label: 'UE & Facturation' });
+    }
+    if (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) {
+        _activeExtensions.push({ href: 'admin/sorbonne-projects/manage', match: '/admin/sorbonne-projects', icon: 'fa-solid fa-flask', label: 'Projets Sorbonne' });
+    }
+    if (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled) {
+        _activeExtensions.push({ href: 'admin/repaircafe/manage', match: '/admin/repaircafe', icon: 'fa-solid fa-screwdriver-wrench', label: 'Repair Café' });
+    }
+    if (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) {
+        _activeExtensions.push({ href: 'admin/bookstack/manage', match: '/admin/bookstack', icon: 'fa-solid fa-book', label: 'Wiki BookStack' });
+    }
+%>
+
+<!-- Mobile Drawer Trigger (visible below lg breakpoint) -->
+<div class="d-lg-none mb-3">
+    <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#adminSidebarOffcanvas"
+        aria-controls="adminSidebarOffcanvas"
+    >
+        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        <span>Menu administration</span>
+    </button>
+</div>
+
+<!-- Persistent Admin Sidebar (Desktop sticky 240px + Mobile Offcanvas Drawer — R-033 Prop. 3) -->
+<aside
+    class="fab-admin-sidebar offcanvas-lg offcanvas-start"
+    tabindex="-1"
+    id="adminSidebarOffcanvas"
+    aria-label="Navigation administration"
+>
+    <div class="offcanvas-header d-lg-none border-bottom py-2 px-3">
+        <h6 class="offcanvas-title fw-bold mb-0">
+            <i class="fa-solid fa-screwdriver-wrench text-primary me-2" aria-hidden="true"></i>Administration
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebarOffcanvas" aria-label="Fermer le menu"></button>
+    </div>
+
+    <div class="offcanvas-body d-flex flex-column p-2">
+        <!-- Quick Menu Filter -->
+        <div class="fab-sb-filter-wrap mb-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-transparent border-end-0 text-muted px-2">
+                    <i class="fa-solid fa-magnifying-glass fa-xs" aria-hidden="true"></i>
+                </span>
+                <input
+                    type="search"
+                    id="adminSidebarFilter"
+                    class="form-control form-control-sm border-start-0 ps-1"
+                    placeholder="Filtrer le menu…"
+                    aria-label="Filtrer le menu d'administration"
+                    autocomplete="off"
+                />
+            </div>
+        </div>
+
+        <nav class="fab-sb-nav" aria-label="Sections d'administration">
+            <!-- Group 1: Pilotage -->
+            <div class="fab-sb-group" data-sb-group="pilotage">
+                <div class="fab-sb-heading">Pilotage</div>
+                <a href="<%= _sbBase %>admin" class="fab-sb-link <%= _isExactAdmin ? 'is-active' : '' %>" <%- _isExactAdmin ? 'aria-current="page"' : '' %> data-sb-label="tableau de bord cockpit accueil">
+                    <i class="fa-solid fa-gauge-high fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Cockpit</span>
+                </a>
+                <a href="<%= _sbBase %>admin/statistics" class="fab-sb-link <%= _isActive('/admin/statistics') ? 'is-active' : '' %>" <%- _isActive('/admin/statistics') ? 'aria-current="page"' : '' %> data-sb-label="statistiques ia nl2sql frequenation">
+                    <i class="fa-solid fa-chart-line fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Statistiques &amp; IA</span>
+                </a>
+                <a href="<%= _sbBase %>admin/view-history" class="fab-sb-link <%= _isActive('/admin/view-history') ? 'is-active' : '' %>" <%- _isActive('/admin/view-history') ? 'aria-current="page"' : '' %> data-sb-label="historique visites sessions">
+                    <i class="fa-solid fa-clock-rotate-left fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Historique</span>
+                </a>
+                <a href="<%= _sbBase %>admin/history/import" class="fab-sb-link <%= _isActive('/admin/history/import') ? 'is-active' : '' %>" <%- _isActive('/admin/history/import') ? 'aria-current="page"' : '' %> data-sb-label="import csv historique">
+                    <i class="fa-solid fa-file-import fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Import CSV</span>
+                </a>
+                <a href="<%= _sbBase %>admin/consumables/project-consumption" class="fab-sb-link <%= _isActive('/project-consumption') ? 'is-active' : '' %>" <%- _isActive('/project-consumption') ? 'aria-current="page"' : '' %> data-sb-label="consommations projets facturation">
+                    <i class="fa-solid fa-receipt fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Consommations</span>
+                </a>
+                <a href="<%= _sbBase %>admin/communication" class="fab-sb-link <%= _isActive('/admin/communication') ? 'is-active' : '' %>" <%- _isActive('/admin/communication') ? 'aria-current="page"' : '' %> data-sb-label="communication mailing newsletter">
+                    <i class="fa-solid fa-bullhorn fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Communication</span>
+                </a>
+            </div>
+
+            <!-- Group 2: Communauté -->
+            <div class="fab-sb-group" data-sb-group="communaute">
+                <div class="fab-sb-heading">Communauté</div>
+                <a href="<%= _sbBase %>users/manage" class="fab-sb-link <%= _isActive('/users/manage') ? 'is-active' : '' %>" <%- _isActive('/users/manage') ? 'aria-current="page"' : '' %> data-sb-label="contributeurs membres comptes profils">
+                    <i class="fa-solid fa-users fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Contributeurs</span>
+                </a>
+                <% if (typeof isPluginWorkshopEnabled !== 'undefined' && isPluginWorkshopEnabled) { %>
+                <a href="<%= _sbBase %>admin/workshops/manage" class="fab-sb-link <%= _isActive('/admin/workshops') ? 'is-active' : '' %>" <%- _isActive('/admin/workshops') ? 'aria-current="page"' : '' %> data-sb-label="ateliers formations badges">
+                    <i class="fa-solid fa-chalkboard-user fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Ateliers</span>
+                </a>
+                <% } %>
+                <a href="<%= _sbBase %>admin/warnings" class="fab-sb-link <%= _isActive('/admin/warnings') ? 'is-active' : '' %>" <%- _isActive('/admin/warnings') ? 'aria-current="page"' : '' %> data-sb-label="avertissements regles securite">
+                    <i class="fa-solid fa-triangle-exclamation fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Avertissements</span>
+                    <% if (_sbCounters.activeWarningsCount > 0) { %>
+                    <span class="fab-sb-badge fab-sb-badge-warning tabular-nums"><%= _sbCounters.activeWarningsCount %></span>
+                    <% } %>
+                </a>
+            </div>
+
+            <!-- Group 3: Parc & Stocks -->
+            <div class="fab-sb-group" data-sb-group="parc">
+                <div class="fab-sb-heading">Parc &amp; Stocks</div>
+                <a href="<%= _sbBase %>admin/machines/manage" class="fab-sb-link <%= _isActive('/admin/machines') ? 'is-active' : '' %>" <%- _isActive('/admin/machines') ? 'aria-current="page"' : '' %> data-sb-label="machines parc pannes maintenance">
+                    <i class="fa-solid fa-gears fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Machines</span>
+                    <% if (_sbCounters.openIssuesCount > 0) { %>
+                    <span class="fab-sb-badge fab-sb-badge-danger tabular-nums" title="<%= _sbCounters.openIssuesCount %> panne(s) ouverte(s)"><%= _sbCounters.openIssuesCount %></span>
+                    <% } else if (_sbCounters.machinesCount > 0) { %>
+                    <span class="fab-sb-badge tabular-nums"><%= _sbCounters.machinesCount %></span>
+                    <% } %>
+                </a>
+                <a href="<%= _sbBase %>admin/equipment/manage" class="fab-sb-link <%= _isActive('/admin/equipment') ? 'is-active' : '' %>" <%- _isActive('/admin/equipment') ? 'aria-current="page"' : '' %> data-sb-label="equipements outils prets emprunts retards">
+                    <i class="fa-solid fa-toolbox fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Équipements &amp; Prêts</span>
+                    <% if (_sbCounters.overdueLoansCount > 0) { %>
+                    <span class="fab-sb-badge fab-sb-badge-danger tabular-nums" title="<%= _sbCounters.overdueLoansCount %> emprunt(s) en retard"><%= _sbCounters.overdueLoansCount %></span>
+                    <% } %>
+                </a>
+                <a href="<%= _sbBase %>admin/consumables/manage" class="fab-sb-link <%= _isActive('/admin/consumables/manage') ? 'is-active' : '' %>" <%- _isActive('/admin/consumables/manage') ? 'aria-current="page"' : '' %> data-sb-label="consommables stocks matieres filaments">
+                    <i class="fa-solid fa-boxes-stacked fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Consommables</span>
+                    <% if (_sbCounters.lowStockCount > 0) { %>
+                    <span class="fab-sb-badge fab-sb-badge-warning tabular-nums" title="<%= _sbCounters.lowStockCount %> stock(s) bas ou en rupture"><%= _sbCounters.lowStockCount %></span>
+                    <% } %>
+                </a>
+                <a href="<%= _sbBase %>admin/inventory/movements" class="fab-sb-link <%= _isActive('/admin/inventory/movements') ? 'is-active' : '' %>" <%- _isActive('/admin/inventory/movements') ? 'aria-current="page"' : '' %> data-sb-label="sorties rebuts mouvements inventaire casse">
+                    <i class="fa-solid fa-dolly fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text">Sorties &amp; Rebuts</span>
+                </a>
+            </div>
+
+            <!-- Group 4: Active Extensions (ONLY enabled plugins are shown) -->
+            <% if (_activeExtensions.length > 0) { %>
+            <div class="fab-sb-group" data-sb-group="extensions">
+                <div class="fab-sb-heading">Extensions actives</div>
+                <% _activeExtensions.forEach(function(ext) {
+                    const isExtActive = _isActive(ext.match);
+                %>
+                <a href="<%= _sbBase %><%= ext.href %>" class="fab-sb-link <%= isExtActive ? 'is-active' : '' %>" <%- isExtActive ? 'aria-current="page"' : '' %> data-sb-label="<%= ext.label.toLowerCase() %> extension plugin">
+                    <i class="<%= ext.icon %> fab-sb-ico" aria-hidden="true"></i>
+                    <span class="fab-sb-text"><%= ext.label %></span>
+                </a>
+                <% }); %>
+            </div>
+            <% } %>
+
+            <!-- Collapsible Group 5: Configuration & Référentiels -->
+            <div class="fab-sb-group border-top pt-2 mt-2" data-sb-group="config">
+                <button
+                    type="button"
+                    class="fab-sb-collapse-btn"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#adminConfigCollapse"
+                    aria-expanded="<%= _isConfigActive ? 'true' : 'false' %>"
+                    aria-controls="adminConfigCollapse"
+                    id="adminConfigCollapseBtn"
+                >
+                    <span class="fab-sb-heading mb-0">Configuration &amp; Référentiels</span>
+                    <i class="fa-solid fa-chevron-down fa-2xs text-muted" aria-hidden="true"></i>
+                </button>
+
+                <div class="collapse <%= _isConfigActive ? 'show' : '' %> mt-1" id="adminConfigCollapse">
+                    <a href="<%= _sbBase %>admin/settings" class="fab-sb-link <%= _isActive('/admin/settings') ? 'is-active' : '' %>" <%- _isActive('/admin/settings') ? 'aria-current="page"' : '' %> data-sb-label="configuration parametres plugins logo i18n ia">
+                        <i class="fa-solid fa-sliders fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Configuration &amp; Plugins</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/staff/manage" class="fab-sb-link <%= _isActive('/admin/staff') ? 'is-active' : '' %>" <%- _isActive('/admin/staff') ? 'aria-current="page"' : '' %> data-sb-label="comptes staff equipe mediateurs administrateurs">
+                        <i class="fa-solid fa-user-shield fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Comptes staff</span>
+                        <% if (_sbCounters.pendingStaffCount > 0) { %>
+                        <span class="fab-sb-badge fab-sb-badge-info tabular-nums"><%= _sbCounters.pendingStaffCount %></span>
+                        <% } %>
+                    </a>
+                    <a href="<%= _sbBase %>admin/workspaces/manage" class="fab-sb-link <%= _isActive('/admin/workspaces') ? 'is-active' : '' %>" <%- _isActive('/admin/workspaces') ? 'aria-current="page"' : '' %> data-sb-label="espaces fablab salles">
+                        <i class="fa-solid fa-building fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Espaces</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/emails" class="fab-sb-link <%= _isActive('/admin/emails') ? 'is-active' : '' %>" <%- _isActive('/admin/emails') ? 'aria-current="page"' : '' %> data-sb-label="emails alertes smtp notifications">
+                        <i class="fa-solid fa-envelope fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">E-mails &amp; Alertes</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/usertypes/manage" class="fab-sb-link <%= _isActive('/admin/usertypes') ? 'is-active' : '' %>" <%- _isActive('/admin/usertypes') ? 'aria-current="page"' : '' %> data-sb-label="types contributeurs profils referentiel">
+                        <i class="fa-solid fa-id-badge fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Types contributeurs</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/projecttypes/manage" class="fab-sb-link <%= _isActive('/admin/projecttypes') ? 'is-active' : '' %>" <%- _isActive('/admin/projecttypes') ? 'aria-current="page"' : '' %> data-sb-label="motifs visite projets referentiel">
+                        <i class="fa-solid fa-compass fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Motifs de visite</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/machinetypes/manage" class="fab-sb-link <%= _isActive('/admin/machinetypes') ? 'is-active' : '' %>" <%- _isActive('/admin/machinetypes') ? 'aria-current="page"' : '' %> data-sb-label="types machines referentiel">
+                        <i class="fa-solid fa-microchip fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Types machines</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/accesslevels/manage" class="fab-sb-link <%= _isActive('/admin/accesslevels') ? 'is-active' : '' %>" <%- _isActive('/admin/accesslevels') ? 'aria-current="page"' : '' %> data-sb-label="niveaux acces habilitations referentiel">
+                        <i class="fa-solid fa-key fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Niveaux d'accès</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/categories/manage" class="fab-sb-link <%= _isActive('/admin/categories') ? 'is-active' : '' %>" <%- _isActive('/admin/categories') ? 'aria-current="page"' : '' %> data-sb-label="categories referentiel">
+                        <i class="fa-solid fa-tags fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Catégories</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/locations/manage" class="fab-sb-link <%= _isActive('/admin/locations') ? 'is-active' : '' %>" <%- _isActive('/admin/locations') ? 'aria-current="page"' : '' %> data-sb-label="emplacements zones referentiel">
+                        <i class="fa-solid fa-location-dot fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Emplacements</span>
+                    </a>
+                    <a href="<%= _sbBase %>admin/warningtypes/manage" class="fab-sb-link <%= _isActive('/admin/warningtypes') ? 'is-active' : '' %>" <%- _isActive('/admin/warningtypes') ? 'aria-current="page"' : '' %> data-sb-label="types avertissements referentiel">
+                        <i class="fa-solid fa-shield-halved fab-sb-ico" aria-hidden="true"></i>
+                        <span class="fab-sb-text">Types d'avertissements</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div id="adminSidebarNoResults" class="text-muted small text-center py-3 d-none">
+            Aucun menu correspondant.
+        </div>
+    </div>
+</aside>
+<script src="javascripts/admin-sidebar.js"></script>

@@ -275,3 +275,8 @@
 <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
 <%- include('inventory-checkout-modal.html') %>
 <% } %>
+<% if (typeof isAdminLayout !== 'undefined' && isAdminLayout && typeof role !== 'undefined' && role === 'admin') { %>
+<div class="fab-admin-shell">
+    <%- include('admin-sidebar.html') %>
+    <div class="fab-admin-content">
+<% } %>
