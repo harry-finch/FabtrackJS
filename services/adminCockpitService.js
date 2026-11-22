@@ -73,7 +73,7 @@ async function getSidebarCounters({ forceRefresh = false } = {}) {
       prisma.machine.count(),
       prisma.machineIssue.count({
         where: {
-          status: { in: ["OPEN", "IN_PROGRESS"] },
+          status: "OPEN",
         },
       }),
       prisma.staff.count({
@@ -130,7 +130,7 @@ async function getCockpitData() {
       }),
       prisma.machineIssue.findMany({
         where: {
-          status: { in: ["OPEN", "IN_PROGRESS"] },
+          status: "OPEN",
         },
         include: {
           machine: { select: { id: true, name: true } },

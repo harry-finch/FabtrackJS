@@ -6,7 +6,7 @@
 | Élément | État |
 | --- | --- |
 | Application | Plateforme Express / Prisma v7 complète : kiosque, suivi utilisateurs/machines NFC, prêts, pannes, i18n CSV, statistiques NL2SQL et plugins (`R-001` à `R-003`). |
-| Tests | `DATABASE_URL="" npm run test:unit` (`2026-11-22`) : 34/34 suites unitaires pures passées, 394/394 tests passés sans connexion MariaDB (jalon `v1.5` complet `R-026` à `R-033`, dont 5 tests `R-033` : cache compteurs barre latérale, cockpit « À traiter aujourd'hui », masquage plugins désactivés, version `1.5.0`). |
+| Tests | `DATABASE_URL="" npm run test:unit` (`2026-11-22`) : 34/34 suites unitaires pures passées, 395/395 tests passés sans connexion MariaDB (jalon `v1.5` complet `R-026` à `R-033` + compatibilité MySQL 8.x `scripts/migrate.js` vérifiée en réel sur base locale). |
 | Vérifié | Suite unitaire pure Jest (`npm run test:unit`), `npm run lint` (ESLint 0 erreur), `npm audit --omit=dev` (0 vulnérabilité), `npx prisma validate` & `npx prisma generate`, synchronisation `prisma/schema.sql`, chargement `app.js`, contrôle feuille de route (`fabboard roadmap lint`). |
 | Non vérifié | Suite d'intégration complète (`npm run test:integration` sur base `_test` MariaDB dédiée) et exécution `npm run db:migrate` sur base MariaDB/NetBSD réelle. |
 

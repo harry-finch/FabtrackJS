@@ -368,9 +368,32 @@ app.use(async (req, res, next) => {
     }
     res.locals.platformName = settings.platform_name || "FabtrackJS";
     res.locals.platformSubtitle = settings.platform_subtitle || "Track your fablab's activity";
-    res.locals.platformLogoType = settings.platform_logo_type || "default";
-    res.locals.platformLogoPath = settings.platform_logo_path || "";
-    res.locals.platformFaviconPath = settings.platform_favicon_path || "";
+
+    // Defensive fallback: if custom logo/favicon points to a missing /uploads/ file or legacy .svg (blocked inline by R-005), fall back to defaults
+    const resolveSafeUploadAsset = (rawAssetPath) => {
+      const clean = String(rawAssetPath || "").trim();
+      if (!clean) return "";
+      if (clean.startsWith("/uploads/")) {
+        const relName = clean.slice("/uploads/".length);
+        if (!relName || relName.includes("..") || relName.includes("/") || relName.includes("\\")) {
+          return "";
+        }
+        if (path.extname(relName).toLowerCase() === ".svg") {
+          return "";
+        }
+        const diskPath = path.join(uploadsDir, relName);
+        if (!fs.existsSync(diskPath)) {
+          return "";
+        }
+        return `${res.locals.basePath}${clean}`;
+      }
+      return clean;
+    };
+
+    const resolvedLogoPath = settings.platform_logo_type === "custom" ? resolveSafeUploadAsset(settings.platform_logo_path) : "";
+    res.locals.platformLogoType = resolvedLogoPath ? "custom" : "default";
+    res.locals.platformLogoPath = resolvedLogoPath;
+    res.locals.platformFaviconPath = resolveSafeUploadAsset(settings.platform_favicon_path);
     res.locals.currencySymbol = settings.currency_symbol || "€";
     res.locals.currentDateFormat = settings.date_format || "DD/MM/YYYY";
 

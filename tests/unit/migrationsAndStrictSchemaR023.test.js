@@ -5,6 +5,7 @@ const {
   computeChecksum,
   discoverMigrations,
   splitSqlStatements,
+  executeStatementCompatible,
   runMigrations,
 } = require("../../scripts/migrate.js");
 
@@ -16,7 +17,7 @@ describe("R-023: NetBSD-compatible SQL migrations & strict Prisma schema typing"
       const migrations = discoverMigrations();
       expect(migrations.length).toBeGreaterThanOrEqual(4);
       const versions = migrations.map((m) => m.version);
-      expect(versions).toEqual(["001", "002", "003", "004"]);
+      expect(versions).toEqual(["000", "001", "002", "003", "004"]);
       for (const m of migrations) {
         expect(m.checksum).toMatch(/^[a-f0-9]{64}$/);
         expect(splitSqlStatements(m.sql).length).toBeGreaterThan(0);
@@ -45,6 +46,31 @@ describe("R-023: NetBSD-compatible SQL migrations & strict Prisma schema typing"
       expect(stmts).toHaveLength(2);
       expect(stmts[0]).toContain("'ok; kept'");
       expect(stmts[1]).toContain("ADD COLUMN IF NOT EXISTS");
+    });
+
+    test("executeStatementCompatible falls back to MySQL 8.x syntax on errno 1064 and ignores duplicate key/column errors", async () => {
+      const queries = [];
+      const mockConn = {
+        query: jest.fn(async (sql) => {
+          queries.push(sql);
+          if (sql.includes("IF NOT EXISTS")) {
+            const err = new Error("syntax error");
+            err.errno = 1064;
+            throw err;
+          }
+          const dupErr = new Error("Duplicate key name");
+          dupErr.errno = 1061;
+          throw dupErr;
+        }),
+      };
+
+      await expect(
+        executeStatementCompatible(mockConn, "CREATE INDEX IF NOT EXISTS `idx_test` ON `Session`(`expiresAt`)"),
+      ).resolves.toBeUndefined();
+      expect(queries).toEqual([
+        "CREATE INDEX IF NOT EXISTS `idx_test` ON `Session`(`expiresAt`)",
+        "CREATE INDEX `idx_test` ON `Session`(`expiresAt`)",
+      ]);
     });
   });
 
@@ -77,29 +103,29 @@ describe("R-023: NetBSD-compatible SQL migrations & strict Prisma schema typing"
     test("applies all pending migrations in order and records _schema_version, then skips on re-run", async () => {
       const conn = createMockConnection();
       const first = await runMigrations({ connection: conn, mode: "apply", log: () => {} });
-      expect(first.appliedNow).toEqual(["001", "002", "003", "004"]);
-      expect(conn.applied).toHaveLength(4);
+      expect(first.appliedNow).toEqual(["000", "001", "002", "003", "004"]);
+      expect(conn.applied).toHaveLength(5);
 
       const second = await runMigrations({ connection: conn, mode: "apply", log: () => {} });
       expect(second.appliedNow).toEqual([]);
-      expect(second.alreadyApplied).toEqual(["001", "002", "003", "004"]);
+      expect(second.alreadyApplied).toEqual(["000", "001", "002", "003", "004"]);
     });
 
     test("dry-run and status never execute migration DDL or insert _schema_version rows", async () => {
       const conn = createMockConnection();
       const dry = await runMigrations({ connection: conn, mode: "dry-run", log: () => {} });
-      expect(dry.pending).toHaveLength(4);
+      expect(dry.pending).toHaveLength(5);
       expect(conn.applied).toHaveLength(0);
 
       const status = await runMigrations({ connection: conn, mode: "status", log: () => {} });
-      expect(status.pending).toHaveLength(4);
+      expect(status.pending).toHaveLength(5);
       expect(conn.applied).toHaveLength(0);
     });
 
     test("baseline records existing migrations without executing DDL statements", async () => {
       const conn = createMockConnection();
       const res = await runMigrations({ connection: conn, mode: "baseline", log: () => {} });
-      expect(res.appliedNow).toEqual(["001", "002", "003", "004"]);
+      expect(res.appliedNow).toEqual(["000", "001", "002", "003", "004"]);
       expect(conn.executedSql.some((q) => /ALTER TABLE/i.test(q.sql))).toBe(false);
     });
 

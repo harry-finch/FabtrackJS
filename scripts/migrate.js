@@ -169,8 +169,52 @@ function splitSqlStatements(sql) {
   return statements;
 }
 
+const IDEMPOTENT_ALREADY_EXISTS_ERRNOS = new Set([
+  1060, // ER_DUP_FIELDNAME (Duplicate column name)
+  1061, // ER_DUP_KEYNAME (Duplicate key/index name)
+  1826, // ER_FK_DUP_NAME (Duplicate foreign key constraint name)
+]);
+
+const MARIADB_ONLY_IF_NOT_EXISTS_RE = /\b(CREATE\s+(?:UNIQUE\s+)?INDEX|ADD\s+COLUMN|ADD\s+CONSTRAINT)\s+IF\s+NOT\s+EXISTS\b/i;
+
+function stripMariaDbOnlyIfNotExists(stmt) {
+  return stmt.replace(
+    /\b(CREATE\s+(?:UNIQUE\s+)?INDEX|ADD\s+COLUMN|ADD\s+CONSTRAINT)\s+IF\s+NOT\s+EXISTS\b/gi,
+    "$1",
+  );
+}
+
 /**
- * Executes pending migrations against an already-connected MariaDB connection.
+ * Executes a migration SQL statement with cross-compatibility for both MariaDB
+ * (supports `CREATE INDEX IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `ADD CONSTRAINT IF NOT EXISTS`)
+ * and MySQL 8.x (rejects `IF NOT EXISTS` on those DDL clauses with errno 1064).
+ */
+async function executeStatementCompatible(connection, stmt) {
+  const hasMariaDbGuard = MARIADB_ONLY_IF_NOT_EXISTS_RE.test(stmt);
+  try {
+    await connection.query(stmt);
+  } catch (err) {
+    if (hasMariaDbGuard && err && (err.errno === 1064 || err.code === "ER_PARSE_ERROR")) {
+      const mysqlStmt = stripMariaDbOnlyIfNotExists(stmt);
+      try {
+        await connection.query(mysqlStmt);
+        return;
+      } catch (mysqlErr) {
+        if (mysqlErr && IDEMPOTENT_ALREADY_EXISTS_ERRNOS.has(mysqlErr.errno)) {
+          return;
+        }
+        throw mysqlErr;
+      }
+    }
+    if (hasMariaDbGuard && err && IDEMPOTENT_ALREADY_EXISTS_ERRNOS.has(err.errno)) {
+      return;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Executes pending migrations against an already-connected MariaDB/MySQL connection.
  * Designed for direct unit testing with mock connections as well as CLI execution.
  */
 async function runMigrations({
@@ -252,7 +296,7 @@ async function runMigrations({
     const statements = splitSqlStatements(mig.sql);
     log(`[migrate] Applying ${mig.filename} (${statements.length} statement(s))...`);
     for (const stmt of statements) {
-      await connection.query(stmt);
+      await executeStatementCompatible(connection, stmt);
     }
     await connection.query(
       "INSERT INTO `_schema_version` (`version`, `description`, `checksum`) VALUES (?, ?, ?)",
@@ -308,5 +352,7 @@ module.exports = {
   computeChecksum,
   discoverMigrations,
   splitSqlStatements,
+  stripMariaDbOnlyIfNotExists,
+  executeStatementCompatible,
   runMigrations,
 };
