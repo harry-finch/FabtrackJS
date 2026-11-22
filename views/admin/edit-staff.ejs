@@ -3,9 +3,9 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="" />
+        <meta name="description" content="Modification d'un compte staff ou médiateur" />
         <meta name="author" content="Stéphane Muller" />
-        <title>Fabtrack - Modifier le compte staff</title>
+        <title>Modifier le compte staff • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
@@ -17,65 +17,88 @@
             <%- include('../includes/header.html') %>
 
             <!-- Page Header -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                            <i class="fa-solid fa-user-pen"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <h4 class="fw-bold mb-0">Modifier le compte staff</h4>
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.72rem;">
-                                    <%= user.name %>
-                                </span>
-                            </div>
-                            <p class="text-muted small mb-0">Édition des identifiants et permissions d'accès</p>
-                        </div>
+            <div class="fab-page-header">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <h1 class="fab-page-title">Modifier le compte staff</h1>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border">
+                            <%= user.name %>
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/manage" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Retour liste staff
-                        </a>
-                    </div>
+                    <p class="fab-page-subtitle">Édition des identifiants et permissions d'accès</p>
+                </div>
+                <div class="fab-page-actions">
+                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/manage" class="btn btn-outline-secondary btn-sm">
+                        <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> Retour à la liste
+                    </a>
                 </div>
             </div>
 
-            <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/update" method="post">
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="username" name="username" value="<%= user.name %>" required />
-                    <label for="username">Nom d'utilisateur</label>
+            <div class="card border mb-4">
+                <div class="card-header bg-body-tertiary">
+                    <h2 class="h6 fw-bold mb-0">
+                        <i class="fa-solid fa-user-pen text-primary me-2" aria-hidden="true"></i>Informations et permissions
+                    </h2>
                 </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="email" name="email" value="<%= user.email %>" required />
-                    <label for="email">Adresse e-mail</label>
-                </div>
+                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/update" method="post">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <input type="hidden" id="id" name="id" value="<%= user.id %>" />
 
-                <div class="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 bg-body-tertiary rounded-3 border">
-                    <div class="form-check me-2">
-                        <input type="radio" id="radio1" name="role" value="admin" class="form-check-input" required <% if(user.role =='admin') { %> checked <% } %> />
-                        <label class="form-check-label fw-semibold" for="radio1"><i class="fa-solid fa-shield-halved text-primary me-1"></i> Admin</label>
-                    </div>
-                    <div class="form-check me-2">
-                        <input type="radio" id="radio2" name="role" value="user" class="form-check-input" required <% if(user.role =='user') { %> checked <% } %> />
-                        <label class="form-check-label fw-semibold" for="radio2"><i class="fa-solid fa-user-gear text-secondary me-1"></i> Médiateur (User)</label>
-                    </div>
-                    <div class="form-check me-2">
-                        <input type="radio" id="radio3" name="role" value="staff" class="form-check-input" required <% if(user.role =='staff') { %> checked <% } %> />
-                        <label class="form-check-label fw-semibold" for="radio3"><i class="fa-solid fa-desktop text-info me-1"></i> Borne Kiosque (Staff)</label>
-                    </div>
-                    <div class="form-check ms-auto">
-                        <input type="checkbox" id="approved" name="approved" class="form-check-input" <% if(user.approved) { %> checked <% } %> />
-                        <label class="form-check-label fw-semibold" for="approved"><i class="fa-solid fa-check text-success me-1"></i> Compte approuvé</label>
-                    </div>
-                </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="username" class="form-label fw-semibold small">Nom d'utilisateur</label>
+                                <input type="text" class="form-control" id="username" name="username" value="<%= user.name %>" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-semibold small">Adresse e-mail</label>
+                                <input type="text" class="form-control" id="email" name="email" value="<%= user.email %>" required />
+                            </div>
+                        </div>
 
-                <input type='hidden' id="id" name='id' value='<%= user.id %>' />
-                <button class="btn btn-primary w-100 py-2 mb-2" type="submit">Enregistrer les modifications</button>
-                <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/manage" class="btn btn-secondary w-100 py-2"><%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %></a>
-            </form>
+                        <div class="p-3 bg-body-tertiary rounded border">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div class="d-flex flex-wrap align-items-center gap-3" role="radiogroup" aria-label="Rôle du compte">
+                                    <div class="form-check mb-0">
+                                        <input type="radio" id="radio1" name="role" value="admin" class="form-check-input" required <% if (user.role == 'admin') { %> checked <% } %> />
+                                        <label class="form-check-label fw-semibold" for="radio1">
+                                            <i class="fa-solid fa-shield-halved text-primary me-1" aria-hidden="true"></i>Administrateur
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-0">
+                                        <input type="radio" id="radio2" name="role" value="user" class="form-check-input" required <% if (user.role == 'user') { %> checked <% } %> />
+                                        <label class="form-check-label fw-semibold" for="radio2">
+                                            <i class="fa-solid fa-user-gear text-secondary me-1" aria-hidden="true"></i>Médiateur
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-0">
+                                        <input type="radio" id="radio3" name="role" value="staff" class="form-check-input" required <% if (user.role == 'staff') { %> checked <% } %> />
+                                        <label class="form-check-label fw-semibold" for="radio3">
+                                            <i class="fa-solid fa-desktop text-secondary me-1" aria-hidden="true"></i>Borne kiosque
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-check mb-0">
+                                    <input type="checkbox" id="approved" name="approved" class="form-check-input" <% if (user.approved) { %> checked <% } %> />
+                                    <label class="form-check-label fw-semibold" for="approved">
+                                        <i class="fa-solid fa-check text-success me-1" aria-hidden="true"></i>Compte approuvé
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-body-tertiary d-flex flex-wrap justify-content-end gap-2">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/staff/manage" class="btn btn-outline-secondary">
+                            <%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %>
+                        </a>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i>Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
 
             <%- include('../includes/footer.html') %>
-
     </body>
 </html>

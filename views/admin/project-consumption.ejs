@@ -4,148 +4,142 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Historique de consommation lié aux projets" />
-    <title>Fabtrack - Consommation par Projet</title>
+    <title>Consommation par projet • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
     <%- include('../includes/pagehead.html') %>
   </head>
 
-  <body class="bg-body-tertiary py-4">
+  <body class="d-flex justify-content-center bg-body-tertiary py-4">
     <%- include('../includes/light-dark.html') %>
 
     <main class="main-container">
       <%- include('../includes/header.html') %>
 
       <!-- Page Header -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-              <i class="fa-solid fa-chart-pie"></i>
-            </div>
-            <div>
-              <div class="d-flex align-items-center gap-2">
-                <h4 class="fw-bold mb-0">Consommation par Projet</h4>
-                <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill" style="font-size: 0.72rem;">
-                  <%= stats.totalEntries %> prélèvement(s)
-                </span>
-              </div>
-              <p class="text-muted small mb-0">Historique des matériaux et consommables utilisés dans le cadre de chaque projet</p>
-            </div>
+      <div class="fab-page-header">
+        <div>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <h1 class="fab-page-title">Consommation par projet</h1>
+            <span class="badge bg-body-secondary text-secondary-emphasis border tabular-nums">
+              <%= stats.totalEntries %> prélèvement(s)
+            </span>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
-            </a>
-          </div>
+          <p class="fab-page-subtitle">Historique des matériaux et consommables utilisés dans le cadre de chaque projet</p>
         </div>
+        <div class="fab-page-actions"></div>
       </div>
 
       <!-- KPI Overview Cards -->
-      <!-- KPI Overview Cards -->
       <div class="row g-3 mb-4">
         <div class="col-md-3 col-sm-6">
-          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="small text-muted fw-semibold text-uppercase">Projets actifs</span>
-                <i class="fa-solid fa-folder-open text-primary fs-5"></i>
+          <div class="card h-100 fab-kpi-card">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between gap-3">
+              <div>
+                <div class="small text-muted fw-semibold">Projets actifs</div>
+                <div class="kpi-value tabular-nums mt-1"><%= stats.activeProjectsCount %></div>
+                <div class="small text-muted mt-1">Hors archivés</div>
               </div>
-              <div class="fs-4 fw-bold text-primary"><%= stats.activeProjectsCount %></div>
-              <div class="small text-muted">projets actifs (hors archivés)</div>
+              <span class="fab-kpi-icon" aria-hidden="true">
+                <i class="fa-solid fa-folder-open"></i>
+              </span>
             </div>
           </div>
         </div>
 
         <div class="col-md-3 col-sm-6">
-          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="small text-muted fw-semibold text-uppercase">Volume consommé</span>
-                <i class="fa-solid fa-cubes text-info fs-5"></i>
+          <div class="card h-100 fab-kpi-card">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between gap-3">
+              <div>
+                <div class="small text-muted fw-semibold">Volume consommé</div>
+                <div class="kpi-value tabular-nums mt-1"><%= stats.totalUnits %></div>
+                <div class="small text-muted mt-1">Unités de consommables</div>
               </div>
-              <div class="fs-4 fw-bold text-info"><%= stats.totalUnits %></div>
-              <div class="small text-muted">unités de consommables</div>
+              <span class="fab-kpi-icon" aria-hidden="true">
+                <i class="fa-solid fa-cubes"></i>
+              </span>
             </div>
           </div>
         </div>
 
         <div class="col-md-3 col-sm-6">
-          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="small text-muted fw-semibold text-uppercase">Montant total</span>
-                <i class="fa-solid fa-coins text-warning fs-5"></i>
+          <div class="card h-100 fab-kpi-card">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between gap-3">
+              <div>
+                <div class="small text-muted fw-semibold">Montant total</div>
+                <div class="kpi-value tabular-nums mt-1"><%= stats.totalCost %> €</div>
+                <div class="small text-muted mt-1">Coût cumulé sur projets</div>
               </div>
-              <div class="fs-4 fw-bold text-danger"><%= stats.totalCost %> €</div>
-              <div class="small text-muted">coût cumulé sur projets</div>
+              <span class="fab-kpi-icon" aria-hidden="true">
+                <i class="fa-solid fa-coins"></i>
+              </span>
             </div>
           </div>
         </div>
 
         <div class="col-md-3 col-sm-6">
-          <div class="card h-100 shadow-sm border-0 bg-body-secondary">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="small text-muted fw-semibold text-uppercase">Matériau phare</span>
-                <i class="fa-solid fa-star text-secondary fs-5"></i>
+          <div class="card h-100 fab-kpi-card">
+            <div class="card-body p-3 d-flex align-items-center justify-content-between gap-3">
+              <div class="min-w-0">
+                <div class="small text-muted fw-semibold">Matériau phare</div>
+                <div class="fw-bold text-truncate mt-1" title="<%= stats.topMaterial %>">
+                  <%= stats.topMaterial %>
+                </div>
+                <div class="small text-muted mt-1">Le plus sollicité</div>
               </div>
-              <div class="fs-6 fw-bold text-truncate text-secondary" title="<%= stats.topMaterial %>">
-                <%= stats.topMaterial %>
-              </div>
-              <div class="small text-muted">le plus sollicité</div>
+              <span class="fab-kpi-icon" aria-hidden="true">
+                <i class="fa-solid fa-star"></i>
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Filters and Controls -->
-      <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body p-3">
-          <div class="row g-2 align-items-center">
-            <div class="col-md-5">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
-                <input
-                  type="text"
-                  id="projectConsumptionSearch"
-                  class="form-control"
-                  placeholder="Rechercher par projet, matériau, contributeur..."
-                  aria-label="Rechercher une consommation par projet, matériau ou contributeur"
-                />
-              </div>
+      <div class="fab-filter-bar">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-5">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-body-tertiary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
+              <input
+                type="text"
+                id="projectConsumptionSearch"
+                class="form-control"
+                placeholder="Rechercher par projet, matériau, contributeur..."
+                aria-label="Rechercher une consommation par projet, matériau ou contributeur"
+              />
             </div>
-            <div class="col-md-4">
-              <select id="projectSelectFilter" class="form-select form-select-sm" aria-label="Filtrer par projet">
-                <option value="" selected>-- Choisir un projet --</option>
-                <option value="all">Tous les projets (<%= projectGroups.length %>)</option>
-                <% projectGroups.forEach(function(group) { %>
-                  <option value="<%= group.project.id %>">
-                    <%= group.project.url.replace(/^https?:\/\//, '') %> (<%= group.entries.length %> cons.<% if (!group.project.active && group.project.id !== 0) { %> - Archivé<% } %>)
-                  </option>
-                <% }); %>
-              </select>
-            </div>
-            <div class="col-md-3 text-end">
-              <div class="btn-group btn-group-sm w-100" role="group">
-                <button type="button" class="btn btn-outline-primary active" id="btnViewCards">
-                  <i class="fa-solid fa-grip-vertical me-1"></i> Par projet
-                </button>
-                <button type="button" class="btn btn-outline-primary" id="btnViewTable">
-                  <i class="fa-solid fa-table-list me-1"></i> Tout lister
-                </button>
-              </div>
+          </div>
+          <div class="col-md-4">
+            <select id="projectSelectFilter" class="form-select form-select-sm" aria-label="Filtrer par projet">
+              <option value="" selected>-- Choisir un projet --</option>
+              <option value="all">Tous les projets (<%= projectGroups.length %>)</option>
+              <% projectGroups.forEach(function(group) { %>
+                <option value="<%= group.project.id %>">
+                  <%= group.project.url.replace(/^https?:\/\//, '') %> (<%= group.entries.length %> cons.<% if (!group.project.active && group.project.id !== 0) { %> - Archivé<% } %>)
+                </option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="col-md-3 text-end">
+            <div class="btn-group btn-group-sm w-100" role="group" aria-label="Mode d'affichage">
+              <button type="button" class="btn btn-outline-secondary active" id="btnViewCards">
+                <i class="fa-solid fa-grip-vertical me-1" aria-hidden="true"></i> Par projet
+              </button>
+              <button type="button" class="btn btn-outline-secondary" id="btnViewTable">
+                <i class="fa-solid fa-table-list me-1" aria-hidden="true"></i> Tout lister
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Initial empty prompt shown by default when no search / project selected -->
-      <div id="initialEmptyPrompt" class="card border-0 shadow-sm text-center py-5 bg-body-secondary mb-4">
+      <div id="initialEmptyPrompt" class="card border text-center py-5 mb-4">
         <div class="card-body py-4">
-          <div class="text-primary mb-3">
-            <i class="fa-solid fa-diagram-project fa-3x opacity-75"></i>
+          <div class="text-secondary mb-3">
+            <i class="fa-solid fa-diagram-project fa-3x opacity-75" aria-hidden="true"></i>
           </div>
-          <h5 class="fw-bold">Sélectionnez un projet pour consulter sa consommation</h5>
+          <h2 class="h5 fw-bold">Sélectionnez un projet pour consulter sa consommation</h2>
           <p class="text-muted mx-auto mb-0" style="max-width: 520px;">
             Choisissez un projet dans le menu déroulant ci-dessus ou saisissez un mot-clé dans la barre de recherche pour afficher les consommables et matériaux associés.
           </p>
@@ -153,12 +147,12 @@
       </div>
 
       <!-- Prompt when search yields 0 results -->
-      <div id="noResultsPrompt" class="card border-0 shadow-sm text-center py-5 mb-4" style="display: none;">
+      <div id="noResultsPrompt" class="card border text-center py-5 mb-4" style="display: none;">
         <div class="card-body py-4">
           <div class="text-muted mb-3">
-            <i class="fa-solid fa-folder-open fa-3x opacity-50"></i>
+            <i class="fa-solid fa-folder-open fa-3x opacity-50" aria-hidden="true"></i>
           </div>
-          <h5 class="fw-bold">Aucun résultat trouvé</h5>
+          <h2 class="h5 fw-bold">Aucun résultat trouvé</h2>
           <p class="text-muted mb-0">Aucun projet ou consommation ne correspond à vos critères de recherche.</p>
         </div>
       </div>
@@ -166,56 +160,56 @@
       <!-- VIEW 1: Grouped by Project Cards -->
       <div id="cardsView" style="display: none;">
         <% if (projectGroups.length === 0) { %>
-          <div class="text-center text-muted py-5 card border-0 shadow-sm">
-            <i class="fa-solid fa-diagram-project fa-3x mb-3 opacity-50"></i>
+          <div class="text-center text-muted py-5 card border">
+            <i class="fa-solid fa-diagram-project fa-3x mb-3 opacity-50" aria-hidden="true"></i>
             <p class="mb-0">Aucun historique de consommation lié à des projets pour le moment.</p>
           </div>
         <% } else { %>
           <% projectGroups.forEach(function(group) { %>
-            <div class="card shadow-sm border-0 mb-4 project-card-item" data-project-id="<%= group.project.id %>">
+            <div class="card border mb-4 project-card-item" data-project-id="<%= group.project.id %>">
               <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center py-3 flex-wrap gap-2">
                 <div class="d-flex align-items-center">
-                  <i class="fa-solid fa-folder-open text-primary fs-5 me-2"></i>
+                  <i class="fa-solid fa-folder-open text-secondary fs-5 me-2" aria-hidden="true"></i>
                   <div>
-                    <h6 class="mb-0 fw-bold">
+                    <h2 class="h6 mb-0 fw-bold">
                       <% const validGroupUrl = group.project.id !== 0 ? safeHttpUrl(group.project.url) : null; %>
                       <% if (validGroupUrl) { %>
                         <a href="<%= validGroupUrl %>" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
-                          <%= validGroupUrl %> <i class="fa-solid fa-arrow-up-right-from-square small text-muted ms-1"></i>
+                          <%= validGroupUrl %> <i class="fa-solid fa-arrow-up-right-from-square small text-muted ms-1" aria-hidden="true"></i>
                         </a>
                       <% } else { %>
                         <%= group.project.url %>
                       <% } %>
-                    </h6>
+                    </h2>
                     <div class="small text-muted mt-1 d-flex align-items-center flex-wrap gap-1">
                       <% if (group.project.projecttype) { %>
-                        <span class="badge bg-secondary me-1"><%= group.project.projecttype.name %></span>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border"><%= group.project.projecttype.name %></span>
                       <% } %>
                       <% if (group.project.active) { %>
                         <span class="badge bg-success-subtle text-success border border-success-subtle">Actif</span>
                       <% } else if (group.project.id !== 0) { %>
-                        <span class="badge bg-secondary-subtle text-secondary border">Archivé</span>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border">Archivé</span>
                       <% } %>
                       <span
-                        class="badge bg-secondary-subtle text-secondary border ms-1 py-1 px-2"
+                        class="badge bg-body-secondary text-secondary-emphasis border"
                         data-bs-toggle="tooltip"
                         data-bs-html="true"
                         data-bs-placement="top"
-                        title="<% if (group.contributorsList.length > 0) { %><strong>Contributeurs (<%= group.contributorsCount %>) :</strong><br><%- group.contributorsList.map(function(u) { return escapeHtml(u); }).join('<br>') %><% } else { %>Aucun utilisateur enregistré<% } %>"
+                        title="<% if (group.contributorsList.length > 0) { %><strong>Contributeurs (<%= group.contributorsCount %>) :</strong><br><%- group.contributorsList.map(function(u) { return escapeHtml(u); }).join('<br>') %><% } else { %>Aucun contributeur enregistré<% } %>"
                         style="cursor: help;"
                       >
-                        <i class="fa-solid fa-users me-1"></i><%= group.contributorsCount %> contributeur(s)
+                        <i class="fa-solid fa-users me-1" aria-hidden="true"></i><%= group.contributorsCount %> contributeur(s)
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div class="text-end">
-                  <span class="badge bg-info-subtle text-info-emphasis border me-2">
-                    <i class="fa-solid fa-cubes me-1"></i><%= group.totalUnits %> unité(s)
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-body-secondary text-secondary-emphasis border">
+                    <i class="fa-solid fa-cubes me-1" aria-hidden="true"></i><%= group.totalUnits %> unité(s)
                   </span>
-                  <span class="badge bg-danger-subtle text-danger border fs-6">
-                    <i class="fa-solid fa-coins me-1"></i><%= group.totalCost %> €
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                    <i class="fa-solid fa-coins me-1" aria-hidden="true"></i><%= group.totalCost %> €
                   </span>
                 </div>
               </div>
@@ -230,7 +224,7 @@
                       <th scope="col" class="text-center">Quantité</th>
                       <th scope="col" class="text-end">Prix unitaire</th>
                       <th scope="col" class="text-end">Total</th>
-                      <th scope="col">Utilisateur</th>
+                      <th scope="col">Contributeur</th>
                       <th scope="col" class="pe-3">Atelier</th>
                     </tr>
                   </thead>
@@ -242,17 +236,17 @@
                           <span class="fw-semibold"><%= entry.consumableName %></span>
                         </td>
                         <td>
-                          <span class="badge bg-secondary-subtle text-secondary border"><%= entry.categoryName %></span>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border"><%= entry.categoryName %></span>
                         </td>
                         <td class="text-center">
-                          <span class="badge bg-primary-subtle text-primary border"><%= entry.quantity %> <%= entry.unit %></span>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border"><%= entry.quantity %> <%= entry.unit %></span>
                         </td>
                         <td class="text-end small text-muted"><%= entry.unitCost < 0.1 ? entry.unitCost.toFixed(4) : entry.unitCost.toFixed(2) %> € / <%= entry.unit %></td>
                         <td class="text-end fw-bold text-danger"><%= entry.totalCost.toFixed(2) %> €</td>
                         <td>
                           <% if (entry.user) { %>
                             <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= entry.user.id %>" class="text-decoration-none">
-                              <i class="fa-solid fa-user small me-1 text-primary"></i><%= entry.userName %>
+                              <i class="fa-solid fa-user small me-1 text-primary" aria-hidden="true"></i><%= entry.userName %>
                             </a>
                           <% } else { %>
                             <span class="text-muted"><%= entry.userName %></span>
@@ -273,19 +267,19 @@
 
       <!-- VIEW 2: Global Table View -->
       <div id="tableView" style="display: none;">
-        <div class="card shadow-sm border-0">
+        <div class="card border mb-4">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="globalConsumptionTable">
-              <thead>
+              <thead class="table-light">
                 <tr>
-                  <th data-sort="0" scope="col" class="ps-3">Projet <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                  <th data-sort="1" scope="col">Date <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                  <th data-sort="2" scope="col">Consommable <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                  <th data-sort="3" scope="col">Catégorie <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                  <th data-sort="4" scope="col" class="text-center">Quantité <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                  <th data-sort="5" scope="col" class="text-end">Coût (€) <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                  <th data-sort="6" scope="col">Utilisateur <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
-                  <th data-sort="7" scope="col" class="pe-3">Atelier <i class="fa-solid fa-sort text-muted small ms-1"></i></th>
+                  <th data-sort="0" scope="col" class="ps-3">Projet <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
+                  <th data-sort="1" scope="col">Date <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
+                  <th data-sort="2" scope="col">Consommable <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
+                  <th data-sort="3" scope="col">Catégorie <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
+                  <th data-sort="4" scope="col" class="text-center">Quantité <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
+                  <th data-sort="5" scope="col" class="text-end">Coût (€) <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
+                  <th data-sort="6" scope="col">Contributeur <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
+                  <th data-sort="7" scope="col" class="pe-3">Atelier <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i></th>
                 </tr>
               </thead>
               <tbody>
@@ -303,8 +297,8 @@
                     </td>
                     <td class="small"><strong><%= entry.formattedDate %></strong></td>
                     <td><span class="fw-semibold"><%= entry.consumableName %></span></td>
-                    <td><span class="badge bg-secondary-subtle text-secondary border"><%= entry.categoryName %></span></td>
-                    <td class="text-center"><span class="badge bg-primary-subtle text-primary border"><%= entry.quantity %> <%= entry.unit %></span></td>
+                    <td><span class="badge bg-body-secondary text-secondary-emphasis border"><%= entry.categoryName %></span></td>
+                    <td class="text-center"><span class="badge bg-body-secondary text-secondary-emphasis border"><%= entry.quantity %> <%= entry.unit %></span></td>
                     <td class="text-end fw-bold text-danger"><%= entry.totalCost.toFixed(2) %> €</td>
                     <td>
                       <% if (entry.user) { %>
@@ -324,14 +318,7 @@
         </div>
       </div>
 
-      <div class="text-center mt-4 mb-4">
-        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary">
-          <i class="fa-solid fa-arrow-left me-1"></i> Retour au panneau d'administration
-        </a>
-      </div>
-
       <%- include('../includes/footer.html') %>
-    </main>
 
     <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
       let currentViewMode = 'cards'; // 'cards' or 'table'

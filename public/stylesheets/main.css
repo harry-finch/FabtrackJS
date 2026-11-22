@@ -32,13 +32,17 @@ h5, .h5 { font-size: 1.08rem; font-weight: 600; }
 h6, .h6 { font-size: 0.94rem; font-weight: 600; }
 
 table th {
-    cursor: pointer;
     user-select: none;
+}
+
+table th[onclick],
+table th[data-sort] {
+    cursor: pointer;
 }
 
 table th[onclick]:hover,
 table th[data-sort]:hover {
-    color: var(--bs-primary);
+    color: var(--fab-identity);
 }
 
 /* ========================================================================== */
@@ -108,9 +112,8 @@ main.main-container.page-navigating-out {
     top: 0;
     left: 0;
     width: 0%;
-    height: 2.5px;
-    background: linear-gradient(90deg, #0d6efd, #0dcaf0, #20c997);
-    box-shadow: 0 0 8px rgba(13, 202, 240, 0.6);
+    height: 2px;
+    background: var(--fab-identity);
     z-index: 999999;
     pointer-events: none;
     opacity: 0;
@@ -182,25 +185,6 @@ main.main-container.page-navigating-out {
 
 #mail {
     margin-bottom: 10px;
-}
-
-.bd-placeholder-img {
-    font-size: 1.125rem;
-    text-anchor: middle;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-}
-
-@media (min-width: 768px) {
-    .bd-placeholder-img-lg {
-        font-size: 3.5rem;
-    }
-}
-
-.bi {
-    vertical-align: -0.125em;
-    fill: currentColor;
 }
 
 /* ========================================================================== */
@@ -741,13 +725,91 @@ main.main-container:has(.fab-admin-shell) {
     cursor: pointer;
 }
 
+/* ========================================================================== */
+/* Unified Fab Option B Page Header, KPI Cards, Filter Bar & Auth Surfaces    */
+/* ========================================================================== */
+.fab-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--fab-divider);
+}
+
+.fab-page-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--fab-text-primary);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.fab-page-subtitle {
+    font-size: 0.84rem;
+    color: var(--fab-text-secondary);
+    margin: 0.2rem 0 0;
+}
+
+.fab-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .fab-kpi-card {
+    background-color: var(--fab-bg-panel);
+    border: 1px solid var(--fab-border);
+    border-radius: 6px;
     transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
-.fab-kpi-card:hover {
+a.fab-kpi-card:hover {
     border-color: var(--fab-identity) !important;
     transform: translateY(-1px);
+}
+
+.fab-kpi-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+    background-color: var(--fab-bg-control);
+    color: var(--fab-text-secondary);
+    border: 1px solid var(--fab-border);
+}
+
+.fab-filter-bar {
+    background-color: var(--fab-bg-panel);
+    border: 1px solid var(--fab-border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.fab-rfid-bar {
+    background-color: var(--fab-bg-panel);
+    border: 1px solid var(--fab-border);
+    border-radius: 6px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.fab-auth-card {
+    width: 100%;
+    max-width: 440px;
+    background-color: var(--fab-bg-panel);
+    border: 1px solid var(--fab-border);
+    border-radius: 6px;
+    padding: 2rem;
 }
 
 /* ========================================================================== */
@@ -924,81 +986,13 @@ main.main-container:has(.fab-admin-shell) {
     color: #dee2e6a6;
 }
 
-/* ***************************************************** */
-/* Modern Dashboard & Card Utilities */
-/* ***************************************************** */
-
-.card-dashboard {
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    border-radius: 0.75rem;
-    overflow: hidden;
-}
-
-.card-dashboard:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.09) !important;
-}
-
-/* Disabled plugin states in admin dashboard & settings */
-.card-dashboard.plugin-disabled {
-    opacity: 0.65;
-    background-color: var(--bs-tertiary-bg) !important;
-    border: 1px dashed var(--bs-border-color) !important;
-    filter: grayscale(0.8);
-    transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
-}
-
-.card-dashboard.plugin-disabled:hover {
-    opacity: 0.95;
-    filter: grayscale(0.15);
-    transform: translateY(-2px);
-}
-
+/* Disabled plugin states in admin settings */
 .plugin-card-disabled {
     opacity: 0.65;
     background-color: var(--bs-tertiary-bg) !important;
     border: 1px dashed var(--bs-border-color) !important;
     filter: grayscale(0.6);
     transition: opacity 0.2s ease, filter 0.2s ease, background-color 0.2s ease;
-}
-
-.card-dashboard .card-body {
-    padding: 0.85rem !important;
-}
-
-.card-dashboard .icon-box {
-    width: 38px;
-    height: 38px;
-    font-size: 1.05rem;
-    border-radius: 0.5rem;
-    flex-shrink: 0;
-}
-
-.card-dashboard .card-title,
-.card-dashboard h6 {
-    font-size: 0.85rem;
-    font-weight: 700;
-    line-height: 1.25;
-    margin-bottom: 0;
-}
-
-.card-dashboard small.text-muted {
-    font-size: 0.72rem;
-    line-height: 1.2;
-    display: block;
-}
-
-.card-dashboard .card-text {
-    font-size: 0.76rem;
-    line-height: 1.35;
-    margin-top: 0.4rem;
-    margin-bottom: 0.5rem;
-}
-
-.card-dashboard .btn {
-    font-size: 0.76rem;
-    padding: 0.25rem 0.5rem;
-    font-weight: 500;
 }
 
 .icon-box {
@@ -1130,29 +1124,32 @@ main.main-container:has(.fab-admin-shell) {
 }
 
 
-/* Platform-wide Buttons & Badges */
+/* Platform-wide Buttons & Badges (Option B 4px radius) */
 .btn {
-    font-size: 0.885rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    border-radius: 4px;
 }
 
 .btn-sm {
     font-size: 0.8rem;
     padding: 0.28rem 0.65rem;
+    border-radius: 4px;
 }
 
 a[href$="/admin"].btn:not(.header-action-btn),
 .btn-back {
-    border-radius: 50rem !important;
+    border-radius: 4px !important;
     font-size: 0.8rem !important;
-    padding: 0.28rem 0.8rem !important;
+    padding: 0.28rem 0.75rem !important;
 }
 
 .badge {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    padding: 0.35em 0.7em;
+    letter-spacing: 0.01em;
+    padding: 0.3em 0.55em;
+    border-radius: 4px;
 }
 
 .badge.fs-6 {
@@ -1163,7 +1160,7 @@ a[href$="/admin"].btn:not(.header-action-btn),
 .form-control,
 .form-select {
     font-size: 0.9rem;
-    border-radius: 0.45rem;
+    border-radius: 4px;
     padding: 0.38rem 0.75rem;
 }
 
@@ -1200,12 +1197,7 @@ a[href$="/admin"].btn:not(.header-action-btn),
 .card {
     border-radius: 6px;
     background-color: var(--fab-bg-panel);
-    border-color: var(--fab-border);
-}
-
-.card-dashboard {
-    border-radius: 6px;
-    border: 1px solid var(--fab-border) !important;
+    border: 1px solid var(--fab-border);
 }
 
 .table thead th {
@@ -1217,7 +1209,7 @@ a[href$="/admin"].btn:not(.header-action-btn),
 }
 
 .card-header {
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 1rem;
     font-size: 0.925rem;
     font-weight: 700;
 }
@@ -1230,17 +1222,18 @@ a[href$="/admin"].btn:not(.header-action-btn),
 }
 
 .modal-content {
-    border-radius: 0.85rem;
-    border: 0;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
+    border-radius: 6px;
+    border: 1px solid var(--fab-border);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.14);
 }
 
 .modal-header {
-    padding: 0.85rem 1.25rem;
+    padding: 0.8rem 1.25rem;
+    border-bottom: 1px solid var(--fab-divider);
 }
 
 .modal-header .modal-title {
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 700;
 }
 
@@ -1251,48 +1244,7 @@ a[href$="/admin"].btn:not(.header-action-btn),
 
 .modal-footer {
     padding: 0.65rem 1.25rem;
-}
-
-/* Header Action Buttons */
-.header-action-btn {
-    height: 38px;
-    display: inline-flex !important;
-    align-items: center;
-    gap: 0.5rem;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    line-height: 1;
-    box-sizing: border-box;
-    transition: all 0.2s ease-in-out;
-}
-
-.header-action-btn.btn-icon-only {
-    width: 38px;
-    min-width: 38px;
-    padding: 0 !important;
-    justify-content: center;
-    border-radius: 50% !important;
-    gap: 0;
-}
-
-.header-action-btn .header-icon-circle {
-    transition: background-color 0.2s ease, color 0.2s ease;
-    flex-shrink: 0;
-}
-
-.btn-outline-primary.header-action-btn:hover .header-icon-circle {
-    background-color: rgba(255, 255, 255, 0.25) !important;
-    color: #fff !important;
-}
-
-.btn-outline-secondary.header-action-btn:hover .header-icon-circle {
-    background-color: rgba(255, 255, 255, 0.25) !important;
-    color: #fff !important;
-}
-
-.btn-outline-danger.header-action-btn:hover .header-icon-circle {
-    background-color: rgba(255, 255, 255, 0.25) !important;
-    color: #fff !important;
+    border-top: 1px solid var(--fab-divider);
 }
 
 /* ========================================================================== */

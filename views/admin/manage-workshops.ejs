@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="Gestion des ateliers et formations du Fablab" />
         <meta name="author" content="FabtrackJS" />
-        <title>Gestion des ateliers - <%= platformName %></title>
+        <title>Gestion des ateliers • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
@@ -17,64 +17,50 @@
             <%- include('../includes/header.html') %>
 
             <!-- Page Header -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                            <i class="fa-solid fa-graduation-cap"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <h4 class="fw-bold mb-0">Gestion des ateliers</h4>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.72rem;">
-                                    <%= workshops.length %> ateliers
-                                </span>
-                            </div>
-                            <p class="text-muted small mb-0">Formations, séances pratiques, intérêts exprimés et badges délivrés</p>
-                        </div>
+            <div class="fab-page-header">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <h1 class="fab-page-title">Gestion des ateliers</h1>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border">
+                            <%= workshops.length %> atelier<%= workshops.length > 1 ? 's' : '' %>
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
-                        </a>
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/communication" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-envelope-open-text me-1"></i> Module Communication
-                        </a>
-                    </div>
+                    <p class="fab-page-subtitle">Formations, séances pratiques, intérêts exprimés et badges délivrés</p>
+                </div>
+                <div class="fab-page-actions">
+                    <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/communication" class="btn btn-outline-secondary btn-sm">
+                        <i class="fa-solid fa-envelope-open-text me-1" aria-hidden="true"></i> Module Communication
+                    </a>
                 </div>
             </div>
 
             <!-- Info Plugin Ateliers -->
             <% if (typeof isPluginWorkshopEnabled !== 'undefined' && !isPluginWorkshopEnabled) { %>
-            <div class="alert alert-secondary border-0 shadow-sm rounded-3 d-flex align-items-center justify-content-between mb-4 px-4 py-3">
+            <div class="alert alert-secondary border d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4 px-3 py-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-box bg-secondary-subtle text-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                        <i class="fa-solid fa-power-off"></i>
-                    </div>
+                    <i class="fa-solid fa-power-off text-secondary" aria-hidden="true"></i>
                     <div>
                         <div class="fw-semibold small">Plugin Ateliers actuellement désactivé</div>
-                        <div class="text-muted small">L'attribution automatique des badges et initiations lors du check-in est inactive. Vous pouvez réactiver le plugin dans la <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="alert-link">configuration générale</a>.</div>
+                        <div class="text-muted small">L'attribution automatique des badges et initiations lors de l'accueil est inactive. Vous pouvez réactiver le plugin dans la <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings" class="alert-link">configuration générale</a>.</div>
                     </div>
                 </div>
-                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1"><i class="fa-solid fa-power-off me-1"></i>Plugin Désactivé</span>
+                <span class="badge bg-body-secondary text-secondary-emphasis border"><i class="fa-solid fa-power-off me-1" aria-hidden="true"></i>Plugin désactivé</span>
             </div>
             <% } else { %>
-            <div class="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center justify-content-between mb-4 px-4 py-3">
+            <div class="alert alert-info border d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4 px-3 py-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-box bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </div>
+                    <i class="fa-solid fa-wand-magic-sparkles text-info-emphasis" aria-hidden="true"></i>
                     <div>
-                        <div class="fw-semibold small">Attribution automatique via l'accueil (Check-in)</div>
+                        <div class="fw-semibold small">Attribution automatique via l'accueil</div>
                         <div class="text-muted small">Lorsqu'un contributeur s'enregistre à l'accueil avec le motif de visite <strong>Atelier</strong>, le badge et l'habilitation machine associés sont automatiquement crédités sur son profil.</div>
                     </div>
                 </div>
-                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">Plugin Actif</span>
+                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Plugin actif</span>
             </div>
             <% } %>
 
             <!-- Liste des ateliers -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card border mb-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
@@ -92,7 +78,7 @@
                                 <% if (workshops.length === 0) { %>
                                     <tr>
                                         <td colspan="6" class="text-center text-muted py-4">
-                                            <i class="fa-solid fa-circle-info fa-2x mb-2 opacity-50"></i>
+                                            <i class="fa-solid fa-circle-info fa-2x mb-2 opacity-50" aria-hidden="true"></i>
                                             <p class="mb-0">Aucun atelier créé pour le moment. Utilisez le formulaire ci-dessous pour ajouter votre premier atelier.</p>
                                         </td>
                                     </tr>
@@ -102,7 +88,7 @@
                                     <td scope="row" class="ps-3 text-muted">#<%= ws.id %></td>
                                     <td>
                                         <span class="fw-bold text-primary-emphasis">
-                                            <i class="fa-solid fa-wrench fa-xs me-1 text-secondary"></i><%= ws.name %>
+                                            <i class="fa-solid fa-wrench fa-xs me-1 text-secondary" aria-hidden="true"></i><%= ws.name %>
                                         </span>
                                         <% if (ws.description) { %>
                                             <div class="text-muted small"><%= ws.description %></div>
@@ -110,55 +96,58 @@
                                     </td>
                                     <td>
                                         <% if (ws.access) { %>
-                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
-                                                <i class="fa-solid fa-lock-open me-1"></i><%= ws.access.name %>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                                <i class="fa-solid fa-lock-open me-1" aria-hidden="true"></i><%= ws.access.name %>
                                             </span>
                                         <% } else { %>
-                                            <span class="badge bg-body-secondary text-secondary border rounded-pill px-2 py-1">
+                                            <span class="badge bg-body-secondary text-secondary-emphasis border">
                                                 Aucune restriction
                                             </span>
                                         <% } %>
                                     </td>
                                     <td class="text-center">
                                         <% if (ws.interests.length > 0) { %>
-                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" 
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
                                                     data-bs-toggle="modal" data-bs-target="#modalInterests-<%= ws.id %>"
-                                                    title="<%= ws.interests.length %> personne(s) intéressée(s)">
-                                                <i class="fa-solid fa-heart me-1"></i><%= ws.interests.length %>
+                                                    title="<%= ws.interests.length %> personne(s) intéressée(s)"
+                                                    aria-label="Voir les <%= ws.interests.length %> personne(s) intéressée(s) par <%= ws.name %>">
+                                                <i class="fa-solid fa-heart me-1" aria-hidden="true"></i><%= ws.interests.length %>
                                             </button>
                                         <% } else { %>
-                                            <span class="badge bg-body-secondary text-secondary rounded-pill px-2 py-1" data-bs-toggle="tooltip" title="0 personne intéressée">
-                                                <i class="fa-regular fa-heart me-1"></i>0
+                                            <span class="badge bg-body-secondary text-secondary-emphasis border" data-bs-toggle="tooltip" title="0 personne intéressée">
+                                                <i class="fa-regular fa-heart me-1" aria-hidden="true"></i>0
                                             </span>
                                         <% } %>
                                     </td>
                                     <td class="text-center">
                                         <% if (ws.completions.length > 0) { %>
-                                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1"
+                                            <button type="button" class="btn btn-sm btn-outline-success"
                                                     data-bs-toggle="modal" data-bs-target="#modalCompletions-<%= ws.id %>"
-                                                    title="<%= ws.completions.length %> badge(s) délivré(s)">
-                                                <i class="fa-solid fa-award me-1"></i><%= ws.completions.length %>
+                                                    title="<%= ws.completions.length %> badge(s) délivré(s)"
+                                                    aria-label="Voir les <%= ws.completions.length %> badge(s) délivré(s) pour <%= ws.name %>">
+                                                <i class="fa-solid fa-award me-1" aria-hidden="true"></i><%= ws.completions.length %>
                                             </button>
                                         <% } else { %>
-                                            <span class="badge bg-body-secondary text-secondary rounded-pill px-2 py-1" data-bs-toggle="tooltip" title="0 badge délivré">
-                                                <i class="fa-solid fa-award me-1"></i>0
+                                            <span class="badge bg-body-secondary text-secondary-emphasis border" data-bs-toggle="tooltip" title="0 badge délivré">
+                                                <i class="fa-solid fa-award me-1" aria-hidden="true"></i>0
                                             </span>
                                         <% } %>
                                     </td>
                                     <td class="text-end pe-3">
-                                        <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-primary" id="edit-<%= ws.id %>"
+                                        <div class="fab-row-actions">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="edit-<%= ws.id %>"
                                                     data-id="<%= ws.id %>"
                                                     data-name="<%= ws.name %>"
                                                     data-description="<%= ws.description || '' %>"
                                                     data-accessid="<%= ws.accessId || '' %>"
-                                                    title="Modifier l'atelier">
-                                                <i class="fa-solid fa-pen-to-square"></i>
+                                                    title="Modifier l'atelier"
+                                                    aria-label="Modifier l'atelier <%= ws.name %>">
+                                                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                             </button>
                                             <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/delete/<%= ws.id %>" class="d-inline" data-confirm="Supprimer définitivement l'atelier <%= ws.name %> ?">
                                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                                    <i class="fa-solid fa-trash-can"></i>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer l'atelier" aria-label="Supprimer l'atelier <%= ws.name %>">
+                                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -172,11 +161,11 @@
             </div>
 
             <!-- Formulaire Création / Modification d'un Atelier -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h5 class="fw-bold mb-0" id="formTitle">
-                        <i class="fa-solid fa-graduation-cap text-primary me-2"></i>Créer un nouvel atelier
-                    </h5>
+            <div class="card border mb-4">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h2 class="h6 fw-bold mb-0" id="formTitle">
+                        <i class="fa-solid fa-graduation-cap text-primary me-2" aria-hidden="true"></i>Créer un nouvel atelier
+                    </h2>
                 </div>
                 <div class="card-body">
                     <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/create" method="post" id="workshopForm">
@@ -209,10 +198,10 @@
                             </div>
                         </div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
+                            <button class="btn btn-primary btn-sm" type="submit" id="submitBtn">
                                 Créer l'atelier
                             </button>
-                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" data-action="cancel-edit">
+                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary btn-sm" style="display: none;" data-action="cancel-edit">
                                 Annuler la modification
                             </button>
                         </div>
@@ -228,9 +217,9 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title fw-bold">
-                                    <i class="fa-solid fa-heart text-danger me-2"></i>Personnes intéressées par : <%= ws.name %>
+                                    <i class="fa-solid fa-heart text-danger me-2" aria-hidden="true"></i>Personnes intéressées par : <%= ws.name %>
                                 </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                             </div>
                             <div class="modal-body">
                                 <p class="text-muted small mb-3">
@@ -238,14 +227,14 @@
                                 </p>
                                 <% if (ws.interests.length > 0) { %>
                                     <% const emails = ws.interests.map(i => i.user.email).join(', '); %>
-                                    <div class="mb-3 d-flex justify-content-between align-items-center p-2 bg-body-tertiary rounded">
+                                    <div class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 bg-body-tertiary border rounded">
                                         <span class="small text-muted"><%= ws.interests.length %> contact(s)</span>
                                         <div class="d-flex gap-2">
-                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/communication?workshopId=<%= ws.id %>" class="btn btn-sm btn-outline-primary" title="Ouvrir dans le module Communication">
-                                                <i class="fa-solid fa-envelope-open-text me-1"></i> Module Communication
+                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/communication?workshopId=<%= ws.id %>" class="btn btn-sm btn-outline-secondary" title="Ouvrir dans le module Communication">
+                                                <i class="fa-solid fa-envelope-open-text me-1" aria-hidden="true"></i> Module Communication
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-secondary" data-copy-text="<%= emails %>">
-                                                <i class="fa-solid fa-copy me-1"></i> Copier
+                                                <i class="fa-solid fa-copy me-1" aria-hidden="true"></i> Copier
                                             </button>
                                         </div>
                                     </div>
@@ -254,7 +243,7 @@
                                             <thead>
                                                 <tr>
                                                     <th>Utilisateur</th>
-                                                    <th>Email</th>
+                                                    <th>E-mail</th>
                                                     <th>Intérêt manifesté le</th>
                                                     <th class="text-end">Actions</th>
                                                 </tr>
@@ -270,19 +259,19 @@
                                                         <td><a href="mailto:<%= item.user.email %>" class="text-decoration-none text-muted small"><%= item.user.email %></a></td>
                                                         <td class="text-muted small"><%= item.formattedDate %></td>
                                                         <td class="text-end">
-                                                            <div class="btn-group btn-group-sm">
+                                                            <div class="fab-row-actions">
                                                                 <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/award-badge" method="post" class="d-inline">
                                                                     <input type="hidden" name="userId" value="<%= item.user.id %>">
                                                                     <input type="hidden" name="workshopId" value="<%= ws.id %>">
                                                                     <input type="hidden" name="removeInterest" value="true">
-                                                                    <button type="submit" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Atelier suivi (Attribuer badge & retirer l'intérêt)">
-                                                                        <i class="fa-solid fa-check"></i>
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Atelier suivi (Attribuer badge &amp; retirer l'intérêt)" aria-label="Attribuer le badge à <%= item.user.name %> <%= item.user.surname %>">
+                                                                        <i class="fa-solid fa-check" aria-hidden="true"></i>
                                                                     </button>
                                                                 </form>
                                                                 <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workshops/remove-interest/<%= ws.id %>/<%= item.user.id %>" class="d-inline" data-confirm="Retirer cet utilisateur de la liste d'intérêt ?">
                                                                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Retirer l'intérêt">
-                                                                        <i class="fa-solid fa-trash-can"></i>
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Retirer l'intérêt" aria-label="Retirer l'intérêt de <%= item.user.name %> <%= item.user.surname %>">
+                                                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                                                     </button>
                                                                 </form>
                                                             </div>
@@ -296,8 +285,8 @@
                                     <p class="text-muted text-center my-3">Aucun utilisateur intéressé pour le moment.</p>
                                 <% } %>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                            <div class="modal-footer bg-body-tertiary">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                             </div>
                         </div>
                     </div>
@@ -309,9 +298,9 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title fw-bold">
-                                    <i class="fa-solid fa-award text-success me-2"></i>Badges décernés : <%= ws.name %>
+                                    <i class="fa-solid fa-award text-success me-2" aria-hidden="true"></i>Badges décernés : <%= ws.name %>
                                 </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                             </div>
                             <div class="modal-body">
                                 <% if (ws.completions.length === 0) { %>
@@ -343,8 +332,8 @@
                                     </div>
                                 <% } %>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                            <div class="modal-footer bg-body-tertiary">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                             </div>
                         </div>
                     </div>

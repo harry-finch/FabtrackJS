@@ -5,371 +5,353 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Gestion des consommables du Fablab" />
     <meta name="author" content="Stéphane Muller" />
-    <title>Fabtrack - Consommables</title>
+    <title>Gestion des consommables • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
     <%- include('../includes/pagehead.html') %>
   </head>
 
-  <body class="bg-body-tertiary py-4">
+  <body class="d-flex justify-content-center bg-body-tertiary py-4">
     <%- include('../includes/light-dark.html') %>
 
     <main class="main-container">
       <%- include('../includes/header.html') %>
 
       <!-- Page Header -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-              <i class="fa-solid fa-boxes-stacked"></i>
-            </div>
-            <div>
-              <div class="d-flex align-items-center gap-2">
-                <h4 class="fw-bold mb-0">Gestion des consommables</h4>
-              </div>
-              <p class="text-muted small mb-0">Inventaire des stocks, conditionnements et coûts des matières</p>
-            </div>
+      <div class="fab-page-header">
+        <div>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <h1 class="fab-page-title">Gestion des consommables</h1>
+            <span class="badge bg-body-secondary text-secondary-emphasis border tabular-nums">
+              <%= consumables.length %> référence(s)
+            </span>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/inventory/movements?itemType=CONSUMABLE" class="btn btn-outline-warning btn-sm rounded-pill px-3">
-              <i class="fa-solid fa-clock-rotate-left me-1"></i> Historique sorties
-            </a>
-            <button
-              type="button"
-              class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm fw-semibold"
-              data-bs-toggle="modal"
-              data-bs-target="#modalInventoryCheckout"
-              data-item-type="CONSUMABLE"
-            >
-              <i class="fa-solid fa-arrow-up-from-bracket me-1"></i> Sortie de stock
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm"
-              id="btnNewConsumable"
-              data-bs-toggle="modal"
-              data-bs-target="#createConsumableModal"
-            >
-              <i class="fa-solid fa-plus me-1"></i> Nouveau consommable
-            </button>
-            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-              <i class="fa-solid fa-arrow-left me-1"></i> Retour admin
-            </a>
-          </div>
+          <p class="fab-page-subtitle">Inventaire des stocks, conditionnements et coûts des matières</p>
+        </div>
+        <div class="fab-page-actions">
+          <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/inventory/movements?itemType=CONSUMABLE" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-clock-rotate-left me-1" aria-hidden="true"></i> Historique sorties
+          </a>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#modalInventoryCheckout"
+            data-item-type="CONSUMABLE"
+          >
+            <i class="fa-solid fa-arrow-up-from-bracket me-1" aria-hidden="true"></i> Sortie de stock
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            id="btnNewConsumable"
+            data-bs-toggle="modal"
+            data-bs-target="#createConsumableModal"
+          >
+            <i class="fa-solid fa-plus me-1" aria-hidden="true"></i> Nouveau consommable
+          </button>
         </div>
       </div>
 
-      <!-- Category Filter Pills -->
-      <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-        <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-filter"></i> Catégories :</span>
-        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill active filter-category-btn" data-category="all">
-          Toutes (<%= consumables.length %>)
-        </button>
-        <% categories.forEach(function(cat) { 
-             const catCount = consumables.filter(c => c.categoryId === cat.id).length;
-        %>
-          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-category-btn" data-category="<%= cat.id %>">
-            <%= cat.name %> (<%= catCount %>)
+      <!-- Category Filter Bar -->
+      <div class="fab-filter-bar">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="small fw-semibold text-muted me-1"><i class="fa-solid fa-filter me-1" aria-hidden="true"></i>Catégories :</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary active filter-category-btn" data-category="all">
+            Toutes (<%= consumables.length %>)
           </button>
-        <% }); %>
+          <% categories.forEach(function(cat) { 
+               const catCount = consumables.filter(c => c.categoryId === cat.id).length;
+          %>
+            <button type="button" class="btn btn-sm btn-outline-secondary filter-category-btn" data-category="<%= cat.id %>">
+              <%= cat.name %> (<%= catCount %>)
+            </button>
+          <% }); %>
+        </div>
       </div>
 
       <!-- Consumables Table -->
-      <div class="card border-0 shadow-sm mb-5">
+      <div class="card border mb-5">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="consumablesTable">
               <thead class="table-light">
-          <tr>
-            <th data-sort="0" scope="col" style="cursor: pointer;">
-              # <i class="fa-solid fa-sort text-muted small ms-1"></i>
-            </th>
-            <th data-sort="1" scope="col" style="cursor: pointer;">
-              Consommable <i class="fa-solid fa-sort text-muted small ms-1"></i>
-            </th>
-            <th data-sort="2" scope="col" style="cursor: pointer;">
-              Coût <i class="fa-solid fa-sort text-muted small ms-1"></i>
-            </th>
-            <th data-sort="3" scope="col" class="text-center" style="cursor: pointer;">
-              Stock &amp; Conditionnement <i class="fa-solid fa-sort text-muted small ms-1"></i>
-            </th>
-            <th data-sort="4" scope="col" class="text-center" style="cursor: pointer;">
-              Statut <i class="fa-solid fa-sort text-muted small ms-1"></i>
-            </th>
-            <th scope="col" class="text-end pe-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="table-content">
-          <% if (consumables.length === 0) { %>
-          <tr>
-            <td colspan="6" class="text-center text-muted py-4">Aucun consommable enregistré.</td>
-          </tr>
-          <% } else { %>
-            <% consumables.forEach(function(consumable) { 
-                 const ratio = Number(consumable.unitsPerPack || 1);
-                 const costNum = Number(consumable.cost);
-                 const unitStr = consumable.unit || 'u';
-                 const stockUnitStr = consumable.stockUnit || 'pack';
-            %>
-            <tr data-cat-id="<%= consumable.categoryId || '' %>">
-              <td scope="row"><%= consumable.id %></td>
-              <td>
-                <span class="fw-semibold"><%= consumable.name %></span>
-                <% if (ratio > 1) { %>
-                  <div class="small text-muted"><i class="fa-solid fa-box me-1"></i>1 <%= stockUnitStr %> = <%= ratio %> <%= unitStr %></div>
-                <% } %>
-              </td>
-              <td>
-                <strong><%= costNum < 0.1 ? costNum.toFixed(4) : costNum.toFixed(2) %> €</strong>
-                <span class="badge bg-body-secondary text-body border">/ <%= unitStr %></span>
-                <% if (ratio > 1) { %>
-                  <div class="small text-muted">~<%= (costNum * ratio).toFixed(2) %> € / <%= stockUnitStr %></div>
-                <% } %>
-              </td>
-              <td class="text-center">
-                <div><span class="fw-bold fs-6"><%= consumable.stock %></span> <span class="small text-muted"><%= unitStr %></span></div>
-                <% if (ratio > 1) { %>
-                  <div class="small text-primary"><i class="fa-solid fa-boxes-stacked me-1"></i>~<%= (consumable.stock / ratio).toFixed(2) %> <%= stockUnitStr %>(s)</div>
-                <% } %>
-                <div class="small text-muted opacity-75">min: <%= consumable.reorderThreshold %> <%= unitStr %></div>
-              </td>
-              <td class="text-center">
-                <% if (consumable.status === 'AVAILABLE') { %>
-                  <span class="badge bg-success">In Stock</span>
-                <% } else if (consumable.status === 'LOW_STOCK') { %>
-                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Low Stock</span>
+                <tr>
+                  <th data-sort="0" scope="col" style="cursor: pointer;">
+                    # <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i>
+                  </th>
+                  <th data-sort="1" scope="col" style="cursor: pointer;">
+                    Consommable <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i>
+                  </th>
+                  <th data-sort="2" scope="col" style="cursor: pointer;">
+                    Coût <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i>
+                  </th>
+                  <th data-sort="3" scope="col" class="text-center" style="cursor: pointer;">
+                    Stock &amp; Conditionnement <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i>
+                  </th>
+                  <th data-sort="4" scope="col" class="text-center" style="cursor: pointer;">
+                    Statut <i class="fa-solid fa-sort text-muted small ms-1" aria-hidden="true"></i>
+                  </th>
+                  <th scope="col" class="text-end pe-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-content">
+                <% if (consumables.length === 0) { %>
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">Aucun consommable enregistré.</td>
+                </tr>
                 <% } else { %>
-                  <span class="badge bg-danger">Out of Stock</span>
+                  <% consumables.forEach(function(consumable) { 
+                       const ratio = Number(consumable.unitsPerPack || 1);
+                       const costNum = Number(consumable.cost);
+                       const unitStr = consumable.unit || 'u';
+                       const stockUnitStr = consumable.stockUnit || 'pack';
+                  %>
+                  <tr data-cat-id="<%= consumable.categoryId || '' %>">
+                    <td scope="row"><%= consumable.id %></td>
+                    <td>
+                      <span class="fw-semibold"><%= consumable.name %></span>
+                      <% if (ratio > 1) { %>
+                        <div class="small text-muted"><i class="fa-solid fa-box me-1" aria-hidden="true"></i>1 <%= stockUnitStr %> = <%= ratio %> <%= unitStr %></div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <strong><%= costNum < 0.1 ? costNum.toFixed(4) : costNum.toFixed(2) %> €</strong>
+                      <span class="badge bg-body-secondary text-secondary-emphasis border">/ <%= unitStr %></span>
+                      <% if (ratio > 1) { %>
+                        <div class="small text-muted">~<%= (costNum * ratio).toFixed(2) %> € / <%= stockUnitStr %></div>
+                      <% } %>
+                    </td>
+                    <td class="text-center">
+                      <div><span class="fw-bold fs-6"><%= consumable.stock %></span> <span class="small text-muted"><%= unitStr %></span></div>
+                      <% if (ratio > 1) { %>
+                        <div class="small text-primary"><i class="fa-solid fa-boxes-stacked me-1" aria-hidden="true"></i>~<%= (consumable.stock / ratio).toFixed(2) %> <%= stockUnitStr %>(s)</div>
+                      <% } %>
+                      <div class="small text-muted opacity-75">Min. : <%= consumable.reorderThreshold %> <%= unitStr %></div>
+                    </td>
+                    <td class="text-center">
+                      <% if (consumable.status === 'AVAILABLE') { %>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">En stock</span>
+                      <% } else if (consumable.status === 'LOW_STOCK') { %>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Stock faible</span>
+                      <% } else { %>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Rupture</span>
+                      <% } %>
+                    </td>
+                    <td class="text-end pe-3">
+                      <div class="fab-row-actions">
+                        <button
+                          type="button"
+                          class="btn btn-outline-success btn-sm btn-restock"
+                          data-bs-toggle="modal"
+                          data-bs-target="#restockModal"
+                          data-id="<%= consumable.id %>"
+                          data-name="<%= consumable.name %>"
+                          data-stock="<%= consumable.stock %>"
+                          data-unit="<%= unitStr %>"
+                          data-stock-unit="<%= stockUnitStr %>"
+                          data-units-per-pack="<%= ratio %>"
+                          title="Enregistrer une livraison"
+                          aria-label="Enregistrer une livraison pour <%= consumable.name %>"
+                        >
+                          <i class="fa-solid fa-truck" aria-hidden="true"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-warning btn-sm btn-checkout-consumable"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalInventoryCheckout"
+                          data-item-type="CONSUMABLE"
+                          data-item-id="<%= consumable.id %>"
+                          data-item-name="<%= consumable.name %>"
+                          data-item-stock="<%= consumable.stock %>"
+                          data-item-unit="<%= unitStr %>"
+                          title="Sortie de stock (casse, rebut, perte…)"
+                          aria-label="Sortie de stock pour <%= consumable.name %>"
+                        >
+                          <i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary btn-sm btn-edit"
+                          data-bs-toggle="modal"
+                          data-bs-target="#editConsumableModal"
+                          data-id="<%= consumable.id %>"
+                          data-name="<%= consumable.name %>"
+                          data-cost="<%= consumable.cost %>"
+                          data-stock="<%= consumable.stock %>"
+                          data-threshold="<%= consumable.reorderThreshold %>"
+                          data-category-id="<%= consumable.categoryId || '' %>"
+                          data-unit="<%= unitStr %>"
+                          data-stock-unit="<%= stockUnitStr %>"
+                          data-units-per-pack="<%= ratio %>"
+                          title="Modifier"
+                          aria-label="Modifier <%= consumable.name %>"
+                        >
+                          <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                        </button>
+                        <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/consumables/delete/<%= consumable.id %>" class="d-inline" data-confirm="Supprimer définitivement le consommable « <%= consumable.name %> » ?">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                          <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer" aria-label="Supprimer <%= consumable.name %>">
+                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  <% }); %>
                 <% } %>
-              </td>
-              <td class="text-end pe-3">
-                <div class="fab-row-actions">
-                  <button
-                    type="button"
-                    class="btn btn-outline-success btn-sm btn-restock"
-                    data-bs-toggle="modal"
-                    data-bs-target="#restockModal"
-                    data-id="<%= consumable.id %>"
-                    data-name="<%= consumable.name %>"
-                    data-stock="<%= consumable.stock %>"
-                    data-unit="<%= unitStr %>"
-                    data-stock-unit="<%= stockUnitStr %>"
-                    data-units-per-pack="<%= ratio %>"
-                    title="Enregistrer une livraison"
-                    aria-label="Enregistrer une livraison pour <%= consumable.name %>"
-                  >
-                    <i class="fa-solid fa-truck" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-warning btn-sm btn-checkout-consumable"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalInventoryCheckout"
-                    data-item-type="CONSUMABLE"
-                    data-item-id="<%= consumable.id %>"
-                    data-item-name="<%= consumable.name %>"
-                    data-item-stock="<%= consumable.stock %>"
-                    data-item-unit="<%= unitStr %>"
-                    title="Sortie de stock (casse, rebut, perte…)"
-                    aria-label="Sortie de stock pour <%= consumable.name %>"
-                  >
-                    <i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary btn-sm btn-edit"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editConsumableModal"
-                    data-id="<%= consumable.id %>"
-                    data-name="<%= consumable.name %>"
-                    data-cost="<%= consumable.cost %>"
-                    data-stock="<%= consumable.stock %>"
-                    data-threshold="<%= consumable.reorderThreshold %>"
-                    data-category-id="<%= consumable.categoryId || '' %>"
-                    data-unit="<%= unitStr %>"
-                    data-stock-unit="<%= stockUnitStr %>"
-                    data-units-per-pack="<%= ratio %>"
-                    title="Modifier"
-                    aria-label="Modifier <%= consumable.name %>"
-                  >
-                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                  </button>
-                  <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/consumables/delete/<%= consumable.id %>" class="d-inline" data-confirm="Supprimer définitivement le consommable « <%= consumable.name %> » ?">
-                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer" aria-label="Supprimer <%= consumable.name %>">
-                      <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-            <% }); %>
-          <% } %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       <%- include('../includes/footer.html') %>
-    </main>
 
-    <!-- Modal to Create New Consumable -->
+    <!-- Modal : Nouveau consommable -->
     <div class="modal fade" id="createConsumableModal" tabindex="-1" aria-labelledby="createConsumableLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/consumables/create" method="post">
             <div class="modal-header">
               <h5 class="modal-title" id="createConsumableLabel">
-                <i class="fa-solid fa-plus-circle text-primary"></i> Create New Consumable
+                <i class="fa-solid fa-circle-plus text-primary me-1" aria-hidden="true"></i> Nouveau consommable
               </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
               <!-- Quick Preset Buttons -->
               <div class="mb-3 p-2 bg-body-tertiary border rounded">
-                <span class="small fw-semibold text-muted d-block mb-2"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Modèles rapides :</span>
-                <div class="btn-group btn-group-sm flex-wrap gap-1" role="group">
-                  <button type="button" class="btn btn-outline-secondary btn-preset" data-unit="g" data-stock-unit="bobine" data-units-per-pack="1000" data-threshold="2000">
-                    <i class="fa-solid fa-cube me-1"></i> Filament 3D (g / bobine 1000g)
+                <span class="small fw-semibold text-muted d-block mb-2"><i class="fa-solid fa-wand-magic-sparkles me-1" aria-hidden="true"></i> Modèles rapides :</span>
+                <div class="d-flex flex-wrap gap-1" role="group" aria-label="Modèles rapides de conditionnement">
+                  <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-unit="g" data-stock-unit="bobine" data-units-per-pack="1000" data-threshold="2000">
+                    <i class="fa-solid fa-cube me-1" aria-hidden="true"></i> Filament 3D (g / bobine 1000g)
                   </button>
-                  <button type="button" class="btn btn-outline-secondary btn-preset" data-unit="ml" data-stock-unit="bouteille" data-units-per-pack="1000" data-threshold="1000">
-                    <i class="fa-solid fa-flask me-1"></i> Résine (ml / flacon 1L)
+                  <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-unit="ml" data-stock-unit="bouteille" data-units-per-pack="1000" data-threshold="1000">
+                    <i class="fa-solid fa-flask me-1" aria-hidden="true"></i> Résine (ml / flacon 1L)
                   </button>
-                  <button type="button" class="btn btn-outline-secondary btn-preset" data-unit="feuille" data-stock-unit="paquet" data-units-per-pack="10" data-threshold="10">
-                    <i class="fa-solid fa-layer-group me-1"></i> Plaques / Bois (feuille / pack 10)
+                  <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-unit="feuille" data-stock-unit="paquet" data-units-per-pack="10" data-threshold="10">
+                    <i class="fa-solid fa-layer-group me-1" aria-hidden="true"></i> Plaques / Bois (feuille / pack 10)
                   </button>
-                  <button type="button" class="btn btn-outline-secondary btn-preset" data-unit="u" data-stock-unit="boîte" data-units-per-pack="100" data-threshold="50">
-                    <i class="fa-solid fa-screwdriver me-1"></i> Pièces / Vis (unité / boîte 100)
+                  <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-unit="u" data-stock-unit="boîte" data-units-per-pack="100" data-threshold="50">
+                    <i class="fa-solid fa-screwdriver me-1" aria-hidden="true"></i> Pièces / Vis (unité / boîte 100)
                   </button>
                 </div>
               </div>
 
-              <div class="form-floating mb-3">
+              <div class="mb-3">
+                <label for="createName" class="form-label small fw-semibold">Nom du consommable</label>
                 <input
                   type="text"
                   class="form-control"
                   id="createName"
                   name="name"
-                  placeholder="Consumable Name"
+                  placeholder="Ex : PLA Noir 1.75 mm"
                   required
                 />
-                <label for="createName">Consumable Name</label>
               </div>
 
-              <div class="form-floating mb-3">
+              <div class="mb-3">
+                <label for="createCategoryId" class="form-label small fw-semibold">Catégorie</label>
                 <select class="form-select" id="createCategoryId" name="categoryId">
-                  <option value="">(No Category)</option>
+                  <option value="">(Aucune catégorie)</option>
                   <% categories.forEach(function(cat) { %>
                     <option value="<%= cat.id %>"><%= cat.name %></option>
                   <% }); %>
                 </select>
-                <label for="createCategoryId">Category</label>
               </div>
 
-              <div class="row g-2 mb-3">
+              <div class="row g-3 mb-3">
                 <div class="col-md-4">
-                  <div class="form-floating">
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="createUnit"
-                      name="unit"
-                      placeholder="Unité d'usage"
-                      value="g"
-                      required
-                    />
-                    <label for="createUnit">Unité d'usage (ex: g, ml, u)</label>
-                  </div>
+                  <label for="createUnit" class="form-label small fw-semibold">Unité d'usage (ex : g, ml, u)</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="createUnit"
+                    name="unit"
+                    placeholder="Unité d'usage"
+                    value="g"
+                    required
+                  />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating">
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="createStockUnit"
-                      name="stockUnit"
-                      placeholder="Conditionnement"
-                      value="bobine"
-                    />
-                    <label for="createStockUnit">Conditionnement (ex: bobine)</label>
-                  </div>
+                  <label for="createStockUnit" class="form-label small fw-semibold">Conditionnement (ex : bobine)</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="createStockUnit"
+                    name="stockUnit"
+                    placeholder="Conditionnement"
+                    value="bobine"
+                  />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating">
-                    <input
-                      type="number"
-                      step="any"
-                      class="form-control"
-                      id="createUnitsPerPack"
-                      name="unitsPerPack"
-                      placeholder="Unités par conditionnement"
-                      value="1000"
-                      min="1"
-                      required
-                    />
-                    <label for="createUnitsPerPack">Contenance par pack</label>
-                  </div>
+                  <label for="createUnitsPerPack" class="form-label small fw-semibold">Contenance par pack</label>
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control"
+                    id="createUnitsPerPack"
+                    name="unitsPerPack"
+                    placeholder="Unités par conditionnement"
+                    value="1000"
+                    min="1"
+                    required
+                  />
                 </div>
               </div>
 
-              <div class="row g-2">
+              <div class="row g-3">
                 <div class="col-md-4">
-                  <div class="form-floating mb-3">
-                    <input
-                      type="number"
-                      step="0.0001"
-                      class="form-control"
-                      id="createCost"
-                      name="cost"
-                      placeholder="Cost"
-                      required
-                    />
-                    <label for="createCost">Prix / unité d'usage (€)</label>
-                  </div>
+                  <label for="createCost" class="form-label small fw-semibold">Prix / unité d'usage (€)</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    class="form-control"
+                    id="createCost"
+                    name="cost"
+                    placeholder="0.0250"
+                    required
+                  />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating mb-3">
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="createStock"
-                      name="stock"
-                      placeholder="Stock"
-                      value="0"
-                      min="0"
-                      required
-                    />
-                    <label for="createStock">Stock initial (en unités)</label>
-                  </div>
+                  <label for="createStock" class="form-label small fw-semibold">Stock initial (en unités)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="createStock"
+                    name="stock"
+                    placeholder="0"
+                    value="0"
+                    min="0"
+                    required
+                  />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating mb-3">
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="createThreshold"
-                      name="reorderThreshold"
-                      placeholder="Threshold"
-                      value="1000"
-                      min="0"
-                      required
-                    />
-                    <label for="createThreshold">Seuil d'alerte (en unités)</label>
-                  </div>
+                  <label for="createThreshold" class="form-label small fw-semibold">Seuil d'alerte (en unités)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="createThreshold"
+                    name="reorderThreshold"
+                    placeholder="1000"
+                    value="1000"
+                    min="0"
+                    required
+                  />
                 </div>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save Consumable</button>
+            <div class="modal-footer bg-body-tertiary">
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Modal to Edit Consumable -->
+    <!-- Modal : Modifier le consommable -->
     <div class="modal fade" id="editConsumableModal" tabindex="-1" aria-labelledby="editConsumableLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -377,78 +359,66 @@
             <input type="hidden" id="editConsumableId" name="consumableid" value="" />
             <div class="modal-header">
               <h5 class="modal-title" id="editConsumableLabel">
-                <i class="fa-solid fa-pen-to-square text-primary"></i> Edit Consumable
+                <i class="fa-solid fa-pen-to-square text-primary me-1" aria-hidden="true"></i> Modifier le consommable
               </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-              <div class="form-floating mb-3">
+              <div class="mb-3">
+                <label for="editName" class="form-label small fw-semibold">Nom du consommable</label>
                 <input type="text" class="form-control" id="editName" name="name" required />
-                <label for="editName">Consumable Name</label>
               </div>
 
-              <div class="form-floating mb-3">
+              <div class="mb-3">
+                <label for="editCategoryId" class="form-label small fw-semibold">Catégorie</label>
                 <select class="form-select" id="editCategoryId" name="categoryId">
-                  <option value="">(No Category)</option>
+                  <option value="">(Aucune catégorie)</option>
                   <% categories.forEach(function(cat) { %>
                     <option value="<%= cat.id %>"><%= cat.name %></option>
                   <% }); %>
                 </select>
-                <label for="editCategoryId">Category</label>
               </div>
 
-              <div class="row g-2 mb-3">
+              <div class="row g-3 mb-3">
                 <div class="col-md-4">
-                  <div class="form-floating">
-                    <input type="text" class="form-control" id="editUnit" name="unit" required />
-                    <label for="editUnit">Unité d'usage (ex: g, ml, u)</label>
-                  </div>
+                  <label for="editUnit" class="form-label small fw-semibold">Unité d'usage (ex : g, ml, u)</label>
+                  <input type="text" class="form-control" id="editUnit" name="unit" required />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating">
-                    <input type="text" class="form-control" id="editStockUnit" name="stockUnit" />
-                    <label for="editStockUnit">Conditionnement (ex: bobine)</label>
-                  </div>
+                  <label for="editStockUnit" class="form-label small fw-semibold">Conditionnement (ex : bobine)</label>
+                  <input type="text" class="form-control" id="editStockUnit" name="stockUnit" />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating">
-                    <input type="number" step="any" class="form-control" id="editUnitsPerPack" name="unitsPerPack" min="1" required />
-                    <label for="editUnitsPerPack">Contenance par pack</label>
-                  </div>
+                  <label for="editUnitsPerPack" class="form-label small fw-semibold">Contenance par pack</label>
+                  <input type="number" step="any" class="form-control" id="editUnitsPerPack" name="unitsPerPack" min="1" required />
                 </div>
               </div>
 
-              <div class="row g-2">
+              <div class="row g-3">
                 <div class="col-md-4">
-                  <div class="form-floating mb-3">
-                    <input type="number" step="0.0001" class="form-control" id="editCost" name="cost" required />
-                    <label for="editCost">Prix / unité d'usage (€)</label>
-                  </div>
+                  <label for="editCost" class="form-label small fw-semibold">Prix / unité d'usage (€)</label>
+                  <input type="number" step="0.0001" class="form-control" id="editCost" name="cost" required />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating mb-3">
-                    <input type="number" class="form-control" id="editStock" name="stock" min="0" required />
-                    <label for="editStock">Stock actuel (en unités)</label>
-                  </div>
+                  <label for="editStock" class="form-label small fw-semibold">Stock actuel (en unités)</label>
+                  <input type="number" class="form-control" id="editStock" name="stock" min="0" required />
                 </div>
                 <div class="col-md-4">
-                  <div class="form-floating mb-3">
-                    <input type="number" class="form-control" id="editThreshold" name="reorderThreshold" min="0" required />
-                    <label for="editThreshold">Seuil d'alerte (en unités)</label>
-                  </div>
+                  <label for="editThreshold" class="form-label small fw-semibold">Seuil d'alerte (en unités)</label>
+                  <input type="number" class="form-control" id="editThreshold" name="reorderThreshold" min="0" required />
                 </div>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save Changes</button>
+            <div class="modal-footer bg-body-tertiary">
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Modal for Stock Delivery (Livraison) -->
+    <!-- Modal : Réception de livraison -->
     <div class="modal fade" id="restockModal" tabindex="-1" aria-labelledby="restockModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -460,16 +430,16 @@
 
             <div class="modal-header">
               <h5 class="modal-title" id="restockModalLabel">
-                <i class="fa-solid fa-truck text-success"></i> Réception de livraison
+                <i class="fa-solid fa-truck text-primary me-1" aria-hidden="true"></i> Réception de livraison
               </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-              <div class="alert alert-light border mb-3">
+              <div class="bg-body-tertiary border rounded p-3 mb-3">
                 <div class="mb-1">
                   Consommable : <strong id="restockConsumableName">-</strong>
                 </div>
-                <div class="mb-1">
+                <div class="mb-0">
                   Stock actuel : <span id="restockCurrentStock" class="fw-bold fs-5 text-primary">0</span>
                   <span id="restockCurrentPacks" class="text-muted small ms-1"></span>
                 </div>
@@ -477,37 +447,38 @@
 
               <!-- Delivery Mode Toggle -->
               <div class="mb-3">
-                <label class="form-label small fw-semibold text-muted">Mode de saisie :</label>
-                <div class="btn-group w-100 btn-group-sm" role="group">
-                  <input type="radio" class="btn-check" name="restockMode" id="modePacks" value="packs" checked>
-                  <label class="btn btn-outline-success" for="modePacks" id="labelModePacks">
-                    <i class="fa-solid fa-box-archive me-1"></i> Par conditionnement (bobine / pack)
+                <span class="form-label small fw-semibold text-muted d-block">Mode de saisie :</span>
+                <div class="btn-group w-100 btn-group-sm" role="group" aria-label="Mode de saisie de la livraison">
+                  <input type="radio" class="btn-check" name="restockMode" id="modePacks" value="packs" checked />
+                  <label class="btn btn-outline-secondary" for="modePacks" id="labelModePacks">
+                    <i class="fa-solid fa-box-archive me-1" aria-hidden="true"></i> Par conditionnement (bobine / pack)
                   </label>
 
-                  <input type="radio" class="btn-check" name="restockMode" id="modeUnits" value="units">
+                  <input type="radio" class="btn-check" name="restockMode" id="modeUnits" value="units" />
                   <label class="btn btn-outline-secondary" for="modeUnits" id="labelModeUnits">
-                    <i class="fa-solid fa-scale-balanced me-1"></i> En unités directes
+                    <i class="fa-solid fa-scale-balanced me-1" aria-hidden="true"></i> En unités directes
                   </label>
                 </div>
               </div>
 
               <!-- Input for Packages -->
-              <div id="divRestockPacks" class="form-floating mb-3">
+              <div id="divRestockPacks" class="mb-3">
+                <label for="restockPackages" id="labelPackagesInput" class="form-label small fw-semibold">Nombre de conditionnements reçus</label>
                 <input
                   type="number"
                   step="any"
                   class="form-control"
                   id="restockPackages"
                   name="packages"
-                  placeholder="Nombre de packages"
+                  placeholder="Nombre de conditionnements"
                   value="1"
                   min="0.1"
                 />
-                <label for="restockPackages" id="labelPackagesInput">Nombre de conditionnements reçus</label>
               </div>
 
               <!-- Input for Direct Units -->
-              <div id="divRestockUnits" class="form-floating mb-3" style="display: none;">
+              <div id="divRestockUnits" class="mb-3" style="display: none;">
+                <label for="restockQuantity" id="labelUnitsInput" class="form-label small fw-semibold">Quantité directe reçue</label>
                 <input
                   type="number"
                   class="form-control"
@@ -517,19 +488,18 @@
                   min="1"
                   value="1000"
                 />
-                <label for="restockQuantity" id="labelUnitsInput">Quantité directe reçue</label>
               </div>
 
               <!-- Live preview alert -->
               <div class="alert alert-info py-2 mb-0 small" id="restockPreview">
-                <i class="fa-solid fa-calculator me-1"></i>
+                <i class="fa-solid fa-calculator me-1" aria-hidden="true"></i>
                 <span id="restockPreviewText">Ajout au stock : +1 000 g</span>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-              <button type="submit" class="btn btn-success">
-                <i class="fa-solid fa-check"></i> Valider la livraison
+            <div class="modal-footer bg-body-tertiary">
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-check me-1" aria-hidden="true"></i> Valider la livraison
               </button>
             </div>
           </form>
@@ -537,6 +507,6 @@
       </div>
     </div>
 
-    <script src="/javascripts/manage-consumables.js"></script>
+    <script src="javascripts/manage-consumables.js"></script>
   </body>
 </html>

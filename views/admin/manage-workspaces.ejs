@@ -3,9 +3,9 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="" />
+        <meta name="description" content="Gestion des espaces de travail du fablab" />
         <meta name="author" content="Stéphane Muller" />
-        <title>Fabtrack - Gestion des espaces de travail</title>
+        <title>Espaces de travail • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
@@ -17,131 +17,128 @@
             <%- include('../includes/header.html') %>
 
             <!-- Page Header -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box bg-secondary-subtle text-secondary-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                            <i class="fa-solid fa-building"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <h4 class="fw-bold mb-0">Espaces (Workspaces)</h4>
-                                <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill" style="font-size: 0.72rem;">
-                                    <%= workspaces.length %> workspaces
-                                </span>
-                            </div>
-                            <p class="text-muted small mb-0">Espaces fablabs rattachés et sites physiques</p>
-                        </div>
+            <div class="fab-page-header">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <h1 class="fab-page-title">Espaces de travail</h1>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border tabular-nums">
+                            <%= workspaces.length %> espace<%= workspaces.length > 1 ? 's' : '' %>
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
-                        </a>
-                    </div>
+                    <p class="fab-page-subtitle">Espaces fablabs rattachés et sites physiques</p>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card border mb-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th data-sort="0" scope="col" class="ps-3">#</th>
-                                    <th data-sort="1" scope="col">Workspace</th>
-                                    <th scope="col">Location / Adresse</th>
+                                    <th data-sort="1" scope="col">Espace</th>
+                                    <th scope="col">Adresse / Emplacement</th>
                                     <th scope="col" class="text-end pe-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="table-content">
+                                <% if (!workspaces || workspaces.length === 0) { %>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-5">
+                                        <i class="fa-solid fa-building fs-4 d-block mb-2 opacity-50" aria-hidden="true"></i>
+                                        Aucun espace de travail enregistré pour le moment.
+                                    </td>
+                                </tr>
+                                <% } else { %>
                                 <% workspaces.forEach(function(workspace) { %>
                                 <tr>
-                                    <td scope="row" class="ps-3 text-muted">#<%= workspace.id %></td>
+                                    <td scope="row" class="ps-3 text-muted tabular-nums">#<%= workspace.id %></td>
                                     <td>
-                                        <span class="badge bg-dark-subtle text-body border rounded-pill px-2 py-1">
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">
                                             <%= workspace.name %>
                                         </span>
                                     </td>
-                                    <td><span class="text-muted small"><%= workspace.location || '-' %></span></td>
+                                    <td><span class="text-muted small"><%= workspace.location || '—' %></span></td>
                                     <td class="text-end pe-3">
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="#" class="btn btn-outline-primary" id="edit-<%= workspace.id %>"
-                                                        data-id="<%= workspace.id %>"
-                                                        data-name="<%= workspace.name %>"
-                                                        data-location="<%= workspace.location %>"
-                                                        title="Modifier">
-                                                <i class="fa-solid fa-pen-to-square"></i>
+                                        <div class="fab-row-actions">
+                                            <a
+                                                href="#"
+                                                class="btn btn-outline-primary"
+                                                id="edit-<%= workspace.id %>"
+                                                data-id="<%= workspace.id %>"
+                                                data-name="<%= workspace.name %>"
+                                                data-location="<%= workspace.location %>"
+                                                title="Modifier"
+                                                aria-label="Modifier l'espace <%= workspace.name %>"
+                                            >
+                                                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                             </a>
-                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workspaces/delete/<%= workspace.id %>" class="d-inline" data-confirm="Supprimer le workspace <%= workspace.name %> ?">
+                                            <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workspaces/delete/<%= workspace.id %>" class="d-inline" data-confirm="Supprimer l'espace <%= workspace.name %> ?">
                                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                                    <i class="fa-solid fa-trash-can"></i>
+                                                <button type="submit" class="btn btn-outline-danger" title="Supprimer" aria-label="Supprimer l'espace <%= workspace.name %>">
+                                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                                 <% }); %>
+                                <% } %>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h5 class="fw-bold mb-0" id="formTitle">
-                        <i class="fa-solid fa-building text-secondary me-2"></i>Create new workspace
-                    </h5>
+            <div class="card border mb-4">
+                <div class="card-header bg-body-tertiary">
+                    <h2 class="h6 fw-bold mb-0" id="formTitle">
+                        <i class="fa-solid fa-building text-secondary me-2" aria-hidden="true"></i>Nouvel espace de travail
+                    </h2>
                 </div>
-                <div class="card-body">
-                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workspaces/create" method="post" id="workspaceForm">
-                        <div class="row">
-                            <input type='hidden' id="workspaceid" name='workspaceid' value='' />
-                            <div class="col-12">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="name" name="name" placeholder="Name" required />
-                                    <label for="name">Name</label>
-                                </div>
-                            </div>
+                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/workspaces/create" method="post" id="workspaceForm">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <input type="hidden" id="workspaceid" name="workspaceid" value="" />
+
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-semibold small">Nom de l'espace</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Ex. : Fablab principal" required />
                         </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-floating mb-3">
-                                    <textarea class="form-control" id="location" name="location" style="height: 100px"></textarea>
-                                    <label for="location">Location</label>
-                                </div>
-                            </div>
+                        <div class="mb-0">
+                            <label for="location" class="form-label fw-semibold small">Adresse / Emplacement</label>
+                            <textarea class="form-control" id="location" name="location" rows="3" placeholder="Bâtiment, salle ou adresse physique"></textarea>
                         </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
-                                Create new workspace
-                            </button>
-                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" data-action="cancel-edit">
-                                Annuler
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="card-footer bg-body-tertiary d-flex flex-wrap gap-2">
+                        <button class="btn btn-primary" type="submit" id="submitBtn">
+                            Créer l'espace
+                        </button>
+                        <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary" style="display: none;" data-action="cancel-edit">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <%- include('../includes/footer.html') %>
 
         <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
           const elements = document.querySelectorAll('[id^="edit-"]');
-          elements.forEach(function(element){
+          elements.forEach(function(element) {
             element.addEventListener("click", editItem);
           });
 
           function editItem(event) {
             if (event) event.preventDefault();
 
-            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update workspace";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2' aria-hidden='true'></i>Modifier l'espace de travail";
             document.getElementById("workspaceForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/workspaces/update") : "/admin/workspaces/update");
             document.getElementById("workspaceid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
             document.getElementById("location").value = this.dataset.location || '';
-            document.getElementById("submitBtn").innerText = "Update workspace";
+            document.getElementById("submitBtn").innerText = "Enregistrer les modifications";
             document.getElementById("cancelEditBtn").style.display = "inline-block";
 
             document.getElementById("workspaceForm").scrollIntoView({ behavior: 'smooth' });
@@ -149,12 +146,12 @@
           }
 
           function cancelEdit() {
-            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-building text-secondary me-2'></i>Create new workspace";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-building text-secondary me-2' aria-hidden='true'></i>Nouvel espace de travail";
             document.getElementById("workspaceForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/workspaces/create") : "/admin/workspaces/create");
             document.getElementById("workspaceid").value = "";
             document.getElementById("name").value = "";
             document.getElementById("location").value = "";
-            document.getElementById("submitBtn").innerText = "Create new workspace";
+            document.getElementById("submitBtn").innerText = "Créer l'espace";
             document.getElementById("cancelEditBtn").style.display = "none";
           }
         </script>

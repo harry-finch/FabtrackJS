@@ -5,712 +5,638 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Configuration générale de Fabtrack" />
-  <title>
-    <%= typeof platformName !=='undefined' ? platformName : 'Fabtrack' %> - Configuration générale
-  </title>
+  <title>Configuration générale • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
   <%- include('../includes/pagehead.html') %>
-    <style>
-      .logo-preview-box {
-        min-height: 90px;
-        background: var(--bs-tertiary-bg);
-        border: 2px dashed var(--bs-border-color);
-        border-radius: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-      }
+  <style>
+    .logo-preview-box {
+      min-height: 90px;
+      background: var(--bs-tertiary-bg);
+      border: 1px dashed var(--bs-border-color);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
 
-      .logo-preview-img {
-        max-height: 70px;
-        max-width: 240px;
-        object-fit: contain;
-      }
+    .logo-preview-img {
+      max-height: 70px;
+      max-width: 240px;
+      object-fit: contain;
+    }
 
-      .favicon-preview-img {
-        width: 36px;
-        height: 36px;
-        object-fit: contain;
-        border: 1px solid var(--bs-border-color);
-        border-radius: 6px;
-        padding: 4px;
-        background: #fff;
-      }
-    </style>
+    .favicon-preview-img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      border: 1px solid var(--bs-border-color);
+      border-radius: 4px;
+      padding: 4px;
+      background: var(--bs-body-bg);
+    }
+  </style>
 </head>
 
 <body class="d-flex justify-content-center bg-body-tertiary py-4">
   <%- include('../includes/light-dark.html') %>
 
-    <main class="main-container">
-      <%- include('../includes/header.html') %>
+  <main class="main-container">
+    <%- include('../includes/header.html') %>
 
-        <!-- Page Header -->
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-3">
-              <div
-                class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                style="width: 48px; height: 48px; font-size: 1.25rem;">
-                <i class="fa-solid fa-sliders"></i>
-              </div>
-              <div>
-                <div class="d-flex align-items-center gap-2">
-                  <h4 class="fw-bold mb-0">Configuration générale</h4>
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"
-                    style="font-size: 0.72rem;">Système</span>
+    <% const _settingsBase = typeof baseUrl !== 'undefined' ? baseUrl : '/'; %>
+
+    <!-- Page Header -->
+    <div class="fab-page-header">
+      <div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <h1 class="fab-page-title">Configuration générale</h1>
+          <span class="badge bg-body-secondary text-secondary-emphasis border">Système</span>
+        </div>
+        <p class="fab-page-subtitle">Identité visuelle, modules, sécurité et préférences du fablab</p>
+      </div>
+    </div>
+
+    <!-- Main Form for Settings -->
+    <form action="<%= _settingsBase %>admin/settings?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" id="settingsForm">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+      <!-- 1. IDENTITÉ VISUELLE & BRANDING -->
+      <div class="card border mb-4">
+        <div class="card-header bg-body-tertiary">
+          <h2 class="h6 fw-bold mb-0">
+            <i class="fa-solid fa-paintbrush text-muted me-2" aria-hidden="true"></i>Identité &amp; Marque — Logo et Intitulés
+          </h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label for="platform_name" class="form-label fw-semibold small">
+                <i class="fa-solid fa-font me-1 text-muted" aria-hidden="true"></i> Nom de la plateforme
+              </label>
+              <input type="text" class="form-control" id="platform_name" name="platform_name" value="<%= settings.platform_name %>" required />
+              <div class="form-text small">Affiché sur le kiosque, l'en-tête et les onglets du navigateur.</div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label for="platform_subtitle" class="form-label fw-semibold small">
+                <i class="fa-solid fa-quote-left me-1 text-muted" aria-hidden="true"></i> Slogan / Sous-titre
+              </label>
+              <input type="text" class="form-control" id="platform_subtitle" name="platform_subtitle" value="<%= settings.platform_subtitle %>" required />
+              <div class="form-text small">Accroche située sous le nom de la plateforme.</div>
+            </div>
+
+            <!-- Logo Configuration -->
+            <div class="col-12 col-lg-7">
+              <span class="form-label fw-semibold small d-block">
+                <i class="fa-solid fa-image me-1 text-muted" aria-hidden="true"></i> Logo de la plateforme
+              </span>
+
+              <div class="d-flex flex-wrap gap-3 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="platform_logo_type" id="logoTypeDefault" value="default" <%= settings.platform_logo_type === 'default' ? 'checked' : '' %>>
+                  <label class="form-check-label small" for="logoTypeDefault">
+                    Logo par défaut (SVG)
+                  </label>
                 </div>
-                <p class="text-muted small mb-0">Identité visuelle, modules, sécurité et préférences du fablab</p>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="platform_logo_type" id="logoTypeCustom" value="custom" <%= settings.platform_logo_type === 'custom' ? 'checked' : '' %>>
+                  <label class="form-check-label small" for="logoTypeCustom">
+                    Logo personnalisé
+                  </label>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="logo" class="form-label small text-muted">Téléverser une nouvelle image (PNG, JPG, WebP — max 3 Mo) :</label>
+                <input class="form-control" type="file" id="logo" name="logo" accept=".png,.jpg,.jpeg,.webp">
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-submit-form="resetLogoForm">
+                  <i class="fa-solid fa-rotate-left me-1" aria-hidden="true"></i> Rétablir le logo par défaut
+                </button>
               </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-              <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
-              </a>
+
+            <!-- Logo Preview -->
+            <div class="col-12 col-lg-5">
+              <span class="form-label fw-semibold small d-block">Aperçu du logo actuel :</span>
+              <div class="logo-preview-box text-center" id="logoPreviewContainer">
+                <% if (settings.platform_logo_type === 'custom' && settings.platform_logo_path) { %>
+                  <img src="<%= settings.platform_logo_path %>" alt="Logo" class="logo-preview-img" id="logoPreviewImg" />
+                <% } else { %>
+                  <div class="text-center" id="defaultLogoPreview">
+                    <span class="badge bg-body-secondary text-secondary-emphasis border mb-1">Sorbonne Université</span>
+                    <p class="text-muted small mb-0">Logo officiel vectoriel actif</p>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Favicon section -->
+            <hr class="my-2 opacity-25">
+            <div class="col-12 col-md-7">
+              <label for="favicon" class="form-label fw-semibold small">
+                <i class="fa-solid fa-icons me-1 text-muted" aria-hidden="true"></i> Favicon (icône du navigateur — .ico, .png, max 1 Mo)
+              </label>
+              <div class="mb-2">
+                <input class="form-control" type="file" id="favicon" name="favicon" accept=".ico,.png">
+              </div>
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-submit-form="resetFaviconForm">
+                <i class="fa-solid fa-rotate-left me-1" aria-hidden="true"></i> Rétablir le favicon par défaut
+              </button>
+            </div>
+
+            <div class="col-12 col-md-5 d-flex align-items-center gap-3">
+              <div>
+                <span class="form-label fw-semibold small d-block">Favicon :</span>
+                <img src="<%= settings.platform_favicon_path || (_settingsBase + 'favicon.ico') %>" class="favicon-preview-img" alt="Favicon" id="faviconPreviewImg" data-fallback-src="<%= _settingsBase %>favicon.ico">
+              </div>
+              <small class="text-muted">Apparaît sur l'onglet de votre navigateur et dans les favoris.</small>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Main Form for Settings -->
-        <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" id="settingsForm">
-          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+      <!-- 2. PLUGINS & EXTENSIONS -->
+      <div class="card border mb-4">
+        <div class="card-header bg-body-tertiary">
+          <h2 class="h6 fw-bold mb-0">
+            <i class="fa-solid fa-puzzle-piece text-muted me-2" aria-hidden="true"></i>Extensions &amp; Gestion des Plugins
+          </h2>
+        </div>
+        <div class="card-body p-4">
+          <input type="hidden" name="plugin_settings_submitted" value="true">
+          <p class="text-muted small mb-3">
+            Activez ou désactivez les fonctionnalités spécifiques selon le contexte de votre fablab. Les modifications prennent effet immédiatement.
+          </p>
 
-          <!-- 1. IDENTITÉ VISUELLE & BRANDING -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
-                <i class="fa-solid fa-paintbrush me-1"></i> Identité & Marque
-              </span>
-              <h5 class="fw-bold mb-0 ms-1">Logo et Intitulés</h5>
-            </div>
-            <div class="card-body px-4 pt-2 pb-4">
-              <div class="row g-4">
-                <!-- Platform Name & Subtitle -->
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="platform_name" name="platform_name"
-                      value="<%= settings.platform_name %>" required />
-                    <label for="platform_name"><i class="fa-solid fa-font me-1 text-primary"></i> Nom de la
-                      plateforme</label>
-                    <small class="text-muted">Affiché en grand sur le kiosque, l'en-tête et les onglets.</small>
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="platform_subtitle" name="platform_subtitle"
-                      value="<%= settings.platform_subtitle %>" required />
-                    <label for="platform_subtitle"><i class="fa-solid fa-quote-left me-1 text-primary"></i> Slogan /
-                      Sous-titre</label>
-                    <small class="text-muted">Accroche située sous le nom (ex: "Track your fablab's activity").</small>
-                  </div>
-                </div>
-
-                <!-- Logo Configuration -->
-                <div class="col-12 col-lg-7">
-                  <label class="form-label fw-semibold">
-                    <i class="fa-solid fa-image me-1 text-primary"></i> Logo de la plateforme
-                  </label>
-
-                  <!-- Current Logo Mode Selector -->
-                  <div class="d-flex gap-3 mb-3">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="platform_logo_type" id="logoTypeDefault"
-                        value="default" <%=settings.platform_logo_type==='default' ? 'checked' : '' %>>
-                      <label class="form-check-label" for="logoTypeDefault">
-                        Logo Sorbonne Université (SVG par défaut)
-                      </label>
-                    </div>
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="platform_logo_type" id="logoTypeCustom"
-                        value="custom" <%=settings.platform_logo_type==='custom' ? 'checked' : '' %>>
-                      <label class="form-check-label" for="logoTypeCustom">
-                        Logo personnalisé
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Upload custom logo -->
-                  <div class="mb-3">
-                    <label for="logo" class="form-label small text-muted">Téléverser une nouvelle image (PNG, JPG, WebP — max 3 Mo) :</label>
-                    <input class="form-control" type="file" id="logo" name="logo" accept=".png,.jpg,.jpeg,.webp">
-                  </div>
-
-                  <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
-                      data-submit-form="resetLogoForm">
-                      <i class="fa-solid fa-rotate-left me-1"></i> Rétablir le logo Sorbonne par défaut
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Logo Preview -->
-                <div class="col-12 col-lg-5">
-                  <label class="form-label fw-semibold">Aperçu du logo actuel :</label>
-                  <div class="logo-preview-box text-center shadow-sm" id="logoPreviewContainer">
-                    <% if (settings.platform_logo_type==='custom' && settings.platform_logo_path) { %>
-                      <img src="<%= settings.platform_logo_path %>" alt="Logo" class="logo-preview-img"
-                        id="logoPreviewImg" />
-                      <% } else { %>
-                        <div class="text-center" id="defaultLogoPreview">
-                          <span class="badge bg-secondary-subtle text-secondary-emphasis border mb-1">Sorbonne
-                            Université</span>
-                          <p class="text-muted small mb-0">Logo officiel vectoriel actif</p>
-                        </div>
-                        <% } %>
-                  </div>
-                </div>
-
-                <!-- Favicon section -->
-                <hr class="my-2 opacity-25">
-                <div class="col-12 col-md-7">
-                  <label class="form-label fw-semibold">
-                    <i class="fa-solid fa-icons me-1 text-primary"></i> Favicon (icône du navigateur)
-                  </label>
-                  <div class="mb-2">
-                    <label for="favicon" class="form-label small text-muted">Téléverser un favicon (.ico, .png — max 1 Mo) :</label>
-                    <input class="form-control" type="file" id="favicon" name="favicon" accept=".ico,.png">
-                  </div>
-                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
-                    data-submit-form="resetFaviconForm">
-                    <i class="fa-solid fa-rotate-left me-1"></i> Rétablir le favicon par défaut
-                  </button>
-                </div>
-
-                <div class="col-12 col-md-5 d-flex align-items-center gap-3">
-                  <div>
-                    <label class="form-label fw-semibold d-block">Favicon :</label>
-                    <img src="<%= settings.platform_favicon_path || '/favicon.ico' %>"
-                      class="favicon-preview-img shadow-sm" alt="Favicon" id="faviconPreviewImg"
-                      data-fallback-src="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>favicon.ico">
-                  </div>
-                  <small class="text-muted">Apparaît sur l'onglet de votre navigateur et dans les favoris.</small>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. PLUGINS & EXTENSIONS -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
-                <i class="fa-solid fa-puzzle-piece me-1"></i> Extensions
-              </span>
-              <h5 class="fw-bold mb-0 ms-1">Gestion des Plugins</h5>
-            </div>
-            <div class="card-body px-4 pt-2 pb-4">
-              <input type="hidden" name="plugin_settings_submitted" value="true">
-              <p class="text-muted small mb-3">
-                Activez ou désactivez les fonctionnalités spécifiques selon le contexte de votre fablab. Les
-                modifications prennent effet immédiatement.
-              </p>
-
-              <div class="row g-3">
-                <% plugins.forEach(function(plugin) { 
-                  const isUe = plugin.id === 'ue';
-                  const isRfid = plugin.id === 'rfid';
-                  const isBookstack = plugin.id === 'bookstack';
-                  const isRepairCafe = plugin.id === 'repaircafe';
-                  const isWorkshop = plugin.id === 'workshop';
-                  const isSorbonne = plugin.id === 'sorbonne';
-                  let isChecked = plugin.enabled;
-                  if (isUe) isChecked = (settings.plugin_ue_enabled !== 'false');
-                  if (isRfid) isChecked = (settings.plugin_rfid_enabled !== 'false');
-                  if (isBookstack) isChecked = (settings.plugin_bookstack_enabled !== 'false');
-                  if (isRepairCafe) isChecked = (settings.plugin_repaircafe_enabled !== 'false');
-                  if (isWorkshop) isChecked = (settings.plugin_workshop_enabled !== 'false');
-                  if (isSorbonne) isChecked = (settings.plugin_sorbonne_enabled !== 'false');
-                  const themeColor = isUe ? 'danger' : (isRfid ? 'info' : (isBookstack ? 'primary' : (isRepairCafe ? 'warning' : (isWorkshop ? 'success' : (isSorbonne ? 'primary' : 'secondary')))));
-                  const iconClass = isUe ? 'fa-graduation-cap' : (isRfid ? 'fa-id-card' : (isBookstack ? 'fa-book' : (isRepairCafe ? 'fa-wrench' : (isWorkshop ? 'fa-chalkboard-user' : (isSorbonne ? 'fa-landmark' : 'fa-plug')))));
-                %>
-                  <% 
-                    let configUrl = '';
-                    if (isUe) configUrl = '/admin/ue';
-                    else if (isBookstack) configUrl = '/admin/bookstack';
-                    else if (isRepairCafe) configUrl = '/admin/repair-cafe';
-                    else if (isWorkshop) configUrl = '/admin/workshops/manage';
-                    else if (isSorbonne) configUrl = '/admin/sorbonne';
-                  %>
-                  <div class="col-12">
-                    <div class="p-3 border rounded-3 bg-body <%= !isChecked ? 'plugin-card-disabled' : '' %>" id="plugin_card_<%= plugin.id %>">
-                      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                        <div class="d-flex align-items-start gap-3">
-                          <div class="icon-box <%= isChecked ? ('bg-' + themeColor + '-subtle text-' + themeColor) : 'bg-body-secondary text-secondary' %> mt-1" id="plugin_icon_<%= plugin.id %>"
-                            style="width: 42px; height: 42px; font-size: 1.1rem;">
-                            <i class="fa-solid <%= iconClass %>"></i>
-                          </div>
-                          <div>
-                            <div class="d-flex align-items-center gap-2">
-                              <h6 class="fw-bold mb-0">
-                                <%= plugin.name %>
-                              </h6>
-                              <span class="badge bg-body-secondary text-body-secondary border rounded-pill">v<%= plugin.version %></span>
-                              <% if (isUe) { %>
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Sorbonne Université</span>
-                              <% } else if (isRfid) { %>
-                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">Borne Tactile</span>
-                              <% } else if (isBookstack) { %>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Wiki</span>
-                              <% } else if (isRepairCafe) { %>
-                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">Repair Café</span>
-                              <% } else if (isWorkshop) { %>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Ateliers & Badges</span>
-                              <% } else if (isSorbonne) { %>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Entités & UFR</span>
-                              <% } %>
-                              <% if (configUrl) { %>
-                                <a href="<%= configUrl %>" class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2 ms-1" style="font-size: 0.72rem;">
-                                  <i class="fa-solid fa-sliders me-1"></i>Configuration
-                                </a>
-                              <% } %>
-                            </div>
-                            <p class="text-muted small mb-0 mt-1">
-                              <%= plugin.description %>
-                            </p>
-                          </div>
-                        </div>
-
-                        <div class="form-check form-switch ps-0">
-                          <input class="form-check-input ms-0 plugin-toggle-switch" type="checkbox" role="switch"
-                            id="plugin_<%= plugin.id %>" name="plugin_<%= plugin.id %>_enabled" value="true"
-                            data-plugin-id="<%= plugin.id %>" data-theme-color="<%= themeColor %>"
-                            style="width: 2.8em; height: 1.4em; cursor: pointer;" <%= isChecked ? 'checked' : '' %>>
-                          <label class="form-check-label ms-2 small fw-semibold" id="plugin_label_<%= plugin.id %>" for="plugin_<%= plugin.id %>">
-                            <%= isChecked ? 'Activé' : 'Désactivé' %>
-                          </label>
-                        </div>
-                      </div>
-
-                      <% if (isRepairCafe || isWorkshop || isUe || isSorbonne) { 
-                        let settingKey = '';
-                        let defaultVal = '';
-                        let labelText = '';
-                        let helpText = '';
-                        if (isRepairCafe) {
-                          settingKey = 'repaircafe_projecttype_name';
-                          defaultVal = settings.repaircafe_projecttype_name || 'Repair Café';
-                          labelText = 'Motif de la visite associé';
-                          helpText = 'Déclenche le champ "Objet à réparer" et masque la documentation lors du check-in.';
-                        } else if (isWorkshop) {
-                          settingKey = 'workshop_projecttype_name';
-                          defaultVal = settings.workshop_projecttype_name || 'Atelier';
-                          labelText = 'Motif de la visite associé';
-                          helpText = 'Déclenche la sélection d\'ateliers et attribue automatiquement le badge et l\'habilitation correspondants.';
-                        } else if (isUe) {
-                          settingKey = 'ue_projecttype_name';
-                          defaultVal = settings.ue_projecttype_name || 'Academic';
-                          labelText = 'Motif de la visite associé';
-                          helpText = 'Déclenche la sélection des UE Sorbonne Université et la facturation consolidée.';
-                        } else if (isSorbonne) {
-                          settingKey = 'sorbonne_projecttype_name';
-                          defaultVal = settings.sorbonne_projecttype_name || 'Sorbonne';
-                          labelText = 'Motif de la visite associé';
-                          helpText = 'Déclenche le champ "Entité ou UFR" avec autocomplétion et suivi de la facturation des consommables.';
-                        }
-                      %>
-                        <div class="mt-3 pt-3 border-top">
-                          <div class="row align-items-center g-2">
-                            <div class="col-md-6">
-                              <label class="form-label small fw-semibold mb-0" for="<%= settingKey %>">
-                                <i class="fa-solid fa-folder-tree text-<%= themeColor %> me-1"></i>
-                                <%= labelText %>
-                              </label>
-                              <div class="text-muted" style="font-size: 0.78rem;">
-                                <%= helpText %>
-                              </div>
-                            </div>
-                            <div class="col-md-6">
-                              <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-tag"></i></span>
-                                <input type="text" class="form-control" id="<%= settingKey %>" name="<%= settingKey %>"
-                                  value="<%= defaultVal %>" list="projecttypes_list" placeholder="Nom du motif de la visite"
-                                  required>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      <% } %>
-                    </div>
-                  </div>
-                <% }); %>
-              </div>
-
-              <datalist id="projecttypes_list">
-                <% (typeof projecttypes !=='undefined' ? projecttypes : []).forEach(function(pt) { %>
-                  <option value="<%= pt.name %>">
-                    <% }); %>
-              </datalist>
-            </div>
-          </div>
-
-          <!-- 3. SÉCURITÉ & SESSIONS -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
-              <span
-                class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
-                <i class="fa-solid fa-shield-halved me-1"></i> Sécurité
-              </span>
-              <h5 class="fw-bold mb-0 ms-1">Sessions & Authentification</h5>
-            </div>
-            <div class="card-body px-4 pt-2 pb-4">
-              <div class="row g-3">
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-2">
-                    <select class="form-select" id="session_timeout_hours" name="session_timeout_hours">
-                      <option value="1" <%=settings.session_timeout_hours==='1' ? 'selected' : '' %>>1 heure</option>
-                      <option value="4" <%=settings.session_timeout_hours==='4' ? 'selected' : '' %>>4 heures</option>
-                      <option value="8" <%=settings.session_timeout_hours==='8' ? 'selected' : '' %>>8 heures (Journée
-                        de travail)</option>
-                      <option value="24" <%=settings.session_timeout_hours==='24' ? 'selected' : '' %>>24 heures (1
-                        jour)</option>
-                      <option value="48" <%=settings.session_timeout_hours==='48' ? 'selected' : '' %>>48 heures (2
-                        jours)</option>
-                      <option value="168" <%=settings.session_timeout_hours==='168' ? 'selected' : '' %>>168 heures (7
-                        jours)</option>
-                      <option value="720" <%=settings.session_timeout_hours==='720' ? 'selected' : '' %>>720 heures (30
-                        jours)</option>
-                    </select>
-                    <label for="session_timeout_hours"><i class="fa-regular fa-clock me-1 text-warning-emphasis"></i>
-                      Expiration des sessions (Timeout)</label>
-                  </div>
-                  <small class="text-muted">Durée maximale d'inactivité avant déconnexion automatique du staff.</small>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-2">
-                    <input type="email" class="form-control" id="admin_email" name="admin_email"
-                      value="<%= settings.admin_email %>" required />
-                    <label for="admin_email"><i class="fa-solid fa-envelope me-1 text-warning-emphasis"></i> Email
-                      administrateur</label>
-                  </div>
-                  <small class="text-muted">Reçoit les demandes de validation de nouveaux comptes staff et
-                    alertes.</small>
-                </div>
-
-                <!-- Clé d'API Machines & Déblocage PC -->
-                <div class="col-12 pt-3 border-top">
-                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                    <label for="api_machine_token" class="form-label fw-bold mb-0">
-                      <i class="fa-solid fa-key me-1 text-warning-emphasis"></i> Clé / Token d'accès API (Machines & Déblocage PC)
-                    </label>
-                    <div class="d-flex align-items-center gap-2">
-                      <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-2 py-0" id="btnGenerateApiToken" style="font-size: 0.78rem;">
-                        <i class="fa-solid fa-arrows-rotate me-1"></i> Générer un token
-                      </button>
-                    </div>
-                  </div>
-                  <div class="input-group">
-                    <input type="password" class="form-control font-monospace" id="api_machine_token" name="api_machine_token"
-                      value="" placeholder="<%= typeof hasApiMachineToken !== 'undefined' && hasApiMachineToken ? '•••••••••••••••• (déjà configurée — laisser vide pour conserver)' : 'Ex: fabtrack_sec_a8f93bc145d2e7...' %>" autocomplete="new-password" />
-                    <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="api_machine_token" title="Afficher / masquer">
-                      <i class="fa-solid fa-eye"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary" type="button" id="btnCopyApiToken" title="Copier la clé générée">
-                      <i class="fa-regular fa-copy"></i>
-                    </button>
-                  </div>
-                  <small class="text-muted d-block mt-1">
-                    Authentifie les applications de verrouillage/déblocage d'ordinateurs et les imprimantes 3D via l'en-tête HTTP <code>x-api-key</code> ou <code>Authorization: Bearer &lt;token&gt;</code>.
-                    <% if (process.env.FABTRACK_API_KEY) { %>
-                      <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle ms-1">
-                        <i class="fa-solid fa-circle-info me-1"></i> Déjà défini dans .env (prioritaire)
-                      </span>
-                    <% } %>
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. PRÉFÉRENCES DU FABLAB -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
-              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2 py-1">
-                <i class="fa-solid fa-sliders me-1"></i> Atelier
-              </span>
-              <h5 class="fw-bold mb-0 ms-1">Préférences Générales du Fablab</h5>
-            </div>
-            <div class="card-body px-4 pt-2 pb-4">
-              <div class="row g-3">
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-2">
-                    <input type="text" class="form-control" id="currency_symbol" name="currency_symbol"
-                      value="<%= settings.currency_symbol %>" style="max-width: 160px;" required />
-                    <label for="currency_symbol"><i class="fa-solid fa-coins me-1 text-info-emphasis"></i> Symbole
-                      monétaire</label>
-                  </div>
-                  <small class="text-muted">Symbole monétaire utilisé pour la facturation des consommables (ex : €, $,
-                    CHF).</small>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-2">
-                    <select class="form-select" id="allow_self_registration" name="allow_self_registration">
-                      <option value="true" <%=settings.allow_self_registration !=='false' ? 'selected' : '' %>>Autorisée
-                        (Formulaire création visible au kiosque)</option>
-                      <option value="false" <%=settings.allow_self_registration==='false' ? 'selected' : '' %>
-                        >Désactivée (Création uniquement par un staff)</option>
-                    </select>
-                    <label for="allow_self_registration"><i class="fa-solid fa-user-plus me-1 text-info-emphasis"></i>
-                      Inscription en autonomie au kiosque</label>
-                  </div>
-                  <small class="text-muted">Permet aux contributeurs de créer leur propre profil en arrivant au
-                    fablab.</small>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-2">
-                    <select class="form-select" id="date_format" name="date_format">
-                      <option value="DD/MM/YYYY" <%= (!settings.date_format || settings.date_format === 'DD/MM/YYYY') ? 'selected' : '' %>>JJ/MM/AAAA (ex: 13/09/2026 — Standard français)</option>
-                      <option value="YYYY-MM-DD" <%= (settings.date_format === 'YYYY-MM-DD') ? 'selected' : '' %>>AAAA-MM-JJ (ex: 2026-09-13 — Standard ISO)</option>
-                      <option value="MM/DD/YYYY" <%= (settings.date_format === 'MM/DD/YYYY') ? 'selected' : '' %>>MM/JJ/AAAA (ex: 09/13/2026 — Format américain)</option>
-                      <option value="DD.MM.YYYY" <%= (settings.date_format === 'DD.MM.YYYY') ? 'selected' : '' %>>JJ.MM.AAAA (ex: 13.09.2026 — Format suisse/allemand)</option>
-                      <option value="D MMMM YYYY" <%= (settings.date_format === 'D MMMM YYYY') ? 'selected' : '' %>>Format long (ex: 13 septembre 2026)</option>
-                    </select>
-                    <label for="date_format"><i class="fa-solid fa-calendar-days me-1 text-info-emphasis"></i> <%= typeof __ !== 'undefined' ? __('settings.field_date_format') : "Format d'affichage des dates" %></label>
-                  </div>
-                  <small class="text-muted"><%= typeof __ !== 'undefined' ? __('settings.field_date_format_desc') : "Définit le format de date utilisé dans l'historique, les fiches contributeurs et les exports." %></small>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. LANGUES & INTERNATIONALISATION -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center gap-2">
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
-                <i class="fa-solid fa-language me-1"></i> <%= typeof __ !== 'undefined' ? __('settings.section_i18n') : 'Langues & Internationalisation' %>
-              </span>
-              <h5 class="fw-bold mb-0 ms-1"><%= typeof __ !== 'undefined' ? __('settings.section_i18n_title') : 'Traductions & Tableur CSV' %></h5>
-            </div>
-            <div class="card-body px-4 pt-2 pb-4">
-              <p class="text-muted small mb-3">
-                <%= typeof __ !== 'undefined' ? __('settings.i18n_desc') : "La plateforme supporte le multilingue. Vous pouvez exporter toutes les phrases au format CSV pour les traduire dans Excel ou Google Sheets, puis les réimporter." %>
-              </p>
-
-              <div class="row g-4">
-                <div class="col-12 mb-1">
-                  <div class="d-flex flex-wrap align-items-center gap-2">
-                    <span class="small fw-semibold text-muted"><i class="fa-solid fa-list-check me-1"></i> Langues actuellement actives :</span>
-                    <% if (typeof localesMeta !== 'undefined' && localesMeta) { %>
-                      <% localesMeta.forEach(function(l) { %>
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1">
-                          <span><%= l.flag %></span>
-                          <span class="fw-semibold"><%= l.name %></span>
-                          <span class="opacity-75 small">(<%= l.code.toUpperCase() %>)</span>
-                        </span>
-                      <% }); %>
-                    <% } %>
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="form-floating mb-2">
-                    <select class="form-select" id="default_language" name="default_language">
-                      <% if (typeof localesMeta !== 'undefined' && localesMeta && localesMeta.length > 0) { %>
-                        <% localesMeta.forEach(function(lang) { %>
-                          <option value="<%= lang.code %>" <%= (settings.default_language === lang.code || (!settings.default_language && lang.code === 'fr')) ? 'selected' : '' %>>
-                            <%= lang.flag %> <%= lang.name %> (<%= lang.code.toUpperCase() %>)
-                          </option>
-                        <% }); %>
-                      <% } else { %>
-                        <option value="fr" <%= (!settings.default_language || settings.default_language === 'fr') ? 'selected' : '' %>>🇫🇷 Français (Défaut)</option>
-                        <option value="en" <%= (settings.default_language === 'en') ? 'selected' : '' %>>🇬🇧 English</option>
-                      <% } %>
-                    </select>
-                    <label for="default_language"><i class="fa-solid fa-globe me-1 text-primary"></i> <%= typeof __ !== 'undefined' ? __('settings.field_default_lang') : 'Langue par défaut du kiosque' %></label>
-                  </div>
-                  <small class="text-muted">Définit la langue initiale affichée aux contributeurs et sur les nouvelles sessions.</small>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <label class="form-label fw-semibold d-block"><i class="fa-solid fa-file-export me-1 text-primary"></i> Export CSV :</label>
-                  <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/i18n/export" class="btn btn-outline-primary rounded-pill px-3 py-2 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2">
-                    <i class="fa-solid fa-file-csv fs-5"></i>
-                    <span><%= typeof __ !== 'undefined' ? __('settings.export_csv_btn') : 'Télécharger le tableur CSV (traductions actuelles)' %></span>
-                  </a>
-                  <small class="text-muted mt-1 d-block">Compatible Microsoft Excel, LibreOffice et Google Sheets (encodage UTF-8 BOM préservant les accents).</small>
-                </div>
-
-                <div class="col-12">
-                  <hr class="my-1 opacity-25">
-                  <label for="translationsFileInput" class="form-label fw-semibold mt-2 d-block"><i class="fa-solid fa-file-import me-1 text-success"></i> <%= typeof __ !== 'undefined' ? __('settings.import_csv_label') : 'Téléverser un fichier translations.csv :' %></label>
-                  <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
-                    <input class="form-control" type="file" id="translationsFileInput" accept=".csv" style="max-width: 400px;">
-                    <button type="button" class="btn btn-outline-success rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-2" id="importCsvBtn">
-                      <i class="fa-solid fa-upload"></i>
-                      <span><%= typeof __ !== 'undefined' ? __('settings.import_csv_btn') : 'Importer un tableur CSV' %></span>
-                    </button>
-                  </div>
-                  <small class="text-muted mt-1 d-block"><i class="fa-solid fa-circle-info me-1 text-primary"></i> <%= typeof __ !== 'undefined' ? __('settings.import_csv_desc') : "Les nouvelles traductions seront appliquées immédiatement. Pour ajouter une nouvelle langue, ajoutez simplement une colonne au CSV (ex: ES, DE, IT) !" %></small>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 6. INTELLIGENCE ARTIFICIELLE & REQUÊTES EN LANGAGE NATUREL -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0 pt-3 pb-2 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
-                  <i class="fa-solid fa-wand-magic-sparkles me-1"></i> <%= (typeof __ !== 'undefined' && __('settings.section_ai') !== 'settings.section_ai') ? __('settings.section_ai') : 'Intelligence Artificielle' %>
-                </span>
-                <h5 class="fw-bold mb-0 ms-1"><%= (typeof __ !== 'undefined' && __('settings.section_ai_title') !== 'settings.section_ai_title') ? __('settings.section_ai_title') : 'Requêtes Statistiques en Langage Naturel (Text-to-SQL)' %></h5>
-              </div>
-              <div id="aiConnectionStatusBadge"></div>
-            </div>
-            <div class="card-body px-4 pt-2 pb-4">
-              <p class="text-muted small mb-3">
-                <%= (typeof __ !== 'undefined' && __('settings.ai_desc') !== 'settings.ai_desc') ? __('settings.ai_desc') : "Permet aux administrateurs d'interroger la base de données en langage naturel (ex: 'Combien de contributeurs ne sont venus qu'une seule fois ?') depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée." %>
-              </p>
-
-              <div class="row g-3">
-                <!-- Choix du fournisseur -->
-                <div class="col-12 col-md-6">
-                  <div class="form-floating">
-                    <select class="form-select" id="ai_provider" name="ai_provider">
-                      <option value="none" <%= (!settings.ai_provider || settings.ai_provider === 'none') ? 'selected' : '' %>>Désactivé (Aucun moteur d'IA)</option>
-                      <option value="openai" <%= settings.ai_provider === 'openai' ? 'selected' : '' %>>OpenAI (ChatGPT / GPT-4o / GPT-4o-mini)</option>
-                      <option value="gemini" <%= settings.ai_provider === 'gemini' ? 'selected' : '' %>>Google Gemini (Gemini 1.5 Flash / Pro)</option>
-                      <option value="anthropic" <%= settings.ai_provider === 'anthropic' ? 'selected' : '' %>>Anthropic Claude (Claude 3.5 Haiku / Sonnet)</option>
-                      <option value="local" <%= settings.ai_provider === 'local' ? 'selected' : '' %>>LLM Local (Ollama / LM Studio / Compatible OpenAI)</option>
-                    </select>
-                    <label for="ai_provider"><i class="fa-solid fa-microchip me-1 text-primary"></i> Moteur d'IA actif</label>
-                  </div>
-                  <small class="text-muted">Sélectionnez le service d'IA utilisé pour traduire les questions en requêtes SQL sécurisées.</small>
-                </div>
-
-                <!-- Bouton tester la connexion -->
-                <div class="col-12 col-md-6 d-flex align-items-center">
-                  <div class="w-100 p-3 rounded-3 bg-body-tertiary border d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="row g-3">
+            <% plugins.forEach(function(plugin) {
+              const isUe = plugin.id === 'ue';
+              const isRfid = plugin.id === 'rfid';
+              const isBookstack = plugin.id === 'bookstack';
+              const isRepairCafe = plugin.id === 'repaircafe';
+              const isWorkshop = plugin.id === 'workshop';
+              const isSorbonne = plugin.id === 'sorbonne';
+              let isChecked = plugin.enabled;
+              if (isUe) isChecked = (settings.plugin_ue_enabled !== 'false');
+              if (isRfid) isChecked = (settings.plugin_rfid_enabled !== 'false');
+              if (isBookstack) isChecked = (settings.plugin_bookstack_enabled !== 'false');
+              if (isRepairCafe) isChecked = (settings.plugin_repaircafe_enabled !== 'false');
+              if (isWorkshop) isChecked = (settings.plugin_workshop_enabled !== 'false');
+              if (isSorbonne) isChecked = (settings.plugin_sorbonne_enabled !== 'false');
+              const themeColor = isUe ? 'danger' : (isRfid ? 'info' : (isBookstack ? 'primary' : (isRepairCafe ? 'warning' : (isWorkshop ? 'success' : (isSorbonne ? 'primary' : 'secondary')))));
+              const iconClass = isUe ? 'fa-graduation-cap' : (isRfid ? 'fa-id-card' : (isBookstack ? 'fa-book' : (isRepairCafe ? 'fa-wrench' : (isWorkshop ? 'fa-chalkboard-user' : (isSorbonne ? 'fa-landmark' : 'fa-plug')))));
+              let configUrl = '';
+              if (isUe) configUrl = _settingsBase + 'admin/ue';
+              else if (isBookstack) configUrl = _settingsBase + 'admin/bookstack';
+              else if (isRepairCafe) configUrl = _settingsBase + 'admin/repair-cafe';
+              else if (isWorkshop) configUrl = _settingsBase + 'admin/workshops/manage';
+              else if (isSorbonne) configUrl = _settingsBase + 'admin/sorbonne';
+            %>
+            <div class="col-12">
+              <div class="p-3 border rounded bg-body-tertiary <%= !isChecked ? 'plugin-card-disabled' : '' %>" id="plugin_card_<%= plugin.id %>">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                  <div class="d-flex align-items-start gap-3">
+                    <span class="fab-kpi-icon mt-1" id="plugin_icon_<%= plugin.id %>" aria-hidden="true">
+                      <i class="fa-solid <%= iconClass %>"></i>
+                    </span>
                     <div>
-                      <span class="fw-semibold small d-block"><i class="fa-solid fa-satellite-dish me-1 text-secondary"></i> Test de connectivité</span>
-                      <small class="text-muted" id="aiTestNotice">Vérifie la validité de la clé API ou de l'URL locale.</small>
+                      <div class="d-flex flex-wrap align-items-center gap-2">
+                        <h3 class="h6 fw-bold mb-0"><%= plugin.name %></h3>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border">v<%= plugin.version %></span>
+                        <% if (isUe) { %>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border">Sorbonne Université</span>
+                        <% } else if (isRfid) { %>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border">Borne Tactile</span>
+                        <% } else if (isBookstack) { %>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border">Wiki</span>
+                        <% } else if (isRepairCafe) { %>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border">Repair Café</span>
+                        <% } else if (isWorkshop) { %>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border">Ateliers &amp; Badges</span>
+                        <% } else if (isSorbonne) { %>
+                          <span class="badge bg-body-secondary text-secondary-emphasis border">Entités &amp; UFR</span>
+                        <% } %>
+                        <% if (configUrl) { %>
+                          <a href="<%= configUrl %>" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.74rem;">
+                            <i class="fa-solid fa-sliders me-1" aria-hidden="true"></i>Configuration
+                          </a>
+                        <% } %>
+                      </div>
+                      <p class="text-muted small mb-0 mt-1"><%= plugin.description %></p>
                     </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" id="btnTestAiConnection">
-                      <i class="fa-solid fa-bolt me-1"></i> Tester la connexion
-                    </button>
+                  </div>
+
+                  <div class="form-check form-switch ps-0 d-flex align-items-center gap-2">
+                    <input class="form-check-input ms-0 plugin-toggle-switch" type="checkbox" role="switch" id="plugin_<%= plugin.id %>" name="plugin_<%= plugin.id %>_enabled" value="true" data-plugin-id="<%= plugin.id %>" data-theme-color="<%= themeColor %>" <%= isChecked ? 'checked' : '' %>>
+                    <label class="form-check-label small fw-semibold" id="plugin_label_<%= plugin.id %>" for="plugin_<%= plugin.id %>">
+                      <%= isChecked ? 'Activé' : 'Désactivé' %>
+                    </label>
                   </div>
                 </div>
 
-                <!-- Paramètres OpenAI -->
-                <div class="col-12 ai-provider-panel" id="panel_openai" style="display: none;">
-                  <div class="p-3 border rounded-3 bg-body">
-                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-brain me-1"></i> Configuration OpenAI (ChatGPT)</h6>
-                    <div class="row g-3">
-                      <div class="col-md-7">
-                        <label for="ai_openai_api_key" class="form-label small fw-semibold">Clé API OpenAI</label>
-                        <div class="input-group">
-                          <input type="password" class="form-control" id="ai_openai_api_key" name="ai_openai_api_key" value="" placeholder="<%= typeof hasOpenAiKey !== 'undefined' && hasOpenAiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-proj-...' %>" autocomplete="new-password">
-                          <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_openai_api_key"><i class="fa-solid fa-eye"></i></button>
+                <% if (isRepairCafe || isWorkshop || isUe || isSorbonne) {
+                  let settingKey = '';
+                  let defaultVal = '';
+                  let labelText = '';
+                  let helpText = '';
+                  if (isRepairCafe) {
+                    settingKey = 'repaircafe_projecttype_name';
+                    defaultVal = settings.repaircafe_projecttype_name || 'Repair Café';
+                    labelText = 'Motif de la visite associé';
+                    helpText = 'Déclenche le champ « Objet à réparer » et masque la documentation lors du check-in.';
+                  } else if (isWorkshop) {
+                    settingKey = 'workshop_projecttype_name';
+                    defaultVal = settings.workshop_projecttype_name || 'Atelier';
+                    labelText = 'Motif de la visite associé';
+                    helpText = 'Déclenche la sélection d\'ateliers et attribue automatiquement le badge et l\'habilitation correspondants.';
+                  } else if (isUe) {
+                    settingKey = 'ue_projecttype_name';
+                    defaultVal = settings.ue_projecttype_name || 'Academic';
+                    labelText = 'Motif de la visite associé';
+                    helpText = 'Déclenche la sélection des UE Sorbonne Université et la facturation consolidée.';
+                  } else if (isSorbonne) {
+                    settingKey = 'sorbonne_projecttype_name';
+                    defaultVal = settings.sorbonne_projecttype_name || 'Sorbonne';
+                    labelText = 'Motif de la visite associé';
+                    helpText = 'Déclenche le champ « Entité ou UFR » avec autocomplétion et suivi de la facturation des consommables.';
+                  }
+                %>
+                  <div class="mt-3 pt-3 border-top">
+                    <div class="row align-items-center g-2">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-semibold mb-0" for="<%= settingKey %>">
+                          <i class="fa-solid fa-folder-tree text-muted me-1" aria-hidden="true"></i>
+                          <%= labelText %>
+                        </label>
+                        <div class="text-muted" style="font-size: 0.78rem;"><%= helpText %></div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text"><i class="fa-solid fa-tag text-muted" aria-hidden="true"></i></span>
+                          <input type="text" class="form-control" id="<%= settingKey %>" name="<%= settingKey %>" value="<%= defaultVal %>" list="projecttypes_list" placeholder="Nom du motif de la visite" required>
                         </div>
-                        <small class="text-muted">Disponible sur <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-decoration-none">platform.openai.com</a>.</small>
-                      </div>
-                      <div class="col-md-5">
-                        <label for="ai_openai_model" class="form-label small fw-semibold">Modèle</label>
-                        <input type="text" class="form-control" id="ai_openai_model" name="ai_openai_model" value="<%= settings.ai_openai_model || 'gpt-4o-mini' %>" placeholder="gpt-4o-mini">
-                        <small class="text-muted">Par défaut : <code>gpt-4o-mini</code> (rapide et très économique).</small>
                       </div>
                     </div>
                   </div>
-                </div>
+                <% } %>
+              </div>
+            </div>
+            <% }); %>
+          </div>
 
-                <!-- Paramètres Google Gemini -->
-                <div class="col-12 ai-provider-panel" id="panel_gemini" style="display: none;">
-                  <div class="p-3 border rounded-3 bg-body">
-                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-gem me-1"></i> Configuration Google Gemini</h6>
-                    <div class="row g-3">
-                      <div class="col-md-7">
-                        <label for="ai_gemini_api_key" class="form-label small fw-semibold">Clé API Google Gemini</label>
-                        <div class="input-group">
-                          <input type="password" class="form-control" id="ai_gemini_api_key" name="ai_gemini_api_key" value="" placeholder="<%= typeof hasGeminiKey !== 'undefined' && hasGeminiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'AIzaSy...' %>" autocomplete="new-password">
-                          <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_gemini_api_key"><i class="fa-solid fa-eye"></i></button>
-                        </div>
-                        <small class="text-muted">Disponible gratuitement sur <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-decoration-none">Google AI Studio</a>.</small>
-                      </div>
-                      <div class="col-md-5">
-                        <label for="ai_gemini_model" class="form-label small fw-semibold">Modèle</label>
-                        <input type="text" class="form-control" id="ai_gemini_model" name="ai_gemini_model" value="<%= settings.ai_gemini_model || 'gemini-1.5-flash' %>" placeholder="gemini-1.5-flash">
-                        <small class="text-muted">Par défaut : <code>gemini-1.5-flash</code> ou <code>gemini-2.0-flash</code>.</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <datalist id="projecttypes_list">
+            <% (typeof projecttypes !== 'undefined' ? projecttypes : []).forEach(function(pt) { %>
+              <option value="<%= pt.name %>">
+            <% }); %>
+          </datalist>
+        </div>
+      </div>
 
-                <!-- Paramètres Anthropic Claude -->
-                <div class="col-12 ai-provider-panel" id="panel_anthropic" style="display: none;">
-                  <div class="p-3 border rounded-3 bg-body">
-                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-cube me-1"></i> Configuration Anthropic Claude</h6>
-                    <div class="row g-3">
-                      <div class="col-md-7">
-                        <label for="ai_anthropic_api_key" class="form-label small fw-semibold">Clé API Anthropic</label>
-                        <div class="input-group">
-                          <input type="password" class="form-control" id="ai_anthropic_api_key" name="ai_anthropic_api_key" value="" placeholder="<%= typeof hasAnthropicKey !== 'undefined' && hasAnthropicKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-ant-api...' %>" autocomplete="new-password">
-                          <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_anthropic_api_key"><i class="fa-solid fa-eye"></i></button>
-                        </div>
-                        <small class="text-muted">Disponible sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">console.anthropic.com</a>.</small>
-                      </div>
-                      <div class="col-md-5">
-                        <label for="ai_anthropic_model" class="form-label small fw-semibold">Modèle</label>
-                        <input type="text" class="form-control" id="ai_anthropic_model" name="ai_anthropic_model" value="<%= settings.ai_anthropic_model || 'claude-3-5-haiku-20241022' %>" placeholder="claude-3-5-haiku-20241022">
-                        <small class="text-muted">Ex : <code>claude-3-5-haiku-20241022</code> ou <code>claude-3-5-sonnet-20241022</code>.</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      <!-- 3. SÉCURITÉ & SESSIONS -->
+      <div class="card border mb-4">
+        <div class="card-header bg-body-tertiary">
+          <h2 class="h6 fw-bold mb-0">
+            <i class="fa-solid fa-shield-halved text-muted me-2" aria-hidden="true"></i>Sécurité — Sessions &amp; Authentification
+          </h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label for="session_timeout_hours" class="form-label fw-semibold small">
+                <i class="fa-regular fa-clock me-1 text-muted" aria-hidden="true"></i> Expiration des sessions (Timeout)
+              </label>
+              <select class="form-select" id="session_timeout_hours" name="session_timeout_hours">
+                <option value="1" <%= settings.session_timeout_hours === '1' ? 'selected' : '' %>>1 heure</option>
+                <option value="4" <%= settings.session_timeout_hours === '4' ? 'selected' : '' %>>4 heures</option>
+                <option value="8" <%= settings.session_timeout_hours === '8' ? 'selected' : '' %>>8 heures (Journée de travail)</option>
+                <option value="24" <%= settings.session_timeout_hours === '24' ? 'selected' : '' %>>24 heures (1 jour)</option>
+                <option value="48" <%= settings.session_timeout_hours === '48' ? 'selected' : '' %>>48 heures (2 jours)</option>
+                <option value="168" <%= settings.session_timeout_hours === '168' ? 'selected' : '' %>>168 heures (7 jours)</option>
+                <option value="720" <%= settings.session_timeout_hours === '720' ? 'selected' : '' %>>720 heures (30 jours)</option>
+              </select>
+              <div class="form-text small">Durée maximale d'inactivité avant déconnexion automatique du staff.</div>
+            </div>
 
-                <!-- Paramètres LLM Local (Ollama / LocalAI) -->
-                <div class="col-12 ai-provider-panel" id="panel_local" style="display: none;">
-                  <div class="p-3 border rounded-3 bg-body">
-                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-server me-1"></i> Configuration LLM Local (Ollama / LM Studio / vLLM)</h6>
-                    <div class="row g-3">
-                      <div class="col-md-5">
-                        <label for="ai_local_url" class="form-label small fw-semibold">URL de l'endpoint compatible OpenAI</label>
-                        <input type="text" class="form-control" id="ai_local_url" name="ai_local_url" value="<%= settings.ai_local_url || 'http://localhost:11434/v1' %>" placeholder="http://localhost:11434/v1">
-                        <small class="text-muted">Pour Ollama : <code>http://localhost:11434/v1</code> (v0.1.24+).</small>
-                      </div>
-                      <div class="col-md-4">
-                        <label for="ai_local_model" class="form-label small fw-semibold">Nom du modèle local</label>
-                        <input type="text" class="form-control" id="ai_local_model" name="ai_local_model" value="<%= settings.ai_local_model || 'llama3.2' %>" placeholder="llama3.2">
-                        <small class="text-muted">Ex: <code>llama3.2</code>, <code>mistral</code>, <code>qwen2.5-coder</code>.</small>
-                      </div>
-                      <div class="col-md-3">
-                        <label for="ai_local_api_key" class="form-label small fw-semibold">Clé / Jeton (optionnel)</label>
-                        <input type="password" class="form-control" id="ai_local_api_key" name="ai_local_api_key" value="" placeholder="<%= typeof hasLocalAiKey !== 'undefined' && hasLocalAiKey ? '•••••••••••• (conservée si vide)' : 'Facultatif' %>" autocomplete="new-password">
-                        <small class="text-muted">Si votre proxy local exige une authentification.</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="col-12 col-md-6">
+              <label for="admin_email" class="form-label fw-semibold small">
+                <i class="fa-solid fa-envelope me-1 text-muted" aria-hidden="true"></i> E-mail administrateur
+              </label>
+              <input type="email" class="form-control" id="admin_email" name="admin_email" value="<%= settings.admin_email %>" required />
+              <div class="form-text small">Reçoit les demandes de validation de nouveaux comptes staff et les alertes.</div>
+            </div>
 
+            <!-- Clé d'API Machines & Déblocage PC -->
+            <div class="col-12 pt-3 border-top">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <label for="api_machine_token" class="form-label fw-semibold small mb-0">
+                  <i class="fa-solid fa-key me-1 text-muted" aria-hidden="true"></i> Clé / Token d'accès API (Machines &amp; Déblocage PC)
+                </label>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" id="btnGenerateApiToken">
+                  <i class="fa-solid fa-arrows-rotate me-1" aria-hidden="true"></i> Générer un token
+                </button>
+              </div>
+              <div class="input-group">
+                <input type="password" class="form-control font-monospace" id="api_machine_token" name="api_machine_token" value="" placeholder="<%= typeof hasApiMachineToken !== 'undefined' && hasApiMachineToken ? '•••••••••••••••• (déjà configurée — laisser vide pour conserver)' : 'Ex: ftk_a8f93bc145d2e7...' %>" autocomplete="new-password" />
+                <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="api_machine_token" title="Afficher / masquer" aria-label="Afficher ou masquer la clé API">
+                  <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-outline-secondary" type="button" id="btnCopyApiToken" title="Copier la clé générée" aria-label="Copier la clé API">
+                  <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="form-text small">
+                Authentifie les applications de verrouillage/déblocage d'ordinateurs et les imprimantes 3D via l'en-tête HTTP <code>x-api-key</code> ou <code>Authorization: Bearer &lt;token&gt;</code>.
+                <% if (process.env.FABTRACK_API_KEY) { %>
+                  <span class="badge bg-body-secondary text-secondary-emphasis border ms-1">
+                    <i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i> Déjà défini dans .env (prioritaire)
+                  </span>
+                <% } %>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- Submit Button Bar -->
-          <div class="d-flex justify-content-end align-items-center gap-3 mb-5">
-            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary rounded-pill px-4"><%= typeof __ !== 'undefined' ? __('common.cancel') : 'Annuler' %></a>
-            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold">
-              <i class="fa-solid fa-floppy-disk me-2"></i> <%= typeof __ !== 'undefined' ? __('settings.save_changes') : 'Enregistrer les modifications' %>
-            </button>
+      <!-- 4. PRÉFÉRENCES DU FABLAB -->
+      <div class="card border mb-4">
+        <div class="card-header bg-body-tertiary">
+          <h2 class="h6 fw-bold mb-0">
+            <i class="fa-solid fa-sliders text-muted me-2" aria-hidden="true"></i>Préférences générales du Fablab
+          </h2>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label for="currency_symbol" class="form-label fw-semibold small">
+                <i class="fa-solid fa-coins me-1 text-muted" aria-hidden="true"></i> Symbole monétaire
+              </label>
+              <input type="text" class="form-control" id="currency_symbol" name="currency_symbol" value="<%= settings.currency_symbol %>" style="max-width: 140px;" required />
+              <div class="form-text small">Utilisé pour la facturation des consommables (ex : €, $, CHF).</div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label for="allow_self_registration" class="form-label fw-semibold small">
+                <i class="fa-solid fa-user-plus me-1 text-muted" aria-hidden="true"></i> Inscription en autonomie au kiosque
+              </label>
+              <select class="form-select" id="allow_self_registration" name="allow_self_registration">
+                <option value="true" <%= settings.allow_self_registration !== 'false' ? 'selected' : '' %>>Autorisée (Formulaire visible au kiosque)</option>
+                <option value="false" <%= settings.allow_self_registration === 'false' ? 'selected' : '' %>>Désactivée (Création uniquement par le staff)</option>
+              </select>
+              <div class="form-text small">Permet aux contributeurs de créer leur profil en arrivant.</div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label for="date_format" class="form-label fw-semibold small">
+                <i class="fa-solid fa-calendar-days me-1 text-muted" aria-hidden="true"></i> <%= typeof __ !== 'undefined' ? __('settings.field_date_format') : "Format d'affichage des dates" %>
+              </label>
+              <select class="form-select" id="date_format" name="date_format">
+                <option value="DD/MM/YYYY" <%= (!settings.date_format || settings.date_format === 'DD/MM/YYYY') ? 'selected' : '' %>>JJ/MM/AAAA (Standard français)</option>
+                <option value="YYYY-MM-DD" <%= (settings.date_format === 'YYYY-MM-DD') ? 'selected' : '' %>>AAAA-MM-JJ (Standard ISO)</option>
+                <option value="MM/DD/YYYY" <%= (settings.date_format === 'MM/DD/YYYY') ? 'selected' : '' %>>MM/JJ/AAAA (Format américain)</option>
+                <option value="DD.MM.YYYY" <%= (settings.date_format === 'DD.MM.YYYY') ? 'selected' : '' %>>JJ.MM.AAAA (Format suisse/allemand)</option>
+                <option value="D MMMM YYYY" <%= (settings.date_format === 'D MMMM YYYY') ? 'selected' : '' %>>Format long (13 septembre 2026)</option>
+              </select>
+              <div class="form-text small"><%= typeof __ !== 'undefined' ? __('settings.field_date_format_desc') : "Format utilisé dans l'historique, les fiches contributeurs et les exports." %></div>
+            </div>
           </div>
-        </form>
+        </div>
+      </div>
 
-        <!-- Hidden reset and import forms -->
-        <form id="resetLogoForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/reset-logo" method="post" style="display: none;"></form>
-        <form id="resetFaviconForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/reset-favicon" method="post" style="display: none;"></form>
-        <form id="importCsvForm" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/settings/i18n/import?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" style="display: none;">
-          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-          <input type="file" id="hiddenCsvFile" name="translations_file" accept=".csv" aria-label="Fichier CSV des traductions à importer">
-        </form>
+      <!-- 5. LANGUES & INTERNATIONALISATION -->
+      <div class="card border mb-4">
+        <div class="card-header bg-body-tertiary">
+          <h2 class="h6 fw-bold mb-0">
+            <i class="fa-solid fa-language text-muted me-2" aria-hidden="true"></i><%= typeof __ !== 'undefined' ? __('settings.section_i18n_title') : 'Langues & Traductions CSV' %>
+          </h2>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted small mb-3">
+            <%= typeof __ !== 'undefined' ? __('settings.i18n_desc') : "La plateforme supporte le multilingue. Vous pouvez exporter toutes les phrases au format CSV pour les traduire dans Excel ou Google Sheets, puis les réimporter." %>
+          </p>
 
-        <%- include('../includes/footer.html') %>
-    </main>
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="small fw-semibold text-muted"><i class="fa-solid fa-list-check me-1" aria-hidden="true"></i> Langues actuellement actives :</span>
+                <% if (typeof localesMeta !== 'undefined' && localesMeta) { %>
+                  <% localesMeta.forEach(function(l) { %>
+                    <span class="badge bg-body-secondary text-secondary-emphasis border d-inline-flex align-items-center gap-1">
+                      <span><%= l.flag %></span>
+                      <span class="fw-semibold"><%= l.name %></span>
+                      <span class="opacity-75 small">(<%= l.code.toUpperCase() %>)</span>
+                    </span>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label for="default_language" class="form-label fw-semibold small">
+                <i class="fa-solid fa-globe me-1 text-muted" aria-hidden="true"></i> <%= typeof __ !== 'undefined' ? __('settings.field_default_lang') : 'Langue par défaut du kiosque' %>
+              </label>
+              <select class="form-select" id="default_language" name="default_language">
+                <% if (typeof localesMeta !== 'undefined' && localesMeta && localesMeta.length > 0) { %>
+                  <% localesMeta.forEach(function(lang) { %>
+                    <option value="<%= lang.code %>" <%= (settings.default_language === lang.code || (!settings.default_language && lang.code === 'fr')) ? 'selected' : '' %>>
+                      <%= lang.flag %> <%= lang.name %> (<%= lang.code.toUpperCase() %>)
+                    </option>
+                  <% }); %>
+                <% } else { %>
+                  <option value="fr" <%= (!settings.default_language || settings.default_language === 'fr') ? 'selected' : '' %>>Français (Défaut)</option>
+                  <option value="en" <%= (settings.default_language === 'en') ? 'selected' : '' %>>English</option>
+                <% } %>
+              </select>
+              <div class="form-text small">Définit la langue initiale affichée aux contributeurs et sur les nouvelles sessions.</div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <span class="form-label fw-semibold small d-block"><i class="fa-solid fa-file-export me-1 text-muted" aria-hidden="true"></i> Export CSV :</span>
+              <a href="<%= _settingsBase %>admin/settings/i18n/export" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
+                <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+                <span><%= typeof __ !== 'undefined' ? __('settings.export_csv_btn') : 'Télécharger le tableur CSV (traductions actuelles)' %></span>
+              </a>
+              <div class="form-text small">Compatible Excel, LibreOffice et Google Sheets (UTF-8 BOM).</div>
+            </div>
+
+            <div class="col-12 pt-2 border-top">
+              <label for="translationsFileInput" class="form-label fw-semibold small d-block">
+                <i class="fa-solid fa-file-import me-1 text-muted" aria-hidden="true"></i> <%= typeof __ !== 'undefined' ? __('settings.import_csv_label') : 'Téléverser un fichier translations.csv :' %>
+              </label>
+              <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
+                <input class="form-control" type="file" id="translationsFileInput" accept=".csv" style="max-width: 400px;">
+                <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" id="importCsvBtn">
+                  <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                  <span><%= typeof __ !== 'undefined' ? __('settings.import_csv_btn') : 'Importer un tableur CSV' %></span>
+                </button>
+              </div>
+              <div class="form-text small">
+                <i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i> <%= typeof __ !== 'undefined' ? __('settings.import_csv_desc') : "Les nouvelles traductions seront appliquées immédiatement. Pour ajouter une langue, ajoutez une colonne au CSV (ex: ES, DE, IT)." %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. INTELLIGENCE ARTIFICIELLE & REQUÊTES EN LANGAGE NATUREL -->
+      <div class="card border mb-4">
+        <div class="card-header bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <h2 class="h6 fw-bold mb-0">
+            <i class="fa-solid fa-wand-magic-sparkles text-muted me-2" aria-hidden="true"></i><%= (typeof __ !== 'undefined' && __('settings.section_ai_title') !== 'settings.section_ai_title') ? __('settings.section_ai_title') : 'Intelligence Artificielle — Requêtes Statistiques (Text-to-SQL)' %>
+          </h2>
+          <div id="aiConnectionStatusBadge"></div>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted small mb-3">
+            <%= (typeof __ !== 'undefined' && __('settings.ai_desc') !== 'settings.ai_desc') ? __('settings.ai_desc') : "Permet aux administrateurs d'interroger la base de données en langage naturel depuis la page de statistiques. Seul le schéma de la base est transmis au modèle : aucune donnée personnelle n'est envoyée." %>
+          </p>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label for="ai_provider" class="form-label fw-semibold small">
+                <i class="fa-solid fa-microchip me-1 text-muted" aria-hidden="true"></i> Moteur d'IA actif
+              </label>
+              <select class="form-select" id="ai_provider" name="ai_provider">
+                <option value="none" <%= (!settings.ai_provider || settings.ai_provider === 'none') ? 'selected' : '' %>>Désactivé (Aucun moteur d'IA)</option>
+                <option value="openai" <%= settings.ai_provider === 'openai' ? 'selected' : '' %>>OpenAI (ChatGPT / GPT-4o / GPT-4o-mini)</option>
+                <option value="gemini" <%= settings.ai_provider === 'gemini' ? 'selected' : '' %>>Google Gemini (Gemini 1.5 Flash / Pro)</option>
+                <option value="anthropic" <%= settings.ai_provider === 'anthropic' ? 'selected' : '' %>>Anthropic Claude (Claude 3.5 Haiku / Sonnet)</option>
+                <option value="local" <%= settings.ai_provider === 'local' ? 'selected' : '' %>>LLM Local (Ollama / LM Studio / Compatible OpenAI)</option>
+              </select>
+              <div class="form-text small">Service d'IA utilisé pour traduire les questions en requêtes SQL sécurisées.</div>
+            </div>
+
+            <div class="col-12 col-md-6 d-flex align-items-center">
+              <div class="w-100 p-3 rounded bg-body-tertiary border d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                  <span class="fw-semibold small d-block"><i class="fa-solid fa-satellite-dish me-1 text-muted" aria-hidden="true"></i> Test de connectivité</span>
+                  <small class="text-muted" id="aiTestNotice">Vérifie la validité de la clé API ou de l'URL locale.</small>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnTestAiConnection">
+                  <i class="fa-solid fa-bolt me-1" aria-hidden="true"></i> Tester la connexion
+                </button>
+              </div>
+            </div>
+
+            <!-- Paramètres OpenAI -->
+            <div class="col-12 ai-provider-panel" id="panel_openai" style="display: none;">
+              <div class="p-3 border rounded bg-body-tertiary">
+                <h3 class="h6 fw-bold mb-3"><i class="fa-solid fa-brain text-muted me-1" aria-hidden="true"></i> Configuration OpenAI (ChatGPT)</h3>
+                <div class="row g-3">
+                  <div class="col-md-7">
+                    <label for="ai_openai_api_key" class="form-label small fw-semibold">Clé API OpenAI</label>
+                    <div class="input-group">
+                      <input type="password" class="form-control" id="ai_openai_api_key" name="ai_openai_api_key" value="" placeholder="<%= typeof hasOpenAiKey !== 'undefined' && hasOpenAiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-proj-...' %>" autocomplete="new-password">
+                      <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_openai_api_key" aria-label="Afficher ou masquer la clé OpenAI"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+                    </div>
+                    <small class="text-muted">Disponible sur <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-decoration-none">platform.openai.com</a>.</small>
+                  </div>
+                  <div class="col-md-5">
+                    <label for="ai_openai_model" class="form-label small fw-semibold">Modèle</label>
+                    <input type="text" class="form-control" id="ai_openai_model" name="ai_openai_model" value="<%= settings.ai_openai_model || 'gpt-4o-mini' %>" placeholder="gpt-4o-mini">
+                    <small class="text-muted">Par défaut : <code>gpt-4o-mini</code> (rapide et économique).</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paramètres Google Gemini -->
+            <div class="col-12 ai-provider-panel" id="panel_gemini" style="display: none;">
+              <div class="p-3 border rounded bg-body-tertiary">
+                <h3 class="h6 fw-bold mb-3"><i class="fa-solid fa-gem text-muted me-1" aria-hidden="true"></i> Configuration Google Gemini</h3>
+                <div class="row g-3">
+                  <div class="col-md-7">
+                    <label for="ai_gemini_api_key" class="form-label small fw-semibold">Clé API Google Gemini</label>
+                    <div class="input-group">
+                      <input type="password" class="form-control" id="ai_gemini_api_key" name="ai_gemini_api_key" value="" placeholder="<%= typeof hasGeminiKey !== 'undefined' && hasGeminiKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'AIzaSy...' %>" autocomplete="new-password">
+                      <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_gemini_api_key" aria-label="Afficher ou masquer la clé Gemini"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+                    </div>
+                    <small class="text-muted">Disponible sur <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-decoration-none">Google AI Studio</a>.</small>
+                  </div>
+                  <div class="col-md-5">
+                    <label for="ai_gemini_model" class="form-label small fw-semibold">Modèle</label>
+                    <input type="text" class="form-control" id="ai_gemini_model" name="ai_gemini_model" value="<%= settings.ai_gemini_model || 'gemini-1.5-flash' %>" placeholder="gemini-1.5-flash">
+                    <small class="text-muted">Par défaut : <code>gemini-1.5-flash</code> ou <code>gemini-2.0-flash</code>.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paramètres Anthropic Claude -->
+            <div class="col-12 ai-provider-panel" id="panel_anthropic" style="display: none;">
+              <div class="p-3 border rounded bg-body-tertiary">
+                <h3 class="h6 fw-bold mb-3"><i class="fa-solid fa-cube text-muted me-1" aria-hidden="true"></i> Configuration Anthropic Claude</h3>
+                <div class="row g-3">
+                  <div class="col-md-7">
+                    <label for="ai_anthropic_api_key" class="form-label small fw-semibold">Clé API Anthropic</label>
+                    <div class="input-group">
+                      <input type="password" class="form-control" id="ai_anthropic_api_key" name="ai_anthropic_api_key" value="" placeholder="<%= typeof hasAnthropicKey !== 'undefined' && hasAnthropicKey ? '•••••••••••• (déjà configurée — laisser vide pour conserver)' : 'sk-ant-api...' %>" autocomplete="new-password">
+                      <button class="btn btn-outline-secondary btn-toggle-password" type="button" data-target="ai_anthropic_api_key" aria-label="Afficher ou masquer la clé Anthropic"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+                    </div>
+                    <small class="text-muted">Disponible sur <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">console.anthropic.com</a>.</small>
+                  </div>
+                  <div class="col-md-5">
+                    <label for="ai_anthropic_model" class="form-label small fw-semibold">Modèle</label>
+                    <input type="text" class="form-control" id="ai_anthropic_model" name="ai_anthropic_model" value="<%= settings.ai_anthropic_model || 'claude-3-5-haiku-20241022' %>" placeholder="claude-3-5-haiku-20241022">
+                    <small class="text-muted">Ex : <code>claude-3-5-haiku-20241022</code> ou <code>claude-3-5-sonnet-20241022</code>.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paramètres LLM Local -->
+            <div class="col-12 ai-provider-panel" id="panel_local" style="display: none;">
+              <div class="p-3 border rounded bg-body-tertiary">
+                <h3 class="h6 fw-bold mb-3"><i class="fa-solid fa-server text-muted me-1" aria-hidden="true"></i> Configuration LLM Local (Ollama / LM Studio / vLLM)</h3>
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label for="ai_local_url" class="form-label small fw-semibold">URL de l'endpoint compatible OpenAI</label>
+                    <input type="text" class="form-control" id="ai_local_url" name="ai_local_url" value="<%= settings.ai_local_url || 'http://localhost:11434/v1' %>" placeholder="http://localhost:11434/v1">
+                    <small class="text-muted">Pour Ollama : <code>http://localhost:11434/v1</code>.</small>
+                  </div>
+                  <div class="col-md-4">
+                    <label for="ai_local_model" class="form-label small fw-semibold">Nom du modèle local</label>
+                    <input type="text" class="form-control" id="ai_local_model" name="ai_local_model" value="<%= settings.ai_local_model || 'llama3.2' %>" placeholder="llama3.2">
+                    <small class="text-muted">Ex : <code>llama3.2</code>, <code>mistral</code>, <code>qwen2.5-coder</code>.</small>
+                  </div>
+                  <div class="col-md-3">
+                    <label for="ai_local_api_key" class="form-label small fw-semibold">Clé / Jeton (optionnel)</label>
+                    <input type="password" class="form-control" id="ai_local_api_key" name="ai_local_api_key" value="" placeholder="<%= typeof hasLocalAiKey !== 'undefined' && hasLocalAiKey ? '•••••••••••• (conservée si vide)' : 'Facultatif' %>" autocomplete="new-password">
+                    <small class="text-muted">Si votre proxy local exige une authentification.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button Bar -->
+      <div class="d-flex justify-content-end align-items-center gap-2 mb-5">
+        <button type="submit" class="btn btn-primary btn-sm px-4 py-2 fw-semibold">
+          <i class="fa-solid fa-floppy-disk me-2" aria-hidden="true"></i> <%= typeof __ !== 'undefined' ? __('settings.save_changes') : 'Enregistrer les modifications' %>
+        </button>
+      </div>
+    </form>
+
+    <!-- Hidden reset and import forms -->
+    <form id="resetLogoForm" action="<%= _settingsBase %>admin/settings/reset-logo" method="post" style="display: none;">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+    </form>
+    <form id="resetFaviconForm" action="<%= _settingsBase %>admin/settings/reset-favicon" method="post" style="display: none;">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+    </form>
+    <form id="importCsvForm" action="<%= _settingsBase %>admin/settings/i18n/import?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="post" enctype="multipart/form-data" style="display: none;">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+      <input type="file" id="hiddenCsvFile" name="translations_file" accept=".csv" aria-label="Fichier CSV des traductions à importer">
+    </form>
+
+    <%- include('../includes/footer.html') %>
 
     <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
-      // Delegated form submission buttons (e.g. resetLogoForm, resetFaviconForm)
       document.querySelectorAll('[data-submit-form]').forEach(function (btn) {
         btn.addEventListener('click', function () {
           const formId = btn.getAttribute('data-submit-form');
@@ -719,7 +645,6 @@
         });
       });
 
-      // Live preview for Logo
       const logoInput = document.getElementById('logo');
       const logoContainer = document.getElementById('logoPreviewContainer');
       const radioCustom = document.getElementById('logoTypeCustom');
@@ -743,11 +668,10 @@
 
       radioDefault.addEventListener('change', function () {
         if (this.checked) {
-          logoContainer.innerHTML = '<div class="text-center"><span class="badge bg-secondary-subtle text-secondary-emphasis border mb-1">Sorbonne Université</span><p class="text-muted small mb-0">Logo officiel vectoriel actif</p></div>';
+          logoContainer.innerHTML = '<div class="text-center"><span class="badge bg-body-secondary text-secondary-emphasis border mb-1">Sorbonne Université</span><p class="text-muted small mb-0">Logo officiel vectoriel actif</p></div>';
         }
       });
 
-      // Live preview for Favicon
       const faviconInput = document.getElementById('favicon');
       const faviconPreviewImg = document.getElementById('faviconPreviewImg');
 
@@ -776,7 +700,6 @@
         }
       });
 
-      // Import CSV handler
       const fileInput = document.getElementById('translationsFileInput');
       const importBtn = document.getElementById('importCsvBtn');
       const hiddenForm = document.getElementById('importCsvForm');
@@ -808,32 +731,22 @@
         });
       }
 
-      // Live toggle for plugin switches in settings
       document.querySelectorAll('.plugin-toggle-switch').forEach(function (sw) {
         sw.addEventListener('change', function () {
           const pluginId = this.getAttribute('data-plugin-id');
-          const themeColor = this.getAttribute('data-theme-color');
           const card = document.getElementById('plugin_card_' + pluginId);
           const label = document.getElementById('plugin_label_' + pluginId);
-          const icon = document.getElementById('plugin_icon_' + pluginId);
 
           if (this.checked) {
             if (label) label.textContent = 'Activé';
             if (card) card.classList.remove('plugin-card-disabled');
-            if (icon) {
-              icon.className = 'icon-box bg-' + themeColor + '-subtle text-' + themeColor + ' mt-1';
-            }
           } else {
             if (label) label.textContent = 'Désactivé';
             if (card) card.classList.add('plugin-card-disabled');
-            if (icon) {
-              icon.className = 'icon-box bg-body-secondary text-secondary mt-1';
-            }
           }
         });
       });
 
-      // AI Provider switcher and test connection
       const aiProviderSelect = document.getElementById('ai_provider');
       const aiPanels = {
         openai: document.getElementById('panel_openai'),
@@ -856,7 +769,6 @@
         updateAiPanels();
       }
 
-      // Toggle password visibility for API keys
       document.querySelectorAll('.btn-toggle-password').forEach((btn) => {
         btn.addEventListener('click', function () {
           const targetId = this.getAttribute('data-target');
@@ -880,7 +792,6 @@
         });
       });
 
-      // AI Connection Test Button
       const btnTestAi = document.getElementById('btnTestAiConnection');
       const aiNotice = document.getElementById('aiTestNotice');
       const aiStatusBadge = document.getElementById('aiConnectionStatusBadge');
@@ -914,7 +825,6 @@
               ai_local_api_key: document.getElementById('ai_local_api_key')?.value || '',
             };
 
-            // URL adaptative selon le chemin de la page ou la base de l'app
             let testUrl = '/admin/settings/ai/test-connection';
             if (window.location && window.location.pathname) {
               const currentPath = window.location.pathname.replace(/\/+$/, '');
@@ -955,7 +865,7 @@
                 aiNotice.appendChild(span);
               }
               if (aiStatusBadge) {
-                aiStatusBadge.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa-solid fa-circle-check me-1"></i> En ligne</span>';
+                aiStatusBadge.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-circle-check me-1"></i> En ligne</span>';
               }
             } else {
               throw new Error(data.message || data.error?.message || 'Échec du test de connexion.');
@@ -972,7 +882,7 @@
               aiNotice.appendChild(span);
             }
             if (aiStatusBadge) {
-              aiStatusBadge.innerHTML = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill"><i class="fa-solid fa-circle-xmark me-1"></i> Erreur</span>';
+              aiStatusBadge.innerHTML = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fa-solid fa-circle-xmark me-1"></i> Erreur</span>';
             }
           } finally {
             btnTestAi.disabled = false;
@@ -981,7 +891,6 @@
         });
       }
 
-      // Generator and copy for Machine API Token
       const btnGenToken = document.getElementById('btnGenerateApiToken');
       const btnCopyToken = document.getElementById('btnCopyApiToken');
       const inputToken = document.getElementById('api_machine_token');

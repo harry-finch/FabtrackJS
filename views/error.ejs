@@ -13,35 +13,35 @@
             <div class="text-center mb-3">
                 <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="text-decoration-none">
                     <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
-                        <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
+                        <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
                     <% } else { %>
                         <img src="images/logo-fabtrack.svg" alt="FabtrackJS" width="60" height="46" class="app-auth-logo" />
                     <% } %>
                 </a>
             </div>
 
-            <div class="card border-0 shadow-lg rounded-4 bg-body overflow-hidden">
+            <div class="card border bg-body overflow-hidden">
                 <div class="card-body p-4 p-md-5 text-center">
                     <div class="mb-3">
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1.5 fw-semibold">
-                            <i class="fa-solid fa-triangle-exclamation me-1"></i> Erreur <%= error && error.status ? error.status : 500 %>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold">
+                            <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> Erreur <%= error && error.status ? error.status : 500 %>
                         </span>
                     </div>
 
-                    <h2 class="fw-bold mb-2 text-body">
+                    <h1 class="h4 fw-bold mb-2 text-body">
                         Une anomalie est survenue
-                    </h2>
+                    </h1>
                     <p class="text-secondary mb-4" style="font-size: 0.98rem; line-height: 1.5;">
                         <%= message || "Une erreur inattendue s'est produite lors du traitement de votre demande." %>
                     </p>
 
                     <% if (error && error.stack) { %>
                     <div class="text-start mb-4">
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#stackTrace" aria-expanded="false" aria-controls="stackTrace">
-                            <i class="fa-solid fa-code me-1"></i> Détails techniques (développeur)
+                        <button class="btn btn-sm btn-outline-secondary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#stackTrace" aria-expanded="false" aria-controls="stackTrace">
+                            <i class="fa-solid fa-code me-1" aria-hidden="true"></i> Détails techniques (développeur)
                         </button>
                         <div class="collapse" id="stackTrace">
-                            <div class="card card-body bg-dark text-light border-0 rounded-3 p-3 small overflow-auto" style="max-height: 250px; font-family: monospace;">
+                            <div class="card card-body bg-dark text-light border rounded-2 p-3 small overflow-auto" style="max-height: 250px; font-family: monospace;">
                                 <pre class="m-0 text-white"><%= error.stack %></pre>
                             </div>
                         </div>
@@ -49,20 +49,19 @@
                     <% } %>
 
                     <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 pt-2">
-                        <button type="button" data-action="history-back" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Page précédente
+                        <button type="button" data-action="history-back" class="btn btn-outline-secondary btn-sm px-3 py-2">
+                            <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> Page précédente
                         </button>
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2">
-                            <i class="fa-solid fa-desktop me-1"></i> Kiosque Fabtrack
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-primary btn-sm px-3 py-2">
+                            <i class="fa-solid fa-desktop me-1" aria-hidden="true"></i> Kiosque Fabtrack
                         </a>
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-sm fw-semibold">
-                            <i class="fa-solid fa-house me-1"></i> Accueil
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="btn btn-primary btn-sm px-4 py-2 fw-semibold">
+                            <i class="fa-solid fa-house me-1" aria-hidden="true"></i> Accueil
                         </a>
                     </div>
                 </div>
             </div>
 
             <%- include('includes/footer.html') %>
-        </main>
     </body>
 </html>

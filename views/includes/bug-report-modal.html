@@ -1,15 +1,15 @@
 <!-- Modal to report platform bug or improvement -->
 <div class="modal fade" id="modalReportBug" tabindex="-1" aria-labelledby="modalReportBugLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content">
             <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-bug" method="post" id="formReportBug">
-                <div class="modal-header border-0 pb-0">
+                <div class="modal-header">
                     <div class="d-flex align-items-center gap-2">
-                        <div class="bg-warning-subtle text-warning p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                            <i class="fa-solid fa-bug"></i>
-                        </div>
+                        <span class="fab-kpi-icon" aria-hidden="true">
+                            <i class="fa-solid fa-bug text-warning"></i>
+                        </span>
                         <div>
-                            <h5 class="modal-title fw-bold mb-0" id="modalReportBugLabel">
+                            <h5 class="modal-title mb-0" id="modalReportBugLabel">
                                 Signaler un bug ou une amélioration
                             </h5>
                             <small class="text-muted">Un e-mail détaillé sera automatiquement envoyé à l'administrateur</small>
@@ -18,7 +18,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
 
-                <div class="modal-body pt-3">
+                <div class="modal-body">
                     <input type="hidden" name="pageUrl" id="bugReportPageUrl" value="">
 
                     <div class="row g-3 mb-3">
@@ -95,10 +95,10 @@
                     </div>
                 </div>
 
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-semibold" id="btnSubmitBug">
-                        <i class="fa-solid fa-paper-plane me-1"></i> Envoyer à l'administrateur
+                <div class="modal-footer bg-body-tertiary">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning btn-sm fw-semibold" id="btnSubmitBug">
+                        <i class="fa-solid fa-paper-plane me-1" aria-hidden="true"></i> Envoyer à l'administrateur
                     </button>
                 </div>
             </form>

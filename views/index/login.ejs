@@ -5,36 +5,39 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="" />
         <meta name="author" content="Stéphane Muller" />
-        <title><%= __('auth.signin_title') %> • <%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %></title>
+        <title><%= __('auth.signin_title') %> • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
 
-    <body class="d-flex justify-content-center bg-body-tertiary py-4">
+    <body class="d-flex justify-content-center align-items-center min-vh-100 bg-body-tertiary py-4">
         <%- include('../includes/light-dark.html') %>
         <main class="form-signin w-100 m-auto">
-            <form action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/auth" method="post">
-                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
-                    <img class="mb-2 app-auth-logo" src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" />
-                <% } else { %>
-                    <img class="mb-2 app-auth-logo" src="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>images/logo-fabtrack.svg" alt="<%= typeof platformName !== 'undefined' ? platformName : 'FabtrackJS' %>" width="75" height="58" />
-                <% } %>
-                <h1 class="h3 fw-normal mb-3"><%= __('auth.signin_title') %></h1>
+            <div class="fab-auth-card">
+                <form action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/auth" method="post">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <div class="text-center mb-3">
+                        <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
+                            <img class="mb-2 app-auth-logo" src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %>" />
+                        <% } else { %>
+                            <img class="mb-2 app-auth-logo" src="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>images/logo-fabtrack.svg" alt="<%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %>" width="75" height="58" />
+                        <% } %>
+                        <h1 class="h4 fw-bold mb-0"><%= __('auth.signin_title') %></h1>
+                    </div>
 
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="username" name="username" placeholder="<%= __('auth.username') %>" required />
-                    <label for="username"><%= __('auth.username') %></label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="<%= __('auth.password') %>" required />
-                    <label for="password"><%= __('auth.password') %></label>
-                </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="<%= __('auth.username') %>" required />
+                        <label for="username"><%= __('auth.username') %></label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="<%= __('auth.password') %>" required />
+                        <label for="password"><%= __('auth.password') %></label>
+                    </div>
 
-                <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.signin_btn') %></button>
-                <p class="mt-2 text-center"><small><% if (typeof allowSelfRegistration === 'undefined' || allowSelfRegistration !== false) { %><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/register"><%= __('auth.create_account') %></a> | <% } %><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/forgot"><%= __('auth.forgot_password') %></a></small></p>
-
-            </form>
+                    <button class="btn btn-primary w-100 py-2" type="submit"><%= __('auth.signin_btn') %></button>
+                    <p class="mt-3 mb-0 text-center"><small><% if (typeof allowSelfRegistration === 'undefined' || allowSelfRegistration !== false) { %><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/register"><%= __('auth.create_account') %></a> | <% } %><a href="<%= typeof basePath !== 'undefined' ? basePath : '' %>/forgot"><%= __('auth.forgot_password') %></a></small></p>
+                </form>
+            </div>
 
             <%- include('../includes/footer.html') %>
     </body>

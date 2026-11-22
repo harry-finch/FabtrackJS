@@ -1,22 +1,22 @@
 <!-- Universal Inventory Checkout / Write-off Modal -->
 <div class="modal fade" id="modalInventoryCheckout" tabindex="-1" aria-labelledby="modalInventoryCheckoutLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg rounded-4">
+    <div class="modal-content">
       <form id="formInventoryCheckout" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/inventory/checkout" method="POST">
-        <div class="modal-header border-0 bg-body-secondary py-3 px-4 rounded-top-4">
-          <div class="d-flex align-items-center gap-3">
-            <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px; font-size: 1.15rem;">
-              <i class="fa-solid fa-dolly"></i>
-            </div>
+        <div class="modal-header">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fab-kpi-icon" aria-hidden="true">
+              <i class="fa-solid fa-dolly text-warning"></i>
+            </span>
             <div>
-              <h5 class="modal-title fw-bold mb-0" id="modalInventoryCheckoutLabel">Sortie d'inventaire</h5>
+              <h5 class="modal-title mb-0" id="modalInventoryCheckoutLabel">Sortie d'inventaire</h5>
               <small class="text-muted">Déclarer une casse, mise au rebut, panne ou sortie de stock</small>
             </div>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
 
-        <div class="modal-body p-4">
+        <div class="modal-body">
           <!-- Alert feedback container -->
           <div id="checkoutAlertContainer"></div>
 
@@ -24,7 +24,7 @@
           <% if (typeof role !== 'undefined' && role === 'admin') { %>
           <div class="mb-4">
             <label class="form-label small fw-bold text-uppercase text-muted mb-2">Type d'article à sortir</label>
-            <div class="btn-group w-100 shadow-sm rounded-3" role="group" id="checkoutTypeGroup">
+            <div class="btn-group w-100" role="group" id="checkoutTypeGroup">
               <input type="radio" class="btn-check" name="itemType" id="typeConsumable" value="CONSUMABLE" checked autocomplete="off">
               <label class="btn btn-outline-primary py-2 fw-semibold d-flex align-items-center justify-content-center gap-2" for="typeConsumable">
                 <i class="fa-solid fa-boxes-stacked"></i> Consommable (Matière / Stock)
@@ -146,14 +146,14 @@
           </div>
         </div>
 
-        <div class="modal-footer border-0 bg-body-secondary py-3 px-4 rounded-bottom-4 d-flex justify-content-between">
+        <div class="modal-footer bg-body-tertiary d-flex justify-content-between">
           <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/inventory/movements" class="btn btn-link text-decoration-none text-muted small p-0">
-            <i class="fa-solid fa-clock-rotate-left me-1"></i> Voir l'historique des sorties
+            <i class="fa-solid fa-clock-rotate-left me-1" aria-hidden="true"></i> Voir l'historique des sorties
           </a>
           <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
-            <button type="submit" class="btn btn-warning rounded-pill px-4 shadow-sm fw-semibold" id="btnSubmitCheckout">
-              <i class="fa-solid fa-check me-1"></i> Valider la sortie
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-warning btn-sm fw-semibold" id="btnSubmitCheckout">
+              <i class="fa-solid fa-check me-1" aria-hidden="true"></i> Valider la sortie
             </button>
           </div>
         </div>

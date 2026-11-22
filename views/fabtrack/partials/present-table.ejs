@@ -1,10 +1,10 @@
-<div class="card border-0 shadow-sm mt-5 mb-4" id="kioskPresentCard">
+<div class="card border mt-4 mb-4" id="kioskPresentCard">
     <div class="card-header bg-transparent border-bottom py-2 px-3 d-flex align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2">
-            <span class="icon-box <%= (history && history.length > 0) ? 'bg-success-subtle text-success' : 'bg-body-secondary text-secondary' %>" style="width: 34px; height: 34px; font-size: 0.95rem;">
-                <i class="fa-solid fa-users" aria-hidden="true"></i>
+            <span class="fab-kpi-icon <%= (history && history.length > 0) ? 'text-success' : 'text-secondary' %>" style="width: 32px; height: 32px; font-size: 0.9rem;" aria-hidden="true">
+                <i class="fa-solid fa-users"></i>
             </span>
-            <h5 class="fw-bold mb-0 tabular-nums fs-6"><%= history ? history.length : 0 %> <%= __('kiosk.users_present') %></h5>
+            <h2 class="fw-bold mb-0 tabular-nums fs-6"><%= history ? history.length : 0 %> <%= __('kiosk.users_present') %></h2>
         </div>
     </div>
 
@@ -49,17 +49,17 @@
                                 </a>
                             <% } %>
                             <% if (entry.user.isExpert) { %>
-                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="<%= __('kiosk.expert_badge') %>">
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1" data-bs-toggle="tooltip" title="<%= __('kiosk.expert_badge') %>">
                                     <i class="fa-solid fa-star fa-2xs" aria-hidden="true"></i> <%= __('kiosk.expert_badge') %>
                                 </span>
                             <% } %>
                             <% if (entry.repairObject) { %>
-                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Objet en réparation : <%= entry.repairObject %>">
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1" data-bs-toggle="tooltip" title="Objet en réparation : <%= entry.repairObject %>">
                                     <i class="fa-solid fa-wrench fa-2xs" aria-hidden="true"></i> <%= entry.repairObject %>
                                 </span>
                             <% } %>
                             <% if (entry.workshop) { %>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Atelier : <%= entry.workshop.name %>">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" data-bs-toggle="tooltip" title="Atelier : <%= entry.workshop.name %>">
                                     <i class="fa-solid fa-graduation-cap fa-2xs" aria-hidden="true"></i> <%= entry.workshop.name %>
                                 </span>
                             <% } %>
@@ -71,11 +71,11 @@
                                     }).join(', ');
                                 %>
                                 <% if (entry.hasOverdueLoans) { %>
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Emprunt EN RETARD : <%= loanDetails %>">
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" data-bs-toggle="tooltip" title="Emprunt EN RETARD : <%= loanDetails %>">
                                         <i class="fa-solid fa-toolbox fa-2xs" aria-hidden="true"></i> <i class="fa-solid fa-clock-rotate-left fa-2xs" aria-hidden="true"></i> <%= entry.activeLoans.length %> emprunt(s)
                                     </span>
                                 <% } else { %>
-                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle ms-1 rounded-pill" data-bs-toggle="tooltip" title="Matériel emprunté : <%= loanDetails %>">
+                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle ms-1" data-bs-toggle="tooltip" title="Matériel emprunté : <%= loanDetails %>">
                                         <i class="fa-solid fa-toolbox fa-2xs" aria-hidden="true"></i> <%= entry.activeLoans.length %> emprunt(s)
                                     </span>
                                 <% } %>
@@ -165,7 +165,7 @@
                                             data-bs-user="<%= entry.user.name %> <%= entry.user.surname %>"
                                             data-bs-userid="<%= entry.user.id %>"
                                             data-bs-historyid="<%= entry.id %>"
-                                            class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1"
+                                            class="btn btn-sm btn-outline-primary"
                                             title="<%= __('kiosk.btn_activity') %>">
                                     <i class="fa-solid fa-plus me-1" aria-hidden="true"></i><%= __('kiosk.btn_activity') %>
                                 </a>
@@ -174,7 +174,7 @@
                         <td class="text-end pe-3">
                             <% if (typeof isPluginRepairCafeEnabled !== 'undefined' && isPluginRepairCafeEnabled && entry.repairObject) { %>
                                 <button type="button"
-                                        class="btn btn-sm btn-outline-warning rounded-pill px-2 py-1 btn-repair-exit"
+                                        class="btn btn-sm btn-outline-warning btn-repair-exit"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalRepairCheckout"
                                         data-bs-historyid="<%= entry.id %>"
@@ -186,7 +186,7 @@
                             <% } else { %>
                                 <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/exit/<%= entry.id %>" class="d-inline" data-ajax-kiosk="true">
                                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="<%= __('kiosk.btn_exit') %>">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="<%= __('kiosk.btn_exit') %>">
                                         <i class="fa-solid fa-person-walking-arrow-right me-1" aria-hidden="true"></i><%= __('kiosk.btn_exit') %>
                                     </button>
                                 </form>

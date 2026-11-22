@@ -6,23 +6,13 @@
         <title>404 - Page introuvable • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
         <%- include('includes/pagehead.html') %>
         <style>
-            .error-card {
-                border-radius: 1.25rem;
-                overflow: hidden;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
             .gif-container {
                 position: relative;
                 max-width: 440px;
                 margin: 0 auto;
-                border-radius: 1rem;
+                border-radius: 6px;
                 overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-                border: 1px solid rgba(0, 0, 0, 0.08);
-            }
-            [data-bs-theme="dark"] .gif-container {
-                border-color: rgba(255, 255, 255, 0.12);
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+                border: 1px solid var(--fab-border);
             }
             .gif-container img {
                 display: block;
@@ -45,7 +35,7 @@
             <div class="text-center mb-3">
                 <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="text-decoration-none">
                     <% if (typeof platformLogoType !== 'undefined' && platformLogoType === 'custom' && platformLogoPath) { %>
-                        <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' ? platformName : 'Fabtrack' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
+                        <img src="<%= platformLogoPath %>" alt="<%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %>" style="max-height: 48px; max-width: 180px; object-fit: contain;" />
                     <% } else { %>
                         <img src="images/logo-fabtrack.svg" alt="FabtrackJS" width="60" height="46" class="app-auth-logo" />
                     <% } %>
@@ -53,13 +43,13 @@
             </div>
 
             <!-- 404 Hero Card -->
-            <div class="card border-0 shadow-lg error-card bg-body">
+            <div class="card border bg-body overflow-hidden">
                 <div class="card-body p-4 p-md-5 text-center">
                     
-                    <!-- Top Pill -->
+                    <!-- Status Badge -->
                     <div class="mb-3">
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1.5 fw-semibold">
-                            <i class="fa-solid fa-triangle-exclamation me-1"></i> Erreur 404 • Page introuvable
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold">
+                            <i class="fa-solid fa-triangle-exclamation me-1" aria-hidden="true"></i> Erreur 404 • Page introuvable
                         </span>
                     </div>
 
@@ -69,49 +59,49 @@
                     </div>
 
                     <!-- Title & Explanation -->
-                    <h2 class="fw-bold mb-2 text-body">
+                    <h1 class="h4 fw-bold mb-2 text-body">
                         Oups ! Cette page s'est égarée...
-                    </h2>
+                    </h1>
                     <p class="text-secondary mb-3" style="font-size: 0.98rem; line-height: 1.5;">
                         La page que vous recherchez n'existe pas, a été déplacée ou son lien est incorrect.
                     </p>
 
                     <% if (typeof requestedPath !== 'undefined' && requestedPath) { %>
                     <div class="mb-4">
-                        <span class="path-badge bg-body-secondary text-secondary px-2.5 py-1 rounded-pill border">
-                            <i class="fa-solid fa-link me-1 text-muted"></i> <%= requestedPath %>
+                        <span class="path-badge bg-body-secondary text-secondary-emphasis px-2 py-1 rounded-2 border">
+                            <i class="fa-solid fa-link me-1 text-muted" aria-hidden="true"></i> <%= requestedPath %>
                         </span>
                     </div>
                     <% } %>
 
                     <!-- Action Navigation Buttons -->
                     <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 pt-2">
-                        <button type="button" data-action="history-back" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Page précédente
+                        <button type="button" data-action="history-back" class="btn btn-outline-secondary btn-sm px-3 py-2">
+                            <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> Page précédente
                         </button>
 
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2">
-                            <i class="fa-solid fa-desktop me-1"></i> Kiosque Fabtrack
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-primary btn-sm px-3 py-2">
+                            <i class="fa-solid fa-desktop me-1" aria-hidden="true"></i> Kiosque Fabtrack
                         </a>
 
                         <% if (typeof role !== 'undefined' && role === 'admin') { %>
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
-                            <i class="fa-solid fa-screwdriver-wrench me-1"></i> Panneau admin
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm px-3 py-2">
+                            <i class="fa-solid fa-screwdriver-wrench me-1" aria-hidden="true"></i> Panneau admin
                         </a>
                         <% } %>
 
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-sm fw-semibold">
-                            <i class="fa-solid fa-house me-1"></i> Accueil
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>" class="btn btn-primary btn-sm px-4 py-2 fw-semibold">
+                            <i class="fa-solid fa-house me-1" aria-hidden="true"></i> Accueil
                         </a>
                     </div>
                 </div>
 
                 <!-- Card Footer Help Note -->
-                <div class="card-footer bg-body-tertiary border-0 py-3 text-center">
+                <div class="card-footer bg-body-tertiary border-top py-3 text-center">
                     <small class="text-muted">
                         Un problème avec un équipement ou une machine ? 
                         <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>report-issue" class="text-decoration-none text-primary fw-semibold ms-1">
-                            <i class="fa-solid fa-wrench me-1"></i>Signaler un incident
+                            <i class="fa-solid fa-wrench me-1" aria-hidden="true"></i>Signaler un incident
                         </a>
                     </small>
                 </div>
@@ -119,6 +109,5 @@
 
             <!-- Page Footer -->
             <%- include('includes/footer.html') %>
-        </main>
     </body>
 </html>

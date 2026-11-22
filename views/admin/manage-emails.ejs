@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Configuration des E-mails & Alertes - <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
+        <title>Configuration des E-mails &amp; Alertes • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
         <%- include('../includes/pagehead.html') %>
     </head>
     <body class="d-flex justify-content-center bg-body-tertiary py-4">
@@ -13,66 +13,51 @@
             <%- include('../includes/header.html') %>
 
             <!-- Page Header -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                            <i class="fa-solid fa-envelope"></i>
-                        </div>
-                        <div>
-                            <h4 class="fw-bold mb-1">Configuration des E-mails & Alertes</h4>
-                            <p class="text-muted small mb-0">Gestion du serveur d'envoi SMTP et des notifications automatiques de la plateforme</p>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
-                        </a>
-                    </div>
+            <div class="fab-page-header">
+                <div>
+                    <h1 class="fab-page-title">Configuration des E-mails &amp; Alertes</h1>
+                    <p class="fab-page-subtitle">Gestion du serveur d'envoi SMTP et des notifications automatiques de la plateforme</p>
                 </div>
             </div>
 
             <!-- Notification banner -->
-            <% if (typeof notification !== 'undefined' && notification) { 
+            <% if (typeof notification !== 'undefined' && notification) {
                 const isError = notification.toLowerCase().includes('error');
                 const isSuccess = notification.toLowerCase().includes('success');
             %>
-            <div class="alert <%= isError ? 'alert-danger' : isSuccess ? 'alert-success' : 'alert-info' %> alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            <div class="alert <%= isError ? 'alert-danger' : isSuccess ? 'alert-success' : 'alert-info' %> alert-dismissible fade show border mb-4" role="alert">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="fa-solid <%= isError ? 'fa-triangle-exclamation' : isSuccess ? 'fa-circle-check' : 'fa-circle-info' %>"></i>
+                    <i class="fa-solid <%= isError ? 'fa-triangle-exclamation' : isSuccess ? 'fa-circle-check' : 'fa-circle-info' %>" aria-hidden="true"></i>
                     <div><%= notification.replace(/^(Success:|Error:|Warning:)\s*/i, '') %></div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
             </div>
             <% } %>
 
             <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/emails/settings" method="POST">
-                <!-- ROW 1: Automated Alerts (Core Request) -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
-                                    <i class="fa-solid fa-bell me-1"></i> Notifications Système
-                                </span>
-                                <h5 class="fw-bold mb-0">Alertes & E-mails automatiques</h5>
-                            </div>
-                        </div>
-                        <p class="text-muted small mt-1 mb-0">Activez ou désactivez les courriels déclenchés automatiquement par les événements du Fablab</p>
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+                <!-- ROW 1: Automated Alerts -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-body-tertiary">
+                        <h2 class="h6 fw-bold mb-0">
+                            <i class="fa-solid fa-bell text-muted me-2" aria-hidden="true"></i>Alertes &amp; E-mails automatiques
+                        </h2>
+                        <div class="text-muted small fw-normal">Activez ou désactivez les courriels déclenchés automatiquement par les événements du Fablab</div>
                     </div>
-                    <div class="card-body px-4 pb-4">
+                    <div class="card-body p-4">
                         <div class="row g-3">
                             <!-- Alert 1: Consumable Low Stock -->
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                <div class="card h-100 border p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="fab-kpi-icon" aria-hidden="true">
                                                 <i class="fa-solid fa-boxes-stacked"></i>
-                                            </div>
+                                            </span>
                                             <div>
                                                 <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchLowStock">Alerte Stock Bas</label></h6>
-                                                <small class="text-muted">Consommables & matières</small>
+                                                <small class="text-muted">Consommables &amp; matières</small>
                                             </div>
                                         </div>
                                         <div class="form-check form-switch fs-5 mb-0">
@@ -83,9 +68,9 @@
                                         Envoie un e-mail à l'administrateur dès qu'un consommable franchit à la baisse son seuil d'alerte de réapprovisionnement (en débit ou modification manuelle).
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Destinataire : Admin</span>
                                         <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewStock">
-                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                            <i class="fa-solid fa-eye me-1" aria-hidden="true"></i> Aperçu du modèle
                                         </button>
                                     </div>
                                 </div>
@@ -93,15 +78,15 @@
 
                             <!-- Alert 2: User Warning Added -->
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                <div class="card h-100 border p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="fab-kpi-icon" aria-hidden="true">
                                                 <i class="fa-solid fa-triangle-exclamation"></i>
-                                            </div>
+                                            </span>
                                             <div>
                                                 <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchWarning">Alerte Nouvel Avertissement</label></h6>
-                                                <small class="text-muted">Sécurité & contributeurs</small>
+                                                <small class="text-muted">Sécurité &amp; contributeurs</small>
                                             </div>
                                         </div>
                                         <div class="form-check form-switch fs-5 mb-0">
@@ -109,12 +94,12 @@
                                         </div>
                                     </div>
                                     <p class="small text-secondary mb-3 flex-grow-1">
-                                        Envoie un e-mail à l'administrateur dès qu'un avertissement (warning) est attribué à un contributeur, avec le motif, le commentaire et le nom du médiateur.
+                                        Envoie un e-mail à l'administrateur dès qu'un avertissement est attribué à un contributeur, avec le motif, le commentaire et le nom du médiateur.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Destinataire : Admin</span>
                                         <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewWarning">
-                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                            <i class="fa-solid fa-eye me-1" aria-hidden="true"></i> Aperçu du modèle
                                         </button>
                                     </div>
                                 </div>
@@ -122,12 +107,12 @@
 
                             <!-- Alert 3: Staff Account Registration -->
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                <div class="card h-100 border p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-info-subtle text-info-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="fab-kpi-icon" aria-hidden="true">
                                                 <i class="fa-solid fa-users-gear"></i>
-                                            </div>
+                                            </span>
                                             <div>
                                                 <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchStaff">Nouveau Compte Staff</label></h6>
                                                 <small class="text-muted">Validation d'accès</small>
@@ -141,7 +126,7 @@
                                         Avertit l'administrateur lorsqu'un nouvel animateur ou membre du personnel crée son compte et nécessite une activation manuelle de ses droits.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Destinataire : Admin</span>
                                         <span class="small text-muted">Intégré à l'inscription staff</span>
                                     </div>
                                 </div>
@@ -149,15 +134,15 @@
 
                             <!-- Alert 4: Staff Account Approved -->
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                <div class="card h-100 border p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="fab-kpi-icon" aria-hidden="true">
                                                 <i class="fa-solid fa-user-check"></i>
-                                            </div>
+                                            </span>
                                             <div>
                                                 <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchStaffApproved">Validation de Compte Staff</label></h6>
-                                                <small class="text-muted">Activation & accès</small>
+                                                <small class="text-muted">Activation &amp; accès</small>
                                             </div>
                                         </div>
                                         <div class="form-check form-switch fs-5 mb-0">
@@ -168,9 +153,9 @@
                                         Envoie automatiquement un e-mail au membre du personnel dès que son compte est approuvé par un administrateur pour l'informer qu'il peut se connecter.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Membre staff</span>
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Destinataire : Membre staff</span>
                                         <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewStaffApproved">
-                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                            <i class="fa-solid fa-eye me-1" aria-hidden="true"></i> Aperçu du modèle
                                         </button>
                                     </div>
                                 </div>
@@ -178,15 +163,15 @@
 
                             <!-- Alert 5: User Terms Agreement -->
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                <div class="card h-100 border p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="fab-kpi-icon" aria-hidden="true">
                                                 <i class="fa-solid fa-file-signature"></i>
-                                            </div>
+                                            </span>
                                             <div>
-                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchAgreement">Charte & Inscription Contributeur</label></h6>
-                                                <small class="text-muted">Accord CGU & accès</small>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchAgreement">Charte &amp; Inscription Contributeur</label></h6>
+                                                <small class="text-muted">Accord CGU &amp; accès</small>
                                             </div>
                                         </div>
                                         <div class="form-check form-switch fs-5 mb-0">
@@ -197,30 +182,30 @@
                                         Envoie le lien d'acceptation du règlement et de la charte de sécurité lors de la création initiale d'un profil contributeur.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Contributeur</span>
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Destinataire : Contributeur</span>
                                         <div class="d-flex align-items-center gap-2">
                                             <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-action="scroll-agreement-template">
-                                                <i class="fa-solid fa-pen me-1"></i> Modifier
+                                                <i class="fa-solid fa-pen me-1" aria-hidden="true"></i> Modifier
                                             </button>
                                             <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement">
-                                                <i class="fa-solid fa-eye me-1"></i> Aperçu
+                                                <i class="fa-solid fa-eye me-1" aria-hidden="true"></i> Aperçu
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Alert 5: Machine Issue / Failure Reported -->
+                            <!-- Alert 6: Machine Issue / Failure Reported -->
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                <div class="card h-100 border p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="fab-kpi-icon" aria-hidden="true">
                                                 <i class="fa-solid fa-wrench"></i>
-                                            </div>
+                                            </span>
                                             <div>
-                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchMachineIssue">Panne & Incident Machine</label></h6>
-                                                <small class="text-muted">Parc machines & maintenance</small>
+                                                <h6 class="fw-bold mb-0"><label class="form-check-label" for="switchMachineIssue">Panne &amp; Incident Machine</label></h6>
+                                                <small class="text-muted">Parc machines &amp; maintenance</small>
                                             </div>
                                         </div>
                                         <div class="form-check form-switch fs-5 mb-0">
@@ -228,30 +213,30 @@
                                         </div>
                                     </div>
                                     <p class="small text-secondary mb-3 flex-grow-1">
-                                        Alerte immédiatement l'administrateur lorsqu'un problème ou une panne est signalé(e) sur une machine (via la page publique ou le QR code de la machine), avec la photo éventuelle et les détails du problème.
+                                        Alerte immédiatement l'administrateur lorsqu'un problème ou une panne est signalé(e) sur une machine (via la page publique ou le QR code), avec la photo éventuelle et les détails.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Destinataire : Admin</span>
                                         <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPreviewMachineIssue">
-                                            <i class="fa-solid fa-eye me-1"></i> Aperçu du modèle
+                                            <i class="fa-solid fa-eye me-1" aria-hidden="true"></i> Aperçu du modèle
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Alert 6: Bug Report / Platform Suggestion -->
+                            <!-- Alert 7: Bug Report / Platform Suggestion -->
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 border rounded-3 p-3 bg-body-tertiary">
+                                <div class="card h-100 border p-3 bg-body-tertiary">
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="fab-kpi-icon" aria-hidden="true">
                                                 <i class="fa-solid fa-bug"></i>
-                                            </div>
+                                            </span>
                                             <div>
                                                 <h6 class="fw-bold mb-0">
                                                     <label class="form-check-label" for="switchBugReport">Signalement de bug / suggestion (Plateforme)</label>
                                                 </h6>
-                                                <small class="text-muted">Retours utilisateurs & support</small>
+                                                <small class="text-muted">Retours utilisateurs &amp; support</small>
                                             </div>
                                         </div>
                                         <div class="form-check form-switch fs-5 mb-0">
@@ -262,7 +247,7 @@
                                         Envoie un e-mail aux administrateurs lorsqu'un utilisateur soumet un signalement de bug ou une suggestion d'amélioration depuis la plateforme.
                                     </p>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                                        <span class="badge bg-body-secondary text-body-secondary border rounded-pill">Destinataire : Admin</span>
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Destinataire : Admin</span>
                                         <span class="small text-muted">Formulaire de signalement</span>
                                     </div>
                                 </div>
@@ -272,27 +257,23 @@
                 </div>
 
                 <!-- ROW: User Charter Email Template Customization -->
-                <div class="card border-0 shadow-sm mb-4" id="agreementTemplateCard">
-                    <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
-                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
-                                    <i class="fa-solid fa-file-signature me-1"></i> Modèle d'e-mail
-                                </span>
-                                <h5 class="fw-bold mb-0">E-mail de création de contributeur & Signature de la Charte</h5>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement" data-action="update-live-preview">
-                                <i class="fa-solid fa-eye me-1"></i> Aperçu du rendu
-                            </button>
+                <div class="card border mb-4" id="agreementTemplateCard">
+                    <div class="card-header bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <h2 class="h6 fw-bold mb-0">
+                                <i class="fa-solid fa-file-signature text-muted me-2" aria-hidden="true"></i>E-mail de création de contributeur &amp; Signature de la Charte
+                            </h2>
+                            <div class="text-muted small fw-normal">Personnalisez l'objet, le texte et le bouton du message envoyé aux contributeurs pour valider la charte</div>
                         </div>
-                        <p class="text-muted small mt-1 mb-0">Personnalisez l'objet, le texte et le bouton du message envoyé aux contributeurs créés pour valider la charte d'utilisation du lab</p>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalPreviewAgreement" data-action="update-live-preview">
+                            <i class="fa-solid fa-eye me-1" aria-hidden="true"></i> Aperçu du rendu
+                        </button>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
-                            <!-- Subject -->
                             <div class="col-12 col-md-6">
                                 <label for="mail_user_agreement_subject" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-heading me-1 text-primary"></i> Objet de l'e-mail
+                                    <i class="fa-solid fa-heading me-1 text-muted" aria-hidden="true"></i> Objet de l'e-mail
                                 </label>
                                 <input
                                     type="text"
@@ -306,10 +287,9 @@
                                 <div class="form-text small text-muted">Sujet visible dans la boîte de réception du contributeur.</div>
                             </div>
 
-                            <!-- Title in Header -->
                             <div class="col-12 col-md-6">
                                 <label for="mail_user_agreement_title" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-font me-1 text-primary"></i> Titre principal dans l'e-mail
+                                    <i class="fa-solid fa-font me-1 text-muted" aria-hidden="true"></i> Titre principal dans l'e-mail
                                 </label>
                                 <input
                                     type="text"
@@ -322,19 +302,18 @@
                                 <div class="form-text small text-muted">Titre affiché au-dessus du message dans le corps de l'e-mail.</div>
                             </div>
 
-                            <!-- Body Text -->
                             <div class="col-12">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
                                     <label for="mail_user_agreement_body" class="form-label fw-semibold small mb-0">
-                                        <i class="fa-solid fa-paragraph me-1 text-primary"></i> Corps du message
+                                        <i class="fa-solid fa-paragraph me-1 text-muted" aria-hidden="true"></i> Corps du message
                                     </label>
                                     <div class="d-flex align-items-center gap-1 flex-wrap">
                                         <small class="text-muted me-1">Insérer une variable :</small>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{name}" title="Prénom du contributeur">{name}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{surname}" title="Nom du contributeur">{surname}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{fullname}" title="Prénom et nom">{fullname}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{email}" title="Email du contributeur">{email}</button>
-                                        <button type="button" class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill btn p-1 px-2 var-tag" data-insert-var="{lab_name}" title="Nom du Fablab">{lab_name}</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 var-tag" data-insert-var="{name}" title="Prénom du contributeur">{name}</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 var-tag" data-insert-var="{surname}" title="Nom du contributeur">{surname}</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 var-tag" data-insert-var="{fullname}" title="Prénom et nom">{fullname}</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 var-tag" data-insert-var="{email}" title="Email du contributeur">{email}</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 var-tag" data-insert-var="{lab_name}" title="Nom du Fablab">{lab_name}</button>
                                     </div>
                                 </div>
                                 <textarea
@@ -349,10 +328,9 @@
                                 </div>
                             </div>
 
-                            <!-- CTA Button Text -->
                             <div class="col-12 col-md-6">
                                 <label for="mail_user_agreement_cta_text" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-square-check me-1 text-primary"></i> Texte du bouton d'action (Call to Action)
+                                    <i class="fa-solid fa-square-check me-1 text-muted" aria-hidden="true"></i> Texte du bouton d'action
                                 </label>
                                 <input
                                     type="text"
@@ -365,10 +343,9 @@
                                 <div class="form-text small text-muted">Intitulé du bouton principal dirigeant vers la validation de la charte.</div>
                             </div>
 
-                            <!-- Optional Notice / Warning Banner -->
                             <div class="col-12 col-md-6">
                                 <label for="mail_user_agreement_notice" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-circle-info me-1 text-primary"></i> Encadré d'information ou avertissement (optionnel)
+                                    <i class="fa-solid fa-circle-info me-1 text-muted" aria-hidden="true"></i> Encadré d'information ou avertissement (optionnel)
                                 </label>
                                 <input
                                     type="text"
@@ -383,18 +360,15 @@
 
                             <!-- SUB-SECTION: Post-Signature Web Confirmation Page & Redirect -->
                             <div class="col-12 mt-4 pt-3 border-top">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
-                                        <i class="fa-solid fa-circle-check me-1"></i> Page web après signature
-                                    </span>
-                                    <h6 class="fw-bold mb-0">Page de confirmation & redirection (Wiki)</h6>
-                                </div>
+                                <h3 class="h6 fw-bold mb-1">
+                                    <i class="fa-solid fa-circle-check text-muted me-2" aria-hidden="true"></i>Page de confirmation &amp; redirection après signature
+                                </h3>
                                 <p class="text-muted small mb-3">Personnalisez le message affiché lorsque le contributeur valide la charte en ligne ainsi que la redirection automatique vers votre site (ex. wiki).</p>
                             </div>
 
                             <div class="col-12 col-md-8">
                                 <label for="mail_user_agreement_success_title" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-heading me-1 text-primary"></i> Titre de remerciement
+                                    <i class="fa-solid fa-heading me-1 text-muted" aria-hidden="true"></i> Titre de remerciement
                                 </label>
                                 <input
                                     type="text"
@@ -409,7 +383,7 @@
 
                             <div class="col-12 col-md-4">
                                 <label for="mail_user_agreement_redirect_delay" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-stopwatch me-1 text-primary"></i> Délai de redirection (s)
+                                    <i class="fa-solid fa-stopwatch me-1 text-muted" aria-hidden="true"></i> Délai de redirection (s)
                                 </label>
                                 <input
                                     type="number"
@@ -426,10 +400,10 @@
 
                             <div class="col-12">
                                 <label for="mail_user_agreement_redirect_url" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-arrow-up-right-from-square me-1 text-primary"></i> URL du site de destination (ex. Wiki)
+                                    <i class="fa-solid fa-arrow-up-right-from-square me-1 text-muted" aria-hidden="true"></i> URL du site de destination (ex. Wiki)
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fa-solid fa-link text-muted"></i></span>
+                                    <span class="input-group-text"><i class="fa-solid fa-link text-muted" aria-hidden="true"></i></span>
                                     <input
                                         type="url"
                                         class="form-control"
@@ -440,7 +414,7 @@
                                     />
                                     <% if (typeof settings.bookstack_url !== 'undefined' && settings.bookstack_url) { %>
                                     <button class="btn btn-outline-secondary" type="button" data-fill-target="mail_user_agreement_redirect_url" data-fill-value="<%= settings.bookstack_url %>">
-                                        <i class="fa-solid fa-book-bookmark me-1"></i> Utiliser le Wiki
+                                        <i class="fa-solid fa-book-bookmark me-1" aria-hidden="true"></i> Utiliser le Wiki
                                     </button>
                                     <% } %>
                                 </div>
@@ -449,7 +423,7 @@
 
                             <div class="col-12">
                                 <label for="mail_user_agreement_success_message" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-comment-dots me-1 text-primary"></i> Message personnalisé après validation
+                                    <i class="fa-solid fa-comment-dots me-1 text-muted" aria-hidden="true"></i> Message personnalisé après validation
                                 </label>
                                 <textarea
                                     class="form-control"
@@ -464,112 +438,100 @@
                 </div>
 
                 <!-- ROW 2: SMTP & Delivery Server Settings -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill px-2.5 py-1">
-                                <i class="fa-solid fa-server me-1"></i> Serveur SMTP
-                            </span>
-                            <h5 class="fw-bold mb-0">Paramètres d'envoi et expéditeur</h5>
-                        </div>
-                        <p class="text-muted small mt-1 mb-0">Configurez les identifiants de votre serveur de messagerie pour l'acheminement des e-mails</p>
+                <div class="card border mb-4">
+                    <div class="card-header bg-body-tertiary">
+                        <h2 class="h6 fw-bold mb-0">
+                            <i class="fa-solid fa-server text-muted me-2" aria-hidden="true"></i>Paramètres d'envoi et serveur SMTP
+                        </h2>
+                        <div class="text-muted small fw-normal">Configurez les identifiants de votre serveur de messagerie pour l'acheminement des e-mails</div>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
-                            <!-- Admin Alert Recipient Email -->
                             <div class="col-12 col-md-6">
                                 <label for="mail_admin_recipient" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-user-shield me-1 text-primary"></i> E-mail administrateur (destinataire des alertes)
+                                    <i class="fa-solid fa-user-shield me-1 text-muted" aria-hidden="true"></i> E-mail administrateur (destinataire des alertes)
                                 </label>
                                 <input type="email" class="form-control" id="mail_admin_recipient" name="mail_admin_recipient" value="<%= settings.mail_admin_recipient || '' %>" placeholder="admin@fablab.fr" required>
-                                <div class="form-text small">Toutes les alertes système (stock bas, warnings, nouveaux comptes) seront envoyées à cette adresse.</div>
+                                <div class="form-text small">Toutes les alertes système (stock bas, avertissements, nouveaux comptes) seront envoyées à cette adresse.</div>
                             </div>
 
-                            <!-- Sender 'From' Header -->
                             <div class="col-12 col-md-6">
                                 <label for="mail_from" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-at me-1 text-primary"></i> Adresse expéditeur (« From »)
+                                    <i class="fa-solid fa-at me-1 text-muted" aria-hidden="true"></i> Adresse expéditeur (« From »)
                                 </label>
                                 <input type="text" class="form-control" id="mail_from" name="mail_from" value="<%= settings.mail_from || '' %>" placeholder="Fabtrack &lt;noreply@fablab.fr&gt;" required>
                                 <div class="form-text small">Nom et adresse qui apparaîtront dans la boîte de réception des destinataires.</div>
                             </div>
 
-                            <!-- SMTP Host -->
                             <div class="col-12 col-md-6">
                                 <label for="smtp_host" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-network-wired me-1 text-secondary"></i> Hôte SMTP
+                                    <i class="fa-solid fa-network-wired me-1 text-muted" aria-hidden="true"></i> Hôte SMTP
                                 </label>
                                 <input type="text" class="form-control" id="smtp_host" name="smtp_host" value="<%= settings.smtp_host || '' %>" placeholder="smtp.mon-domaine.fr ou smtp.gmail.com">
                                 <div class="form-text small">Laissez vide pour utiliser la variable <code>HOST</code> du fichier d'environnement.</div>
                             </div>
 
-                            <!-- SMTP Port & Security -->
                             <div class="col-12 col-md-3">
                                 <label for="smtp_port" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-hashtag me-1 text-secondary"></i> Port SMTP
+                                    <i class="fa-solid fa-hashtag me-1 text-muted" aria-hidden="true"></i> Port SMTP
                                 </label>
                                 <input type="number" class="form-control" id="smtp_port" name="smtp_port" value="<%= settings.smtp_port || '587' %>" placeholder="587" min="1" max="65535">
                                 <div class="form-text small">Habituellement 587 (STARTTLS) ou 465 (SSL).</div>
                             </div>
 
                             <div class="col-12 col-md-3 d-flex flex-column justify-content-center">
-                                <label class="form-label fw-semibold small mb-2">Chiffrement direct</label>
+                                <span class="form-label fw-semibold small mb-2">Chiffrement direct</span>
                                 <div class="form-check form-switch pt-1">
                                     <input class="form-check-input" type="checkbox" role="switch" id="smtp_secure" name="smtp_secure" value="true" <%= settings.smtp_secure === 'true' ? 'checked' : '' %>>
                                     <label class="form-check-label small" for="smtp_secure">Activer SSL/TLS direct (port 465)</label>
                                 </div>
                             </div>
 
-                            <!-- SMTP Username -->
                             <div class="col-12 col-md-6">
                                 <label for="smtp_user" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-user me-1 text-secondary"></i> Nom d'utilisateur SMTP
+                                    <i class="fa-solid fa-user me-1 text-muted" aria-hidden="true"></i> Nom d'utilisateur SMTP
                                 </label>
                                 <input type="text" class="form-control" id="smtp_user" name="smtp_user" value="<%= settings.smtp_user || '' %>" placeholder="Identifiant ou email SMTP" autocomplete="off">
                             </div>
 
-                            <!-- SMTP Password -->
                             <div class="col-12 col-md-6">
                                 <label for="smtp_pass" class="form-label fw-semibold small">
-                                    <i class="fa-solid fa-key me-1 text-secondary"></i> Mot de passe SMTP
+                                    <i class="fa-solid fa-key me-1 text-muted" aria-hidden="true"></i> Mot de passe SMTP
                                 </label>
                                 <input type="password" class="form-control" id="smtp_pass" name="smtp_pass" placeholder="<%= hasSmtpPass ? '•••••••••••• (inchangé)' : 'Saisir le mot de passe' %>" autocomplete="new-password">
                                 <div class="form-text small"><%= hasSmtpPass ? 'Un mot de passe est déjà enregistré. Laissez vide pour ne pas le modifier.' : 'Mot de passe d\'authentification du serveur SMTP.' %></div>
                             </div>
                         </div>
-
-                        <div class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top">
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                                <i class="fa-solid fa-floppy-disk me-1"></i> Enregistrer les paramètres
-                            </button>
-                        </div>
+                    </div>
+                    <div class="card-footer bg-body-tertiary py-3 px-4 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary btn-sm px-3">
+                            <i class="fa-solid fa-floppy-disk me-1" aria-hidden="true"></i> Enregistrer les paramètres
+                        </button>
                     </div>
                 </div>
             </form>
 
             <!-- ROW 3: Live SMTP Testing Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-body border-0 pt-4 px-4 pb-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
-                            <i class="fa-solid fa-paper-plane me-1"></i> Outil de vérification
-                        </span>
-                        <h5 class="fw-bold mb-0">Tester la délivrabilité SMTP</h5>
-                    </div>
-                    <p class="text-muted small mt-1 mb-0">Envoyez immédiatement un e-mail de test pour vérifier la connectivité et la bonne réception</p>
+            <div class="card border mb-4">
+                <div class="card-header bg-body-tertiary">
+                    <h2 class="h6 fw-bold mb-0">
+                        <i class="fa-solid fa-paper-plane text-muted me-2" aria-hidden="true"></i>Tester la délivrabilité SMTP
+                    </h2>
+                    <div class="text-muted small fw-normal">Envoyez immédiatement un e-mail de test pour vérifier la connectivité et la bonne réception</div>
                 </div>
                 <div class="card-body p-4">
                     <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/emails/test" method="POST" class="row g-3 align-items-end">
+                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                         <div class="col-12 col-md-8">
                             <label for="test_recipient" class="form-label fw-semibold small">Adresse de réception pour le test</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-body-secondary"><i class="fa-solid fa-envelope"></i></span>
+                                <span class="input-group-text"><i class="fa-solid fa-envelope text-muted" aria-hidden="true"></i></span>
                                 <input type="email" class="form-control" id="test_recipient" name="test_recipient" value="<%= adminEmail %>" placeholder="votre-adresse@domaine.fr" required>
                             </div>
                         </div>
                         <div class="col-12 col-md-4">
-                            <button type="submit" class="btn btn-outline-success rounded-pill w-100 py-2 shadow-sm">
-                                <i class="fa-solid fa-paper-plane me-1"></i> Envoyer un e-mail de test
+                            <button type="submit" class="btn btn-outline-secondary w-100">
+                                <i class="fa-solid fa-paper-plane me-1" aria-hidden="true"></i> Envoyer un e-mail de test
                             </button>
                         </div>
                     </form>
@@ -579,21 +541,18 @@
             <!-- MODAL 1: Preview Stock Alert -->
             <div class="modal fade" id="modalPreviewStock" tabindex="-1" aria-labelledby="modalPreviewStockLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content shadow-lg border-0">
-                        <div class="modal-header border-0 pb-0">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    <i class="fa-solid fa-boxes-stacked fa-sm"></i>
-                                </div>
-                                <h6 class="modal-title fw-bold" id="modalPreviewStockLabel">Aperçu : Alerte de Stock Bas</h6>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalPreviewStockLabel">
+                                <i class="fa-solid fa-boxes-stacked text-muted me-2" aria-hidden="true"></i>Aperçu : Alerte de Stock Bas
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
-                        <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                        <div class="modal-body">
+                            <div class="border rounded p-4 bg-body-tertiary text-body">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5">FabtrackJS</span>
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-bold text-uppercase px-2 py-1 rounded-pill">Stock faible</span>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle text-uppercase">Stock faible</span>
                                 </div>
                                 <h5 class="fw-bold mb-3">Alerte de stock : PLA Filament 1.75mm Black</h5>
                                 <p class="text-secondary small mb-3">Le consommable suivant a atteint ou franchi à la baisse son seuil d'alerte de réapprovisionnement :</p>
@@ -614,14 +573,14 @@
                                     </tbody>
                                 </table>
                                 <div class="text-center pt-2">
-                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                    <span class="btn btn-sm text-white px-3" style="background-color: #112970;">
                                         Gérer l'inventaire des consommables &rarr;
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer border-0 pt-0">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        <div class="modal-footer bg-body-tertiary">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                         </div>
                     </div>
                 </div>
@@ -630,21 +589,18 @@
             <!-- MODAL 2: Preview Warning Alert -->
             <div class="modal fade" id="modalPreviewWarning" tabindex="-1" aria-labelledby="modalPreviewWarningLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content shadow-lg border-0">
-                        <div class="modal-header border-0 pb-0">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    <i class="fa-solid fa-triangle-exclamation fa-sm"></i>
-                                </div>
-                                <h6 class="modal-title fw-bold" id="modalPreviewWarningLabel">Aperçu : Alerte d'Avertissement Contributeur</h6>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalPreviewWarningLabel">
+                                <i class="fa-solid fa-triangle-exclamation text-muted me-2" aria-hidden="true"></i>Aperçu : Alerte d'Avertissement Contributeur
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
-                        <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                        <div class="modal-body">
+                            <div class="border rounded p-4 bg-body-tertiary text-body">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5">FabtrackJS</span>
-                                    <span class="badge bg-danger text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Avertissement</span>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-uppercase">Avertissement</span>
                                 </div>
                                 <h5 class="fw-bold mb-3">Nouvel avertissement contributeur : Jean Dupont</h5>
                                 <p class="text-secondary small mb-3">Un nouvel avertissement a été attribué à un contributeur de la plateforme :</p>
@@ -669,14 +625,14 @@
                                     </tbody>
                                 </table>
                                 <div class="text-center pt-2">
-                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                    <span class="btn btn-sm text-white px-3" style="background-color: #112970;">
                                         Consulter la fiche contributeur &rarr;
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer border-0 pt-0">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        <div class="modal-footer bg-body-tertiary">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                         </div>
                     </div>
                 </div>
@@ -685,21 +641,18 @@
             <!-- MODAL 3: Preview Machine Issue Alert -->
             <div class="modal fade" id="modalPreviewMachineIssue" tabindex="-1" aria-labelledby="modalPreviewMachineIssueLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content shadow-lg border-0">
-                        <div class="modal-header border-0 pb-0">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    <i class="fa-solid fa-wrench fa-sm"></i>
-                                </div>
-                                <h6 class="modal-title fw-bold" id="modalPreviewMachineIssueLabel">Aperçu : Alerte Panne / Incident Machine</h6>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalPreviewMachineIssueLabel">
+                                <i class="fa-solid fa-wrench text-muted me-2" aria-hidden="true"></i>Aperçu : Alerte Panne / Incident Machine
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
-                        <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                        <div class="modal-body">
+                            <div class="border rounded p-4 bg-body-tertiary text-body">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5">FabtrackJS</span>
-                                    <span class="badge bg-danger text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Panne Machine</span>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-uppercase">Panne Machine</span>
                                 </div>
                                 <h5 class="fw-bold mb-3">Panne signalée sur Découpeuse Laser Speedy 300</h5>
                                 <p class="text-secondary small mb-3">Un nouvel incident ou une panne a été signalé(e) sur une machine du fablab :</p>
@@ -723,42 +676,39 @@
                                         </tr>
                                         <tr>
                                             <th class="bg-body-secondary text-muted small">Photo jointe</th>
-                                            <td><i class="fa-solid fa-camera text-primary me-1"></i> Une photo a été jointe au signalement</td>
+                                            <td><i class="fa-solid fa-camera text-muted me-1" aria-hidden="true"></i> Une photo a été jointe au signalement</td>
                                         </tr>
                                     </tbody>
                                 </table>
                                 <div class="text-center pt-2">
-                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                    <span class="btn btn-sm text-white px-3" style="background-color: #112970;">
                                         Voir la machine &amp; ses incidents &rarr;
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer border-0 pt-0">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        <div class="modal-footer bg-body-tertiary">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- MODAL: Preview Staff Account Approved Alert -->
+            <!-- MODAL 4: Preview Staff Account Approved Alert -->
             <div class="modal fade" id="modalPreviewStaffApproved" tabindex="-1" aria-labelledby="modalPreviewStaffApprovedLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content shadow-lg border-0">
-                        <div class="modal-header border-0 pb-0">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    <i class="fa-solid fa-user-check fa-sm"></i>
-                                </div>
-                                <h6 class="modal-title fw-bold" id="modalPreviewStaffApprovedLabel">Aperçu : Validation de Compte Staff</h6>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalPreviewStaffApprovedLabel">
+                                <i class="fa-solid fa-user-check text-muted me-2" aria-hidden="true"></i>Aperçu : Validation de Compte Staff
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
-                        <div class="modal-body p-4">
-                            <div class="border rounded-3 p-4 bg-body-tertiary text-body shadow-sm">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                        <div class="modal-body">
+                            <div class="border rounded p-4 bg-body-tertiary text-body">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5"><%= settings.platform_name || 'FabtrackJS' %></span>
-                                    <span class="badge bg-success text-white fw-bold text-uppercase px-2 py-1 rounded-pill">Compte activé</span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle text-uppercase">Compte activé</span>
                                 </div>
                                 <h5 class="fw-bold mb-3">Votre compte staff a été validé !</h5>
                                 <p class="text-secondary small mb-2">Bonjour <strong>Jean Dupont</strong>,</p>
@@ -781,58 +731,55 @@
                                 </table>
                                 <p class="text-secondary small mb-3">Vous pouvez dès à présent vous connecter pour accéder au kiosque et aux fonctionnalités de gestion du Fablab.</p>
                                 <div class="text-center pt-2">
-                                    <span class="btn btn-sm rounded-pill text-white px-3" style="background-color: #112970;">
+                                    <span class="btn btn-sm text-white px-3" style="background-color: #112970;">
                                         Se connecter à la plateforme &rarr;
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer border-0 pt-0">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        <div class="modal-footer bg-body-tertiary">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- MODAL 4: Preview Agreement Email -->
+            <!-- MODAL 5: Preview Agreement Email -->
             <div class="modal fade" id="modalPreviewAgreement" tabindex="-1" aria-labelledby="modalPreviewAgreementLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content shadow-lg border-0">
-                        <div class="modal-header border-0 pb-0">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    <i class="fa-solid fa-file-signature fa-sm"></i>
-                                </div>
-                                <h6 class="modal-title fw-bold" id="modalPreviewAgreementLabel">Aperçu en direct : E-mail de signature de charte</h6>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalPreviewAgreementLabel">
+                                <i class="fa-solid fa-file-signature text-muted me-2" aria-hidden="true"></i>Aperçu en direct : E-mail de signature de charte
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
-                        <div class="modal-body p-4">
+                        <div class="modal-body">
                             <div class="text-muted small mb-2 d-flex align-items-center justify-content-between">
-                                <span><i class="fa-solid fa-circle-info me-1 text-primary"></i> Simulation avec un contributeur exemple (<strong>Camille Martin</strong>)</span>
-                                <span class="badge bg-secondary-subtle text-secondary-emphasis border rounded-pill">Aperçu dynamique</span>
+                                <span><i class="fa-solid fa-circle-info me-1 text-muted" aria-hidden="true"></i> Simulation avec un contributeur exemple (<strong>Camille Martin</strong>)</span>
+                                <span class="badge bg-body-secondary text-secondary-emphasis border">Aperçu dynamique</span>
                             </div>
-                            <div class="border rounded-3 p-4 bg-body text-body shadow-sm">
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded-2 text-white mb-3" style="background-color: #112970;">
+                            <div class="border rounded p-4 bg-body text-body">
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded text-white mb-3" style="background-color: #112970;">
                                     <span class="fw-bold fs-5"><%= settings.platform_name || 'FabtrackJS' %></span>
-                                    <span class="badge bg-body-secondary text-body border fw-bold text-uppercase px-2 py-1 rounded-pill">Charte Fablab</span>
+                                    <span class="badge bg-body-secondary text-body border text-uppercase">Charte Fablab</span>
                                 </div>
                                 <h5 class="fw-bold mb-3 text-body" id="previewAgreementTitle">Validation de la charte d'utilisation du Fablab</h5>
                                 <div class="text-secondary small mb-3" id="previewAgreementBody" style="line-height: 1.6;">
                                     <!-- Dynamic content updated via JS -->
                                 </div>
-                                <div class="alert alert-light border border-secondary-subtle p-3 rounded-2 small text-muted mb-3" id="previewAgreementNotice" style="<%= settings.mail_user_agreement_notice && settings.mail_user_agreement_notice.trim() ? '' : 'display: none;' %>">
+                                <div class="alert alert-secondary border p-3 small text-muted mb-3" id="previewAgreementNotice" style="<%= settings.mail_user_agreement_notice && settings.mail_user_agreement_notice.trim() ? '' : 'display: none;' %>">
                                     <%= settings.mail_user_agreement_notice || '' %>
                                 </div>
                                 <div class="text-center pt-2">
-                                    <span class="btn btn-sm rounded-pill text-white px-4 py-2" id="previewAgreementCta" style="background-color: #112970; font-weight: 600;">
+                                    <span class="btn btn-sm text-white px-4 py-2" id="previewAgreementCta" style="background-color: #112970; font-weight: 600;">
                                         Signer la charte d'utilisation
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer border-0 pt-0">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                        <div class="modal-footer bg-body-tertiary">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
                         </div>
                     </div>
                 </div>
@@ -843,9 +790,9 @@
                     const target = document.getElementById("agreementTemplateCard");
                     if (target) {
                         target.scrollIntoView({ behavior: "smooth", block: "start" });
-                        target.classList.add("border", "border-primary", "shadow");
+                        target.classList.add("border-primary");
                         setTimeout(() => {
-                            target.classList.remove("border", "border-primary", "shadow");
+                            target.classList.remove("border-primary");
                         }, 1800);
                         const subjectInput = document.getElementById("mail_user_agreement_subject");
                         if (subjectInput) {
@@ -967,6 +914,5 @@
             </script>
 
             <%- include('../includes/footer.html') %>
-        </main>
     </body>
 </html>

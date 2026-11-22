@@ -3,9 +3,9 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="" />
+        <meta name="description" content="Gestion des motifs de la visite" />
         <meta name="author" content="Stéphane Muller" />
-        <title>Fabtrack - Motifs de la visite</title>
+        <title>Motifs de la visite • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
@@ -17,31 +17,19 @@
             <%- include('../includes/header.html') %>
 
             <!-- Page Header -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box bg-info-subtle text-info-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                            <i class="fa-solid fa-diagram-project"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <h4 class="fw-bold mb-0">Motifs de la visite</h4>
-                                <span class="badge bg-info-subtle text-info-emphasis border rounded-pill" style="font-size: 0.72rem;">
-                                    <%= projecttypes.length %> motifs
-                                </span>
-                            </div>
-                            <p class="text-muted small mb-0">Typologies d'accueil et de passage (Académique, Personnel, Recherche, Repair Café, Atelier...)</p>
-                        </div>
+            <div class="fab-page-header">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <h1 class="fab-page-title">Motifs de la visite</h1>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border tabular-nums">
+                            <%= projecttypes.length %> motif<%= projecttypes.length > 1 ? 's' : '' %>
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
-                        </a>
-                    </div>
+                    <p class="fab-page-subtitle">Typologies d'accueil et de passage (Académique, Personnel, Recherche, Repair Café, Atelier…)</p>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card border mb-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
@@ -53,83 +41,96 @@
                                 </tr>
                             </thead>
                             <tbody id="table-content">
+                                <% if (!projecttypes || projecttypes.length === 0) { %>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-5">
+                                        <i class="fa-solid fa-diagram-project fs-4 d-block mb-2 opacity-50" aria-hidden="true"></i>
+                                        Aucun motif de visite enregistré pour le moment.
+                                    </td>
+                                </tr>
+                                <% } else { %>
                                 <% projecttypes.forEach(function(projecttype) { %>
                                 <tr>
-                                    <td scope="row" class="ps-3 text-muted">#<%= projecttype.id %></td>
+                                    <td scope="row" class="ps-3 text-muted tabular-nums">#<%= projecttype.id %></td>
                                     <td>
-                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2 py-1">
+                                        <span class="badge bg-body-secondary text-secondary-emphasis border">
                                             <%= projecttype.name %>
                                         </span>
                                     </td>
                                     <td class="text-end pe-3">
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="#" class="btn btn-outline-primary" id="edit-<%= projecttype.id %>"
-                                                        data-id="<%= projecttype.id %>"
-                                                        data-name="<%= projecttype.name %>"
-                                                        title="Modifier">
-                                                <i class="fa-solid fa-pen-to-square"></i>
+                                        <div class="fab-row-actions">
+                                            <a
+                                                href="#"
+                                                class="btn btn-outline-primary"
+                                                id="edit-<%= projecttype.id %>"
+                                                data-id="<%= projecttype.id %>"
+                                                data-name="<%= projecttype.name %>"
+                                                title="Modifier"
+                                                aria-label="Modifier le motif <%= projecttype.name %>"
+                                            >
+                                                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                             </a>
                                             <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/projecttypes/delete/<%= projecttype.id %>" class="d-inline" data-confirm="Supprimer le motif de visite <%= projecttype.name %> ?">
                                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                                    <i class="fa-solid fa-trash-can"></i>
+                                                <button type="submit" class="btn btn-outline-danger" title="Supprimer" aria-label="Supprimer le motif <%= projecttype.name %>">
+                                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                                 <% }); %>
+                                <% } %>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h5 class="fw-bold mb-0" id="formTitle">
-                        <i class="fa-solid fa-diagram-project text-info-emphasis me-2"></i>Nouveau motif de visite
-                    </h5>
+            <div class="card border mb-4">
+                <div class="card-header bg-body-tertiary">
+                    <h2 class="h6 fw-bold mb-0" id="formTitle">
+                        <i class="fa-solid fa-diagram-project text-secondary me-2" aria-hidden="true"></i>Nouveau motif de la visite
+                    </h2>
                 </div>
-                <div class="card-body">
-                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/projecttypes/create" method="post" id="projectTypeForm">
-                        <div class="row g-2 align-items-center">
-                            <input type='hidden' id="projecttypeid" name='projecttypeid' value='' />
-                            <div class="col-md-8 col-12">
-                                <div class="form-floating mb-2 mb-md-0">
-                                    <input type="text" class="form-control" id="name" name="name" placeholder="Intitulé du motif" required />
-                                    <label for="name">Intitulé du motif</label>
-                                </div>
-                            </div>
-                            <div class="col-md-4 col-12 d-flex gap-2">
-                                <button class="btn btn-primary rounded-pill px-4 py-3 flex-grow-1" type="submit" id="submitBtn">
-                                    Créer le motif de visite
-                                </button>
-                                <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-3 py-3" style="display: none;" data-action="cancel-edit">
-                                    Annuler
-                                </button>
-                            </div>
+                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/projecttypes/create" method="post" id="projectTypeForm">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <input type="hidden" id="projecttypeid" name="projecttypeid" value="" />
+
+                    <div class="card-body">
+                        <div class="mb-0">
+                            <label for="name" class="form-label fw-semibold small">Intitulé du motif</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Ex. : Académique, Personnel, Repair Café, Atelier" required />
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="card-footer bg-body-tertiary d-flex flex-wrap gap-2">
+                        <button class="btn btn-primary" type="submit" id="submitBtn">
+                            Créer le motif de la visite
+                        </button>
+                        <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary" style="display: none;" data-action="cancel-edit">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <%- include('../includes/footer.html') %>
 
         <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
           const elements = document.querySelectorAll('[id^="edit-"]');
-          elements.forEach(function(element){
+          elements.forEach(function(element) {
             element.addEventListener("click", editItem);
           });
 
           function editItem(event) {
             if (event) event.preventDefault();
 
-            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Modifier le motif de visite";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2' aria-hidden='true'></i>Modifier le motif de la visite";
             document.getElementById("projectTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/projecttypes/update") : "/admin/projecttypes/update");
             document.getElementById("projecttypeid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
-            document.getElementById("submitBtn").innerText = "Modifier le motif de visite";
+            document.getElementById("submitBtn").innerText = "Enregistrer les modifications";
             document.getElementById("cancelEditBtn").style.display = "inline-block";
 
             document.getElementById("projectTypeForm").scrollIntoView({ behavior: 'smooth' });
@@ -137,14 +138,13 @@
           }
 
           function cancelEdit() {
-            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-diagram-project text-info-emphasis me-2'></i>Nouveau motif de visite";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-diagram-project text-secondary me-2' aria-hidden='true'></i>Nouveau motif de la visite";
             document.getElementById("projectTypeForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/projecttypes/create") : "/admin/projecttypes/create");
             document.getElementById("projecttypeid").value = "";
             document.getElementById("name").value = "";
-            document.getElementById("submitBtn").innerText = "Créer le motif de visite";
+            document.getElementById("submitBtn").innerText = "Créer le motif de la visite";
             document.getElementById("cancelEditBtn").style.display = "none";
           }
         </script>
-
     </body>
 </html>

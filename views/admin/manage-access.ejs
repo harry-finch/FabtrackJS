@@ -3,9 +3,9 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="" />
+        <meta name="description" content="Gestion des niveaux d'accès et habilitations machines" />
         <meta name="author" content="Stéphane Muller" />
-        <title>Fabtrack - Gestion des accès</title>
+        <title>Niveaux d'accès • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
 
         <%- include('../includes/pagehead.html') %>
     </head>
@@ -17,131 +17,128 @@
             <%- include('../includes/header.html') %>
 
             <!-- Page Header -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                            <i class="fa-solid fa-lock"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <h4 class="fw-bold mb-0">Niveaux d'accès</h4>
-                                <span class="badge bg-warning-subtle text-warning-emphasis border rounded-pill" style="font-size: 0.72rem;">
-                                    <%= access.length %> niveaux
-                                </span>
-                            </div>
-                            <p class="text-muted small mb-0">Habilitations requises pour réserver et opérer les machines</p>
-                        </div>
+            <div class="fab-page-header">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <h1 class="fab-page-title">Niveaux d'accès</h1>
+                        <span class="badge bg-body-secondary text-secondary-emphasis border tabular-nums">
+                            <%= access.length %> niveau<%= access.length > 1 ? 'x' : '' %>
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="fa-solid fa-arrow-left me-1"></i> Retour panneau admin
-                        </a>
-                    </div>
+                    <p class="fab-page-subtitle">Habilitations requises pour réserver et opérer les machines</p>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card border mb-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th data-sort="0" scope="col" class="ps-3">#</th>
-                                    <th data-sort="1" scope="col">Access level</th>
+                                    <th data-sort="1" scope="col">Niveau d'accès</th>
                                     <th scope="col">Description</th>
                                     <th scope="col" class="text-end pe-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="table-content">
+                                <% if (!access || access.length === 0) { %>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-5">
+                                        <i class="fa-solid fa-lock fs-4 d-block mb-2 opacity-50" aria-hidden="true"></i>
+                                        Aucun niveau d'accès enregistré pour le moment.
+                                    </td>
+                                </tr>
+                                <% } else { %>
                                 <% access.forEach(function(accesslevel) { %>
                                 <tr>
-                                    <td scope="row" class="ps-3 text-muted">#<%= accesslevel.id %></td>
+                                    <td scope="row" class="ps-3 text-muted tabular-nums">#<%= accesslevel.id %></td>
                                     <td>
-                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
                                             <%= accesslevel.name %>
                                         </span>
                                     </td>
-                                    <td><span class="text-muted small"><%= accesslevel.description || '-' %></span></td>
+                                    <td><span class="text-muted small"><%= accesslevel.description || '—' %></span></td>
                                     <td class="text-end pe-3">
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="#" class="btn btn-outline-primary" id="edit-<%= accesslevel.id %>"
-                                                        data-id="<%= accesslevel.id %>"
-                                                        data-name="<%= accesslevel.name %>"
-                                                        data-description="<%= accesslevel.description %>"
-                                                        title="Modifier">
-                                                <i class="fa-solid fa-pen-to-square"></i>
+                                        <div class="fab-row-actions">
+                                            <a
+                                                href="#"
+                                                class="btn btn-outline-primary"
+                                                id="edit-<%= accesslevel.id %>"
+                                                data-id="<%= accesslevel.id %>"
+                                                data-name="<%= accesslevel.name %>"
+                                                data-description="<%= accesslevel.description %>"
+                                                title="Modifier"
+                                                aria-label="Modifier le niveau d'accès <%= accesslevel.name %>"
+                                            >
+                                                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                             </a>
                                             <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/accesslevels/delete/<%= accesslevel.id %>" class="d-inline" data-confirm="Supprimer le niveau d'accès <%= accesslevel.name %> ?">
                                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                                    <i class="fa-solid fa-trash-can"></i>
+                                                <button type="submit" class="btn btn-outline-danger" title="Supprimer" aria-label="Supprimer le niveau d'accès <%= accesslevel.name %>">
+                                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                                 <% }); %>
+                                <% } %>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h5 class="fw-bold mb-0" id="formTitle">
-                        <i class="fa-solid fa-lock text-warning-emphasis me-2"></i>Create new access level
-                    </h5>
+            <div class="card border mb-4">
+                <div class="card-header bg-body-tertiary">
+                    <h2 class="h6 fw-bold mb-0" id="formTitle">
+                        <i class="fa-solid fa-lock text-warning-emphasis me-2" aria-hidden="true"></i>Nouveau niveau d'accès
+                    </h2>
                 </div>
-                <div class="card-body">
-                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/accesslevels/create" method="post" id="accessForm">
-                        <div class="row">
-                            <input type='hidden' id="accessid" name='accessid' value='' />
-                            <div class="col-12">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="name" name="name" placeholder="Name" required />
-                                    <label for="name">Name</label>
-                                </div>
-                            </div>
+                <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/accesslevels/create" method="post" id="accessForm">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                    <input type="hidden" id="accessid" name="accessid" value="" />
+
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-semibold small">Nom</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Ex. : Libre accès, Formation requise, Encadré" required />
                         </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-floating mb-3">
-                                    <textarea class="form-control" id="description" name="description" style="height: 100px"></textarea>
-                                    <label for="description">Description</label>
-                                </div>
-                            </div>
+                        <div class="mb-0">
+                            <label for="description" class="form-label fw-semibold small">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Conditions d'utilisation ou prérequis de formation"></textarea>
                         </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-primary rounded-pill px-4 py-2" type="submit" id="submitBtn">
-                                Create new access level
-                            </button>
-                            <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="display: none;" data-action="cancel-edit">
-                                Annuler
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="card-footer bg-body-tertiary d-flex flex-wrap gap-2">
+                        <button class="btn btn-primary" type="submit" id="submitBtn">
+                            Créer le niveau d'accès
+                        </button>
+                        <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary" style="display: none;" data-action="cancel-edit">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <%- include('../includes/footer.html') %>
 
         <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
           const elements = document.querySelectorAll('[id^="edit-"]');
-          elements.forEach(function(element){
+          elements.forEach(function(element) {
             element.addEventListener("click", editItem);
           });
 
           function editItem(event) {
             if (event) event.preventDefault();
 
-            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2'></i>Update access level";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-pen-to-square text-primary me-2' aria-hidden='true'></i>Modifier le niveau d'accès";
             document.getElementById("accessForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/accesslevels/update") : "/admin/accesslevels/update");
             document.getElementById("accessid").value = this.dataset.id;
             document.getElementById("name").value = this.dataset.name;
             document.getElementById("description").value = this.dataset.description || '';
-            document.getElementById("submitBtn").innerText = "Update access level";
+            document.getElementById("submitBtn").innerText = "Enregistrer les modifications";
             document.getElementById("cancelEditBtn").style.display = "inline-block";
 
             document.getElementById("accessForm").scrollIntoView({ behavior: 'smooth' });
@@ -149,15 +146,14 @@
           }
 
           function cancelEdit() {
-            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-lock text-warning-emphasis me-2'></i>Create new access level";
+            document.getElementById("formTitle").innerHTML = "<i class='fa-solid fa-lock text-warning-emphasis me-2' aria-hidden='true'></i>Nouveau niveau d'accès";
             document.getElementById("accessForm").action = (window.getAppBaseUrl ? window.getAppBaseUrl("admin/accesslevels/create") : "/admin/accesslevels/create");
             document.getElementById("accessid").value = "";
             document.getElementById("name").value = "";
             document.getElementById("description").value = "";
-            document.getElementById("submitBtn").innerText = "Create new access level";
+            document.getElementById("submitBtn").innerText = "Créer le niveau d'accès";
             document.getElementById("cancelEditBtn").style.display = "none";
           }
         </script>
-
     </body>
 </html>
