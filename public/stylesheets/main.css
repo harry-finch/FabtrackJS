@@ -279,11 +279,10 @@ body:has(.fab-topbar) .fab-standalone-controls {
 }
 
 .fab-brand-tile {
-    width: 24px;
+    width: 26px;
     height: 24px;
-    border-radius: 6px;
-    background-color: #1c2128;
-    border: 1px solid rgba(76, 141, 245, 0.35);
+    background-color: transparent;
+    border: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -292,15 +291,19 @@ body:has(.fab-topbar) .fab-standalone-controls {
 }
 
 .fab-brand-svg {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 20px;
     object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(24%) sepia(83%) saturate(2250%) hue-rotate(210deg) brightness(91%) contrast(94%);
+}
+
+[data-bs-theme="dark"] .fab-brand-svg {
     filter: brightness(0) saturate(100%) invert(53%) sepia(72%) saturate(2351%) hue-rotate(198deg) brightness(98%) contrast(95%);
 }
 
 .fab-brand-custom-img {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
 }
 
