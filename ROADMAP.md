@@ -74,7 +74,7 @@
    À l’approbation, rattacher ou créer la fiche des médiateurs et administrateurs. Les intéressés renseignent leurs propres informations et leur charte est considérée comme signée.
 34. **[R-038 Afficher et personnaliser les titres des projets BookStack](roadmap/items/R-038-titre-des-projets.md)** · Spécifiée · jalon v1.6
    Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible.
-35. **[R-039 Paginer l’historique du Repair Café et afficher les chiffres de l’année](roadmap/items/R-039-liste-des-objets-repares.md)** · Idée · jalon v1.6
+35. **[R-039 Paginer l’historique du Repair Café et afficher les chiffres de l’année](roadmap/items/R-039-liste-des-objets-repares.md)** · Spécifiée · jalon v1.6
    Afficher les 25 dernières interventions, rechercher dans tout l’historique et calculer les indicateurs sur l’année civile en cours.
 36. **[R-035 Transmettre les contributeurs badgés au serveur des casiers](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
    Envoyer périodiquement au serveur des casiers les utilisateurs dont la carte RFID est enregistrée dans Fabtrack, afin qu’ils puissent ouvrir les casiers.
