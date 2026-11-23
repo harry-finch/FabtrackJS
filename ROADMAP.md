@@ -78,7 +78,7 @@
    La liste va vite devenir trop longue.
 36. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
    Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
-37. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · Idée · jalon v1.6
+37. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · Spécifiée · jalon v1.6
    Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu.
 
 ## Actions à faire
