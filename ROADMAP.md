@@ -68,14 +68,14 @@
    Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
 31. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · Spécifiée · jalon v1.6
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
-32. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
-   Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
-33. **[R-036 Limiter utilisateur borne](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Idée · jalon v1.6
+32. **[R-036 Limiter utilisateur borne](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Idée · jalon v1.6
    Faire en sorte que l’utilisateur borne ne puisse que faire des entrées / sorties. Pas d’activité, pas voir les autres utilisateurs dans le lab, pas voir les profils.
-34. **[R-037 Compte staff + contributeur](roadmap/items/R-037-compte-staff-contributeur.md)** · Idée · jalon v1.6
+33. **[R-037 Compte staff + contributeur](roadmap/items/R-037-compte-staff-contributeur.md)** · Idée · jalon v1.6
    Créer automatiquement un compte contributeur pour les staff avec les infos minimums.
-35. **[R-038 Titre des projets](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
+34. **[R-038 Titre des projets](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
    Récupérer les titres des projets sur le wiki
+35. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
+   Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
 36. **[R-039 Liste des objets réparés](roadmap/items/R-039-liste-des-objets-repares.md)** · Idée · jalon v1.6
    La liste va vite devenir trop longue.
 
