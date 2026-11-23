@@ -70,7 +70,7 @@
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
 32. **[R-036 Réserver la borne au pointage individuel par badge](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Spécifiée · jalon v1.6
    À l’entrée, le contributeur badgé précise son motif de visite, son projet et, s’il le souhaite, un complément. L’accueil accompagne les personnes sans badge ou sans fiche.
-33. **[R-037 Associer une fiche contributeur aux membres de l’équipe](roadmap/items/R-037-compte-staff-contributeur.md)** · Idée · jalon v1.6
+33. **[R-037 Associer une fiche contributeur aux membres de l’équipe](roadmap/items/R-037-compte-staff-contributeur.md)** · Spécifiée · jalon v1.6
    À l’approbation, rattacher ou créer la fiche des médiateurs et administrateurs. Les intéressés renseignent leurs propres informations et leur charte est considérée comme signée.
 34. **[R-038 Afficher et personnaliser les titres des projets BookStack](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
    Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible.
