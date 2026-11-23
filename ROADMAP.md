@@ -68,16 +68,16 @@
    Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
 31. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · Spécifiée · jalon v1.6
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
-32. **[R-036 Limiter utilisateur borne](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Idée · jalon v1.6
-   Faire en sorte que l’utilisateur borne ne puisse que faire des entrées / sorties. Pas d’activité, pas voir les autres utilisateurs dans le lab, pas voir les profils.
-33. **[R-037 Compte staff + contributeur](roadmap/items/R-037-compte-staff-contributeur.md)** · Idée · jalon v1.6
-   Créer automatiquement un compte contributeur pour les staff avec les infos minimums.
-34. **[R-038 Titre des projets](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
-   Récupérer les titres des projets sur le wiki
-35. **[R-039 Liste des objets réparés](roadmap/items/R-039-liste-des-objets-repares.md)** · Idée · jalon v1.6
-   La liste va vite devenir trop longue.
-36. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
-   Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
+32. **[R-036 Réserver la borne au pointage individuel par badge](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Spécifiée · jalon v1.6
+   À l’entrée, le contributeur badgé précise son motif de visite, son projet et, s’il le souhaite, un complément. L’accueil accompagne les personnes sans badge ou sans fiche.
+33. **[R-037 Associer une fiche contributeur aux membres de l’équipe](roadmap/items/R-037-compte-staff-contributeur.md)** · Idée · jalon v1.6
+   À l’approbation, rattacher ou créer la fiche des médiateurs et administrateurs. Les intéressés renseignent leurs propres informations et leur charte est considérée comme signée.
+34. **[R-038 Afficher et personnaliser les titres des projets BookStack](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
+   Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible.
+35. **[R-039 Paginer l’historique du Repair Café et afficher les chiffres de l’année](roadmap/items/R-039-liste-des-objets-repares.md)** · Idée · jalon v1.6
+   Afficher les 25 dernières interventions, rechercher dans tout l’historique et calculer les indicateurs sur l’année civile en cours.
+36. **[R-035 Transmettre les contributeurs badgés au serveur des casiers](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
+   Envoyer périodiquement au serveur des casiers les utilisateurs dont la carte RFID est enregistrée dans Fabtrack, afin qu’ils puissent ouvrir les casiers.
 37. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · Spécifiée · jalon v1.6
    Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu.
 
@@ -132,7 +132,11 @@
 - [ ] [A-047](roadmap/actions/A-047-valider-le-bandeau-superieur-44-px-option-b-les.md) Valider le bandeau supérieur 44 px Option B, les sélecteurs segmentés et la barre d'état 24 px (R-031) (tester, R-031)
 - [ ] [A-048](roadmap/actions/A-048-valider-le-rafraichissement-partiel-kiosque.md) Valider le rafraîchissement partiel kiosque/tableaux et la synchro SSE multi-postes (R-032) (tester, R-032)
 - [ ] [A-049](roadmap/actions/A-049-valider-le-cockpit-d-administration-et-le-menu.md) Valider le Cockpit d'administration et le menu latéral persistant filtrable (R-033) (tester, R-033)
-- [ ] [A-050](roadmap/actions/A-050-valider-la-specification-de-restitution-d-un.md) Valider la spécification de restitution d’un équipement (valider, R-040)
+- [ ] [A-051](roadmap/actions/A-051-valider-le-pointage-individuel-a-la-borne.md) Valider le pointage individuel à la borne (valider, R-036)
+- [ ] [A-052](roadmap/actions/A-052-valider-le-rattachement-des-fiches-de-l-equipe.md) Valider le rattachement des fiches de l’équipe (valider, R-037)
+- [ ] [A-053](roadmap/actions/A-053-valider-la-priorite-des-titres-de-projet.md) Valider la priorité des titres de projet (valider, R-038)
+- [ ] [A-054](roadmap/actions/A-054-valider-l-historique-et-les-chiffres-annuels-du.md) Valider l’historique et les chiffres annuels du Repair Café (valider, R-039)
+- [ ] [A-055](roadmap/actions/A-055-fournir-les-specifications-d-import-du-serveur.md) Fournir les spécifications d’import du serveur des casiers (fournir, R-035)
 
 ## Livré
 
