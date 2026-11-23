@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 39** (8 %)
+**Avancement : 3 livrés sur 40** (8 %)
 
 ## Restant à faire
 
@@ -78,6 +78,8 @@
    La liste va vite devenir trop longue.
 36. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
    Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
+37. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · Idée · jalon v1.6
+   Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu.
 
 ## Actions à faire
 
@@ -130,6 +132,7 @@
 - [ ] [A-047](roadmap/actions/A-047-valider-le-bandeau-superieur-44-px-option-b-les.md) Valider le bandeau supérieur 44 px Option B, les sélecteurs segmentés et la barre d'état 24 px (R-031) (tester, R-031)
 - [ ] [A-048](roadmap/actions/A-048-valider-le-rafraichissement-partiel-kiosque.md) Valider le rafraîchissement partiel kiosque/tableaux et la synchro SSE multi-postes (R-032) (tester, R-032)
 - [ ] [A-049](roadmap/actions/A-049-valider-le-cockpit-d-administration-et-le-menu.md) Valider le Cockpit d'administration et le menu latéral persistant filtrable (R-033) (tester, R-033)
+- [ ] [A-050](roadmap/actions/A-050-valider-la-specification-de-restitution-d-un.md) Valider la spécification de restitution d’un équipement (valider, R-040)
 
 ## Livré
 
