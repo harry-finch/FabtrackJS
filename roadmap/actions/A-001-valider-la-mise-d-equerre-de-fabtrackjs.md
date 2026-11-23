@@ -2,10 +2,10 @@
 id: A-001
 type: valider
 titre: "Valider la mise d'équerre de FabtrackJS"
-statut: a-faire
+statut: fait
 cree: 2026-11-21
 par: agent
-fait:
+fait: 2026-11-23
 motif: equerre
 ---
 

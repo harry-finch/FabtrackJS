@@ -83,7 +83,6 @@
 
 ## Actions à faire
 
-- [ ] [A-001](roadmap/actions/A-001-valider-la-mise-d-equerre-de-fabtrackjs.md) Valider la mise d'équerre de FabtrackJS (valider)
 - [ ] [A-002](roadmap/actions/A-002-tester-la-reinitialisation-de-mot-de-passe-en.md) Tester la réinitialisation de mot de passe en local (tester, R-004)
 - [ ] [A-003](roadmap/actions/A-003-appliquer-r-004-en-production-et-auditer-la.md) Appliquer R-004 en production et auditer la table Staff (tester, R-004)
 - [ ] [A-004](roadmap/actions/A-004-tester-les-uploads-securises-en-local-report.md) Tester les uploads sécurisés en local (/report-issue, machines, settings) (tester, R-005)

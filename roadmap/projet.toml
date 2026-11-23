@@ -6,6 +6,7 @@ logo = "public/images/logo-fabtrack.svg"
 figure = "fabtrack"
 agent = "agy"
 type = "logiciel"
+equerre = "2026-11-23"
 
 [[test]]
 type = "url"
@@ -47,3 +48,7 @@ titre = "Performances, dette architecturale, exploitation & documentation"
 [[jalons]]
 id = "v1.5"
 titre = "UX / UI, accessibilité, assets & i18n"
+
+[[jalons]]
+id = "v1.6"
+titre = "Plugin RFID ACR122U"
