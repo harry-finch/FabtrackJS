@@ -74,10 +74,10 @@
    Créer automatiquement un compte contributeur pour les staff avec les infos minimums.
 34. **[R-038 Titre des projets](roadmap/items/R-038-titre-des-projets.md)** · Idée · jalon v1.6
    Récupérer les titres des projets sur le wiki
-35. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
-   Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
-36. **[R-039 Liste des objets réparés](roadmap/items/R-039-liste-des-objets-repares.md)** · Idée · jalon v1.6
+35. **[R-039 Liste des objets réparés](roadmap/items/R-039-liste-des-objets-repares.md)** · Idée · jalon v1.6
    La liste va vite devenir trop longue.
+36. **[R-035 Synchronisation avec les casiers connectés](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
+   Synchroniser la base de données de Fabtrack avec la base de données des casiers connectés.
 
 ## Actions à faire
 
