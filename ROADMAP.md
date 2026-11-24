@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 40** (8 %)
+**Avancement : 3 livrés sur 41** (7 %)
 
 ## Restant à faire
 
@@ -80,6 +80,8 @@
    À l’approbation, rattacher ou créer la fiche des médiateurs et administrateurs. Les intéressés renseignent leurs propres informations et leur charte est considérée comme signée.
 37. **[R-035 Transmettre les contributeurs badgés au serveur des casiers](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
    Envoyer périodiquement au serveur des casiers les utilisateurs dont la carte RFID est enregistrée dans Fabtrack, afin qu’ils puissent ouvrir les casiers.
+38. **[R-041 Coût horaire machine](roadmap/items/R-041-cout-horaire-machine.md)** · Idée · jalon v1.7
+   Ajouter un champ coût horaire pour les machines
 
 ## Actions à faire
 
