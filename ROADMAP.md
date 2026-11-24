@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 43** (7 %)
+**Avancement : 3 livrés sur 44** (7 %)
 
 ## Restant à faire
 
@@ -86,6 +86,8 @@
    Exposer les coûts des consommables et des machines sur l’API pour FabAdmin
 40. **[R-043 SSO FabAdmin](roadmap/items/R-043-sso-fabadmin.md)** · Idée · jalon v1.7
    Connexion à FabAdmin via Fatback
+41. **[R-044 Création d’UE via l'API](roadmap/items/R-044-creation-d-ue-via-l-api.md)** · Idée · jalon v1.7
+   Prévoir une API pour pouvoir créer des UE avec FabAdmin
 
 ## Actions à faire
 
