@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 42** (7 %)
+**Avancement : 3 livrés sur 43** (7 %)
 
 ## Restant à faire
 
@@ -84,6 +84,8 @@
    Ajouter un champ coût horaire pour les machines
 39. **[R-042 API coûts](roadmap/items/R-042-api-couts.md)** · Idée · jalon v1.7
    Exposer les coûts des consommables et des machines sur l’API pour FabAdmin
+40. **[R-043 SSO FabAdmin](roadmap/items/R-043-sso-fabadmin.md)** · Idée · jalon v1.7
+   Connexion à FabAdmin via Fatback
 
 ## Actions à faire
 
