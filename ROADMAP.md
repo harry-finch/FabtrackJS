@@ -2,7 +2,7 @@
 
 # FabtrackJS : feuille de route
 
-**Avancement : 3 livrés sur 41** (7 %)
+**Avancement : 3 livrés sur 42** (7 %)
 
 ## Restant à faire
 
@@ -82,6 +82,8 @@
    Envoyer périodiquement au serveur des casiers les utilisateurs dont la carte RFID est enregistrée dans Fabtrack, afin qu’ils puissent ouvrir les casiers.
 38. **[R-041 Coût horaire machine](roadmap/items/R-041-cout-horaire-machine.md)** · Idée · jalon v1.7
    Ajouter un champ coût horaire pour les machines
+39. **[R-042 API coûts](roadmap/items/R-042-api-couts.md)** · Idée · jalon v1.7
+   Exposer les coûts des consommables et des machines sur l’API pour FabAdmin
 
 ## Actions à faire
 
