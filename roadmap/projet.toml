@@ -52,3 +52,6 @@ titre = "UX / UI, accessibilité, assets & i18n"
 [[jalons]]
 id = "v1.6"
 titre = "Plugin RFID ACR122U"
+
+[[jalons]]
+id = "v1.7"
