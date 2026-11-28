@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="<%= typeof currentLocale !== 'undefined' ? currentLocale : 'fr' %>" data-bs-theme="auto">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Compléter votre fiche contributeur personnelle" />
+        <title>Compléter ma fiche contributeur • <%= typeof platformName !== 'undefined' && platformName ? platformName : 'FabtrackJS' %></title>
+
+        <%- include('../includes/pagehead.html') %>
+    </head>
+
+    <body class="d-flex justify-content-center align-items-center min-vh-100 bg-body-tertiary py-4">
+        <%- include('../includes/light-dark.html') %>
+        <main class="form-signin w-100 m-auto" style="max-width: 480px;">
+            <div class="fab-auth-card">
+                <div class="text-center mb-3">
+                    <span class="fab-kpi-icon mx-auto mb-2" aria-hidden="true">
+                        <i class="fa-solid fa-id-card text-primary"></i>
+                    </span>
+                    <h1 class="h5 fw-bold mb-1">Compléter votre fiche contributeur</h1>
+                    <p class="text-muted small mb-0">
+                        Ces informations permettent d'associer votre compte d'équipe (<strong><%= staff.email %></strong>) à votre fiche contributeur personnelle. Votre charte d'utilisation sera automatiquement validée.
+                    </p>
+                </div>
+
+                <form action="<%= typeof basePath !== 'undefined' ? basePath : '' %>/staff/complete-profile" method="post">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-sm-6">
+                            <div class="form-floating">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="completeFirstName"
+                                    name="firstName"
+                                    value="<%= staff.firstName || '' %>"
+                                    placeholder="Prénom"
+                                    required
+                                />
+                                <label for="completeFirstName">Prénom</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-floating">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="completeLastName"
+                                    name="lastName"
+                                    value="<%= staff.lastName || '' %>"
+                                    placeholder="Nom"
+                                    required
+                                />
+                                <label for="completeLastName">Nom</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select class="form-select" id="completeUsertypeId" name="usertypeId" required>
+                            <option value="" disabled <%= !staff.usertypeId ? 'selected' : '' %>>Choisir un type de contributeur...</option>
+                            <% (typeof usertypes !== 'undefined' ? usertypes : []).forEach(function(ut) { %>
+                            <option value="<%= ut.id %>" <%= Number(staff.usertypeId) === Number(ut.id) ? 'selected' : '' %>><%= ut.name %></option>
+                            <% }); %>
+                        </select>
+                        <label for="completeUsertypeId">Type de contributeur</label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>fabtrack" class="btn btn-outline-secondary w-50 py-2">
+                            Plus tard
+                        </a>
+                        <button class="btn btn-primary w-50 py-2" type="submit">
+                            <i class="fa-solid fa-check me-1" aria-hidden="true"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <%- include('../includes/footer.html') %>
+    </body>
+</html>

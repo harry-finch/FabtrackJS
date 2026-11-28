@@ -581,6 +581,7 @@ describe("R-012 — CSRF Protection, Zero Mutating GETs, Dynamic Revocation & Au
           role: "admin",
           approved: true,
           lastWorkspaceId: 3,
+          userId: 77,
         });
 
         let activeSession;

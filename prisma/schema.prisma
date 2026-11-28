@@ -28,16 +28,22 @@ enum StaffRole {
 
 // Staff who can log into the platform
 model Staff {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique @db.VarChar(255)
-  email       String    @unique @db.VarChar(255)
-  password    String    @db.VarChar(255)
-  role        StaffRole @default(user)
-  pwdToken    String?   @db.VarChar(64)
-  tokenExpiry DateTime?
+  id              Int       @id @default(autoincrement())
+  name            String    @unique @db.VarChar(255)
+  email           String    @unique @db.VarChar(255)
+  password        String    @db.VarChar(255)
+  role            StaffRole @default(user)
+  pwdToken        String?   @db.VarChar(64)
+  tokenExpiry     DateTime?
   createdAt       DateTime  @default(now())
   approved        Boolean   @default(false)
   lastWorkspaceId Int?
+  firstName       String?   @db.VarChar(255)
+  lastName        String?   @db.VarChar(255)
+  usertypeId      Int?
+  userId          Int?      @unique
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 // Users and visitors whose activities we want to track
@@ -67,6 +73,7 @@ model User {
   activities          Activity[]
   workshopInterests   UserWorkshopInterest[]
   workshopCompletions UserWorkshopCompletion[]
+  staff               Staff?
 }
 
 // Types of users (e.g., student, startup, teacher...)

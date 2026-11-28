@@ -2,10 +2,10 @@
 id: R-037
 titre: "Associer une fiche contributeur aux membres de l’équipe"
 resume: "À l’approbation, rattacher ou créer la fiche des médiateurs et administrateurs. Les intéressés renseignent leurs propres informations et leur charte est considérée comme signée."
-statut: specifiee
+statut: a-tester
 jalon: v1.6
 cree: 2026-11-22
-maj: 2026-11-23
+maj: 2026-11-28
 livree:
 ---
 ## But

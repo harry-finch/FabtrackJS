@@ -9,18 +9,21 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody } = require("../middleware/validate.js");
 const { createRateLimiter } = require("../middleware/rateLimit.js");
 const { ensureCsrfToken } = require("../middleware/csrf.js");
-const { isApiOrAjaxRequest } = require("../middleware/requireRoles.js");
+const requireRoles = require("../middleware/requireRoles.js");
+const { isApiOrAjaxRequest } = requireRoles;
 const { safeHttpUrl } = require("../utilities/xssHelpers.js");
 const { getSafeRedirectPath } = require("../utilities/securityHelpers.js");
 const {
   loginSchema,
   registerStaffSchema,
+  completeStaffProfileSchema,
   requestPasswordResetSchema,
   resetPasswordSchema,
 } = require("../schemas/auth.schema.js");
 const { reportBugSchema } = require("../schemas/bug.schema.js");
 const i18nService = require("../services/i18nService.js");
 const passwordResetService = require("../services/passwordResetService.js");
+const staffContributorService = require("../services/staffContributorService.js");
 
 dotenv.config();
 
@@ -205,7 +208,11 @@ router.get(
       req.session.notification = "Error: L'auto-inscription est désactivée par l'administrateur.";
       return res.redirect("/login");
     }
-    return res.render("index/register");
+    const usertypes =
+      prisma.usertype && typeof prisma.usertype.findMany === "function"
+        ? await prisma.usertype.findMany({ orderBy: { name: "asc" } })
+        : [];
+    return res.render("index/register", { usertypes });
   }),
 );
 
@@ -219,7 +226,7 @@ router.post(
   requireSelfRegistration,
   validateBody(registerStaffSchema, { redirectUrl: "/register" }),
   asyncHandler(async (req, res) => {
-    const { username, password, mail, honeypot } = req.body;
+    const { username, firstName, lastName, usertypeId, password, mail, honeypot } = req.body;
 
     // Check if a bot might have registered
     if (honeypot) {
@@ -229,13 +236,24 @@ router.post(
     // Hash the password with bcrypt
     const hash = await bcrypt.hash(password, saltRounds);
 
+    const createData = {
+      name: username,
+      password: hash,
+      email: mail,
+    };
+    if (typeof firstName === "string" && firstName.trim()) {
+      createData.firstName = firstName.trim();
+    }
+    if (typeof lastName === "string" && lastName.trim()) {
+      createData.lastName = lastName.trim();
+    }
+    if (usertypeId && Number.isInteger(Number(usertypeId)) && Number(usertypeId) > 0) {
+      createData.usertypeId = Number(usertypeId);
+    }
+
     try {
       await prisma.staff.create({
-        data: {
-          name: username,
-          password: hash,
-          email: mail,
-        },
+        data: createData,
       });
 
       // Notify user about admin approval requirement
@@ -386,11 +404,94 @@ router.post(
       }
       ensureCsrfToken(req);
 
+      // R-037: Ensure approved admin/user has a linked contributor profile (or prompt self-completion)
+      if (staffContributorService.isEligibleForContributorLink(user) && !user.userId) {
+        try {
+          const linkOutcome = await staffContributorService.ensureStaffContributorLink({
+            prisma,
+            staffRecord: user,
+            actorUsername: user.name,
+            logger,
+          });
+          if (linkOutcome && linkOutcome.status === "missing_info") {
+            return res.redirect("/staff/complete-profile");
+          }
+          if (linkOutcome && linkOutcome.status === "archived_match") {
+            req.session.notification = `Warning: ${linkOutcome.message}`;
+          }
+        } catch (linkErr) {
+          console.error("[routes/index/auth] Non-blocking contributor link error:", linkErr);
+        }
+      }
+
       return res.redirect("/");
     } else {
       req.session.notification = "Error: Incorrect username or password.";
       return res.redirect("/login");
     }
+  }),
+);
+
+// ******************************************************************************
+// Self-completion of contributor profile for approved admin/user staff (R-037)
+// ******************************************************************************
+
+router.get(
+  "/staff/complete-profile",
+  isAuthenticated,
+  requireRoles("admin", "user"),
+  clearNotification,
+  asyncHandler(async (req, res) => {
+    const staff = req.session.staffId
+      ? await prisma.staff.findUnique({ where: { id: Number(req.session.staffId) } })
+      : null;
+
+    if (!staff) {
+      return res.redirect("/");
+    }
+    if (staff.userId) {
+      return res.redirect("/");
+    }
+
+    const usertypes =
+      prisma.usertype && typeof prisma.usertype.findMany === "function"
+        ? await prisma.usertype.findMany({ orderBy: { name: "asc" } })
+        : [];
+
+    return res.render("index/complete-staff-profile", {
+      staff,
+      usertypes,
+    });
+  }),
+);
+
+router.post(
+  "/staff/complete-profile",
+  isAuthenticated,
+  requireRoles("admin", "user"),
+  validateBody(completeStaffProfileSchema, { redirectUrl: "/staff/complete-profile" }),
+  asyncHandler(async (req, res) => {
+    const { firstName, lastName, usertypeId } = req.validatedBody || req.body;
+    const outcome = await staffContributorService.completeSelfProfileAndLink({
+      prisma,
+      staffId: req.session.staffId,
+      firstName,
+      lastName,
+      usertypeId,
+      logger,
+    });
+
+    if (outcome.status === "archived_match") {
+      req.session.notification = `Warning: ${outcome.message}`;
+      return res.redirect("/");
+    }
+    if (!outcome.linked) {
+      req.session.notification = `Error: ${outcome.message || "Impossible de créer la fiche contributeur."}`;
+      return res.redirect("/staff/complete-profile");
+    }
+
+    req.session.notification = `Success: ${outcome.message || "Votre fiche contributeur a bien été associée."}`;
+    return res.redirect("/");
   }),
 );
 

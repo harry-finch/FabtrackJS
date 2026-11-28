@@ -32,6 +32,31 @@
                         <label for="username"><%= __('auth.username') %></label>
                     </div>
 
+                    <div class="row g-2 my-1">
+                        <div class="col-sm-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Prénom" required />
+                                <label for="firstName">Prénom</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Nom" required />
+                                <label for="lastName">Nom</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-2">
+                        <select class="form-select" id="usertypeId" name="usertypeId" required>
+                            <option value="" disabled selected>Choisir votre statut...</option>
+                            <% (typeof usertypes !== 'undefined' ? usertypes : []).forEach(function(ut) { %>
+                            <option value="<%= ut.id %>"><%= ut.name %></option>
+                            <% }); %>
+                        </select>
+                        <label for="usertypeId">Type de contributeur</label>
+                    </div>
+
                     <div class="form-floating">
                         <input type="password" class="form-control" id="password_verif" name="password_verif" placeholder="<%= __('auth.password') %>" minlength="8" autocomplete="new-password" required />
                         <label for="password_verif"><%= __('auth.password') %></label>

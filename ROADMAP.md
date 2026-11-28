@@ -76,7 +76,7 @@
    À l’entrée, le contributeur badgé précise son motif de visite, son projet et, s’il le souhaite, un complément. L’accueil accompagne les personnes sans badge ou sans fiche.
 35. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · À tester · jalon v1.6
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
-36. **[R-037 Associer une fiche contributeur aux membres de l’équipe](roadmap/items/R-037-compte-staff-contributeur.md)** · Spécifiée · jalon v1.6
+36. **[R-037 Associer une fiche contributeur aux membres de l’équipe](roadmap/items/R-037-compte-staff-contributeur.md)** · À tester · jalon v1.6
    À l’approbation, rattacher ou créer la fiche des médiateurs et administrateurs. Les intéressés renseignent leurs propres informations et leur charte est considérée comme signée.
 37. **[R-035 Transmettre les contributeurs badgés au serveur des casiers](roadmap/items/R-035-synchronisation-avec-les-casiers-connectes.md)** · Idée · jalon v1.6
    Envoyer périodiquement au serveur des casiers les utilisateurs dont la carte RFID est enregistrée dans Fabtrack, afin qu’ils puissent ouvrir les casiers.
@@ -156,6 +156,8 @@
 - [ ] [A-065](roadmap/actions/A-065-verifier-pointage-entree-sortie-et-badge-inconnu.md) Vérifier pointage entrée/sortie et badge inconnu avec l'ACR122U (tester, R-034)
 - [ ] [A-066](roadmap/actions/A-066-verifier-l-enrolement-d-un-badge-depuis-l.md) Vérifier l'enrôlement d'un badge depuis l'accueil et la fiche contributeur (tester, R-034)
 - [ ] [A-067](roadmap/actions/A-067-verifier-la-reconnexion-automatique-apres.md) Vérifier la reconnexion automatique après débranchement/rebranchement USB (tester, R-034)
+- [ ] [A-068](roadmap/actions/A-068-approuver-un-nouveau-mediateur-et-verifier-sa.md) Approuver un nouveau médiateur et vérifier sa fiche contributeur (tester, R-037)
+- [ ] [A-069](roadmap/actions/A-069-verifier-le-rattachement-d-un-membre-deja-equipe.md) Vérifier le rattachement d'un membre déjà équipé d'un badge (tester, R-037)
 
 ## Livré
 

@@ -64,6 +64,17 @@ router.get(
       orderBy: {
         id: "desc",
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            rfid: true,
+            deletedAt: true,
+          },
+        },
+      },
     });
 
     res.render("admin/manage-staff", {

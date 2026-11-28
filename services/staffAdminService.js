@@ -2,6 +2,7 @@ const { prisma: defaultPrisma } = require("../utilities/db");
 const defaultMailService = require("./mailService.js");
 const defaultLogger = require("../utilities/simpleLogger.js");
 const defaultStaffSessionService = require("./staffSessionService.js");
+const defaultStaffContributorService = require("./staffContributorService.js");
 const { ALLOWED_STAFF_ROLES } = require("../schemas/staff.schema.js");
 
 /**
@@ -12,11 +13,12 @@ class StaffAdminService {
   /**
    * @param {Object} [deps] Surcharges optionnelles pour les tests unitaires
    */
-  constructor({ prisma, mailService, logger, staffSessionService } = {}) {
+  constructor({ prisma, mailService, logger, staffSessionService, staffContributorService } = {}) {
     this.prisma = prisma || defaultPrisma;
     this.mailService = mailService || defaultMailService;
     this.logger = logger || defaultLogger;
     this.staffSessionService = staffSessionService || defaultStaffSessionService;
+    this.staffContributorService = staffContributorService || defaultStaffContributorService;
   }
 
   /**
@@ -103,6 +105,17 @@ class StaffAdminService {
     });
     this.staffSessionService.invalidateStaffSessionCache(result.id);
 
+    // R-037: Link or create contributor profile for approved admin/user accounts (never borne `staff`)
+    let contributorLink = null;
+    if (this.staffContributorService && typeof this.staffContributorService.ensureStaffContributorLink === "function") {
+      contributorLink = await this.staffContributorService.ensureStaffContributorLink({
+        prisma: this.prisma,
+        staffRecord: result,
+        actorUsername: actor.username || "Admin",
+        logger: this.logger,
+      });
+    }
+
     if (!staffBefore.approved && hostUrl) {
       this.mailService
         .sendStaffApprovedNotification({
@@ -114,7 +127,13 @@ class StaffAdminService {
     }
 
     this.logger.logThat(`User ${result.name} enabled by ${actor.username || "Admin"}`);
-    return { success: true, staff: result, message: "Success: User is now enabled" };
+    let msg = "Success: Compte activé avec succès.";
+    if (contributorLink && contributorLink.status === "archived_match") {
+      msg = `Warning: Compte activé, mais ${contributorLink.message}`;
+    } else if (contributorLink && contributorLink.message && (contributorLink.status === "linked_existing" || contributorLink.status === "created" || contributorLink.status === "missing_info")) {
+      msg = `Success: Compte activé. ${contributorLink.message}`;
+    }
+    return { success: true, staff: result, contributorLink, message: msg };
   }
 
   async disableStaff({ targetId, actor = {} }) {
@@ -221,6 +240,20 @@ class StaffAdminService {
     });
     this.staffSessionService.invalidateStaffSessionCache(result.id);
 
+    let contributorLink = null;
+    if (
+      result.approved &&
+      this.staffContributorService &&
+      typeof this.staffContributorService.ensureStaffContributorLink === "function"
+    ) {
+      contributorLink = await this.staffContributorService.ensureStaffContributorLink({
+        prisma: this.prisma,
+        staffRecord: result,
+        actorUsername: actor.username || "Admin",
+        logger: this.logger,
+      });
+    }
+
     if (approved && !staffBefore.approved && hostUrl) {
       this.mailService
         .sendStaffApprovedNotification({
@@ -232,7 +265,13 @@ class StaffAdminService {
     }
 
     this.logger.logThat(`User ${result.name} has been updated by ${actor.username || "Admin"}`);
-    return { success: true, staff: result, message: "Success: User has been updated" };
+    let msg = "Success: Compte mis à jour avec succès.";
+    if (contributorLink && contributorLink.status === "archived_match") {
+      msg = `Warning: Compte mis à jour, mais ${contributorLink.message}`;
+    } else if (contributorLink && contributorLink.message && (contributorLink.status === "linked_existing" || contributorLink.status === "created")) {
+      msg = `Success: Compte mis à jour. ${contributorLink.message}`;
+    }
+    return { success: true, staff: result, contributorLink, message: msg };
   }
 }
 

@@ -39,6 +39,7 @@
                                     <th data-sort="1" scope="col">Nom d'utilisateur</th>
                                     <th data-sort="2" scope="col">E-mail</th>
                                     <th data-sort="3" scope="col" class="text-center">Rôle</th>
+                                    <th scope="col" class="text-center">Fiche contributeur</th>
                                     <th scope="col" class="text-center">Statut</th>
                                     <th scope="col" class="text-end pe-3">Actions</th>
                                 </tr>
@@ -46,7 +47,7 @@
                             <tbody id="table-content">
                                 <% if (!users || users.length === 0) { %>
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-5">
+                                    <td colspan="7" class="text-center text-muted py-5">
                                         <i class="fa-solid fa-users-gear fs-4 d-block mb-2 opacity-50" aria-hidden="true"></i>
                                         Aucun compte staff enregistré pour le moment.
                                     </td>
@@ -76,6 +77,25 @@
                                                 <i class="fa-solid fa-user-gear me-1" aria-hidden="true"></i>Médiateur
                                             </button>
                                         </form>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-center">
+                                        <% if (user.role === 'staff') { %>
+                                            <span class="badge bg-body-secondary text-secondary-emphasis border">Compte technique</span>
+                                        <% } else if (user.userId && user.user) { %>
+                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= user.userId %>" class="badge bg-success-subtle text-success border border-success-subtle text-decoration-none" title="Voir la fiche contributeur de <%= user.user.name %> <%= user.user.surname %>">
+                                                <i class="fa-solid fa-id-card me-1" aria-hidden="true"></i><%= user.user.name %> <%= user.user.surname %>
+                                            </a>
+                                        <% } else if (user.userId) { %>
+                                            <a href="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>users/edit/<%= user.userId %>" class="badge bg-success-subtle text-success border border-success-subtle text-decoration-none">
+                                                <i class="fa-solid fa-id-card me-1" aria-hidden="true"></i>Fiche #<%= user.userId %>
+                                            </a>
+                                        <% } else if (!user.approved) { %>
+                                            <span class="badge bg-body-secondary text-secondary-emphasis border">En attente</span>
+                                        <% } else { %>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" title="Le membre complétera ses informations à sa prochaine connexion">
+                                                <i class="fa-solid fa-clock me-1" aria-hidden="true"></i>À compléter
+                                            </span>
                                         <% } %>
                                     </td>
                                     <td class="text-center">

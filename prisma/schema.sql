@@ -21,9 +21,14 @@ CREATE TABLE `Staff` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `approved` BOOLEAN NOT NULL DEFAULT false,
     `lastWorkspaceId` INTEGER NULL,
+    `firstName` VARCHAR(255) NULL,
+    `lastName` VARCHAR(255) NULL,
+    `usertypeId` INTEGER NULL,
+    `userId` INTEGER NULL,
 
     UNIQUE INDEX `Staff_name_key`(`name`),
     UNIQUE INDEX `Staff_email_key`(`email`),
+    UNIQUE INDEX `Staff_userId_key`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -504,4 +509,7 @@ ALTER TABLE `MachineIssue` ADD CONSTRAINT `MachineIssue_machineId_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `MachineMaintenance` ADD CONSTRAINT `MachineMaintenance_machineId_fkey` FOREIGN KEY (`machineId`) REFERENCES `Machine`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Staff` ADD CONSTRAINT `Staff_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 

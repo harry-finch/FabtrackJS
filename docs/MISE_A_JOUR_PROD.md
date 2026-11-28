@@ -71,6 +71,7 @@ pm2 logs fabtrack --lines 50
 | [R-040](../roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md) | `v1.6` | Aucune | Aucune | Aucune | Vérifier la synchro temps réel (kiosque + compteurs/état vide `/admin/equipment/manage`) après restitution depuis les deux écrans |
 | [R-036](../roadmap/items/R-036-limiter-utilisateur-borne.md) | `v1.6` | Aucune | Aucune | Aucune | Vérifier qu'un compte `staff` (borne) n'affiche que le pointage individuel par badge (confirmation motif/projet/commentaire à l'entrée, sortie au second scan) |
 | [R-034](../roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md) | `v1.6` | Aucune | Aucune | Aucune côté serveur (sur le poste borne ACR122U uniquement : `cd scripts/rfid-bridge && npm install`) | Activer « Pont local lecteur ACR122U » dans `/admin/settings` et lancer `scripts/rfid-bridge/` sur le poste borne |
+| [R-037](../roadmap/items/R-037-compte-staff-contributeur.md) | `v1.6` | Aucune | **Obligatoire :** `npm run db:migrate` (applique `006_r037_staff_contributor_link.sql` : colonnes `Staff.firstName`, `lastName`, `usertypeId`, `userId` + FK `User`) | **`npx prisma generate`** | Vérifier `/admin/staff/manage` (colonne « Fiche contributeur ») et tester la complétion à la prochaine connexion pour un compte déjà approuvé |
 
 ---
 
@@ -489,6 +490,23 @@ pm2 restart fabtrack
 
 - Dans **Administration > BookStack** (`/admin/bookstack`), cliquer sur **Actualiser les titres** afin de synchroniser les titres des livres/pages existants.
 - Vérifier qu'un projet peut être choisi par son titre sur le kiosque et renommé localement depuis `/admin/bookstack` ou la fiche contributeur.
+
+#### `R-037` — Associer une fiche contributeur aux membres de l'équipe
+
+**1. Évolution SQL obligatoire (idempotente)**
+
+La migration `006_r037_staff_contributor_link.sql` ajoute les colonnes `firstName`, `lastName`, `usertypeId` et la clé étrangère unique `userId` (`ON DELETE SET NULL`) sur `Staff` :
+
+```bash
+npm run db:migrate
+npx prisma generate
+pm2 restart fabtrack
+```
+
+**2. Vérification post-déploiement**
+
+- Dans **Administration > Staff** (`/admin/staff/manage`), vérifier l'affichage de la colonne « Fiche contributeur ».
+- À la prochaine connexion d'un médiateur ou administrateur déjà approuvé sans fiche associée, vérifier le rattachement automatique (si une fiche active porte la même adresse e-mail) ou l'écran de complétion personnelle (`/staff/complete-profile`).
 
 
 

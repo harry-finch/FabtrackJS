@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { optionalPositiveIntId, positiveIntId } = require("./common.schema.js");
 
 const loginSchema = z.object({
   username: z
@@ -18,6 +19,19 @@ const registerStaffSchema = z.object({
     .trim()
     .min(1, "Le nom d'utilisateur ne peut pas être vide.")
     .max(255, "Le nom d'utilisateur ne peut pas dépasser 255 caractères."),
+  firstName: z
+    .string({ error: "Le prénom est invalide." })
+    .trim()
+    .max(255, "Le prénom ne peut pas dépasser 255 caractères.")
+    .optional()
+    .nullable(),
+  lastName: z
+    .string({ error: "Le nom est invalide." })
+    .trim()
+    .max(255, "Le nom ne peut pas dépasser 255 caractères.")
+    .optional()
+    .nullable(),
+  usertypeId: optionalPositiveIntId("Le type de contributeur"),
   mail: z
     .string({ error: "L'adresse e-mail est requise." })
     .trim()
@@ -33,6 +47,20 @@ const registerStaffSchema = z.object({
     .max(255, "Champ invalide.")
     .optional()
     .default(""),
+});
+
+const completeStaffProfileSchema = z.object({
+  firstName: z
+    .string({ error: "Votre prénom est requis." })
+    .trim()
+    .min(1, "Votre prénom est requis.")
+    .max(255, "Le prénom ne peut pas dépasser 255 caractères."),
+  lastName: z
+    .string({ error: "Votre nom est requis." })
+    .trim()
+    .min(1, "Votre nom est requis.")
+    .max(255, "Le nom ne peut pas dépasser 255 caractères."),
+  usertypeId: positiveIntId("Le type de contributeur"),
 });
 
 const requestPasswordResetSchema = z.object({
@@ -77,6 +105,7 @@ const resetPasswordSchema = z
 module.exports = {
   loginSchema,
   registerStaffSchema,
+  completeStaffProfileSchema,
   requestPasswordResetSchema,
   resetPasswordSchema,
 };
