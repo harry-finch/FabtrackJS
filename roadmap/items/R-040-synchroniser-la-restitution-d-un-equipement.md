@@ -2,10 +2,10 @@
 id: R-040
 titre: "Synchroniser la restitution d’un équipement entre les postes"
 resume: "Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu."
-statut: specifiee
+statut: a-tester
 jalon: v1.6
 cree: 2026-11-23
-maj: 2026-11-23
+maj: 2026-11-28
 livree:
 ---
 ## But

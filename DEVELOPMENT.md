@@ -509,24 +509,24 @@ FabtrackJS provides end-to-end tracking for borrowed equipment (power tools, ele
 
 ### Loan Flow:
 1. **Borrowing Session**:
-   - In the visitor kiosk (`/fabtrack`), when adding an activity modal (`views/includes/activity-modal.html`), the user selects an equipment item.
-   - The user or mediator specifies a loan duration (`borrowDays`, default: 7 days).
-   - Submitted to `POST /fabtrack/history` with `type: "BORROW"`.
-   - Validated via `createBorrowSessionSchema`.
-   - Controller computes expected return timestamp: `dateExpectedReturn = new Date(Date.now() + borrowDays * 86400000)`.
+   - In the visitor kiosk (`/fabtrack`), when adding an activity via the modal (`views/includes/activity-modal.html`), the mediator selects an equipment item and specifies a loan duration (`borrowDurationDays`, default: 7 days).
+   - Submitted to `POST /history/activity` (validated via `activitySchema` in `schemas/history.schema.js`).
+   - Controller atomically verifies availability (`Equipment.status === "AVAILABLE"`, no active unreturned loan), creates an `Activity` row with `resourceType: "EQUIPMENT"`, `resourceId` + `equipmentId`, `expectedReturnAt = new Date(Date.now() + borrowDurationDays * 86400000)`, and `returnedAt: null`.
 2. **Kiosk Visual Alert**:
-   - In the active visitor list, users who currently hold unreturned equipment display a distinct hand-holding box icon (`fa-solid fa-hand-holding-box text-warning`) with an interactive tooltip.
+   - In the active visitor list (`views/fabtrack/partials/present-table.ejs`), present contributors who currently hold unreturned equipment display a loan badge (`fa-solid fa-toolbox`) with an interactive tooltip listing borrowed items and expected return dates (highlighted in red when overdue).
 3. **User Profile Section (`/users/edit/:id#loans`)**:
    - Displays complete active and past equipment loans.
-   - Active loans feature an overdue badge if `dateExpectedReturn < new Date()`.
-   - A quick restitution button triggers a confirmation modal (`views/fabtrack/edit-user.ejs`).
-4. **Admin Equipment Supervision (`/admin/equipment`)**:
-   - The equipment management table features dedicated KPI cards (Total items, In circulation, Overdue).
-   - "Restituer" icon action button with confirmation modal triggers immediate return.
-5. **Restitution Action**:
-   - Route `POST /users/return-equipment/:historyId` or `POST /admin/equipment/return/:historyId`.
-   - Updates the `History` entry: sets `dateEnd = new Date()`.
-   - Marks the equipment as returned and removes kiosk alerts immediately.
+   - Active loans feature an overdue badge if `expectedReturnAt < new Date()`.
+   - A quick restitution button triggers a confirmation modal (`views/fabtrack/edit-user.ejs`) posting to `POST /history/equipment/return/:id`.
+4. **Admin Equipment Supervision (`/admin/equipment/manage`)**:
+   - Features dedicated KPI cards (Total catalog items, Active loans, Overdue loans), the active loans table, and the equipment catalog with live « En prêt » badges.
+   - The « Restituer » action button posts to `POST /admin/equipment/return/:id`.
+   - Synchronized live via SSE (`admin` channel) and `[data-live-refresh-region]` sections in `public/javascripts/live-refresh.js` without clobbering active user input or open modals.
+5. **Shared Atomic Restitution (`services/equipmentLoanService.js`)**:
+   - Both return routes (`POST /history/equipment/return/:id` for `admin`/`user` and `POST /admin/equipment/return/:id` for `admin`) delegate to `equipmentLoanService.processEquipmentReturn()`.
+   - The `:id` parameter identifies an `Activity` record of type `EQUIPMENT` (supporting legacy records identified by `resourceId` alone).
+   - Atomically updates `Activity.returnedAt` (guarded by `returnedAt: null`) and `Activity.returnNotes` while leaving any open visitor `History` entry untouched.
+   - On atomic success, writes a single audit log entry and broadcasts one invalidation event on both `kiosk` and `admin` SSE channels. Duplicate concurrent returns return « déjà restitué » without overwriting `returnedAt`/`returnNotes` or emitting duplicate logs/events. Borne accounts (`role: "staff"`) are forbidden from recording returns.
 
 ---
 

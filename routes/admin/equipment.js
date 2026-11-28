@@ -14,6 +14,8 @@ router.use(isAdmin);
 
 const { prisma, ResourceType } = require("../../utilities/db.js");
 const equipmentLoanService = require("../../services/equipmentLoanService.js");
+const realtimeService = require("../../services/realtimeService.js");
+const { isApiOrAjaxRequest } = require("../../middleware/requireRoles.js");
 
 const logger = require("../../utilities/simpleLogger.js");
 
@@ -286,47 +288,42 @@ router.post(
   validateParams(idParamSchema, { redirectUrl: "/admin/equipment/manage" }),
   validateBody(returnEquipmentSchema, { redirectUrl: "/admin/equipment/manage" }),
   asyncHandler(async (req, res) => {
+    const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
     const { id } = req.params;
     const { returnNotes } = req.body;
 
-    const activity = await prisma.activity.findUnique({
-      where: { id: Number(id) },
-      include: { user: true },
-    });
-
-    if (!activity || activity.resourceType !== ResourceType.EQUIPMENT) {
-      req.session.notification = "Error: Emprunt introuvable.";
-      return res.redirect("/admin/equipment/manage");
-    }
-
-    if (activity.returnedAt) {
-      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
-      const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
-      return res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
-    }
-
-    const returnResult = await equipmentLoanService.returnEquipmentLoan({
+    const outcome = await equipmentLoanService.processEquipmentReturn({
       prisma,
       activityId: Number(id),
       returnNotes,
       staffUsername: req.session.username,
+      actorLabel: `l'admin ${req.session.username}`,
+      logger,
+      realtimeService,
     });
 
-    if (!returnResult.returned) {
-      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
-      const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
+    if (isApiOrAjaxRequest(req)) {
+      const status =
+        outcome.status === "returned" ? 200 : outcome.status === "not_found" ? 404 : 409;
+      return res.status(status).json({
+        ok: outcome.returned,
+        status: outcome.status,
+        message: outcome.message,
+      });
+    }
+
+    if (outcome.status === "not_found") {
+      req.session.notification = `Error: ${outcome.message}`;
+      return res.redirect("/admin/equipment/manage");
+    }
+
+    if (outcome.status === "already_returned") {
+      req.session.notification = `Warning: ${outcome.message}`;
       return res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
     }
 
-    const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
-    const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;
-    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `contributeur #${activity.userId}`;
-
-    logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par l'admin ${req.session.username}).`);
-    req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;
-
-    const { getSafeRedirectPath } = require("../../utilities/securityHelpers.js");
-    res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
+    req.session.notification = `Success: ${outcome.message}`;
+    return res.redirect(getSafeRedirectPath(req, "/admin/equipment/manage"));
   }),
 );
 

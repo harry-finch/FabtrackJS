@@ -948,42 +948,37 @@ router.post(
     const { id } = req.params;
     const { returnNotes } = req.body;
 
-    const activity = await prisma.activity.findUnique({
-      where: { id: Number(id) },
-      include: { user: true },
-    });
-
-    if (!activity || activity.resourceType !== ResourceType.EQUIPMENT) {
-      req.session.notification = "Error: Emprunt introuvable.";
-      return res.redirect(getSafeRedirectPath(req, "/fabtrack"));
-    }
-
-    if (activity.returnedAt) {
-      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
-      return res.redirect(getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage"));
-    }
-
-    const returnResult = await equipmentLoanService.returnEquipmentLoan({
+    const outcome = await equipmentLoanService.processEquipmentReturn({
       prisma,
       activityId: Number(id),
       returnNotes,
       staffUsername: req.session.username,
+      actorLabel: req.session.username,
+      logger,
+      realtimeService,
     });
 
-    if (!returnResult.returned) {
-      req.session.notification = "Warning: Cet équipement a déjà été marqué comme restitué.";
+    if (isApiOrAjaxRequest(req)) {
+      const status =
+        outcome.status === "returned" ? 200 : outcome.status === "not_found" ? 404 : 409;
+      return res.status(status).json({
+        ok: outcome.returned,
+        status: outcome.status,
+        message: outcome.message,
+      });
+    }
+
+    if (outcome.status === "not_found") {
+      req.session.notification = `Error: ${outcome.message}`;
+      return res.redirect(getSafeRedirectPath(req, "/fabtrack"));
+    }
+
+    if (outcome.status === "already_returned") {
+      req.session.notification = `Warning: ${outcome.message}`;
       return res.redirect(getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage"));
     }
 
-    const eqItem = await prisma.equipment.findUnique({ where: { id: activity.resourceId } });
-    const eqName = eqItem ? eqItem.name : `#${activity.resourceId}`;
-    const borrowerName = activity.user ? `${activity.user.name} ${activity.user.surname}` : `contributeur #${activity.userId}`;
-
-    logger.logThat(`Équipement "${eqName}" restitué par ${borrowerName} (enregistré par ${req.session.username}).`);
-    realtimeService.publish("kiosk", { action: "equipment-return" });
-    realtimeService.publish("admin", { entity: "equipment", action: "equipment-return" });
-    req.session.notification = `Success: L'équipement "${eqName}" a été marqué comme restitué.`;
-
+    req.session.notification = `Success: ${outcome.message}`;
     const redirectUrl = getSafeRedirectPath(req, req.session.lastPage || "/admin/equipment/manage");
     return res.redirect(redirectUrl);
   }),

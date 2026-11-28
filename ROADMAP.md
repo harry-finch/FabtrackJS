@@ -70,7 +70,7 @@
    Afficher les 25 dernières interventions, rechercher dans tout l’historique et calculer les indicateurs sur l’année civile en cours.
 32. **[R-038 Afficher et personnaliser les titres des projets BookStack](roadmap/items/R-038-titre-des-projets.md)** · À tester · jalon v1.6
    Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible.
-33. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · Spécifiée · jalon v1.6
+33. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · À tester · jalon v1.6
    Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu.
 34. **[R-036 Réserver la borne au pointage individuel par badge](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Spécifiée · jalon v1.6
    À l’entrée, le contributeur badgé précise son motif de visite, son projet et, s’il le souhaite, un complément. L’accueil accompagne les personnes sans badge ou sans fiche.
@@ -148,6 +148,8 @@
 - [ ] [A-057](roadmap/actions/A-057-verifier-l-independance-des-indicateurs-annuels.md) Vérifier l'indépendance des indicateurs annuels du Repair Café (tester, R-039)
 - [ ] [A-058](roadmap/actions/A-058-choisir-un-projet-par-son-titre-au-kiosque.md) Choisir un projet par son titre au kiosque (tester, R-038)
 - [ ] [A-059](roadmap/actions/A-059-definir-puis-effacer-un-nom-local-de-projet.md) Définir puis effacer un nom local de projet (tester, R-038)
+- [ ] [A-060](roadmap/actions/A-060-verifier-la-disparition-du-badge-pret-sur-le.md) Vérifier la disparition du badge prêt sur le kiosque après restitution admin (tester, R-040)
+- [ ] [A-061](roadmap/actions/A-061-verifier-compteurs-et-etat-vide-en-gestion.md) Vérifier compteurs et état vide en gestion équipements après restitution fiche contributeur (tester, R-040)
 
 ## Livré
 

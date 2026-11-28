@@ -137,12 +137,41 @@
   }
 
   /**
-   * Lot 2: Refresh operational admin table sections via fetch + DOMParser without full reload
+   * Lot 2: Refresh operational admin sections/tables via fetch + DOMParser without full reload.
+   * Supports explicit [data-live-refresh-region] containers (so KPI cards, badges, empty states,
+   * and tables stay synchronized even when a table disappears into an empty state — R-040)
+   * with fallback to .table-responsive containers on other admin pages.
    */
+  function swapContainerPreservingSort(currContainer, nextContainer) {
+    const currTable = currContainer.querySelector("table");
+    const prevSortCol = currTable ? currTable.getAttribute("data-sort-col") : null;
+    const prevSortDir = currTable ? currTable.getAttribute("data-sort-dir") : null;
+
+    disposeTooltipsIn(currContainer);
+    currContainer.innerHTML = nextContainer.innerHTML;
+
+    if (typeof window.initSortableHeaders === "function") {
+      window.initSortableHeaders(currContainer);
+    }
+    const swappedTable = currContainer.querySelector("table");
+    if (swappedTable && prevSortCol !== null && typeof window.sortTable === "function") {
+      const colIdx = parseInt(prevSortCol, 10);
+      if (!Number.isNaN(colIdx)) {
+        if (prevSortDir === "desc") {
+          swappedTable.setAttribute("data-sort-col", String(colIdx));
+          swappedTable.setAttribute("data-sort-dir", "asc");
+        }
+        window.sortTable(colIdx, swappedTable);
+      }
+    }
+    initTooltipsIn(currContainer);
+  }
+
   async function refreshAdminTables() {
     if (isUserEditingOrModalOpen()) return false;
+    const currentRegions = document.querySelectorAll("[data-live-refresh-region]");
     const currentTables = document.querySelectorAll(".table-responsive");
-    if (currentTables.length === 0) return false;
+    if (currentRegions.length === 0 && currentTables.length === 0) return false;
 
     if (adminRefreshInFlight) {
       return adminRefreshInFlight;
@@ -163,33 +192,25 @@
         const html = await res.text();
         const parser = new window.DOMParser();
         const nextDoc = parser.parseFromString(html, "text/html");
-        const nextTables = nextDoc.querySelectorAll(".table-responsive");
 
+        if (currentRegions.length > 0) {
+          let updatedCount = 0;
+          currentRegions.forEach((currRegion) => {
+            const key = currRegion.getAttribute("data-live-refresh-region");
+            if (!key) return;
+            const nextRegion = nextDoc.querySelector(`[data-live-refresh-region="${key}"]`);
+            if (!nextRegion) return;
+            swapContainerPreservingSort(currRegion, nextRegion);
+            updatedCount += 1;
+          });
+          return updatedCount > 0;
+        }
+
+        const nextTables = nextDoc.querySelectorAll(".table-responsive");
         if (nextTables.length !== currentTables.length) return false;
 
         currentTables.forEach((currWrap, idx) => {
-          const currTable = currWrap.querySelector("table");
-          const prevSortCol = currTable ? currTable.getAttribute("data-sort-col") : null;
-          const prevSortDir = currTable ? currTable.getAttribute("data-sort-dir") : null;
-
-          disposeTooltipsIn(currWrap);
-          currWrap.innerHTML = nextTables[idx].innerHTML;
-
-          if (typeof window.initSortableHeaders === "function") {
-            window.initSortableHeaders(currWrap);
-          }
-          const swappedTable = currWrap.querySelector("table");
-          if (swappedTable && prevSortCol !== null && typeof window.sortTable === "function") {
-            const colIdx = parseInt(prevSortCol, 10);
-            if (!Number.isNaN(colIdx)) {
-              if (prevSortDir === "desc") {
-                swappedTable.setAttribute("data-sort-col", String(colIdx));
-                swappedTable.setAttribute("data-sort-dir", "asc");
-              }
-              window.sortTable(colIdx, swappedTable);
-            }
-          }
-          initTooltipsIn(currWrap);
+          swapContainerPreservingSort(currWrap, nextTables[idx]);
         });
 
         return true;
@@ -298,7 +319,10 @@
       "/admin/repair-cafe",
       "/admin/workshops",
     ];
-    if (liveAdminPatterns.some((p) => path.includes(p)) && document.querySelector(".table-responsive")) {
+    if (
+      liveAdminPatterns.some((p) => path.includes(p)) &&
+      (document.querySelector("[data-live-refresh-region]") || document.querySelector(".table-responsive"))
+    ) {
       return { mode: "admin", channels: "admin" };
     }
     return null;
