@@ -2,8 +2,12 @@ const express = require("express");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const clearNotification = require("../../middleware/clearNotification.js");
 const asyncHandler = require("../../middleware/asyncHandler.js");
-const { validateBody } = require("../../middleware/validate.js");
-const { repairCafeSettingsSchema, repairCafeEntrySchema } = require("../../schemas/index.js");
+const { validateBody, validateQuery } = require("../../middleware/validate.js");
+const {
+  repairCafeQuerySchema,
+  repairCafeSettingsSchema,
+  repairCafeEntrySchema,
+} = require("../../schemas/index.js");
 const settingsService = require("../../services/settingsService.js");
 const repairCafeService = require("../../services/repairCafeService.js");
 
@@ -16,15 +20,22 @@ router.use(isAdmin);
 router.get(
   "/",
   clearNotification,
+  validateQuery(repairCafeQuerySchema, { redirectUrl: "/admin/repair-cafe" }),
   asyncHandler(async (req, res) => {
     const settings = await settingsService.getSettings();
-    const stats = await repairCafeService.getRepairStats();
+    const stats = await repairCafeService.getRepairStats({
+      page: req.query.page || 1,
+      search: req.query.search || "",
+      status: req.query.status || "all",
+    });
     const statuses = repairCafeService.getStatuses();
 
     res.render("admin/manage-repaircafe", {
       settings,
       stats,
       statuses,
+      filters: stats.filters,
+      pagination: stats.pagination,
     });
   }),
 );

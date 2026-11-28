@@ -2,10 +2,10 @@
 id: R-039
 titre: "Paginer l’historique du Repair Café et afficher les chiffres de l’année"
 resume: "Afficher les 25 dernières interventions, rechercher dans tout l’historique et calculer les indicateurs sur l’année civile en cours."
-statut: specifiee
+statut: a-tester
 jalon: v1.6
 cree: 2026-11-22
-maj: 2026-11-23
+maj: 2026-11-28
 livree:
 ---
 ## But

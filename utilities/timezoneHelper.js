@@ -154,6 +154,25 @@ function getStartOfDayInTimezone(referenceDate = new Date(), timeZone = getAppTi
 }
 
 /**
+ * Returns the UTC Date bounds `[start, nextYearStart)` covering the full calendar year
+ * containing `referenceDate` in `timeZone` (`Jan 1 00:00:00.000` inclusive to
+ * next `Jan 1 00:00:00.000` exclusive).
+ *
+ * @param {Date|string|number} [referenceDate=new Date()]
+ * @param {string} [timeZone]
+ * @returns {{ year: number, start: Date, nextYearStart: Date }}
+ */
+function getZonedYearBounds(referenceDate = new Date(), timeZone = getAppTimezone()) {
+  const { year } = getZonedDateParts(referenceDate, timeZone);
+  const start = zonedWallClockToUtcDate({ year, month: 1, day: 1, hour: 0, minute: 0, second: 0, ms: 0 }, timeZone);
+  const nextYearStart = zonedWallClockToUtcDate(
+    { year: year + 1, month: 1, day: 1, hour: 0, minute: 0, second: 0, ms: 0 },
+    timeZone,
+  );
+  return { year, start, nextYearStart };
+}
+
+/**
  * Returns the UTC Date corresponding to `hour:minute:00.000` on `referenceDate`'s calendar day in `timeZone`.
  */
 function getZonedTimeOnSameDay(referenceDate, { hour = 18, minute = 30 } = {}, timeZone = getAppTimezone()) {
@@ -223,6 +242,7 @@ module.exports = {
   zonedWallClockToUtcDate,
   getZonedDayBounds,
   getStartOfDayInTimezone,
+  getZonedYearBounds,
   getZonedTimeOnSameDay,
   getIsoWeekYearAndNumber,
   enumerateWeekdayOccurrences,

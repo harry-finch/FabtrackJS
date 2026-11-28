@@ -263,6 +263,19 @@ const sorbonneFilterQuerySchema = z.object({
 // Repair Café, BookStack, Emails
 // ---------------------------------------------------------------------------
 
+const repairCafeQuerySchema = z.object({
+  page: z.preprocess(
+    preprocessOptionalInt,
+    z.number({ error: "Numéro de page invalide." }).int().min(1).max(10000).nullable().optional(),
+  ),
+  search: z.string().trim().max(150, "Le terme de recherche est trop long.").optional(),
+  status: z
+    .enum(["", "all", "PENDING", "REPAIRED", "PARTIALLY_REPAIRED", "NOT_REPAIRED", "NEEDS_RETURN"], {
+      error: "Filtre de statut de réparation invalide.",
+    })
+    .optional(),
+});
+
 const repairCafeSettingsSchema = z.object({
   plugin_repaircafe_enabled: z.union([z.string(), z.boolean()]).optional(),
   repaircafe_projecttype_name: optionalTrimmedString(255, "Le motif de visite Repair Café"),
@@ -535,6 +548,7 @@ module.exports = {
   ueExportQuerySchema,
   sorbonneSettleEntitySchema,
   sorbonneFilterQuerySchema,
+  repairCafeQuerySchema,
   repairCafeSettingsSchema,
   repairCafeEntrySchema,
   bookstackSettingsSchema,

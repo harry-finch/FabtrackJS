@@ -66,7 +66,7 @@
    Remplacer les rechargements complets de page sur le kiosque et les tableaux admin par des mises à jour dynamiques (fragments serveur + fetch) synchronisées en temps réel entre postes via SSE.
 30. **[R-033 Refondre le panneau d'administration en cockpit avec menu latéral persistant (Prop. 3)](roadmap/items/R-033-refondre-le-panneau-d-administration-en-cockpit.md)** · À tester · jalon v1.5
    Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
-31. **[R-039 Paginer l’historique du Repair Café et afficher les chiffres de l’année](roadmap/items/R-039-liste-des-objets-repares.md)** · Spécifiée · jalon v1.6
+31. **[R-039 Paginer l’historique du Repair Café et afficher les chiffres de l’année](roadmap/items/R-039-liste-des-objets-repares.md)** · À tester · jalon v1.6
    Afficher les 25 dernières interventions, rechercher dans tout l’historique et calculer les indicateurs sur l’année civile en cours.
 32. **[R-038 Afficher et personnaliser les titres des projets BookStack](roadmap/items/R-038-titre-des-projets.md)** · Spécifiée · jalon v1.6
    Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible.
@@ -144,6 +144,8 @@
 - [ ] [A-053](roadmap/actions/A-053-valider-la-priorite-des-titres-de-projet.md) Valider la priorité des titres de projet (valider, R-038)
 - [ ] [A-054](roadmap/actions/A-054-valider-l-historique-et-les-chiffres-annuels-du.md) Valider l’historique et les chiffres annuels du Repair Café (valider, R-039)
 - [ ] [A-055](roadmap/actions/A-055-fournir-les-specifications-d-import-du-serveur.md) Fournir les spécifications d’import du serveur des casiers (fournir, R-035)
+- [ ] [A-056](roadmap/actions/A-056-retrouver-une-ancienne-intervention-repair-cafe.md) Retrouver une ancienne intervention Repair Café par recherche et statut (tester, R-039)
+- [ ] [A-057](roadmap/actions/A-057-verifier-l-independance-des-indicateurs-annuels.md) Vérifier l'indépendance des indicateurs annuels du Repair Café (tester, R-039)
 
 ## Livré
 
