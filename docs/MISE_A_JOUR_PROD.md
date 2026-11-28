@@ -67,6 +67,10 @@ pm2 logs fabtrack --lines 50
 | [R-032](../roadmap/items/R-032-rafraichir-le-kiosque-et-les-tableaux-sans.md) | `v1.5` | Aucune | Aucune | Aucune | Derrière Nginx, s'assurer que `proxy_buffering off;` est autorisé (l'app envoie `X-Accel-Buffering: no` sur `/events/stream`) ; tester la synchro kiosque multi-postes < 2 s sans rechargement |
 | [R-033](../roadmap/items/R-033-refondre-le-panneau-d-administration-en-cockpit.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier le menu latéral persistant filtrable sur `/admin` et sous-pages (desktop + tiroir mobile), le masquage des plugins désactivés et le cockpit « À traiter aujourd'hui » (`v1.5.0`) |
 | [R-038](../roadmap/items/R-038-titre-des-projets.md) | `v1.6` | Aucune | **Obligatoire :** `npm run db:migrate` (applique `005_r038_project_titles.sql` : colonnes `Project.customTitle`, `Project.wikiTitle`) | **`npx prisma generate`** | Cliquer sur « Actualiser les titres » dans `/admin/bookstack` pour peupler les titres wiki existants |
+| [R-039](../roadmap/items/R-039-pagination-et-chiffres-annuels-du-repair-cafe.md) | `v1.6` | Aucune | Aucune | Aucune | Vérifier la pagination 25/page, la recherche multi-années et les compteurs de l'année en cours sur `/admin/repair-cafe` |
+| [R-040](../roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md) | `v1.6` | Aucune | Aucune | Aucune | Vérifier la synchro temps réel (kiosque + compteurs/état vide `/admin/equipment/manage`) après restitution depuis les deux écrans |
+| [R-036](../roadmap/items/R-036-limiter-utilisateur-borne.md) | `v1.6` | Aucune | Aucune | Aucune | Vérifier qu'un compte `staff` (borne) n'affiche que le pointage individuel par badge (confirmation motif/projet/commentaire à l'entrée, sortie au second scan) |
+| [R-034](../roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md) | `v1.6` | Aucune | Aucune | Aucune côté serveur (sur le poste borne ACR122U uniquement : `cd scripts/rfid-bridge && npm install`) | Activer « Pont local lecteur ACR122U » dans `/admin/settings` et lancer `scripts/rfid-bridge/` sur le poste borne |
 
 ---
 

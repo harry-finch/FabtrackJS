@@ -116,6 +116,12 @@
                                     <input type="text" class="form-control font-monospace" id="rfid" name="rfid" value="<%= user.rfid || '' %>" placeholder="Badge RFID" autocomplete="off" />
                                     <label for="rfid"><i class="fa-solid fa-id-card me-1 text-muted"></i> <%= typeof __ !== 'undefined' ? __('profile.rfid_badge') : 'Numéro de badge RFID (UID)' %></label>
                                 </div>
+                                <% if (typeof rfidAcr122uEnabled !== 'undefined' && rfidAcr122uEnabled) { %>
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-1">
+                                    <span class="form-text small text-muted m-0">Cliquez dans le champ ci-dessus puis passez le badge sur le lecteur pour remplir automatiquement l'UID.</span>
+                                    <span id="rfidReaderStatusBadge" class="badge bg-body-secondary text-secondary-emphasis border">Lecteur local déconnecté</span>
+                                </div>
+                                <% } %>
                             </div>
                             <% } %>
                             <div class="col-12">
@@ -1432,5 +1438,15 @@
             }
           }
         </script>
+        <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
+        <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
+          window.rfidConfig = {
+            enabled: true,
+            acr122uEnabled: <%= (typeof rfidAcr122uEnabled !== 'undefined' && rfidAcr122uEnabled) ? 'true' : 'false' %>,
+            bridgePort: <%= (typeof rfidBridgePort !== 'undefined' && rfidBridgePort) ? Number(rfidBridgePort) : 8765 %>
+          };
+        </script>
+        <script src="javascripts/rfid-listener.js"></script>
+        <% } %>
     </body>
 </html>

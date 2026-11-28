@@ -157,8 +157,8 @@ app.use(
         fontSrc: ["'self'"],
         // Allow local/data/uploaded images
         imgSrc: ["'self'", "data:", "https:"],
-        // Connections restricted to same origin
-        connectSrc: ["'self'"],
+        // Connections restricted to same origin + localhost PC/SC RFID WebSocket bridge (R-034)
+        connectSrc: ["'self'", "ws://127.0.0.1:*", "ws://localhost:*"],
         // Do not force browser to upgrade HTTP to HTTPS on local/LAN IPs
         upgradeInsecureRequests: isHttpsProduction ? [] : null,
       },
@@ -410,6 +410,12 @@ app.use(async (req, res, next) => {
 
     const isRfidEnabled = settings.plugin_rfid_enabled !== "false";
     res.locals.isPluginRfidEnabled = isRfidEnabled;
+    res.locals.rfidAcr122uEnabled = settings.rfid_acr122u_enabled === "true";
+    const parsedBridgePort = parseInt(settings.rfid_bridge_port || "8765", 10);
+    res.locals.rfidBridgePort =
+      Number.isInteger(parsedBridgePort) && parsedBridgePort >= 1024 && parsedBridgePort <= 65535
+        ? parsedBridgePort
+        : 8765;
 
     const isBookstackEnabled = settings.plugin_bookstack_enabled !== "false";
     res.locals.isPluginBookstackEnabled = isBookstackEnabled;

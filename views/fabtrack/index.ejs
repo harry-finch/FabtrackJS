@@ -878,6 +878,11 @@
                 enabled: <%= (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) ? 'true' : 'false' %>,
                 projectTypeName: <%- safeJson(typeof sorbonneProjectTypeName !== 'undefined' ? sorbonneProjectTypeName : 'Sorbonne') %>
             };
+            window.rfidConfig = {
+                enabled: <%= (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) ? 'true' : 'false' %>,
+                acr122uEnabled: <%= (typeof rfidAcr122uEnabled !== 'undefined' && rfidAcr122uEnabled) ? 'true' : 'false' %>,
+                bridgePort: <%= (typeof rfidBridgePort !== 'undefined' && rfidBridgePort) ? Number(rfidBridgePort) : 8765 %>
+            };
         </script>
 
         <% if (isBorneRole) { %>

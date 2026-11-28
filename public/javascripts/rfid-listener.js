@@ -23,7 +23,38 @@
     return null;
   }
 
-  // Global keydown listener
+  function isKioskOrBornePage() {
+    return Boolean(
+      document.getElementById("borneKioskShell") ||
+        document.getElementById("kioskPresentContainer") ||
+        document.getElementById("register"),
+    );
+  }
+
+  function handleIncomingRfidUid(rfidCode) {
+    const cleanUid = typeof rfidCode === "string" ? rfidCode.trim() : "";
+    if (!cleanUid) return;
+
+    const activeEl = document.activeElement;
+    const isExplicitRfidInput = Boolean(
+      activeEl &&
+        activeEl.tagName === "INPUT" &&
+        (activeEl.id === "rfid" || activeEl.id === "newrfid"),
+    );
+
+    if (isExplicitRfidInput) {
+      activeEl.value = cleanUid;
+      activeEl.dispatchEvent(new Event("input", { bubbles: true }));
+      showToastFeedback("Badge détecté : " + cleanUid, "success");
+      return;
+    }
+
+    if (isKioskOrBornePage()) {
+      triggerKioskRfidScan(cleanUid);
+    }
+  }
+
+  // Global keydown listener (HID keyboard-wedge readers)
   document.addEventListener(
     "keydown",
     function (e) {
@@ -33,7 +64,7 @@
       const isInput =
         activeEl &&
         (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.isContentEditable);
-      const isExplicitRfidInput = isInput && activeEl.id === "rfid" || activeEl.id === "newrfid";
+      const isExplicitRfidInput = Boolean(isInput && (activeEl.id === "rfid" || activeEl.id === "newrfid"));
 
       const now = Date.now();
       const diff = now - lastKeyTime;
@@ -55,16 +86,7 @@
           const rfidCode = buffer.trim();
           buffer = "";
 
-          // If on user edit/create form with explicit field, populate it
-          if (isExplicitRfidInput) {
-            activeEl.value = rfidCode;
-            activeEl.dispatchEvent(new Event("input", { bubbles: true }));
-            showToastFeedback("Badge détecté : " + rfidCode, "success");
-            return;
-          }
-
-          // Otherwise trigger Kiosk scan
-          triggerKioskRfidScan(rfidCode);
+          handleIncomingRfidUid(rfidCode);
           return;
         }
         buffer = "";
@@ -407,11 +429,143 @@
   }
 
   function showToastFeedback(message, type = "info") {
-    // Optional light toast
-    console.log(`[RFID] ${type.toUpperCase()}: ${message}`);
+    if (typeof window.showAppToast === "function") {
+      window.showAppToast(message, type);
+    } else {
+      console.log(`[RFID] ${type.toUpperCase()}: ${message}`);
+    }
+  }
+
+  // ******************************************************************************
+  // Local ACR122U PC/SC WebSocket Bridge Client (R-034)
+  // Runs in parallel with HID keyboard-wedge listener and auto-reconnects cleanly.
+  // ******************************************************************************
+  let bridgeSocket = null;
+  let bridgeReconnectTimer = null;
+  let bridgeReconnectDelayMs = 2000;
+
+  function updateReaderStatusBadge(state, detailText) {
+    const badge = document.getElementById("rfidReaderStatusBadge");
+    if (!badge) return;
+
+    badge.textContent = "";
+    const icon = document.createElement("i");
+    icon.setAttribute("aria-hidden", "true");
+
+    if (state === "connected") {
+      badge.className = "badge bg-success-subtle text-success border border-success-subtle";
+      icon.className = "fa-solid fa-wifi me-1";
+      badge.appendChild(icon);
+      badge.appendChild(document.createTextNode("Lecteur ACR122U connecté"));
+      badge.title = detailText || "Lecteur PC/SC local prêt";
+    } else if (state === "no_reader") {
+      badge.className = "badge bg-warning-subtle text-warning-emphasis border border-warning-subtle";
+      icon.className = "fa-solid fa-plug-circle-exclamation me-1";
+      badge.appendChild(icon);
+      badge.appendChild(document.createTextNode("Lecteur ACR122U débranché"));
+      badge.title = "Agent local connecté, en attente du branchement USB de l'ACR122U";
+    } else {
+      badge.className = "badge bg-body-secondary text-secondary-emphasis border";
+      icon.className = "fa-solid fa-plug-circle-xmark me-1";
+      badge.appendChild(icon);
+      badge.appendChild(document.createTextNode("Lecteur local déconnecté"));
+      badge.title = "Pont WebSocket local injoignable (les lecteurs clavier HID restent actifs)";
+    }
+  }
+
+  function scheduleBridgeReconnect() {
+    if (bridgeReconnectTimer) return;
+    bridgeReconnectTimer = setTimeout(() => {
+      bridgeReconnectTimer = null;
+      connectLocalRfidBridge();
+    }, bridgeReconnectDelayMs);
+    bridgeReconnectDelayMs = Math.min(bridgeReconnectDelayMs + 1000, 5000);
+  }
+
+  function connectLocalRfidBridge() {
+    const cfg = window.rfidConfig || {};
+    if (!cfg.acr122uEnabled || typeof window.WebSocket !== "function") return;
+
+    const rawPort = parseInt(cfg.bridgePort, 10);
+    const port = Number.isInteger(rawPort) && rawPort >= 1024 && rawPort <= 65535 ? rawPort : 8765;
+    const wsUrl = `ws://127.0.0.1:${port}`;
+
+    try {
+      bridgeSocket = new window.WebSocket(wsUrl);
+    } catch (_err) {
+      updateReaderStatusBadge("disconnected");
+      scheduleBridgeReconnect();
+      return;
+    }
+
+    bridgeSocket.addEventListener("open", () => {
+      bridgeReconnectDelayMs = 2000;
+    });
+
+    bridgeSocket.addEventListener("message", (event) => {
+      let msg = null;
+      try {
+        msg = JSON.parse(event.data);
+      } catch (_err) {
+        return;
+      }
+      if (!msg || typeof msg !== "object") return;
+
+      if (msg.type === "status") {
+        if (msg.connected) {
+          const readerList = Array.isArray(msg.readers) ? msg.readers.join(", ") : "";
+          updateReaderStatusBadge("connected", readerList ? `Lecteur : ${readerList}` : undefined);
+        } else {
+          updateReaderStatusBadge("no_reader");
+        }
+      } else if (msg.type === "card" && msg.uid) {
+        handleIncomingRfidUid(String(msg.uid));
+      }
+    });
+
+    bridgeSocket.addEventListener("close", () => {
+      bridgeSocket = null;
+      updateReaderStatusBadge("disconnected");
+      scheduleBridgeReconnect();
+    });
+
+    bridgeSocket.addEventListener("error", () => {
+      if (bridgeSocket && bridgeSocket.readyState !== window.WebSocket.CLOSED) {
+        try {
+          bridgeSocket.close();
+        } catch (_err) {
+          // ignore close errors
+        }
+      }
+    });
+  }
+
+  window.addEventListener("beforeunload", () => {
+    if (bridgeReconnectTimer) {
+      clearTimeout(bridgeReconnectTimer);
+      bridgeReconnectTimer = null;
+    }
+    if (bridgeSocket) {
+      try {
+        bridgeSocket.close();
+      } catch (_err) {
+        // ignore
+      }
+      bridgeSocket = null;
+    }
+  });
+
+  if (window.rfidConfig && window.rfidConfig.acr122uEnabled) {
+    updateReaderStatusBadge("disconnected");
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", connectLocalRfidBridge);
+    } else {
+      connectLocalRfidBridge();
+    }
   }
 
   // Expose helpers globally for borne workflow and manual tests
   window.triggerKioskRfidScan = triggerKioskRfidScan;
   window.showRfidFeedbackOverlay = showRfidOverlay;
+  window.handleIncomingRfidUid = handleIncomingRfidUid;
 })();

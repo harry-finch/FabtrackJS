@@ -74,7 +74,7 @@
    Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu.
 34. **[R-036 Réserver la borne au pointage individuel par badge](roadmap/items/R-036-limiter-utilisateur-borne.md)** · À tester · jalon v1.6
    À l’entrée, le contributeur badgé précise son motif de visite, son projet et, s’il le souhaite, un complément. L’accueil accompagne les personnes sans badge ou sans fiche.
-35. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · Spécifiée · jalon v1.6
+35. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · À tester · jalon v1.6
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
 36. **[R-037 Associer une fiche contributeur aux membres de l’équipe](roadmap/items/R-037-compte-staff-contributeur.md)** · Spécifiée · jalon v1.6
    À l’approbation, rattacher ou créer la fiche des médiateurs et administrateurs. Les intéressés renseignent leurs propres informations et leur charte est considérée comme signée.
@@ -152,6 +152,10 @@
 - [ ] [A-061](roadmap/actions/A-061-verifier-compteurs-et-etat-vide-en-gestion.md) Vérifier compteurs et état vide en gestion équipements après restitution fiche contributeur (tester, R-040)
 - [ ] [A-062](roadmap/actions/A-062-tester-entree-avec-motif-projet-et-commentaire.md) Tester entrée avec motif, projet et commentaire puis sortie par badge sur la borne (tester, R-036)
 - [ ] [A-063](roadmap/actions/A-063-tester-le-parcours-sans-badge-et-badge-inconnu.md) Tester le parcours sans badge et badge inconnu puis prise en charge à l'accueil (tester, R-036)
+- [ ] [A-064](roadmap/actions/A-064-installer-et-lancer-l-agent-local-pc-sc-sur-le.md) Installer et lancer l'agent local PC/SC sur le poste ACR122U (tester, R-034)
+- [ ] [A-065](roadmap/actions/A-065-verifier-pointage-entree-sortie-et-badge-inconnu.md) Vérifier pointage entrée/sortie et badge inconnu avec l'ACR122U (tester, R-034)
+- [ ] [A-066](roadmap/actions/A-066-verifier-l-enrolement-d-un-badge-depuis-l.md) Vérifier l'enrôlement d'un badge depuis l'accueil et la fiche contributeur (tester, R-034)
+- [ ] [A-067](roadmap/actions/A-067-verifier-la-reconnexion-automatique-apres.md) Vérifier la reconnexion automatique après débranchement/rebranchement USB (tester, R-034)
 
 ## Livré
 

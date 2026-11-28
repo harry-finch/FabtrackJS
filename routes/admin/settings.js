@@ -242,6 +242,19 @@ router.post(
       updates.plugin_rfid_enabled = isRfidEnabled ? "true" : "false";
       hookManager.setPluginEnabled("rfid", isRfidEnabled);
 
+      const isAcr122uEnabled =
+        req.body.rfid_acr122u_enabled === true ||
+        req.body.rfid_acr122u_enabled === "true" ||
+        req.body.rfid_acr122u_enabled === "on";
+      updates.rfid_acr122u_enabled = isAcr122uEnabled ? "true" : "false";
+
+      if (req.body.rfid_bridge_port !== undefined && req.body.rfid_bridge_port !== null && req.body.rfid_bridge_port !== "") {
+        const parsedPort = Number(req.body.rfid_bridge_port);
+        if (Number.isInteger(parsedPort) && parsedPort >= 1024 && parsedPort <= 65535) {
+          updates.rfid_bridge_port = String(parsedPort);
+        }
+      }
+
       const isBookstackEnabled =
         req.body.plugin_bookstack_enabled === true ||
         req.body.plugin_bookstack_enabled === "true" ||

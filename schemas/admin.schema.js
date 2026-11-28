@@ -374,6 +374,17 @@ const adminSettingsSchema = z.object({
   plugin_settings_submitted: z.string().trim().max(20).optional(),
   plugin_ue_enabled: z.union([z.string(), z.boolean()]).optional(),
   plugin_rfid_enabled: z.union([z.string(), z.boolean()]).optional(),
+  rfid_acr122u_enabled: z.union([z.string(), z.boolean()]).optional(),
+  rfid_bridge_port: z.preprocess(
+    preprocessOptionalInt,
+    z
+      .number({ error: "Le port du pont RFID doit être un entier valide." })
+      .int("Le port du pont RFID doit être un entier.")
+      .min(1024, "Le port du pont RFID doit être compris entre 1024 et 65535.")
+      .max(65535, "Le port du pont RFID doit être compris entre 1024 et 65535.")
+      .nullable()
+      .optional(),
+  ),
   plugin_bookstack_enabled: z.union([z.string(), z.boolean()]).optional(),
   plugin_repaircafe_enabled: z.union([z.string(), z.boolean()]).optional(),
   plugin_workshop_enabled: z.union([z.string(), z.boolean()]).optional(),
