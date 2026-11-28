@@ -7,6 +7,7 @@ const clearNotification = require("../../middleware/clearNotification.js");
 const isAdmin = require("../../middleware/checkAdmin.js");
 const { prisma } = require("../../utilities/db.js");
 const dateService = require("../../services/dateService.js");
+const projectTitleService = require("../../services/projectTitleService.js");
 
 router.use(isAdmin);
 
@@ -90,6 +91,7 @@ router.get(
         project: project,
         projectId: project ? project.id : null,
         projectUrl: project ? project.url : "No Project Assigned",
+        projectTitle: project ? projectTitleService.resolveProjectDisplayTitle(project) : "Non rattaché à un projet",
         workspaceName: act.history && act.history.workspace ? act.history.workspace.name : "-",
       };
     });
@@ -107,7 +109,10 @@ router.get(
       const contributorsSet = new Set(memberNames);
 
       projectGroupsMap.set(proj.id, {
-        project: proj,
+        project: {
+          ...proj,
+          displayTitle: projectTitleService.resolveProjectDisplayTitle(proj),
+        },
         entries: [],
         totalUnits: 0,
         totalCost: 0,
@@ -117,7 +122,7 @@ router.get(
 
     // Bucket for entries without project
     const unassignedGroup = {
-      project: { id: 0, url: "Non rattaché à un projet", active: false, projecttype: { name: "Divers" } },
+      project: { id: 0, url: "Non rattaché à un projet", displayTitle: "Non rattaché à un projet", active: false, projecttype: { name: "Divers" } },
       entries: [],
       totalUnits: 0,
       totalCost: 0,

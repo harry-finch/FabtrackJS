@@ -18,6 +18,7 @@ router.use(isAdmin);
 
 const { prisma, ResourceType } = require("../../utilities/db.js");
 const { getZonedDayBounds } = require("../../utilities/timezoneHelper.js");
+const projectTitleService = require("../../services/projectTitleService.js");
 
 // ******************************************************************************
 // Route to manage Teaching Units (UE) & View Refacturation
@@ -109,6 +110,7 @@ router.get(
         studentName: act.user ? `${act.user.name} ${act.user.surname}` : "Inconnu",
         studentEmail: act.user ? act.user.email : "",
         projectUrl: act.history && act.history.userproject && act.history.userproject.project ? act.history.userproject.project.url : (act.history && act.history.comments ? act.history.comments : "N/A"),
+        projectTitle: act.history && act.history.userproject && act.history.userproject.project ? projectTitleService.resolveProjectDisplayTitle(act.history.userproject.project) : (act.history && act.history.comments ? act.history.comments : "N/A"),
         consumableName: consumable ? consumable.name : `Consommable #${act.resourceId}`,
         quantity: qty,
         unit: unitStr,
@@ -149,6 +151,7 @@ router.get(
         studentName: hist.user ? `${hist.user.name} ${hist.user.surname}` : "Inconnu",
         studentEmail: hist.user ? hist.user.email : "",
         projectUrl: hist.userproject && hist.userproject.project ? hist.userproject.project.url : (hist.comments || "N/A"),
+        projectTitle: hist.userproject && hist.userproject.project ? projectTitleService.resolveProjectDisplayTitle(hist.userproject.project) : (hist.comments || "N/A"),
         unregisteredUeName: hist.unregisteredUeName,
         unregisteredUeContact: hist.unregisteredUeContact || "",
         consumablesCount: hist.activities.length,

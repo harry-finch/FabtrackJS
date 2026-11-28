@@ -68,7 +68,7 @@
    Remplacer le mur de 25 cartes de /admin par un menu latéral persistant filtrable sur toutes les vues admin et un cockpit d'accueil « À traiter aujourd'hui ».
 31. **[R-039 Paginer l’historique du Repair Café et afficher les chiffres de l’année](roadmap/items/R-039-liste-des-objets-repares.md)** · À tester · jalon v1.6
    Afficher les 25 dernières interventions, rechercher dans tout l’historique et calculer les indicateurs sur l’année civile en cours.
-32. **[R-038 Afficher et personnaliser les titres des projets BookStack](roadmap/items/R-038-titre-des-projets.md)** · Spécifiée · jalon v1.6
+32. **[R-038 Afficher et personnaliser les titres des projets BookStack](roadmap/items/R-038-titre-des-projets.md)** · À tester · jalon v1.6
    Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible.
 33. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · Spécifiée · jalon v1.6
    Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu.
@@ -146,6 +146,8 @@
 - [ ] [A-055](roadmap/actions/A-055-fournir-les-specifications-d-import-du-serveur.md) Fournir les spécifications d’import du serveur des casiers (fournir, R-035)
 - [ ] [A-056](roadmap/actions/A-056-retrouver-une-ancienne-intervention-repair-cafe.md) Retrouver une ancienne intervention Repair Café par recherche et statut (tester, R-039)
 - [ ] [A-057](roadmap/actions/A-057-verifier-l-independance-des-indicateurs-annuels.md) Vérifier l'indépendance des indicateurs annuels du Repair Café (tester, R-039)
+- [ ] [A-058](roadmap/actions/A-058-choisir-un-projet-par-son-titre-au-kiosque.md) Choisir un projet par son titre au kiosque (tester, R-038)
+- [ ] [A-059](roadmap/actions/A-059-definir-puis-effacer-un-nom-local-de-projet.md) Définir puis effacer un nom local de projet (tester, R-038)
 
 ## Livré
 

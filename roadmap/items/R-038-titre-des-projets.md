@@ -2,10 +2,10 @@
 id: R-038
 titre: "Afficher et personnaliser les titres des projets BookStack"
 resume: "Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible."
-statut: specifiee
+statut: a-tester
 jalon: v1.6
 cree: 2026-11-22
-maj: 2026-11-23
+maj: 2026-11-28
 livree:
 ---
 ## But

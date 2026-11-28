@@ -404,6 +404,19 @@ class BookstackService {
     }
 
     const docUpdatedAt = new Date(docMeta.updatedAt);
+    if (typeof docMeta.title === "string" && docMeta.title.trim()) {
+      const cleanTitle = docMeta.title.trim().slice(0, 255);
+      if (cleanTitle !== (project.wikiTitle || "").trim()) {
+        try {
+          await prisma.project.update({
+            where: { id: project.id },
+            data: { wikiTitle: cleanTitle },
+          });
+        } catch (_persistErr) {
+          // Non-blocking: freshness check must still succeed even if title cache update fails
+        }
+      }
+    }
     // Documentation is up-to-date if modified on or after the last visit date
     // (with a 5-minute tolerance to account for same-session check-ins)
     const toleranceMs = 5 * 60 * 1000;
@@ -468,16 +481,36 @@ class BookstackService {
 
       let status = "unknown";
       let docUpdatedAt = null;
-      let docTitle = null;
+      let docTitle = p.wikiTitle || null;
 
       if (!latestArrival) {
-        // No recorded visit yet
+        // No recorded visit yet: still resolve wikiTitle if configured and missing
         status = "up_to_date";
+        if (config.isConfigured && !docTitle) {
+          const meta = await this.fetchDocMetadata(p.url);
+          if (meta && meta.exists && meta.title) {
+            docTitle = meta.title.trim().slice(0, 255);
+            try {
+              await prisma.project.update({ where: { id: p.id }, data: { wikiTitle: docTitle } });
+            } catch (_e) {
+              // Non-blocking
+            }
+          }
+        }
       } else if (config.isConfigured) {
         const meta = await this.fetchDocMetadata(p.url);
         if (meta.exists && meta.updatedAt) {
           docUpdatedAt = meta.updatedAt;
-          docTitle = meta.title;
+          if (meta.title && meta.title.trim()) {
+            docTitle = meta.title.trim().slice(0, 255);
+            if (docTitle !== (p.wikiTitle || "").trim()) {
+              try {
+                await prisma.project.update({ where: { id: p.id }, data: { wikiTitle: docTitle } });
+              } catch (_e) {
+                // Non-blocking
+              }
+            }
+          }
           const toleranceMs = 5 * 60 * 1000;
           if (docUpdatedAt.getTime() + toleranceMs >= latestArrival.getTime()) {
             status = "up_to_date";
@@ -491,15 +524,22 @@ class BookstackService {
         status = "unconfigured";
       }
 
+      const customTitle = p.customTitle && p.customTitle.trim() ? p.customTitle.trim() : null;
+      const wikiTitle = docTitle && docTitle.trim() ? docTitle.trim() : null;
+      const displayTitle = customTitle || wikiTitle || p.url;
+
       return {
         id: p.id,
         url: p.url,
+        customTitle,
+        wikiTitle,
+        displayTitle,
         projectType: p.projecttype ? p.projecttype.name : "Projet",
         userFullName: primaryUser ? `${primaryUser.name} ${primaryUser.surname}` : "Contributeur non associé",
         userCount: p.users.length,
         lastVisitDate: latestArrival,
         docUpdatedAt,
-        docTitle,
+        docTitle: wikiTitle,
         status,
       };
     });

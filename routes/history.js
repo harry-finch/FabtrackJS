@@ -17,6 +17,7 @@ const {
   updateCommentSchema,
   exitRepairSchema,
   updateHistorySchema,
+  updateProjectTitleSchema,
 } = require("../schemas/history.schema.js");
 
 router.use(isLoggedIn);
@@ -26,6 +27,7 @@ const mailService = require("../services/mailService.js");
 const balanceService = require("../services/balanceService.js");
 const { computeConsumableStatus } = require("../services/consumableStatusHelper.js");
 const equipmentLoanService = require("../services/equipmentLoanService.js");
+const projectTitleService = require("../services/projectTitleService.js");
 const realtimeService = require("../services/realtimeService.js");
 const logger = require("../utilities/simpleLogger.js");
 
@@ -153,6 +155,7 @@ router.post(
       let resolvedProjectId = projectid && projectid !== "null" && projectid !== "" ? Number(projectid) : null;
       let resolvedUserProjectId =
         userprojectid && userprojectid !== "null" && userprojectid !== "" ? Number(userprojectid) : null;
+      let projectToSyncTitle = null;
 
       // Verify ownership when an explicit userprojectid is submitted
       if (resolvedUserProjectId) {
@@ -209,6 +212,9 @@ router.post(
             });
           }
           resolvedProjectId = project.id;
+          if (!project.wikiTitle && /^https?:\/\//i.test(project.url || "")) {
+            projectToSyncTitle = project;
+          }
         }
       } else if (parsedTeachingUnitId) {
         await tx.project.update({
@@ -287,7 +293,7 @@ router.post(
         },
       });
 
-      return { alreadyHere: false, attendedWorkshop };
+      return { alreadyHere: false, attendedWorkshop, projectToSyncTitle };
     };
 
     const checkInOutcome =
@@ -296,7 +302,10 @@ router.post(
         : await runCheckIn(prisma);
 
     if (!checkInOutcome.alreadyHere) {
-      const { attendedWorkshop } = checkInOutcome;
+      const { attendedWorkshop, projectToSyncTitle } = checkInOutcome;
+      if (projectToSyncTitle && typeof projectTitleService.syncProjectWikiTitle === "function") {
+        projectTitleService.syncProjectWikiTitle(projectToSyncTitle).catch(() => {});
+      }
       let msg = "Contributeur enregistré comme présent dans le lab !";
       // Automatically award workshop badge and machine habilitation to user
       if (parsedWorkshopId && attendedWorkshop) {
@@ -544,6 +553,42 @@ router.post(
 
     req.session.notification = "Success: Project archived!";
     res.redirect(req.session.lastPage || "/fabtrack");
+  }),
+);
+
+// ******************************************************************************
+// Route to set or clear a project's local Fabtrack custom title (R-038)
+// ******************************************************************************
+
+router.post(
+  "/project/title/:id",
+  requireRoles("admin", "user"),
+  validateParams(idParamSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
+  validateBody(updateProjectTitleSchema, { redirectUrl: (req) => req.session.lastPage || "/fabtrack" }),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { customTitle } = req.body;
+
+    try {
+      const updated = await projectTitleService.updateCustomTitle(id, customTitle);
+      const msg = updated.customTitle
+        ? `Nom local du projet enregistré : « ${updated.customTitle} ».`
+        : "Nom local effacé ; le titre du wiki (ou l'URL) est rétabli.";
+
+      if (isApiOrAjaxRequest(req)) {
+        return res.status(200).json({ ok: true, project: updated, message: msg });
+      }
+      req.session.notification = `Success: ${msg}`;
+      return res.redirect(req.session.lastPage || "/fabtrack");
+    } catch (err) {
+      const status = err && err.status ? err.status : 500;
+      const msg = err && err.message ? err.message : "Impossible de mettre à jour le titre du projet.";
+      if (isApiOrAjaxRequest(req)) {
+        return res.status(status).json({ ok: false, message: msg });
+      }
+      req.session.notification = `Error: ${msg}`;
+      return res.redirect(req.session.lastPage || "/fabtrack");
+    }
   }),
 );
 

@@ -65,6 +65,8 @@ CREATE TABLE `Usertype` (
 CREATE TABLE `Project` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `url` VARCHAR(255) NOT NULL,
+    `customTitle` VARCHAR(255) NULL,
+    `wikiTitle` VARCHAR(255) NULL,
     `projecttypeId` INTEGER NOT NULL,
     `teachingUnitId` INTEGER NULL,
     `unregisteredUeName` VARCHAR(255) NULL,

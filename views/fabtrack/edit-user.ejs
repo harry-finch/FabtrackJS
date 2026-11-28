@@ -632,7 +632,9 @@
                                     <tbody id="table-content">
                                         <% let tableData = [] %>
                                         <% for (const entry of history) {
-                                          const safeEntryProjectUrl = (entry.userproject && entry.userproject.project) ? safeHttpUrl(entry.userproject.project.url) : null;
+                                          const entryProj = entry.userproject && entry.userproject.project ? entry.userproject.project : null;
+                                          const safeEntryProjectUrl = entryProj ? safeHttpUrl(entryProj.url) : null;
+                                          const entryProjTitle = entryProj ? (typeof resolveProjectTitle === 'function' ? resolveProjectTitle(entryProj) : (entryProj.customTitle || entryProj.wikiTitle || entryProj.url)) : '';
                                           tableData.push({
                                             col1: entry.arrival,
                                             col2: entry.departure || "-",
@@ -641,12 +643,14 @@
                                               ? {
                                                   type: "link",
                                                   url: safeEntryProjectUrl,
-                                                  label: "Doc",
-                                                  title: "Consulter",
+                                                  label: entryProjTitle && entryProjTitle !== safeEntryProjectUrl ? entryProjTitle : "Doc",
+                                                  title: entryProjTitle ? `${entryProjTitle} (${safeEntryProjectUrl})` : "Consulter",
                                                   className: "btn btn-sm btn-outline-primary",
                                                   iconClass: "fa-solid fa-arrow-up-right-from-square fa-xs me-1",
                                                 }
-                                              : { type: "text", text: "-", className: "text-muted small" },
+                                              : (entryProjTitle
+                                                  ? { type: "text", text: entryProjTitle, className: "small text-muted" }
+                                                  : { type: "text", text: "-", className: "text-muted small" }),
                                             col5: entry.comments
                                               ? {
                                                   type: "tooltipIcon",
@@ -701,13 +705,26 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <% userprojects.forEach(function(project) { %>
+                                        <% userprojects.forEach(function(project) {
+                                          const projectDisplayTitle = typeof resolveProjectTitle === 'function'
+                                            ? resolveProjectTitle(project)
+                                            : (project.customTitle || project.wikiTitle || project.url);
+                                          const safeProjUrl = safeHttpUrl(project.url);
+                                        %>
                                         <tr <% if (!project.active) { %>class="opacity-75 bg-body-tertiary"<% } %>>
                                             <td class="text-muted small">#<%= project.id %></td>
                                             <td>
-                                                <div class="fw-semibold"><%= project.url %></div>
-                                                <% if (!project.active) { %>
-                                                    <span class="badge bg-body-secondary text-secondary-emphasis border mt-1">Archivé</span>
+                                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                                    <span class="fw-semibold"><%= projectDisplayTitle %></span>
+                                                    <% if (project.customTitle) { %>
+                                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle" title="Nom personnalisé dans Fabtrack">Nom local</span>
+                                                    <% } %>
+                                                    <% if (!project.active) { %>
+                                                        <span class="badge bg-body-secondary text-secondary-emphasis border">Archivé</span>
+                                                    <% } %>
+                                                </div>
+                                                <% if (project.url && projectDisplayTitle !== project.url) { %>
+                                                    <div class="small text-muted text-truncate" style="max-width: 420px;" title="<%= project.url %>"><%= project.url %></div>
                                                 <% } %>
                                             </td>
                                             <td class="small text-muted">
@@ -724,7 +741,6 @@
                                                 <span class="badge bg-body-secondary text-secondary-emphasis border"><%= projectTypeName %></span>
                                             </td>
                                             <td class="text-center">
-                                                <% const safeProjUrl = safeHttpUrl(project.url); %>
                                                 <% if (safeProjUrl) { %>
                                                     <div class="fab-row-actions">
                                                         <a href="<%= safeProjUrl %>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm" title="Consulter la documentation">
@@ -737,6 +753,22 @@
                                             </td>
                                             <td class="text-end pe-3">
                                                 <div class="fab-row-actions">
+                                                    <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#editProjectTitleModal"
+                                                            data-project-id="<%= project.id %>"
+                                                            data-project-custom="<%= project.customTitle || '' %>"
+                                                            data-project-wiki="<%= project.wikiTitle || '' %>"
+                                                            data-project-url="<%= project.url || '' %>"
+                                                            title="Définir ou effacer le nom local du projet"
+                                                            aria-label="Renommer le projet <%= projectDisplayTitle %>"
+                                                        >
+                                                            <i class="fa-solid fa-pen fa-xs" aria-hidden="true"></i>
+                                                        </button>
+                                                    <% } %>
                                                     <% if (project.active) { %>
                                                         <form method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/archive/<%= project.id %>" class="d-inline">
                                                             <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
@@ -843,14 +875,15 @@
                                                 </td>
                                                 <td>
                                                     <% const safeUsageProjUrl = usage.project ? safeHttpUrl(usage.project.url) : null; %>
+                                                    <% const usageProjTitle = usage.project ? (typeof resolveProjectTitle === 'function' ? resolveProjectTitle(usage.project) : (usage.project.customTitle || usage.project.wikiTitle || usage.project.url)) : ''; %>
                                                     <% if (safeUsageProjUrl) { %>
                                                         <div class="fab-row-actions">
-                                                            <a href="<%= safeUsageProjUrl %>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary" title="<%= safeUsageProjUrl %>">
-                                                                <i class="fa-solid fa-arrow-up-right-from-square fa-xs me-1" aria-hidden="true"></i>Projet
+                                                            <a href="<%= safeUsageProjUrl %>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary text-truncate" style="max-width: 220px;" title="<%= usageProjTitle %> — <%= safeUsageProjUrl %>">
+                                                                <i class="fa-solid fa-arrow-up-right-from-square fa-xs me-1" aria-hidden="true"></i><%= usageProjTitle && usageProjTitle !== safeUsageProjUrl ? usageProjTitle : 'Projet' %>
                                                             </a>
                                                         </div>
-                                                    <% } else if (usage.project && usage.project.url) { %>
-                                                        <span class="text-muted small"><%= usage.project.url %></span>
+                                                    <% } else if (usageProjTitle) { %>
+                                                        <span class="text-muted small"><%= usageProjTitle %></span>
                                                     <% } else { %>
                                                         <span class="text-muted small">-</span>
                                                     <% } %>
@@ -1320,10 +1353,72 @@
 
             </div>
 
+            <% if (typeof role !== 'undefined' && (role === 'admin' || role === 'user')) { %>
+            <!-- Modal: Personnaliser le nom local d'un projet (R-038) -->
+            <div class="modal fade" id="editProjectTitleModal" tabindex="-1" aria-labelledby="editProjectTitleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form id="editProjectTitleForm" method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/title/0">
+                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editProjectTitleModalLabel">
+                                    <i class="fa-solid fa-pen-to-square text-primary me-2" aria-hidden="true"></i>Nom local du projet
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="projectCustomTitleInput" class="form-label small fw-semibold">Nom affiché dans Fabtrack</label>
+                                    <input type="text" class="form-control" id="projectCustomTitleInput" name="customTitle" maxlength="255" placeholder="Laisser vide pour utiliser le titre du wiki" />
+                                    <div class="form-text small">
+                                        Ce nom s'applique au projet partagé dans Fabtrack (le wiki BookStack n'est pas modifié). Laissez vide pour retrouver le titre du wiki.
+                                    </div>
+                                </div>
+                                <div class="small text-muted border rounded-2 p-2 bg-body-tertiary">
+                                    <div><strong>Titre wiki connu :</strong> <span id="projectModalWikiTitle">—</span></div>
+                                    <div class="text-truncate"><strong>URL :</strong> <span id="projectModalUrl">—</span></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-body-tertiary">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-check me-1" aria-hidden="true"></i> Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+
         <%- include('../includes/footer.html') %>
         <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
           // Call the pagination function after the table is rendered
           addPagination('historyTable', <%- safeJson(tableData) %>);
+
+          const editProjectTitleModal = document.getElementById('editProjectTitleModal');
+          if (editProjectTitleModal) {
+            editProjectTitleModal.addEventListener('show.bs.modal', function (event) {
+              const btn = event.relatedTarget;
+              if (!btn) return;
+              const projId = btn.getAttribute('data-project-id');
+              const customTitle = btn.getAttribute('data-project-custom') || '';
+              const wikiTitle = btn.getAttribute('data-project-wiki') || '';
+              const url = btn.getAttribute('data-project-url') || '';
+              const form = document.getElementById('editProjectTitleForm');
+              if (form && projId) {
+                form.action = window.getAppBaseUrl
+                  ? window.getAppBaseUrl('history/project/title/' + projId)
+                  : '/history/project/title/' + projId;
+              }
+              const input = document.getElementById('projectCustomTitleInput');
+              if (input) input.value = customTitle;
+              const wikiEl = document.getElementById('projectModalWikiTitle');
+              if (wikiEl) wikiEl.textContent = wikiTitle || 'Non disponible';
+              const urlEl = document.getElementById('projectModalUrl');
+              if (urlEl) urlEl.textContent = url || '—';
+            });
+          }
 
           // Automatically expand accordion section if URL has a hash anchor (e.g. #collapseInterests)
           if (window.location.hash) {

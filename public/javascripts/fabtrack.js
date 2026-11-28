@@ -318,16 +318,40 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       text = text.toLowerCase().trim();
       callback(
         projects.filter(function (candidate) {
-          return candidate.url.toLowerCase().indexOf(text) !== -1;
+          if (!text) return true;
+          const haystack = [
+            candidate.displayTitle,
+            candidate.customTitle,
+            candidate.wikiTitle,
+            candidate.url,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return haystack.indexOf(text) !== -1;
         }),
       );
     },
     render: function (item, value) {
       var itemElement = document.createElement("div");
-      if (allowedChars.test(value)) {
-        appendHighlightedText(itemElement, item.url, value);
+      var displayTitle = item.displayTitle || item.url || "";
+      var titleEl = document.createElement("div");
+      titleEl.className = "fw-semibold text-truncate";
+      if (value && value.trim()) {
+        appendHighlightedText(titleEl, displayTitle, value);
       } else {
-        itemElement.textContent = item.url || "";
+        titleEl.textContent = displayTitle;
+      }
+      itemElement.appendChild(titleEl);
+      if (item.url && displayTitle !== item.url) {
+        var urlEl = document.createElement("div");
+        urlEl.className = "small text-muted text-truncate";
+        if (value && value.trim()) {
+          appendHighlightedText(urlEl, item.url, value);
+        } else {
+          urlEl.textContent = item.url;
+        }
+        itemElement.appendChild(urlEl);
       }
       return itemElement;
     },
@@ -337,7 +361,7 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
       // as well as set the link to documentation and the project type
       // and finally, also set the userproject combination
 
-      docInput.value = item.url;
+      docInput.value = item.displayTitle || item.url;
       document.getElementById("projectid").value = item.id;
       const safeDocHref = toSafeHttpUrl(item.url);
       document.getElementById("urldocumentation").href = safeDocHref || "#";
@@ -448,10 +472,19 @@ document.getElementById("newuserbutton").addEventListener("click", (event) => {
 
     docInput.addEventListener("input", () => {
       const currentVal = docInput.value.trim();
-      const matched = projects.find((p) => p.url.toLowerCase() === currentVal.toLowerCase());
+      const lowerVal = currentVal.toLowerCase();
+      const matched = projects.find(
+        (p) =>
+          (p.url && p.url.toLowerCase() === lowerVal) ||
+          (p.displayTitle && p.displayTitle.toLowerCase() === lowerVal),
+      );
       if (matched) {
         document.getElementById("projectid").value = matched.id;
         document.getElementById("urldocumentation").href = toSafeHttpUrl(matched.url) || "#";
+        const foundElem = userprojects.find(
+          (elem) => elem.userid === Number(document.getElementById("userid").value) && elem.projectid === matched.id,
+        );
+        document.getElementById("userprojectid").value = foundElem ? foundElem.id : "null";
         checkBookstackDocFreshness(matched.id, Number(document.getElementById("userid").value));
       } else {
         if (document.getElementById("projectid").value !== "null") {

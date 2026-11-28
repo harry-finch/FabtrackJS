@@ -113,9 +113,11 @@
             <select id="projectSelectFilter" class="form-select form-select-sm" aria-label="Filtrer par projet">
               <option value="" selected>-- Choisir un projet --</option>
               <option value="all">Tous les projets (<%= projectGroups.length %>)</option>
-              <% projectGroups.forEach(function(group) { %>
+              <% projectGroups.forEach(function(group) {
+                   const groupLabel = group.project.displayTitle || group.project.url.replace(/^https?:\/\//, '');
+              %>
                 <option value="<%= group.project.id %>">
-                  <%= group.project.url.replace(/^https?:\/\//, '') %> (<%= group.entries.length %> cons.<% if (!group.project.active && group.project.id !== 0) { %> - Archivé<% } %>)
+                  <%= groupLabel %> (<%= group.entries.length %> cons.<% if (!group.project.active && group.project.id !== 0) { %> - Archivé<% } %>)
                 </option>
               <% }); %>
             </select>
@@ -173,14 +175,18 @@
                   <div>
                     <h2 class="h6 mb-0 fw-bold">
                       <% const validGroupUrl = group.project.id !== 0 ? safeHttpUrl(group.project.url) : null; %>
+                      <% const groupDisplayTitle = group.project.displayTitle || group.project.url; %>
                       <% if (validGroupUrl) { %>
-                        <a href="<%= validGroupUrl %>" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
-                          <%= validGroupUrl %> <i class="fa-solid fa-arrow-up-right-from-square small text-muted ms-1" aria-hidden="true"></i>
+                        <a href="<%= validGroupUrl %>" target="_blank" rel="noopener noreferrer" class="text-decoration-none" title="<%= validGroupUrl %>">
+                          <%= groupDisplayTitle %> <i class="fa-solid fa-arrow-up-right-from-square small text-muted ms-1" aria-hidden="true"></i>
                         </a>
                       <% } else { %>
-                        <%= group.project.url %>
+                        <%= groupDisplayTitle %>
                       <% } %>
                     </h2>
+                    <% if (validGroupUrl && groupDisplayTitle !== validGroupUrl) { %>
+                      <div class="small text-muted text-truncate" style="max-width: 480px;"><%= validGroupUrl %></div>
+                    <% } %>
                     <div class="small text-muted mt-1 d-flex align-items-center flex-wrap gap-1">
                       <% if (group.project.projecttype) { %>
                         <span class="badge bg-body-secondary text-secondary-emphasis border"><%= group.project.projecttype.name %></span>
@@ -230,7 +236,7 @@
                   </thead>
                   <tbody>
                     <% group.entries.forEach(function(entry) { %>
-                      <tr class="project-entry-row" data-search-text="<%= (group.project.url + ' ' + entry.consumableName + ' ' + entry.categoryName + ' ' + entry.userName + ' ' + entry.workspaceName).toLowerCase() %>">
+                      <tr class="project-entry-row" data-search-text="<%= ((group.project.displayTitle || '') + ' ' + group.project.url + ' ' + entry.consumableName + ' ' + entry.categoryName + ' ' + entry.userName + ' ' + entry.workspaceName).toLowerCase() %>">
                         <td class="ps-3 small"><strong><%= entry.formattedDate %></strong></td>
                         <td>
                           <span class="fw-semibold"><%= entry.consumableName %></span>
@@ -284,15 +290,16 @@
               </thead>
               <tbody>
                 <% allEntries.forEach(function(entry) { %>
-                  <tr class="global-entry-row" data-project-id="<%= entry.projectId || 0 %>" data-search-text="<%= (entry.projectUrl + ' ' + entry.consumableName + ' ' + entry.categoryName + ' ' + entry.userName + ' ' + entry.workspaceName).toLowerCase() %>">
+                  <tr class="global-entry-row" data-project-id="<%= entry.projectId || 0 %>" data-search-text="<%= ((entry.projectTitle || '') + ' ' + entry.projectUrl + ' ' + entry.consumableName + ' ' + entry.categoryName + ' ' + entry.userName + ' ' + entry.workspaceName).toLowerCase() %>">
                     <td class="ps-3">
                       <% const validEntryUrl = entry.project ? safeHttpUrl(entry.project.url) : null; %>
+                      <% const entryLabel = entry.projectTitle || entry.projectUrl; %>
                       <% if (validEntryUrl) { %>
-                        <a href="<%= validEntryUrl %>" target="_blank" rel="noopener noreferrer" class="small fw-semibold text-decoration-none" title="<%= validEntryUrl %>">
-                          <%= validEntryUrl.replace(/^https?:\/\//, '').substring(0, 32) %>...
+                        <a href="<%= validEntryUrl %>" target="_blank" rel="noopener noreferrer" class="small fw-semibold text-decoration-none d-inline-block text-truncate" style="max-width: 240px;" title="<%= entryLabel %> — <%= validEntryUrl %>">
+                          <%= entryLabel %>
                         </a>
                       <% } else { %>
-                        <span class="small text-muted"><%= entry.projectUrl %></span>
+                        <span class="small text-muted"><%= entryLabel %></span>
                       <% } %>
                     </td>
                     <td class="small"><strong><%= entry.formattedDate %></strong></td>

@@ -80,6 +80,8 @@ model Usertype {
 model Project {
   id             Int           @id @default(autoincrement())
   url            String        @unique @db.VarChar(255)
+  customTitle    String?       @db.VarChar(255)
+  wikiTitle      String?       @db.VarChar(255)
   projecttypeId  Int
   teachingUnitId        Int?
   unregisteredUeName    String?       @db.VarChar(255)

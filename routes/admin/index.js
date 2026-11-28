@@ -87,6 +87,8 @@ router.get(
           { user: { email: { contains: search } } },
           { comments: { contains: search } },
           { userproject: { project: { url: { contains: search } } } },
+          { userproject: { project: { customTitle: { contains: search } } } },
+          { userproject: { project: { wikiTitle: { contains: search } } } },
         ];
       }
 

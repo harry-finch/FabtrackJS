@@ -66,6 +66,7 @@ pm2 logs fabtrack --lines 50
 | [R-031](../roadmap/items/R-031-adopter-le-bandeau-superieur-et-les-retouches.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier le bandeau supérieur 44 px bleu Sorbonne, les sélecteurs segmentés langue/thème (fin du bouton flottant violet) et la barre d'état 24 px en clair et en sombre |
 | [R-032](../roadmap/items/R-032-rafraichir-le-kiosque-et-les-tableaux-sans.md) | `v1.5` | Aucune | Aucune | Aucune | Derrière Nginx, s'assurer que `proxy_buffering off;` est autorisé (l'app envoie `X-Accel-Buffering: no` sur `/events/stream`) ; tester la synchro kiosque multi-postes < 2 s sans rechargement |
 | [R-033](../roadmap/items/R-033-refondre-le-panneau-d-administration-en-cockpit.md) | `v1.5` | Aucune | Aucune | Aucune | Vérifier le menu latéral persistant filtrable sur `/admin` et sous-pages (desktop + tiroir mobile), le masquage des plugins désactivés et le cockpit « À traiter aujourd'hui » (`v1.5.0`) |
+| [R-038](../roadmap/items/R-038-titre-des-projets.md) | `v1.6` | Aucune | **Obligatoire :** `npm run db:migrate` (applique `005_r038_project_titles.sql` : colonnes `Project.customTitle`, `Project.wikiTitle`) | **`npx prisma generate`** | Cliquer sur « Actualiser les titres » dans `/admin/bookstack` pour peupler les titres wiki existants |
 
 ---
 
@@ -463,6 +464,27 @@ npm run db:migrate
 npx prisma generate
 pm2 restart fabtrack
 ```
+
+---
+
+### Jalon `v1.6` — Exploitations avancées, borne badge & synchronisation
+
+#### `R-038` — Afficher et personnaliser les titres des projets BookStack
+
+**1. Évolution SQL obligatoire (idempotente)**
+
+La migration `005_r038_project_titles.sql` ajoute deux colonnes optionnelles `customTitle` et `wikiTitle` sur `Project` :
+
+```bash
+npm run db:migrate
+npx prisma generate
+pm2 restart fabtrack
+```
+
+**2. Vérification post-déploiement**
+
+- Dans **Administration > BookStack** (`/admin/bookstack`), cliquer sur **Actualiser les titres** afin de synchroniser les titres des livres/pages existants.
+- Vérifier qu'un projet peut être choisi par son titre sur le kiosque et renommé localement depuis `/admin/bookstack` ou la fiche contributeur.
 
 
 

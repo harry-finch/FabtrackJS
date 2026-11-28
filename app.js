@@ -458,6 +458,7 @@ app.use(async (req, res, next) => {
     res.locals.safeJson = safeJson;
     res.locals.safeHttpUrl = safeHttpUrl;
     res.locals.sanitizeWarningIcon = sanitizeWarningIcon;
+    res.locals.resolveProjectTitle = require("./services/projectTitleService.js").resolveProjectDisplayTitle;
 
     next();
   } catch (err) {

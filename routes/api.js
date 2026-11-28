@@ -198,6 +198,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const isProjectsScope = req.query && req.query.scope === "projects";
     const sorbonneService = require("../services/sorbonneService.js");
+    const projectTitleService = require("../services/projectTitleService.js");
 
     const [users, projects, sorbonneEntities] = await Promise.all([
       isProjectsScope
@@ -227,6 +228,8 @@ router.get(
         select: {
           id: true,
           url: true,
+          customTitle: true,
+          wikiTitle: true,
           projecttypeId: true,
           teachingUnitId: true,
           unregisteredUeName: true,
@@ -262,6 +265,9 @@ router.get(
     const projectlist = projects.map((project) => ({
       id: project.id,
       url: project.url,
+      customTitle: project.customTitle || null,
+      wikiTitle: project.wikiTitle || null,
+      displayTitle: projectTitleService.resolveProjectDisplayTitle(project),
       type: project.projecttypeId,
       teachingUnitId: project.teachingUnitId,
       unregisteredUeName: project.unregisteredUeName,

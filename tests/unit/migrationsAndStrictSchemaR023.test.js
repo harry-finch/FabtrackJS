@@ -15,9 +15,12 @@ describe("R-023: NetBSD-compatible SQL migrations & strict Prisma schema typing"
   describe("1. Migration discovery, filename parsing & SQL statement splitter", () => {
     test("discovers all incremental SQL migrations in strict numeric order", () => {
       const migrations = discoverMigrations();
-      expect(migrations.length).toBeGreaterThanOrEqual(4);
+      expect(migrations.length).toBeGreaterThanOrEqual(5);
       const versions = migrations.map((m) => m.version);
-      expect(versions).toEqual(["000", "001", "002", "003", "004"]);
+      expect(versions.slice(0, 5)).toEqual(["000", "001", "002", "003", "004"]);
+      for (let i = 1; i < migrations.length; i++) {
+        expect(migrations[i].numericOrder).toBeGreaterThan(migrations[i - 1].numericOrder);
+      }
       for (const m of migrations) {
         expect(m.checksum).toMatch(/^[a-f0-9]{64}$/);
         expect(splitSqlStatements(m.sql).length).toBeGreaterThan(0);
@@ -101,31 +104,34 @@ describe("R-023: NetBSD-compatible SQL migrations & strict Prisma schema typing"
     }
 
     test("applies all pending migrations in order and records _schema_version, then skips on re-run", async () => {
+      const expectedVersions = discoverMigrations().map((m) => m.version);
       const conn = createMockConnection();
       const first = await runMigrations({ connection: conn, mode: "apply", log: () => {} });
-      expect(first.appliedNow).toEqual(["000", "001", "002", "003", "004"]);
-      expect(conn.applied).toHaveLength(5);
+      expect(first.appliedNow).toEqual(expectedVersions);
+      expect(conn.applied).toHaveLength(expectedVersions.length);
 
       const second = await runMigrations({ connection: conn, mode: "apply", log: () => {} });
       expect(second.appliedNow).toEqual([]);
-      expect(second.alreadyApplied).toEqual(["000", "001", "002", "003", "004"]);
+      expect(second.alreadyApplied).toEqual(expectedVersions);
     });
 
     test("dry-run and status never execute migration DDL or insert _schema_version rows", async () => {
+      const expectedCount = discoverMigrations().length;
       const conn = createMockConnection();
       const dry = await runMigrations({ connection: conn, mode: "dry-run", log: () => {} });
-      expect(dry.pending).toHaveLength(5);
+      expect(dry.pending).toHaveLength(expectedCount);
       expect(conn.applied).toHaveLength(0);
 
       const status = await runMigrations({ connection: conn, mode: "status", log: () => {} });
-      expect(status.pending).toHaveLength(5);
+      expect(status.pending).toHaveLength(expectedCount);
       expect(conn.applied).toHaveLength(0);
     });
 
     test("baseline records existing migrations without executing DDL statements", async () => {
+      const expectedVersions = discoverMigrations().map((m) => m.version);
       const conn = createMockConnection();
       const res = await runMigrations({ connection: conn, mode: "baseline", log: () => {} });
-      expect(res.appliedNow).toEqual(["000", "001", "002", "003", "004"]);
+      expect(res.appliedNow).toEqual(expectedVersions);
       expect(conn.executedSql.some((q) => /ALTER TABLE/i.test(q.sql))).toBe(false);
     });
 

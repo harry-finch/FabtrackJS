@@ -28,6 +28,12 @@
                     <p class="fab-page-subtitle">Intégration du wiki Sorbonne Université, suivi de fraîcheur documentaire et clés API</p>
                 </div>
                 <div class="fab-page-actions">
+                    <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/bookstack/refresh-titles" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="fa-solid fa-rotate me-1" aria-hidden="true"></i> Actualiser les titres
+                        </button>
+                    </form>
                     <form action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>admin/bookstack/test" method="POST" class="d-inline">
                         <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
                         <button type="submit" class="btn btn-outline-secondary btn-sm">
@@ -231,13 +237,14 @@
                                     <th scope="col">Contributeur principal</th>
                                     <th scope="col">Dernière visite au lab</th>
                                     <th scope="col">Dernière modif wiki</th>
-                                    <th scope="col" class="text-center pe-3">Statut documentaire</th>
+                                    <th scope="col" class="text-center">Statut documentaire</th>
+                                    <th scope="col" class="text-end pe-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% if (stats.projects.length === 0) { %>
                                 <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
+                                    <td colspan="7" class="text-center py-5 text-muted">
                                         <i class="fa-solid fa-book-open fa-2x mb-2 text-secondary opacity-50 d-block" aria-hidden="true"></i>
                                         Aucun projet actif référençant le wiki BookStack n'a été trouvé.
                                     </td>
@@ -247,19 +254,30 @@
                                         const isUp = proj.status === 'up_to_date';
                                         const isOutdated = proj.status === 'outdated';
                                         const isNotFound = proj.status === 'not_found';
+                                        const resolvedTitle = proj.displayTitle || proj.customTitle || proj.wikiTitle || proj.docTitle || proj.url;
                                     %>
                                     <tr>
-                                        <td class="ps-3" style="max-width: 320px;">
-                                            <div class="fw-semibold text-truncate" title="<%= proj.docTitle || proj.url %>">
-                                                <%= proj.docTitle || proj.url.replace(/^https?:\/\/[^/]+\/[^/]+\/?/i, '') || proj.url %>
+                                        <td class="ps-3" style="max-width: 340px;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="fw-semibold text-truncate" title="<%= resolvedTitle %>">
+                                                    <%= resolvedTitle %>
+                                                </span>
+                                                <% if (proj.customTitle) { %>
+                                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle flex-shrink-0" title="Nom personnalisé dans Fabtrack">Nom local</span>
+                                                <% } %>
                                             </div>
+                                            <% if (proj.customTitle && (proj.wikiTitle || proj.docTitle)) { %>
+                                                <div class="small text-muted text-truncate" style="max-width: 300px;" title="Titre wiki : <%= proj.wikiTitle || proj.docTitle %>">
+                                                    Wiki : <%= proj.wikiTitle || proj.docTitle %>
+                                                </div>
+                                            <% } %>
                                             <% const validProjUrl = safeHttpUrl(proj.url); %>
                                             <% if (validProjUrl) { %>
-                                            <a href="<%= validProjUrl %>" target="_blank" rel="noopener noreferrer" class="small text-muted text-decoration-none text-truncate d-inline-block" style="max-width: 280px;">
+                                            <a href="<%= validProjUrl %>" target="_blank" rel="noopener noreferrer" class="small text-muted text-decoration-none text-truncate d-inline-block" style="max-width: 300px;">
                                                 <i class="fa-solid fa-arrow-up-right-from-square fa-xs me-1" aria-hidden="true"></i><%= validProjUrl %>
                                             </a>
                                             <% } else { %>
-                                            <span class="small text-muted text-truncate d-inline-block" style="max-width: 280px;"><%= proj.url %></span>
+                                            <span class="small text-muted text-truncate d-inline-block" style="max-width: 300px;"><%= proj.url %></span>
                                             <% } %>
                                         </td>
                                         <td>
@@ -291,7 +309,7 @@
                                                 <span class="text-muted small fst-italic">Non interrogé</span>
                                             <% } %>
                                         </td>
-                                        <td class="text-center pe-3">
+                                        <td class="text-center">
                                             <% if (isUp) { %>
                                                 <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
                                                     <i class="fa-solid fa-circle-check fa-xs" aria-hidden="true"></i> À jour
@@ -306,6 +324,24 @@
                                                 </span>
                                             <% } %>
                                         </td>
+                                        <td class="text-end pe-3">
+                                            <div class="fab-row-actions">
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-secondary"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editProjectTitleModal"
+                                                    data-project-id="<%= proj.id %>"
+                                                    data-project-custom="<%= proj.customTitle || '' %>"
+                                                    data-project-wiki="<%= proj.wikiTitle || proj.docTitle || '' %>"
+                                                    data-project-url="<%= proj.url %>"
+                                                    title="Définir ou effacer le nom local du projet"
+                                                    aria-label="Renommer le projet <%= resolvedTitle %>"
+                                                >
+                                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                     <% }); %>
                                 <% } %>
@@ -315,6 +351,67 @@
                 </div>
             </div>
 
+            <!-- Modal: Personnaliser le nom local d'un projet (R-038) -->
+            <div class="modal fade" id="editProjectTitleModal" tabindex="-1" aria-labelledby="editProjectTitleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form id="editProjectTitleForm" method="POST" action="<%= typeof baseUrl !== 'undefined' ? baseUrl : '/' %>history/project/title/0">
+                            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editProjectTitleModalLabel">
+                                    <i class="fa-solid fa-pen-to-square text-primary me-2" aria-hidden="true"></i>Nom local du projet
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="projectCustomTitleInput" class="form-label small fw-semibold">Nom affiché dans Fabtrack</label>
+                                    <input type="text" class="form-control" id="projectCustomTitleInput" name="customTitle" maxlength="255" placeholder="Laisser vide pour utiliser le titre du wiki" />
+                                    <div class="form-text small">
+                                        Ce nom s'applique uniquement dans Fabtrack (le wiki BookStack n'est pas modifié). Laissez le champ vide pour rétablir le titre du wiki.
+                                    </div>
+                                </div>
+                                <div class="small text-muted border rounded-2 p-2 bg-body-tertiary">
+                                    <div><strong>Titre wiki connu :</strong> <span id="projectModalWikiTitle">—</span></div>
+                                    <div class="text-truncate"><strong>URL :</strong> <span id="projectModalUrl">—</span></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-body-tertiary">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-check me-1" aria-hidden="true"></i> Enregistrer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <%- include('../includes/footer.html') %>
+            <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
+                const editProjectTitleModal = document.getElementById('editProjectTitleModal');
+                if (editProjectTitleModal) {
+                    editProjectTitleModal.addEventListener('show.bs.modal', function (event) {
+                        const btn = event.relatedTarget;
+                        if (!btn) return;
+                        const projId = btn.getAttribute('data-project-id');
+                        const customTitle = btn.getAttribute('data-project-custom') || '';
+                        const wikiTitle = btn.getAttribute('data-project-wiki') || '';
+                        const url = btn.getAttribute('data-project-url') || '';
+                        const form = document.getElementById('editProjectTitleForm');
+                        if (form && projId) {
+                            form.action = window.getAppBaseUrl
+                                ? window.getAppBaseUrl('history/project/title/' + projId)
+                                : '/history/project/title/' + projId;
+                        }
+                        const input = document.getElementById('projectCustomTitleInput');
+                        if (input) input.value = customTitle;
+                        const wikiEl = document.getElementById('projectModalWikiTitle');
+                        if (wikiEl) wikiEl.textContent = wikiTitle || 'Non disponible';
+                        const urlEl = document.getElementById('projectModalUrl');
+                        if (urlEl) urlEl.textContent = url || '—';
+                    });
+                }
+            </script>
     </body>
 </html>

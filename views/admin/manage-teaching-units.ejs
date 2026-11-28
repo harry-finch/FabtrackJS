@@ -325,9 +325,17 @@
                         <div class="small text-muted text-truncate" style="max-width: 140px;" title="<%= act.studentEmail %>"><%= act.studentEmail %></div>
                       </td>
                       <td class="small">
-                        <span class="text-truncate d-inline-block" style="max-width: 130px;" title="<%= act.projectUrl %>">
-                          <%= act.projectUrl %>
-                        </span>
+                        <% const validActProjUrl = safeHttpUrl(act.projectUrl); %>
+                        <% const actProjLabel = act.projectTitle || act.projectUrl; %>
+                        <% if (validActProjUrl) { %>
+                          <a href="<%= validActProjUrl %>" target="_blank" rel="noopener noreferrer" class="text-truncate d-inline-block text-decoration-none" style="max-width: 150px;" title="<%= actProjLabel %> — <%= validActProjUrl %>">
+                            <%= actProjLabel %>
+                          </a>
+                        <% } else { %>
+                          <span class="text-truncate d-inline-block" style="max-width: 150px;" title="<%= actProjLabel %>">
+                            <%= actProjLabel %>
+                          </span>
+                        <% } %>
                       </td>
                       <td class="fw-medium">
                         <span class="text-truncate d-inline-block" style="max-width: 150px;" title="<%= act.consumableName %>">
@@ -406,9 +414,17 @@
                         <div class="small text-muted"><%= item.studentEmail %></div>
                       </td>
                       <td class="small">
-                        <span class="text-truncate d-inline-block" style="max-width: 180px;" title="<%= item.projectUrl %>">
-                          <%= item.projectUrl %>
-                        </span>
+                        <% const validPendingProjUrl = safeHttpUrl(item.projectUrl); %>
+                        <% const pendingProjLabel = item.projectTitle || item.projectUrl; %>
+                        <% if (validPendingProjUrl) { %>
+                          <a href="<%= validPendingProjUrl %>" target="_blank" rel="noopener noreferrer" class="text-truncate d-inline-block text-decoration-none" style="max-width: 180px;" title="<%= pendingProjLabel %> — <%= validPendingProjUrl %>">
+                            <%= pendingProjLabel %>
+                          </a>
+                        <% } else { %>
+                          <span class="text-truncate d-inline-block" style="max-width: 180px;" title="<%= pendingProjLabel %>">
+                            <%= pendingProjLabel %>
+                          </span>
+                        <% } %>
                       </td>
                       <td>
                         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-semibold">

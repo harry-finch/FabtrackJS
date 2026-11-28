@@ -163,6 +163,15 @@ const updateHistorySchema = z.object({
     .nullable(),
 });
 
+const updateProjectTitleSchema = z.object({
+  customTitle: z
+    .string({ error: "Le nom du projet est invalide." })
+    .trim()
+    .max(255, "Le nom personnalisé ne peut pas dépasser 255 caractères.")
+    .optional()
+    .nullable(),
+});
+
 module.exports = {
   REPAIR_STATUSES,
   createVisitSchema,
@@ -173,4 +182,5 @@ module.exports = {
   updateCommentSchema,
   exitRepairSchema,
   updateHistorySchema,
+  updateProjectTitleSchema,
 };

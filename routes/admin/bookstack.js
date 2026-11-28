@@ -6,6 +6,7 @@ const { validateBody } = require("../../middleware/validate.js");
 const { bookstackSettingsSchema, bookstackTestSchema } = require("../../schemas/admin.schema.js");
 const settingsService = require("../../services/settingsService.js");
 const bookstackService = require("../../services/bookstackService.js");
+const projectTitleService = require("../../services/projectTitleService.js");
 const { validateOutboundUrl } = require("../../utilities/ssrfGuard.js");
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.get(
   "/",
   clearNotification,
   asyncHandler(async (req, res) => {
+    req.session.lastPage = "/admin/bookstack";
     const settings = await settingsService.getSettings();
     const stats = await bookstackService.getOverallDocumentationStats();
     const hasTokenSecret = Boolean(settings.bookstack_token_secret && settings.bookstack_token_secret.trim());
@@ -101,6 +103,22 @@ router.post(
       req.session.notification = `Error: ${result.error}`;
     }
 
+    res.redirect("/admin/bookstack");
+  }),
+);
+
+// ******************************************************************************
+// POST /admin/bookstack/refresh-titles: Refresh cached BookStack titles (R-038)
+// ******************************************************************************
+router.post(
+  "/refresh-titles",
+  asyncHandler(async (req, res) => {
+    const result = await projectTitleService.refreshAllBookstackTitles();
+    if (!result.configured) {
+      req.session.notification = "Warning: Le plugin BookStack n'est pas configuré ou est désactivé.";
+    } else {
+      req.session.notification = `Success: Actualisation des titres terminée (${result.refreshed}/${result.total} titre(s) wiki mis à jour).`;
+    }
     res.redirect("/admin/bookstack");
   }),
 );
