@@ -500,34 +500,12 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
       expect(htmlRes.headers.location).toBe("/login");
     });
 
-    test("staff (borne kiosque) keeps kiosk check-in/out endpoints and is blocked on all privileged routes", async () => {
-      // Allowed kiosk actions
-      const createRes = await request(app)
-        .post("/history/create")
-        .set("x-test-role", "staff")
-        .type("form")
-        .send({ userid: 10 });
-      expect(createRes.status).toBe(302);
-      expect(createRes.headers.location).toBe("/fabtrack");
-      expect(mockPrisma.history.create).toHaveBeenCalledTimes(1);
-
-      const exitRes = await request(app).post("/history/exit/100").set("x-test-role", "staff");
-      expect(exitRes.status).toBe(302);
-      expect(exitRes.headers.location).toBe("/fabtrack");
-      expect(mockPrisma.history.update).toHaveBeenCalledTimes(1);
-
-      const repairExitRes = await request(app)
-        .post("/history/exit-repair")
-        .set("x-test-role", "staff")
-        .type("form")
-        .send({ historyid: 100, repairStatus: "REPAIRED" });
-      expect(repairExitRes.status).toBe(302);
-      expect(mockRepairCafeService.recordRepairExit).toHaveBeenCalledTimes(1);
-
-      resetMocks();
-
+    test("staff (borne kiosque) is restricted to badge-only pointing and blocked on all manual/privileged routes (R-007 + R-036)", async () => {
       // Blocked routes for staff (AJAX => 403 JSON, HTML => 302 /fabtrack, 0 DB mutations)
       const staffBlockedJson = [
+        ["post", "/history/create", { userid: 10 }],
+        ["post", "/history/exit/100"],
+        ["post", "/history/exit-repair", { historyid: 100, repairStatus: "REPAIRED" }],
         ["post", "/history/cleardebt/10"],
         ["post", "/history/credit", { userid: 10, money: 10 }],
         ["post", "/history/balance-adjust", { userid: 10, operation: "debit", amount: 5, reason: "test" }],
@@ -555,6 +533,10 @@ describe("Unit: Services & RBAC Matrix (R-007)", () => {
         ["post", "/warning/deactivate/9"],
         ["post", "/warning/create", { userid: 10, warningtype: 1 }],
         ["get", "/api/list/all-staff"],
+        ["get", "/api/list/users-inlab"],
+        ["get", "/api/users/search?q=Alice"],
+        ["get", "/api/list/autocomplete-lists?scope=projects"],
+        ["get", "/api/rfid/check-availability?rfid=ABC123"],
       ];
 
       for (const [method, url, body] of staffBlockedJson) {

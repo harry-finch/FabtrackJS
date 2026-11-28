@@ -2,10 +2,10 @@
 id: R-036
 titre: "Réserver la borne au pointage individuel par badge"
 resume: "À l’entrée, le contributeur badgé précise son motif de visite, son projet et, s’il le souhaite, un complément. L’accueil accompagne les personnes sans badge ou sans fiche."
-statut: specifiee
+statut: a-tester
 jalon: v1.6
 cree: 2026-11-22
-maj: 2026-11-23
+maj: 2026-11-28
 livree:
 ---
 ## But

@@ -118,8 +118,16 @@
 
       const result = await response.json();
 
+      const isBorneMode = Boolean(document.getElementById("borneKioskShell"));
+
       if (response.ok && result.success) {
-        if (result.action === "checkin") {
+        if (result.action === "prompt_checkin" && typeof window.openBorneCheckin === "function") {
+          hideRfidOverlayImmediately();
+          window.openBorneCheckin(result);
+        } else if (result.action === "checkin") {
+          if (isBorneMode && typeof window.resetBorneToStandby === "function") {
+            window.resetBorneToStandby();
+          }
           // Check-in success
           showRfidOverlay({
             type: "checkin",
@@ -127,27 +135,41 @@
             subtitle: "Votre entrée dans l'atelier a bien été enregistrée.",
             user: result.user,
             autoCloseMs: 3000,
-            reloadOnClose: true,
+            reloadOnClose: !isBorneMode,
           });
         } else if (result.action === "checkout") {
+          if (isBorneMode && typeof window.resetBorneToStandby === "function") {
+            window.resetBorneToStandby();
+          }
           // Check-out success
           showRfidOverlay({
             type: "checkout",
             title: `Au revoir, ${result.user.name} !`,
-            subtitle: `Votre sortie a été enregistrée. Durée : ${result.durationFormatted || result.durationMinutes + ' min'}.`,
+            subtitle: `Votre sortie a été enregistrée. Durée : ${result.durationFormatted || result.durationMinutes + " min"}.`,
             user: result.user,
             autoCloseMs: 3000,
-            reloadOnClose: true,
+            reloadOnClose: !isBorneMode,
           });
         }
       } else {
-        // Error / User not found / Debounce
+        if (isBorneMode && typeof window.resetBorneToStandby === "function") {
+          window.resetBorneToStandby();
+        }
+        // Error / User not found / Charter / Debounce
         if (result.code === "USER_NOT_FOUND") {
           showRfidOverlay({
             type: "not_found",
             title: "Badge non reconnu",
-            subtitle: "Ce badge n'est pas encore associé à un profil. Veuillez vous rapprocher d'un médiateur.",
+            subtitle: "Ce badge n'est pas encore associé à un profil. Veuillez vous présenter à l'accueil auprès d'un membre de l'équipe.",
             rfid: rfidCode,
+            autoCloseMs: 4500,
+            reloadOnClose: false,
+          });
+        } else if (result.code === "TERMS_NOT_ACCEPTED") {
+          showRfidOverlay({
+            type: "not_found",
+            title: "Charte d'utilisation non validée",
+            subtitle: result.message || "Votre charte d'utilisation n'est pas encore validée. Veuillez vous présenter à l'accueil.",
             autoCloseMs: 4500,
             reloadOnClose: false,
           });
@@ -376,11 +398,20 @@
     }
   }
 
+  function hideRfidOverlayImmediately() {
+    const overlay = document.getElementById("rfidFeedbackOverlay");
+    if (overlay) {
+      overlay.style.opacity = "0";
+      overlay.style.display = "none";
+    }
+  }
+
   function showToastFeedback(message, type = "info") {
     // Optional light toast
     console.log(`[RFID] ${type.toUpperCase()}: ${message}`);
   }
 
-  // Expose trigger globally for manual tests
+  // Expose helpers globally for borne workflow and manual tests
   window.triggerKioskRfidScan = triggerKioskRfidScan;
+  window.showRfidFeedbackOverlay = showRfidOverlay;
 })();

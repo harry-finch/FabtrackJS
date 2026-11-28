@@ -255,7 +255,7 @@ describe("R-021: SQL statistics, APP_TIMEZONE, server pagination, kiosk search &
         },
       ]);
 
-      const app = buildApp("/api", apiRouter, "staff");
+      const app = buildApp("/api", apiRouter, "user");
       const res = await request(app).get("/api/users/search?q=Ada+Love&limit=20");
 
       expect(res.status).toBe(200);
@@ -279,7 +279,7 @@ describe("R-021: SQL statistics, APP_TIMEZONE, server pagination, kiosk search &
       mockRoutePrisma.project.findMany.mockResolvedValue([]);
       mockRoutePrisma.userProject.findMany.mockResolvedValue([]);
 
-      const app = buildApp("/api", apiRouter, "staff");
+      const app = buildApp("/api", apiRouter, "user");
       const res = await request(app).get("/api/list/autocomplete-lists?scope=projects");
 
       expect(res.status).toBe(200);

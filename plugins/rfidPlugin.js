@@ -3,10 +3,22 @@ const logger = require("../utilities/simpleLogger.js");
 const { maskRfidUid } = require("../utilities/structuredLogger.js");
 const { getStartOfDay } = require("../services/visitAutoCloseService.js");
 const realtimeService = require("../services/realtimeService.js");
+const borneCheckinService = require("../services/borneCheckinService.js");
 
 // Anti-bounce memory map: { [rfid]: timestamp }
 const lastScans = new Map();
 const ANTI_BOUNCE_MS = 3500; // 3.5 seconds
+
+function markRfidScanTimestamp(cleanRfid) {
+  if (!cleanRfid) return;
+  const now = Date.now();
+  lastScans.set(cleanRfid, now);
+  if (lastScans.size > 1000) {
+    for (const [k, v] of lastScans.entries()) {
+      if (now - v > 60000) lastScans.delete(k);
+    }
+  }
+}
 
 module.exports = {
   id: "rfid",
@@ -14,10 +26,11 @@ module.exports = {
   version: "1.0.0",
   envKey: "ENABLE_PLUGIN_RFID",
   description: "Permet le pointage automatique entrée / sortie sur borne tactile avec un lecteur de cartes RFID (badge UID).",
+  markRfidScanTimestamp,
 
   register(hookManager) {
     // Hook to process RFID scan
-    hookManager.addHook("rfid:scan", async ({ rfid, workspaceId, staffUsername }) => {
+    hookManager.addHook("rfid:scan", async ({ rfid, workspaceId, staffUsername, actorRole }) => {
       if (!rfid || typeof rfid !== "string") {
         return { success: false, code: "INVALID_RFID", message: "Code RFID invalide ou absent." };
       }
@@ -29,7 +42,7 @@ module.exports = {
 
       const now = Date.now();
 
-      // Anti-bounce protection
+      // Anti-bounce protection (guards double-taps right after a completed check-in or check-out)
       const lastScanTime = lastScans.get(cleanRfid);
       if (lastScanTime && (now - lastScanTime < ANTI_BOUNCE_MS)) {
         return {
@@ -37,14 +50,6 @@ module.exports = {
           code: "DEBOUNCE",
           message: "Scan déjà en cours de prise en compte, veuillez patienter quelques secondes.",
         };
-      }
-      lastScans.set(cleanRfid, now);
-
-      // Clean up old entries from lastScans to avoid memory leaks
-      if (lastScans.size > 1000) {
-        for (const [k, v] of lastScans.entries()) {
-          if (now - v > 60000) lastScans.delete(k);
-        }
       }
 
       // Find user by RFID
@@ -63,7 +68,7 @@ module.exports = {
           success: false,
           code: "USER_NOT_FOUND",
           rfid: cleanRfid,
-          message: "Badge non reconnu. Veuillez vous rapprocher d'un médiateur pour vous inscrire ou associer votre carte.",
+          message: "Badge non reconnu. Veuillez vous présenter à l'accueil auprès d'un membre de l'équipe.",
         };
       }
 
@@ -83,6 +88,7 @@ module.exports = {
 
       if (currentVisit) {
         // --- CHECK-OUT ---
+        markRfidScanTimestamp(cleanRfid);
         const departureTime = new Date();
         const arrivalTime = new Date(currentVisit.arrival);
         const durationMinutes = Math.max(1, Math.round((departureTime.getTime() - arrivalTime.getTime()) / (1000 * 60)));
@@ -131,10 +137,29 @@ module.exports = {
               surname: user.surname,
               type: user.usertype ? user.usertype.name : "",
             },
-            message: `Accès refusé : ${user.name} ${user.surname} n'a pas encore validé la charte d'utilisation. Veuillez signer la charte avant d'accéder au lab.`,
+            message: `Accès refusé : ${user.name} ${user.surname} n'a pas encore validé la charte d'utilisation. Veuillez vous présenter à l'accueil.`,
           };
         }
 
+        // R-036: On self-service borne accounts (role === "staff"), ask the contributor to confirm
+        // purpose of visit, project and optional comment before creating the visit.
+        if (actorRole === "staff") {
+          const ownProjects = await borneCheckinService.getContributorProjectsForBorne(user.id);
+          return {
+            success: true,
+            action: "prompt_checkin",
+            rfid: cleanRfid,
+            user: {
+              name: user.name,
+              surname: user.surname,
+              type: user.usertype ? user.usertype.name : "",
+            },
+            projects: ownProjects,
+            message: `Bonjour ${user.name} ! Précisez le motif de votre visite puis confirmez votre entrée.`,
+          };
+        }
+
+        markRfidScanTimestamp(cleanRfid);
         const arrivalTime = new Date();
         const newVisit = await prisma.history.create({
           data: {

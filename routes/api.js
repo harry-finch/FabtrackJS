@@ -7,6 +7,7 @@ var router = express.Router();
 
 const isLoggedIn = require("../middleware/checkSession.js");
 const isAdmin = require("../middleware/checkAdmin.js");
+const requireRoles = require("../middleware/requireRoles.js");
 
 const { prisma } = require("../utilities/db.js");
 
@@ -16,10 +17,13 @@ const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody, validateQuery } = require("../middleware/validate.js");
 const {
   rfidScanSchema,
+  borneCheckinSchema,
   checkRfidQuerySchema,
   projectDocumentationQuerySchema,
   userSearchQuerySchema,
 } = require("../schemas/api.schema.js");
+const borneCheckinService = require("../services/borneCheckinService.js");
+const rfidPlugin = require("../plugins/rfidPlugin.js");
 
 // ******************************************************************************
 // Route returning a list of all staff members (admin only)
@@ -106,7 +110,7 @@ router.get(
 
 router.get(
   "/list/users-inlab",
-  isLoggedIn,
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
     const history = await prisma.history.findMany({
       where: {
@@ -137,7 +141,7 @@ router.get(
 
 router.get(
   "/users/search",
-  isLoggedIn,
+  requireRoles("admin", "user"),
   validateQuery(userSearchQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     const query = req.validatedQuery || req.query || {};
@@ -194,7 +198,7 @@ router.get(
 
 router.get(
   "/list/autocomplete-lists",
-  isLoggedIn,
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
     const isProjectsScope = req.query && req.query.scope === "projects";
     const sorbonneService = require("../services/sorbonneService.js");
@@ -319,16 +323,24 @@ router.post(
     const workspaceId =
       req.body.workspaceId || (req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null);
     const staffUsername = req.session.username;
+    const actorRole = req.session ? req.session.role : null;
 
     const results = await hookManager.triggerAsyncHook("rfid:scan", {
       rfid,
       workspaceId,
       staffUsername,
+      actorRole,
     });
 
     if (results && results.length > 0) {
       const result = results[0];
-      const statusCode = result.success ? 200 : result.code === "USER_NOT_FOUND" ? 404 : 400;
+      const statusCode = result.success
+        ? 200
+        : result.code === "USER_NOT_FOUND"
+          ? 404
+          : result.code === "TERMS_NOT_ACCEPTED"
+            ? 403
+            : 400;
       return res.status(statusCode).json(result);
     }
 
@@ -336,9 +348,49 @@ router.post(
   }),
 );
 
+router.post(
+  "/rfid/checkin",
+  isLoggedIn,
+  validateBody(borneCheckinSchema, { isApi: true }),
+  asyncHandler(async (req, res) => {
+    if (!hookManager.isPluginEnabled("rfid")) {
+      return res.status(403).json({ success: false, error: "Le plugin RFID n'est pas activé." });
+    }
+
+    const payload = req.validatedBody || req.body;
+    const workspaceId =
+      payload.workspaceId || (req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null);
+
+    const result = await borneCheckinService.confirmBadgeCheckIn({
+      ...payload,
+      workspaceId,
+      staffUsername: req.session ? req.session.username : "borne",
+      onConfirmedRfid: (uid) => {
+        if (rfidPlugin && typeof rfidPlugin.markRfidScanTimestamp === "function") {
+          rfidPlugin.markRfidScanTimestamp(uid);
+        }
+      },
+    });
+
+    if (!result.success) {
+      const statusCode =
+        result.code === "USER_NOT_FOUND"
+          ? 404
+          : result.code === "TERMS_NOT_ACCEPTED" || result.code === "INVALID_PROJECT"
+            ? 403
+            : result.code === "ALREADY_CHECKED_IN"
+              ? 409
+              : 400;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.status(200).json(result);
+  }),
+);
+
 router.get(
   "/rfid/check-availability",
-  isLoggedIn,
+  requireRoles("admin", "user"),
   validateQuery(checkRfidQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     const { rfid, excludeUserId } = req.query;
@@ -361,7 +413,7 @@ const bookstackService = require("../services/bookstackService.js");
 
 router.get(
   "/bookstack/check-doc",
-  isLoggedIn,
+  requireRoles("admin", "user"),
   validateQuery(projectDocumentationQuerySchema, { isApi: true }),
   asyncHandler(async (req, res) => {
     if (!hookManager.isPluginEnabled("bookstack")) {

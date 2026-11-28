@@ -119,7 +119,7 @@ describe("Unit R-032: Realtime SSE Bus & Partial Kiosk/Admin Refresh", () => {
     expect(res.headers.location).toBe("/login");
   });
 
-  test("GET /fabtrack/present-table renders partial HTML with staff PII masking and no-store header", async () => {
+  test("GET /fabtrack/present-table renders partial HTML for mediators and forbids borne (role: staff — R-036)", async () => {
     mockPrisma.history.findMany.mockResolvedValueOnce([
       {
         id: 101,
@@ -138,8 +138,9 @@ describe("Unit R-032: Realtime SSE Bus & Partial Kiosk/Admin Refresh", () => {
     app.set("view engine", "ejs");
     app.engine("html", ejs.renderFile);
     app.use((req, res, next) => {
-      req.session = { loggedin: true, role: "staff", staffId: 1, username: "kiosk", selectedWorkspace: { id: 1, name: "Lab" } };
-      res.locals.role = "staff";
+      const role = req.headers["x-test-role"] || "user";
+      req.session = { loggedin: true, role, staffId: 1, username: "mediator", selectedWorkspace: { id: 1, name: "Lab" } };
+      res.locals.role = role;
       res.locals.baseUrl = "/fabtrack/";
       res.locals.csrfToken = "csrf-1";
       res.locals.__ = (k) => k;
@@ -147,12 +148,17 @@ describe("Unit R-032: Realtime SSE Bus & Partial Kiosk/Admin Refresh", () => {
     });
     app.use("/fabtrack", fabtrackRouter);
 
-    const res = await request(app).get("/fabtrack/present-table");
+    const res = await request(app).get("/fabtrack/present-table").set("x-test-role", "user");
     expect(res.status).toBe(200);
     expect(res.headers["cache-control"]).toBe("no-store");
-    expect(res.text).toContain("Alice M.");
-    expect(res.text).not.toContain("Alice Martin");
+    expect(res.text).toContain("Alice Martin");
     expect(res.text).toContain('data-ajax-kiosk="true"');
+
+    const staffRes = await request(app)
+      .get("/fabtrack/present-table")
+      .set("x-test-role", "staff")
+      .set("Accept", "application/json");
+    expect(staffRes.status).toBe(403);
   });
 
   test("POST /history/exit/:id returns JSON in AJAX mode and publishes SSE kiosk/admin invalidation", async () => {
@@ -199,8 +205,8 @@ describe("Unit R-032: Realtime SSE Bus & Partial Kiosk/Admin Refresh", () => {
     app.set("view engine", "ejs");
     app.engine("html", ejs.renderFile);
     app.use((req, res, next) => {
-      req.session = { loggedin: true, role: "staff", staffId: 1, username: "kiosk", selectedWorkspace: { id: 1, name: "Lab" } };
-      res.locals.role = "staff";
+      req.session = { loggedin: true, role: "user", staffId: 1, username: "mediator", selectedWorkspace: { id: 1, name: "Lab" } };
+      res.locals.role = "user";
       res.locals.baseUrl = "/";
       res.locals.csrfToken = "csrf-empty";
       res.locals.__ = (k) => k;

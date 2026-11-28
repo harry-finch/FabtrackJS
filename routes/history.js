@@ -77,6 +77,7 @@ async function consumeItemTx(tx, consumableId, quantity) {
 
 router.post(
   "/create",
+  requireRoles("admin", "user"),
   validateBody(createVisitSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     let { userid, projecttype, projectid, userprojectid, documentation, comments, teachingUnitId, unregisteredUeName, unregisteredUeContact, repairObject, workshopId, sorbonneEntity } = req.body;
@@ -348,6 +349,7 @@ router.post(
 
 router.post(
   "/exit/:id",
+  requireRoles("admin", "user"),
   validateParams(idParamSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -379,6 +381,7 @@ router.post(
 
 router.post(
   "/exit-repair",
+  requireRoles("admin", "user"),
   validateBody(exitRepairSchema, { redirectUrl: "/fabtrack" }),
   asyncHandler(async (req, res) => {
     const { historyid, repairStatus, repairNotes } = req.body;

@@ -19,6 +19,194 @@
         <main class="main-container">
             <%- include('../includes/header.html') %>
 
+            <% const isBorneRole = typeof role !== 'undefined' && role === 'staff'; %>
+            <h1 class="visually-hidden"><%= isBorneRole ? 'Borne de pointage individuel' : __('kiosk.register_user_title') %></h1>
+
+            <% if (isBorneRole) { %>
+            <!-- R-036: Dedicated self-service badge-only borne interface (role === 'staff') -->
+            <section id="borneKioskShell" data-borne-mode="true" data-workspace-id="<%= (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) ? selectedWorkspace.id : '' %>" class="my-3">
+                <!-- Standby view -->
+                <div id="borneStandbyView" class="card border mx-auto" style="max-width: 720px;">
+                    <div class="card-header bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 px-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-id-card text-primary" aria-hidden="true"></i>
+                            <span class="fw-semibold small">Borne de pointage individuel</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold">
+                                <i class="fa-solid fa-circle fa-2xs text-success me-1" aria-hidden="true"></i><%= selectedWorkspace.name %>
+                            </span>
+                            <% } %>
+                            <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
+                            <span id="rfidReaderStatusBadge" class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="fa-solid fa-wifi me-1" aria-hidden="true"></i> Lecteur prêt
+                            </span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="card-body p-4 p-md-5 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary border border-primary-subtle mb-3" style="width: 72px; height: 72px;">
+                            <i class="fa-solid fa-id-card-clip fa-2x" aria-hidden="true"></i>
+                        </div>
+                        <h2 class="h4 fw-bold mb-2">Passez votre badge pour pointer</h2>
+                        <p class="text-muted mb-4">
+                            Présentez votre carte ou badge sur le lecteur pour enregistrer votre <strong>entrée</strong> ou votre <strong>sortie</strong> du fablab.
+                        </p>
+
+                        <% if (typeof isPluginRfidEnabled === 'undefined' || !isPluginRfidEnabled) { %>
+                        <div class="alert alert-warning border border-warning-subtle text-start mb-4" role="alert">
+                            <i class="fa-solid fa-triangle-exclamation me-2" aria-hidden="true"></i>
+                            Le plugin RFID est actuellement désactivé. Demandez à un administrateur de l'activer pour utiliser la borne.
+                        </div>
+                        <% } %>
+
+                        <div class="alert alert-secondary border text-start d-flex align-items-start gap-3 mb-0" role="note" id="borneWelcomeDeskNotice">
+                            <span class="fab-kpi-icon flex-shrink-0" aria-hidden="true">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </span>
+                            <div>
+                                <div class="fw-semibold text-body small mb-1">Première visite ou badge oublié ?</div>
+                                <div class="small text-muted">
+                                    Adressez-vous à l'accueil auprès d'un membre de l'équipe : il créera votre fiche, associera votre badge ou enregistrera votre passage.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Self check-in confirmation view (shown only after known badge with accepted charter) -->
+                <div id="borneCheckinView" class="card border mx-auto" style="max-width: 720px; display: none;">
+                    <div class="card-header bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2 py-3 px-4">
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <i class="fa-solid fa-door-open text-primary" aria-hidden="true"></i>
+                            <h2 class="h6 fw-bold mb-0">Bonjour <span id="borneUserName"></span></h2>
+                            <span id="borneUserType" class="badge bg-body-secondary text-secondary-emphasis border d-none"></span>
+                        </div>
+                        <% if (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) { %>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold">
+                            <i class="fa-solid fa-circle fa-2xs text-success me-1" aria-hidden="true"></i><%= selectedWorkspace.name %>
+                        </span>
+                        <% } %>
+                    </div>
+                    <form id="borneCheckinForm" novalidate>
+                        <input type="hidden" id="borneRfidInput" name="rfid" value="" />
+                        <input type="hidden" id="borneWorkspaceIdInput" name="workspaceId" value="<%= (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) ? selectedWorkspace.id : '' %>" />
+                        <div class="card-body p-4">
+                            <p class="text-muted small mb-3">
+                                Précisez le motif de votre visite et votre projet, puis confirmez votre entrée.
+                            </p>
+
+                            <div id="borneCheckinError" class="alert alert-danger border d-none mb-3" role="alert"></div>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="borneProjecttype" name="projecttype" required>
+                                            <option value="" disabled selected>Choisir un motif...</option>
+                                            <% projecttypes.forEach(function(projecttype) { %>
+                                            <option value="<%= projecttype.id %>"><%= projecttype.name %></option>
+                                            <% }); %>
+                                        </select>
+                                        <label for="borneProjecttype"><%= __('kiosk.field_project_type') %></label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12" id="borneProjectSection">
+                                    <div class="form-floating mb-2">
+                                        <select class="form-select" id="borneProjectSelect" name="projectid"></select>
+                                        <label for="borneProjectSelect">Projet concerné</label>
+                                    </div>
+                                    <div id="borneNewDocWrap" style="display: none;">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="borneDocumentation" name="documentation" autocomplete="off" placeholder="https://..." />
+                                            <label for="borneDocumentation">Lien vers la documentation du nouveau projet</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12" id="borneRepairCol" style="display: none;">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="borneRepairObject" name="repairObject" autocomplete="off" placeholder="Objet à réparer" />
+                                        <label for="borneRepairObject">Objet à réparer</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12" id="borneWorkshopCol" style="display: none;">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="borneWorkshopId" name="workshopId">
+                                            <option value="" selected disabled>Choisir un atelier...</option>
+                                            <% if (typeof availableWorkshops !== 'undefined' && availableWorkshops) { %>
+                                                <% availableWorkshops.forEach(function(ws) { %>
+                                                <option value="<%= ws.id %>"><%= ws.name %></option>
+                                                <% }); %>
+                                            <% } %>
+                                        </select>
+                                        <label for="borneWorkshopId">Atelier suivi</label>
+                                    </div>
+                                </div>
+
+                                <% if (typeof isPluginUeEnabled !== 'undefined' && isPluginUeEnabled) { %>
+                                <div class="col-12" id="borneUeRow" style="display: none;">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="borneTeachingUnitId" name="teachingUnitId">
+                                            <option value="" selected disabled>Choisir une UE habilitée...</option>
+                                            <% teachingUnits.forEach(function(ue) { %>
+                                            <option value="<%= ue.id %>"><%= ue.code %> — <%= ue.name %></option>
+                                            <% }); %>
+                                            <option value="unregistered">UE non-enregistrée</option>
+                                        </select>
+                                        <label for="borneTeachingUnitId">Unité d'Enseignement (UE)</label>
+                                    </div>
+                                </div>
+                                <div class="col-12" id="borneUnregisteredUeRow" style="display: none;">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="borneUnregisteredUeName" name="unregisteredUeName" placeholder="Intitulé ou code UE" />
+                                                <label for="borneUnregisteredUeName">Intitulé ou Code de l'UE</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="borneUnregisteredUeContact" name="unregisteredUeContact" placeholder="Enseignant responsable" />
+                                                <label for="borneUnregisteredUeContact">Contact / Enseignant responsable</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% } %>
+
+                                <% if (typeof isPluginSorbonneEnabled !== 'undefined' && isPluginSorbonneEnabled) { %>
+                                <div class="col-12" id="borneSorbonneRow" style="display: none;">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="borneSorbonneEntity" name="sorbonneEntity" autocomplete="off" placeholder="UFR ou entité Sorbonne" />
+                                        <label for="borneSorbonneEntity">Entité ou UFR de rattachement</label>
+                                    </div>
+                                </div>
+                                <% } %>
+
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="borneComments" name="comments" style="height: 84px" placeholder="Commentaire facultatif"></textarea>
+                                        <label for="borneComments"><%= __('kiosk.field_comments') %> (facultatif)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-body-tertiary py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <button type="button" id="borneCancelBtn" class="btn btn-outline-secondary px-4 py-2">
+                                <i class="fa-solid fa-xmark me-1" aria-hidden="true"></i> <%= __('common.cancel') %>
+                            </button>
+                            <button type="submit" id="borneConfirmBtn" class="btn btn-primary px-4 py-2">
+                                <i class="fa-solid fa-check me-1" aria-hidden="true"></i> Confirmer mon entrée
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            <% } else { %>
+
             <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
             <!-- RFID Kiosk Status Banner -->
             <div class="fab-rfid-bar d-flex flex-wrap align-items-center justify-content-between gap-2" data-workspace-id="<%= (typeof selectedWorkspace !== 'undefined' && selectedWorkspace) ? selectedWorkspace.id : '' %>">
@@ -35,7 +223,7 @@
                     <button type="button" id="manualRfidBtn" class="btn btn-outline-secondary btn-sm">
                         <i class="fa-solid fa-keyboard me-1" aria-hidden="true"></i> Tester un badge
                     </button>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                    <span id="rfidReaderStatusBadge" class="badge bg-success-subtle text-success border border-success-subtle">
                         <i class="fa-solid fa-wifi me-1" aria-hidden="true"></i> Prêt pour scan
                     </span>
                 </div>
@@ -69,7 +257,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <a class="jsButton fs-5 text-primary d-inline-flex align-items-center justify-content-center" id="registerbutton" role="button" tabindex="0" style="text-decoration: none; min-width: 44px; min-height: 44px;" title="<%= __('kiosk.switch_to_create') %>" aria-label="<%= __('kiosk.switch_to_create') %>"><i class="fa fa-toggle-on" aria-hidden="true"></i></a>
                             <div>
-                                <h1 class="h6 fw-bold mb-0" id="kioskRegisterHeading"><%= __('kiosk.register_user_title') %></h1>
+                                <h2 class="h6 fw-bold mb-0" id="kioskRegisterHeading"><%= __('kiosk.register_user_title') %></h2>
                                 <small class="text-muted"><%= __('kiosk.register_user_subtitle') %></small>
                             </div>
                         </div>
@@ -637,9 +825,11 @@
                     </div>
                 </div>
             </div>
+            <% } %>
 
             <%- include('../includes/footer.html') %>
 
+        <% if (!isBorneRole) { %>
         <script id="consumablesData" type="application/json">
             <%- safeJson(consumables.map(function(c) {
                 return {
@@ -665,6 +855,7 @@
                 };
             })) %>
         </script>
+        <% } %>
         <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
             window.bookstackConfig = {
                 enabled: <%= (typeof isPluginBookstackEnabled !== 'undefined' && isPluginBookstackEnabled) ? 'true' : 'false' %>,
@@ -689,6 +880,9 @@
             };
         </script>
 
+        <% if (isBorneRole) { %>
+        <script src="javascripts/borne-checkin.js"></script>
+        <% } else { %>
         <script src="javascripts/fabtrack.js"></script>
         <script nonce="<%= typeof cspNonce !== 'undefined' ? cspNonce : '' %>">
             (function () {
@@ -704,6 +898,7 @@
                 });
             })();
         </script>
+        <% } %>
         <% if (typeof isPluginRfidEnabled !== 'undefined' && isPluginRfidEnabled) { %>
         <script src="javascripts/rfid-listener.js"></script>
         <% } %>

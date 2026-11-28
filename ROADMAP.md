@@ -72,7 +72,7 @@
    Afficher le titre du wiki dans Fabtrack, permettre un nom local et conserver un libellé utilisable quand BookStack est indisponible.
 33. **[R-040 Synchroniser la restitution d’un équipement entre les postes](roadmap/items/R-040-synchroniser-la-restitution-d-un-equipement.md)** · À tester · jalon v1.6
    Après un retour depuis la fiche contributeur ou la gestion des équipements, le kiosque et la supervision reflètent le prêt clôturé, y compris lorsque le dernier outil est rendu.
-34. **[R-036 Réserver la borne au pointage individuel par badge](roadmap/items/R-036-limiter-utilisateur-borne.md)** · Spécifiée · jalon v1.6
+34. **[R-036 Réserver la borne au pointage individuel par badge](roadmap/items/R-036-limiter-utilisateur-borne.md)** · À tester · jalon v1.6
    À l’entrée, le contributeur badgé précise son motif de visite, son projet et, s’il le souhaite, un complément. L’accueil accompagne les personnes sans badge ou sans fiche.
 35. **[R-034 Support du lecteur RFID ACR122U (plugin FabtrackJS + agent local PC/SC)](roadmap/items/R-034-support-du-lecteur-rfid-acr122u-plugin.md)** · Spécifiée · jalon v1.6
    Permettre le pointage et l'enrôlement de badges RFID avec un lecteur USB PC/SC ACR122U via un pont local sur le poste borne et l'adaptation du plugin RFID côté FabtrackJS.
@@ -150,6 +150,8 @@
 - [ ] [A-059](roadmap/actions/A-059-definir-puis-effacer-un-nom-local-de-projet.md) Définir puis effacer un nom local de projet (tester, R-038)
 - [ ] [A-060](roadmap/actions/A-060-verifier-la-disparition-du-badge-pret-sur-le.md) Vérifier la disparition du badge prêt sur le kiosque après restitution admin (tester, R-040)
 - [ ] [A-061](roadmap/actions/A-061-verifier-compteurs-et-etat-vide-en-gestion.md) Vérifier compteurs et état vide en gestion équipements après restitution fiche contributeur (tester, R-040)
+- [ ] [A-062](roadmap/actions/A-062-tester-entree-avec-motif-projet-et-commentaire.md) Tester entrée avec motif, projet et commentaire puis sortie par badge sur la borne (tester, R-036)
+- [ ] [A-063](roadmap/actions/A-063-tester-le-parcours-sans-badge-et-badge-inconnu.md) Tester le parcours sans badge et badge inconnu puis prise en charge à l'accueil (tester, R-036)
 
 ## Livré
 

@@ -10,6 +10,35 @@ const rfidScanSchema = z.object({
   workspaceId: optionalPositiveIntId("L'identifiant de l'espace de travail"),
 });
 
+const borneCheckinSchema = z.object({
+  rfid: z
+    .string({ error: "Le code RFID est requis." })
+    .trim()
+    .min(1, "Le code RFID ne peut pas être vide.")
+    .max(100, "Le code RFID ne peut pas dépasser 100 caractères."),
+  workspaceId: optionalPositiveIntId("L'identifiant de l'espace de travail"),
+  projecttype: optionalPositiveIntId("Le motif de la visite"),
+  projectid: z.string({ error: "Identifiant projet invalide." }).trim().max(50).optional().nullable(),
+  documentation: z
+    .string({ error: "Documentation invalide." })
+    .trim()
+    .max(255, "L'URL de documentation ne peut pas dépasser 255 caractères.")
+    .optional()
+    .nullable(),
+  comments: z
+    .string({ error: "Commentaire invalide." })
+    .trim()
+    .max(255, "Le commentaire ne peut pas dépasser 255 caractères.")
+    .optional()
+    .nullable(),
+  teachingUnitId: z.string().trim().max(50).optional().nullable(),
+  unregisteredUeName: z.string().trim().max(255).optional().nullable(),
+  unregisteredUeContact: z.string().trim().max(255).optional().nullable(),
+  repairObject: z.string().trim().max(255).optional().nullable(),
+  workshopId: z.string().trim().max(50).optional().nullable(),
+  sorbonneEntity: z.string().trim().max(255).optional().nullable(),
+});
+
 const checkRfidQuerySchema = z.object({
   rfid: z
     .string({ error: "Le code RFID est requis." })
@@ -47,6 +76,7 @@ const userSearchQuerySchema = z.object({
 
 module.exports = {
   rfidScanSchema,
+  borneCheckinSchema,
   checkRfidQuerySchema,
   projectDocumentationQuerySchema,
   userSearchQuerySchema,

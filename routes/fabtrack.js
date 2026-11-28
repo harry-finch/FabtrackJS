@@ -6,6 +6,7 @@ dotenv.config();
 const { prisma } = require("../utilities/db");
 
 const isLoggedIn = require("../middleware/checkSession.js");
+const requireRoles = require("../middleware/requireRoles.js");
 const clearNotification = require("../middleware/clearNotification.js");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const { validateBody } = require("../middleware/validate.js");
@@ -27,19 +28,23 @@ router.get(
   asyncHandler(async (req, res) => {
     req.session.lastPage = "/fabtrack";
 
+    const isBorneRole = req.session && req.session.role === "staff";
     const workspaceId = req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null;
+
     const [consumables, history, availableWorkshops, machines] = await Promise.all([
-      prisma.consumable.findMany({
-        include: { category: true },
-        orderBy: { name: "asc" },
-      }),
-      kioskService.getPresentHistory(workspaceId),
+      isBorneRole
+        ? Promise.resolve([])
+        : prisma.consumable.findMany({
+            include: { category: true },
+            orderBy: { name: "asc" },
+          }),
+      isBorneRole ? Promise.resolve([]) : kioskService.getPresentHistory(workspaceId),
       prisma.workshop.findMany({
         where: { active: true },
         include: { access: true },
         orderBy: { name: "asc" },
       }),
-      prisma.machine && typeof prisma.machine.findMany === "function"
+      !isBorneRole && prisma.machine && typeof prisma.machine.findMany === "function"
         ? prisma.machine.findMany({ orderBy: { name: "asc" } })
         : Promise.resolve([]),
     ]);
@@ -65,10 +70,12 @@ router.get(
 
 // ******************************************************************************
 // Lightweight HTML fragment endpoint for partial kiosk table refresh (R-032)
+// Restricted to admin/user — borne accounts (role === "staff") cannot list present users (R-036)
 // ******************************************************************************
 
 router.get(
   "/present-table",
+  requireRoles("admin", "user"),
   asyncHandler(async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
     const workspaceId = req.session.selectedWorkspace ? req.session.selectedWorkspace.id : null;

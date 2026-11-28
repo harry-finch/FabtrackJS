@@ -299,7 +299,7 @@ describe("Unit (R-014): SQL Indexes, MariaDB PrismaSessionStore, Global Cache & 
       mockUnitPrisma.staff.findUnique.mockResolvedValue({
         id: 1,
         name: "kiosk",
-        role: "staff",
+        role: "user",
         approved: true,
       });
       mockUnitPrisma.consumable.findMany.mockResolvedValue([]);
@@ -318,7 +318,7 @@ describe("Unit (R-014): SQL Indexes, MariaDB PrismaSessionStore, Global Cache & 
         req.session = {
           loggedin: true,
           staffId: 1,
-          role: "staff",
+          role: "user",
           username: "kiosk",
           selectedWorkspace: { id: 2, name: "Lab" },
         };
